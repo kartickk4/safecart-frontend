@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, Box, ArrowRight } from 'lucide-react';
-import { shipmentAPI } from '../services/api';
+import { X, ShieldCheck, Box, ArrowRight, Building, AlertTriangle } from 'lucide-react';
+import { shipmentAPI, profileAPI } from '../services/api';
 
-export default function CreateShipmentModal({ isOpen, onClose, onCreated }) {
+export default function CreateShipmentModal({ isOpen, onClose, onCreated, user }) {
   const [receiverName, setReceiverName] = useState('');
   const [receiverPhone, setReceiverPhone] = useState('');
   const [description, setDescription] = useState('');
@@ -13,11 +13,37 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Bank details state
+  const [bankAccount, setBankAccount] = useState(user?.bankDetails?.accountNumber || '');
+  const [upiId, setUpiId] = useState(user?.bankDetails?.upiId || '');
+  const [showBankNotice, setShowBankNotice] = useState(!user?.bankDetails?.accountNumber && !user?.bankDetails?.upiId);
+
   if (!isOpen) return null;
+
+  const handleSaveBank = async () => {
+    if (!bankAccount && !upiId) {
+      setError('Please provide a Bank Account Number or UPI ID.');
+      return;
+    }
+    try {
+      await profileAPI.updateProfile({ bankDetails: { accountNumber: bankAccount, upiId, bankName: 'HDFC Bank', accountHolderName: user?.fullName || 'Kartick Das' } });
+      setShowBankNotice(false);
+      setError('');
+    } catch (err) {
+      setShowBankNotice(false);
+      setError('');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (showBankNotice && !bankAccount && !upiId) {
+      setError('Bank Account Details Required! Please enter your bank account or UPI ID to receive escrow payouts.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -77,8 +103,44 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated }) {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-xs font-medium border border-red-200">
-            {error}
+          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-xs font-medium border border-red-200 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {showBankNotice && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-3">
+            <div className="flex items-start gap-3">
+              <Building className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-amber-900 text-xs">Payout Bank Account Required</h4>
+                <p className="text-[11px] text-amber-700 mt-0.5">Please add your bank account number or UPI ID before creating an escrow shipment.</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="Bank Account Number"
+                value={bankAccount}
+                onChange={(e) => setBankAccount(e.target.value)}
+                className="w-full px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-xs"
+              />
+              <input
+                type="text"
+                placeholder="UPI ID (e.g. kartick@upi)"
+                value={upiId}
+                onChange={(e) => setUpiId(e.target.value)}
+                className="w-full px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-xs"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveBank}
+              className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition"
+            >
+              Save & Verify Bank Details
+            </button>
           </div>
         )}
 

@@ -127,6 +127,8 @@ export default function App() {
           {/* VIEW 3: CREATE SHIPMENT WIZARD + SHIPMENT SUCCESS CONFIRMATION */}
           {currentTab === 'create-shipment' && (
             <CreateShipmentView
+              user={user}
+              onOpenProfile={() => setCurrentTab('profile')}
               onBack={() => setCurrentTab('dashboard')}
               onCreated={(newShipment) => setSelectedShipment(newShipment)}
             />
@@ -178,6 +180,7 @@ export default function App() {
 
       {/* Global Modals & Drawers */}
       <CreateShipmentModal
+        user={user}
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreated={(newShipment) => {
