@@ -74,25 +74,25 @@ export default function TrackingView({ onSelectShipment }) {
       {trackingResult && (
         <div className="space-y-6 animate-in fade-in duration-200">
           {/* Top Status Header Banner */}
-          <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-gradient-to-r from-[#1E56E3] via-blue-700 to-indigo-900 text-white p-6 rounded-3xl shadow-xl shadow-blue-500/20 border border-blue-400/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#1E56E3] flex items-center justify-center font-bold text-white shadow-md">
-                <Truck className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md text-white border border-white/20 flex items-center justify-center font-bold shadow-inner">
+                <Truck className="w-6 h-6 text-white" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-black text-white font-mono">{trackingResult.shipmentId}</h2>
-                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                  <span className="bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
                     {trackingResult.status}
                   </span>
                 </div>
-                <p className="text-xs text-slate-300 mt-1">Route: <span className="font-semibold text-white">{trackingResult.route}</span> • Carrier: <span className="font-semibold text-white capitalize">{trackingResult.carrier}</span></p>
+                <p className="text-xs text-blue-100 mt-1">Route: <span className="font-semibold text-white">{trackingResult.route}</span> • Carrier: <span className="font-semibold text-white capitalize">{trackingResult.carrier}</span></p>
               </div>
             </div>
 
-            <div className="text-right border-t md:border-t-0 md:border-l border-slate-700/80 pt-3 md:pt-0 md:pl-6">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Escrow Protected Amount</span>
-              <span className="text-xl font-extrabold text-emerald-400">₹{trackingResult.amount.toLocaleString()}</span>
+            <div className="text-right border-t md:border-t-0 md:border-l border-white/20 pt-3 md:pt-0 md:pl-6">
+              <span className="text-[10px] font-bold text-blue-200 uppercase tracking-wider block">Escrow Protected Amount</span>
+              <span className="text-2xl font-black text-emerald-300 font-mono">₹{trackingResult.amount.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
