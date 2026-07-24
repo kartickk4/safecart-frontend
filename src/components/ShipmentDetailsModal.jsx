@@ -108,7 +108,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Escrow Value</span>
-                <span className="text-xl font-extrabold text-slate-900">${currentShipment.amount ? currentShipment.amount.toLocaleString() : '3,420'}</span>
+                <span className="text-xl font-extrabold text-slate-900">₹{currentShipment.amount ? currentShipment.amount.toLocaleString() : '3,420'}</span>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">

@@ -12,7 +12,7 @@ export default function CreateShipmentView({ onBack, onCreated }) {
   const [receiverPhone, setReceiverPhone] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('3420');
-  const [cityRoute, setCityRoute] = useState('New York → Los Angeles');
+  const [cityRoute, setCityRoute] = useState('Mumbai → Bengaluru');
   const [carrierSlug, setCarrierSlug] = useState('delhivery');
   const [fundImmediately, setFundImmediately] = useState(true);
 
@@ -45,8 +45,8 @@ export default function CreateShipmentView({ onBack, onCreated }) {
         receiverName: receiverName || 'Priya Nair',
         receiverPhone: receiverPhone || '+919876543210',
         amount: Number(amount) || 3420,
-        city: cityRoute || 'New York → Los Angeles',
-        carrierSlug: carrierSlug || 'FedEx Express',
+        city: cityRoute || 'Mumbai → Bengaluru',
+        carrierSlug: carrierSlug || 'Delhivery Express',
         awbCode: `TC-${carrierSlug}-${Math.floor(1000000000 + Math.random() * 9000000000)}`,
         status: fundImmediately ? 'Pending Pickup' : 'Awaiting Payment',
         shippingLabelUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
@@ -68,8 +68,8 @@ export default function CreateShipmentView({ onBack, onCreated }) {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-extrabold text-slate-900">Create Escrow Shipment Booking</h1>
-              <p className="text-xs text-slate-500">Fill in the order details to lock funds in Safecart regulated escrow.</p>
+              <h1 className="text-2xl font-extrabold text-slate-900">Create Escrow Shipment Booking 🇮🇳</h1>
+              <p className="text-xs text-slate-500">Fill in the order details to lock funds in Safecart RBI-compliant escrow.</p>
             </div>
           </div>
 
@@ -99,7 +99,7 @@ export default function CreateShipmentView({ onBack, onCreated }) {
                   <input
                     type="tel"
                     required
-                    placeholder="e.g. +919876543210"
+                    placeholder="e.g. +91 98765 43210"
                     value={receiverPhone}
                     onChange={(e) => setReceiverPhone(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white"
@@ -109,7 +109,7 @@ export default function CreateShipmentView({ onBack, onCreated }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Escrow Value ($ / ₹)</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Escrow Value (₹ INR)</label>
                   <input
                     type="number"
                     required
@@ -121,16 +121,18 @@ export default function CreateShipmentView({ onBack, onCreated }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Carrier Partner Choice</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Indian Carrier Partner Choice</label>
                   <select
                     value={carrierSlug}
                     onChange={(e) => setCarrierSlug(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white cursor-pointer"
                   >
                     <option value="delhivery">Delhivery Express</option>
-                    <option value="fedex">FedEx Express</option>
                     <option value="bluedart">BlueDart Logistics</option>
-                    <option value="dhl">DHL Express</option>
+                    <option value="dtdc">DTDC Express</option>
+                    <option value="ekart">Ekart Logistics</option>
+                    <option value="indiapost">India Post Speed Post</option>
+                    <option value="shadowfax">Shadowfax</option>
                   </select>
                 </div>
               </div>
@@ -139,7 +141,7 @@ export default function CreateShipmentView({ onBack, onCreated }) {
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Shipping Route (City Origin → Destination)</label>
                 <input
                   type="text"
-                  placeholder="New York → Los Angeles"
+                  placeholder="Mumbai → Bengaluru"
                   value={cityRoute}
                   onChange={(e) => setCityRoute(e.target.value)}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white"
@@ -228,7 +230,7 @@ export default function CreateShipmentView({ onBack, onCreated }) {
 
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <span className="text-xs font-bold text-slate-400 uppercase">Locked Escrow Amount</span>
-              <span className="text-base font-black text-emerald-600">${createdData.amount ? createdData.amount.toLocaleString() : '3,420'}</span>
+              <span className="text-base font-black text-emerald-600">₹{createdData.amount ? createdData.amount.toLocaleString() : '3,420'}</span>
             </div>
 
             <div className="flex items-center justify-between">

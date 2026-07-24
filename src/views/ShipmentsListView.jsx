@@ -127,7 +127,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                     {item.carrierSlug}
                   </td>
                   <td className="py-3.5 px-4 font-bold text-slate-900">
-                    ${item.amount ? item.amount.toLocaleString() : '3,420'}
+                    ₹{item.amount ? item.amount.toLocaleString() : '3,420'}
                   </td>
                   <td className="py-3.5 px-4">
                     {renderEscrowBadge(item.status)}
@@ -186,11 +186,11 @@ function renderDeliveryBadge(status) {
 }
 
 const mockDataset = [
-  { shipmentId: 'PSF-2026-00841', receiverName: 'Priya Nair', city: 'New York → Los Angeles', carrierSlug: 'FedEx Express', amount: 3420, status: 'In Transit' },
-  { shipmentId: 'PSF-2026-00840', receiverName: 'Lena Kowalski', city: 'Chicago → Houston', carrierSlug: 'UPS Ground', amount: 1890, status: 'Pending Pickup' },
-  { shipmentId: 'PSF-2026-00839', receiverName: 'Tariq Hassan', city: 'Miami → Seattle', carrierSlug: 'DHL Express', amount: 7650, status: 'Released' },
-  { shipmentId: 'PSF-2026-00838', receiverName: 'Sofia Mendez', city: 'Boston → Denver', carrierSlug: 'USPS Priority', amount: 920, status: 'Locked' },
-  { shipmentId: 'PSF-2026-00837', receiverName: 'James Okafor', city: 'Phoenix → Atlanta', carrierSlug: 'FedEx Ground', amount: 4200, status: 'In Transit' },
-  { shipmentId: 'PSF-2026-00836', receiverName: 'Aarav Patel', city: 'Mumbai → Delhi', carrierSlug: 'Delhivery Express', amount: 2310, status: 'Released' },
-  { shipmentId: 'PSF-2026-00835', receiverName: 'Rachel Kim', city: 'San Jose → Portland', carrierSlug: 'BlueDart', amount: 5100, status: 'In Transit' }
+  { shipmentId: 'PSF-2026-00841', receiverName: 'Priya Nair', city: 'Mumbai → Bengaluru', carrierSlug: 'Delhivery Express', amount: 3420, status: 'In Transit' },
+  { shipmentId: 'PSF-2026-00840', receiverName: 'Aarav Sharma', city: 'Delhi → Mumbai', carrierSlug: 'BlueDart Logistics', amount: 1890, status: 'Pending Pickup' },
+  { shipmentId: 'PSF-2026-00839', receiverName: 'Ananya Iyer', city: 'Chennai → Hyderabad', carrierSlug: 'DTDC Express', amount: 7650, status: 'Released' },
+  { shipmentId: 'PSF-2026-00838', receiverName: 'Rohan Gupta', city: 'Kolkata → Pune', carrierSlug: 'Ekart Logistics', amount: 920, status: 'Locked' },
+  { shipmentId: 'PSF-2026-00837', receiverName: 'Vikram Singh', city: 'Ahmedabad → Jaipur', carrierSlug: 'India Post Speed Post', amount: 4200, status: 'In Transit' },
+  { shipmentId: 'PSF-2026-00836', receiverName: 'Kartick Das', city: 'Kolkata → Delhi', carrierSlug: 'Delhivery Express', amount: 2310, status: 'Released' },
+  { shipmentId: 'PSF-2026-00835', receiverName: 'Neha Verma', city: 'Bengaluru → Chennai', carrierSlug: 'BlueDart Logistics', amount: 5100, status: 'In Transit' }
 ];

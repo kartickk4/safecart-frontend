@@ -82,7 +82,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
     labels: ['Jul 1', 'Jul 5', 'Jul 10', 'Jul 15', 'Jul 20', 'Jul 22'],
     datasets: [
       {
-        label: 'Funds Held ($)',
+        label: 'Funds Held (₹)',
         data: [110000, 125000, 118000, 138000, 132000, 142380],
         borderColor: '#1E56E3',
         backgroundColor: 'rgba(30, 86, 227, 0.1)',
@@ -92,7 +92,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
         pointRadius: 3,
       },
       {
-        label: 'Funds Released ($)',
+        label: 'Funds Released (₹)',
         data: [45000, 52000, 68000, 71000, 82000, 89240],
         borderColor: '#10B981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -164,8 +164,8 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">$142,380</h3>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">+$12,450 since yesterday</p>
+            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">₹1,42,380</h3>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">+₹12,450 since yesterday</p>
           </div>
           <div className="mt-3 flex items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md w-fit">
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -253,7 +253,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">$89,240</h3>
+            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">₹89,240</h3>
             <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">63 transactions cleared</p>
           </div>
           <div className="mt-3 flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md w-fit">
@@ -483,7 +483,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
                     <p className="text-xs font-bold text-slate-900">Shipment Created</p>
                     <span className="text-[10px] text-slate-400">1h 14m ago</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">PSF-2026-00841 dispatched via FedEx Express</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">PSF-2026-00841 dispatched via Delhivery Express</p>
                 </div>
               </div>
 
@@ -497,7 +497,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
                     <p className="text-xs font-bold text-slate-900">Escrow Funded</p>
                     <span className="text-[10px] text-slate-400">1h 15m ago</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">$3,420 held for PSF-2026-00841</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">₹3,420 held for PSF-2026-00841</p>
                 </div>
               </div>
             </div>
@@ -540,9 +540,9 @@ function renderDeliveryPill(status) {
 }
 
 const defaultMockShipments = [
-  { shipmentId: 'PSF-2026-00841', receiverName: 'Priya Nair', city: 'New York → Los Angeles', carrierSlug: 'FedEx Express', amount: 3420, status: 'In Transit' },
-  { shipmentId: 'PSF-2026-00840', receiverName: 'Lena Kowalski', city: 'Chicago → Houston', carrierSlug: 'UPS Ground', amount: 1890, status: 'Pending Pickup' },
-  { shipmentId: 'PSF-2026-00839', receiverName: 'Tariq Hassan', city: 'Miami → Seattle', carrierSlug: 'DHL Express', amount: 7650, status: 'Released' },
-  { shipmentId: 'PSF-2026-00838', receiverName: 'Sofia Mendez', city: 'Boston → Denver', carrierSlug: 'USPS Priority', amount: 920, status: 'Locked' },
-  { shipmentId: 'PSF-2026-00837', receiverName: 'James Okafor', city: 'Phoenix → Atlanta', carrierSlug: 'FedEx Ground', amount: 4200, status: 'In Transit' },
+  { shipmentId: 'PSF-2026-00841', receiverName: 'Priya Nair', city: 'Mumbai → Bengaluru', carrierSlug: 'Delhivery Express', amount: 3420, status: 'In Transit' },
+  { shipmentId: 'PSF-2026-00840', receiverName: 'Aarav Sharma', city: 'Delhi → Mumbai', carrierSlug: 'BlueDart Logistics', amount: 1890, status: 'Pending Pickup' },
+  { shipmentId: 'PSF-2026-00839', receiverName: 'Ananya Iyer', city: 'Chennai → Hyderabad', carrierSlug: 'DTDC Express', amount: 7650, status: 'Released' },
+  { shipmentId: 'PSF-2026-00838', receiverName: 'Rohan Gupta', city: 'Kolkata → Pune', carrierSlug: 'Ekart Logistics', amount: 920, status: 'Locked' },
+  { shipmentId: 'PSF-2026-00837', receiverName: 'Vikram Singh', city: 'Ahmedabad → Jaipur', carrierSlug: 'India Post Speed Post', amount: 4200, status: 'In Transit' },
 ];

@@ -4,10 +4,11 @@ import { profileAPI } from '../services/api';
 
 export default function WalletModal({ user, onUpdateUser }) {
   const [bankDetails, setBankDetails] = useState({
-    accountHolderName: user?.bankDetails?.accountHolderName || 'Marcus Rivera',
+    accountHolderName: user?.bankDetails?.accountHolderName || 'Kartick Das',
     accountNumber: user?.bankDetails?.accountNumber || '987654321098',
     ifscCode: user?.bankDetails?.ifscCode || 'HDFC0001234',
-    bankName: user?.bankDetails?.bankName || 'HDFC Bank'
+    bankName: user?.bankDetails?.bankName || 'HDFC Bank',
+    upiId: user?.bankDetails?.upiId || 'kartick@upi'
   });
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ export default function WalletModal({ user, onUpdateUser }) {
     setLoading(true);
     try {
       const res = await profileAPI.updateProfile({ bankDetails });
-      alert('Bank account details successfully updated for escrow disbursements!');
+      alert('Bank account & UPI details successfully updated for Indian escrow disbursements!');
       if (onUpdateUser) onUpdateUser(res.data);
       setEditing(false);
     } catch (err) {
@@ -30,8 +31,8 @@ export default function WalletModal({ user, onUpdateUser }) {
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900">Escrow Wallet & Payouts</h1>
-        <p className="text-xs text-slate-500 mt-1">Manage your escrow balances, bank account details, and automatic disbursements.</p>
+        <h1 className="text-2xl font-extrabold text-slate-900">Escrow Wallet & Indian Payouts 🇮🇳</h1>
+        <p className="text-xs text-slate-500 mt-1">Manage your escrow balances, bank account details (NEFT/IMPS), and instant UPI disbursements.</p>
       </div>
 
       {/* Balance Cards */}
@@ -41,7 +42,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             <span className="text-xs font-bold text-blue-200 uppercase tracking-wider">Active Escrow Balance</span>
             <Wallet className="w-6 h-6 text-white" />
           </div>
-          <h2 className="text-3xl font-black text-white">$142,380.00</h2>
+          <h2 className="text-3xl font-black text-white">₹1,42,380.00</h2>
           <p className="text-xs text-blue-100 mt-2">Protected across 47 active shipments</p>
         </div>
 
@@ -52,7 +53,7 @@ export default function WalletModal({ user, onUpdateUser }) {
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-slate-900">$89,240.00</h2>
+          <h2 className="text-3xl font-extrabold text-slate-900">₹89,240.00</h2>
           <p className="text-xs text-slate-500 mt-2">63 transactions cleared this month</p>
         </div>
 
@@ -63,7 +64,7 @@ export default function WalletModal({ user, onUpdateUser }) {
               <ShieldCheck className="w-4 h-4" />
             </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-slate-900">$18,400.00</h2>
+          <h2 className="text-3xl font-extrabold text-slate-900">₹18,400.00</h2>
           <p className="text-xs text-slate-500 mt-2">8 shipments awaiting buyer sign-off</p>
         </div>
       </div>

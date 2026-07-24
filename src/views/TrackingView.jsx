@@ -18,8 +18,8 @@ export default function TrackingView({ onSelectShipment }) {
         setTrackingResult({
           shipmentId: res.data.shipment?.shipmentId || searchId,
           receiverName: res.data.shipment?.receiverName || 'Priya Nair',
-          route: res.data.shipment?.city || 'New York → Los Angeles',
-          carrier: res.data.shipment?.carrierSlug || 'FedEx Express',
+          route: res.data.shipment?.city || 'Mumbai → Bengaluru',
+          carrier: res.data.shipment?.carrierSlug || 'Delhivery Express',
           awbCode: res.data.shipment?.awbCode || 'TC-delhivery-7539789936',
           amount: res.data.shipment?.amount || 3420,
           status: res.data.shipment?.status || 'In Transit',
@@ -44,9 +44,9 @@ export default function TrackingView({ onSelectShipment }) {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
             <Navigation className="w-6 h-6 text-[#1E56E3]" />
-            Live Parcel & Escrow Tracking
+            Live Parcel & Escrow Tracking 🇮🇳
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Track any Safecart shipment or TrackCourier AWB code in real time.</p>
+          <p className="text-xs text-slate-500 mt-1">Track any Safecart India shipment or TrackCourier AWB code in real time.</p>
         </div>
 
         <form onSubmit={handleTrack} className="flex gap-3">
@@ -54,7 +54,7 @@ export default function TrackingView({ onSelectShipment }) {
             <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Enter Shipment ID (e.g. SFC-2026-00841) or AWB Tracking Code..."
+              placeholder="Enter Shipment ID (e.g. PSF-2026-00841) or AWB Tracking Code..."
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
@@ -70,13 +70,13 @@ export default function TrackingView({ onSelectShipment }) {
         </form>
       </div>
 
-      {/* TRACKING RESULT DISPLAY (TRACKING 1 & TRACKING 2 VISUAL PARCEL JOURNEY) */}
+      {/* Tracking Card Output */}
       {trackingResult && (
-        <div className="space-y-6">
-          {/* Overview Banner */}
-          <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 rounded-3xl shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-6 animate-in fade-in duration-200">
+          {/* Top Status Header Banner */}
+          <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 backdrop-blur-md border border-blue-400/30 flex items-center justify-center text-blue-400">
+              <div className="w-12 h-12 rounded-2xl bg-[#1E56E3] flex items-center justify-center font-bold text-white shadow-md">
                 <Truck className="w-6 h-6" />
               </div>
               <div>
@@ -92,7 +92,7 @@ export default function TrackingView({ onSelectShipment }) {
 
             <div className="text-right border-t md:border-t-0 md:border-l border-slate-700/80 pt-3 md:pt-0 md:pl-6">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Escrow Protected Amount</span>
-              <span className="text-xl font-extrabold text-emerald-400">${trackingResult.amount.toLocaleString()}</span>
+              <span className="text-xl font-extrabold text-emerald-400">₹{trackingResult.amount.toLocaleString()}</span>
             </div>
           </div>
 
@@ -110,35 +110,33 @@ export default function TrackingView({ onSelectShipment }) {
 
               <div className="flex flex-col items-center text-center space-y-2">
                 <div className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shadow-md">✓</div>
-                <span className="text-xs font-bold text-slate-900">Carrier Pickup</span>
-                <span className="text-[10px] text-slate-400">FedEx / Delhivery</span>
+                <span className="text-xs font-bold text-slate-900">Picked Up</span>
+                <span className="text-[10px] text-slate-400">Delhivery Express</span>
               </div>
 
               <div className="flex flex-col items-center text-center space-y-2">
-                <div className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shadow-md animate-pulse">3</div>
-                <span className="text-xs font-bold text-blue-600">In Transit</span>
-                <span className="text-[10px] text-slate-400">Sorting Hub Scan</span>
+                <div className="w-10 h-10 rounded-full bg-amber-500 text-white font-bold flex items-center justify-center shadow-md animate-pulse">🚚</div>
+                <span className="text-xs font-bold text-amber-600">In Transit</span>
+                <span className="text-[10px] text-slate-400">Bhiwandi Hub</span>
               </div>
 
               <div className="flex flex-col items-center text-center space-y-2 opacity-50">
-                <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 font-bold flex items-center justify-center">4</div>
-                <span className="text-xs font-semibold text-slate-500">Delivered & Released</span>
-                <span className="text-[10px] text-slate-400">Pending Sign-off</span>
+                <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center">4</div>
+                <span className="text-xs font-bold text-slate-500">Delivered & Released</span>
+                <span className="text-[10px] text-slate-400">UPI Payout</span>
               </div>
             </div>
 
-            {/* Detailed Tracking Events Log */}
-            <div className="pt-6 border-t border-slate-100">
-              <h4 className="font-bold text-xs text-slate-400 uppercase tracking-wider mb-4">Milestone Activity Log</h4>
+            {/* Milestones Log */}
+            <div className="border-t border-slate-100 pt-6 space-y-4">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Milestone History</h4>
               <div className="space-y-4">
                 {trackingResult.milestones.map((m, idx) => (
-                  <div key={idx} className="flex items-start gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-bold text-xs">
-                      {idx + 1}
-                    </div>
+                  <div key={idx} className="flex items-start gap-3 text-left">
+                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5"></div>
                     <div>
                       <p className="text-xs font-bold text-slate-900">{m.activity || m.status}</p>
-                      <p className="text-[11px] text-slate-500">{m.location || 'Central Sorting Hub'}</p>
+                      <p className="text-[11px] text-slate-500">{m.location || 'Bhiwandi Sorting Hub, Maharashtra'}</p>
                       <span className="text-[10px] text-slate-400">{new Date(m.date || m.time || Date.now()).toLocaleString()}</span>
                     </div>
                   </div>
@@ -155,14 +153,14 @@ export default function TrackingView({ onSelectShipment }) {
 const defaultTrackingData = {
   shipmentId: 'PSF-2026-00841',
   receiverName: 'Priya Nair',
-  route: 'New York → Los Angeles',
-  carrier: 'FedEx Express',
+  route: 'Mumbai → Bengaluru',
+  carrier: 'Delhivery Express',
   awbCode: 'TC-delhivery-7539789936',
   amount: 3420,
   status: 'In Transit',
   milestones: [
-    { activity: 'Package In Transit at Regional Sorting Facility', location: 'Kansas Sorting Hub', date: new Date(Date.now() - 3600000 * 2).toISOString() },
-    { activity: 'Picked up by Courier Partner', location: 'New York Facility', date: new Date(Date.now() - 3600000 * 12).toISOString() },
-    { activity: 'Escrow Payment Secured & Booking Created', location: 'ParcelSafe Cloud Service', date: new Date(Date.now() - 3600000 * 14).toISOString() }
+    { activity: 'Package In Transit at Regional Sorting Facility', location: 'Bhiwandi Hub, Maharashtra', date: new Date(Date.now() - 3600000 * 2).toISOString() },
+    { activity: 'Picked up by Delhivery Courier Partner', location: 'Bhiwandi Warehouse', date: new Date(Date.now() - 3600000 * 12).toISOString() },
+    { activity: 'Escrow Payment Secured & Booking Created', location: 'Safecart India Cloud', date: new Date(Date.now() - 3600000 * 14).toISOString() }
   ]
 };

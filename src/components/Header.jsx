@@ -2,12 +2,12 @@ import React from 'react';
 import { RefreshCw, Download, Plus } from 'lucide-react';
 
 export default function Header({ user, onRefresh, openNewShipmentModal }) {
-  const currentDate = new Date().toLocaleDateString('en-US', {
+  const currentDate = new Date().toLocaleDateString('en-IN', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
   });
-  const currentTime = new Date().toLocaleTimeString('en-US', {
+  const currentTime = new Date().toLocaleTimeString('en-IN', {
     hour: '2-digit',
     minute: '2-digit'
   });

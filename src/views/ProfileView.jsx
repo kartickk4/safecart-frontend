@@ -3,15 +3,16 @@ import { User, Building, ShieldCheck, Mail, Phone, Lock, Save, CheckCircle2 } fr
 import { profileAPI } from '../services/api';
 
 export default function ProfileView({ user, onUpdateUser }) {
-  const [fullName, setFullName] = useState(user?.fullName || 'Marcus Rivera');
-  const [email, setEmail] = useState(user?.email || 'marcus.rivera@parcelsafe.io');
-  const [phone, setPhone] = useState(user?.phone || '+919876543210');
+  const [fullName, setFullName] = useState(user?.fullName || 'Kartick Das');
+  const [email, setEmail] = useState(user?.email || 'kartick@safecart.in');
+  const [phone, setPhone] = useState(user?.phone || '+91 98765 43210');
   
   const [bankDetails, setBankDetails] = useState({
-    accountHolderName: user?.bankDetails?.accountHolderName || 'Marcus Rivera',
+    accountHolderName: user?.bankDetails?.accountHolderName || 'Kartick Das',
     accountNumber: user?.bankDetails?.accountNumber || '987654321098',
     ifscCode: user?.bankDetails?.ifscCode || 'HDFC0001234',
-    bankName: user?.bankDetails?.bankName || 'HDFC Bank'
+    bankName: user?.bankDetails?.bankName || 'HDFC Bank',
+    upiId: user?.bankDetails?.upiId || 'kartick@upi'
   });
 
   const [loading, setLoading] = useState(false);
@@ -39,9 +40,9 @@ export default function ProfileView({ user, onUpdateUser }) {
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
           <User className="w-6 h-6 text-[#1E56E3]" />
-          Account & Escrow Profile
+          Account & Escrow Profile 🇮🇳
         </h1>
-        <p className="text-xs text-slate-500 mt-1">Manage your identity details, KYC status, and bank account for automated escrow payouts.</p>
+        <p className="text-xs text-slate-500 mt-1">Manage your identity details, Aadhaar/PAN KYC status, and bank account for automated escrow payouts.</p>
       </div>
 
       {msg && (
@@ -58,7 +59,7 @@ export default function ProfileView({ user, onUpdateUser }) {
             <h2 className="font-bold text-slate-900 text-sm">Personal Identity Information</h2>
             <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-              KYC Verified Seller
+              PAN / Aadhaar KYC Verified
             </span>
           </div>
 
