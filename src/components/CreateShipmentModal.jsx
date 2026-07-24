@@ -7,7 +7,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user }
   const [receiverPhone, setReceiverPhone] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [cityRoute, setCityRoute] = useState('Mumbai → Bengaluru');
+  const [cityRoute, setCityRoute] = useState('');
   const [carrierSlug, setCarrierSlug] = useState('add_later');
   const [fundImmediately, setFundImmediately] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -201,10 +201,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user }
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Shipping Route</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Shipping Route (Optional)</label>
             <input
               type="text"
-              placeholder="New York → Los Angeles"
+              placeholder="e.g. Mumbai → Bengaluru (Optional)"
               value={cityRoute}
               onChange={(e) => setCityRoute(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"

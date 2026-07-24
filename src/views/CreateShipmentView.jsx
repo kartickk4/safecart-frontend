@@ -23,7 +23,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [receiverPhone, setReceiverPhone] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('3420');
-  const [cityRoute, setCityRoute] = useState('Mumbai → Bengaluru');
+  const [cityRoute, setCityRoute] = useState('');
   const [carrierSlug, setCarrierSlug] = useState('add_later');
   const [fundImmediately, setFundImmediately] = useState(true);
 
@@ -281,10 +281,10 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Shipping Route (City Origin → Destination)</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Shipping Route (Optional)</label>
                 <input
                   type="text"
-                  placeholder="Mumbai → Bengaluru"
+                  placeholder="e.g. Mumbai → Bengaluru (Optional)"
                   value={cityRoute}
                   onChange={(e) => setCityRoute(e.target.value)}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white"
