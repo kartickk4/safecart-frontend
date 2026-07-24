@@ -14,8 +14,8 @@ export default function Sidebar({ currentTab, setCurrentTab, user, onSignOut, op
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="font-bold text-slate-900 text-sm leading-tight tracking-tight flex items-center gap-1">Safecart 🇮🇳</h1>
-            <p className="text-[11px] text-slate-500 font-medium">India Escrow Platform</p>
+            <h1 className="font-bold text-slate-900 text-sm leading-tight tracking-tight flex items-center gap-1">Safecart</h1>
+            <p className="text-[11px] text-slate-500 font-medium">Escrow Platform</p>
           </div>
         </div>
 

@@ -91,7 +91,7 @@ export default function NotificationsView() {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
             <Bell className="w-6 h-6 text-[#1E56E3]" />
-            Notifications Center 🇮🇳
+            Notifications Center
           </h1>
           <p className="text-xs text-slate-500 mt-1">
             Real-time alerts for escrow movements, carrier milestones, and dispute claims.

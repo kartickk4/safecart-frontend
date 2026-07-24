@@ -88,7 +88,7 @@ export default function AuthView({ onAuthSuccess }) {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                Safecart India 🇮🇳
+                Safecart
               </h1>
               <p className="text-xs text-blue-200 font-medium">India's Premier Logistics Escrow Platform</p>
             </div>

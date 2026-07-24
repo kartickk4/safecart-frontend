@@ -105,7 +105,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-extrabold text-slate-900">Create Escrow Shipment Booking 🇮🇳</h1>
+              <h1 className="text-2xl font-extrabold text-slate-900">Create Escrow Shipment Booking</h1>
               <p className="text-xs text-slate-500">Fill in the order details to lock funds in Safecart RBI-compliant escrow.</p>
             </div>
           </div>
@@ -127,7 +127,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       <Building className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-amber-900 text-sm">Payout Bank Account Details Required 🇮🇳</h3>
+                      <h3 className="font-extrabold text-amber-900 text-sm">Payout Bank Account Details Required</h3>
                       <p className="text-xs text-amber-700 mt-1">
                         To create an escrow shipment, you must provide a bank account or UPI ID for receiving released escrow funds upon confirmed delivery.
                       </p>

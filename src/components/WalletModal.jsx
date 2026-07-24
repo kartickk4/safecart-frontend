@@ -77,7 +77,7 @@ export default function WalletModal({ user, onUpdateUser }) {
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900">Escrow Wallet & Indian Payouts 🇮🇳</h1>
+        <h1 className="text-2xl font-extrabold text-slate-900">Escrow Wallet & Payouts</h1>
         <p className="text-xs text-slate-500 mt-1">Manage your escrow balances, bank account details (NEFT/IMPS), and instant UPI disbursements.</p>
       </div>
 
@@ -220,7 +220,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             </div>
 
             <div className="text-center space-y-1">
-              <h3 className="font-extrabold text-slate-900 text-lg">OTP Security Verification 🇮🇳</h3>
+              <h3 className="font-extrabold text-slate-900 text-lg">OTP Security Verification</h3>
               <p className="text-xs text-slate-500">
                 To edit your escrow bank details, enter the 6-digit security code sent to <span className="font-bold text-slate-800">+91 98765 43210</span>.
               </p>

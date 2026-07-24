@@ -40,7 +40,7 @@ export default function ProfileView({ user, onUpdateUser }) {
       <div>
         <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
           <User className="w-6 h-6 text-[#1E56E3]" />
-          Account & Escrow Profile 🇮🇳
+          Account & Escrow Profile
         </h1>
         <p className="text-xs text-slate-500 mt-1">Manage your identity details, Aadhaar/PAN KYC status, and bank account for automated escrow payouts.</p>
       </div>

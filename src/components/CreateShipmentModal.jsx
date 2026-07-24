@@ -97,7 +97,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user }
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Create Escrow Booking 🇮🇳</h2>
+            <h2 className="text-xl font-bold text-slate-900">Create Escrow Booking</h2>
             <p className="text-xs text-slate-500">Lock payment in Safecart RBI-compliant escrow</p>
           </div>
         </div>

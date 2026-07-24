@@ -44,7 +44,7 @@ export default function TrackingView({ onSelectShipment }) {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
             <Navigation className="w-6 h-6 text-[#1E56E3]" />
-            Live Parcel & Escrow Tracking 🇮🇳
+            Live Parcel & Escrow Tracking
           </h1>
           <p className="text-xs text-slate-500 mt-1">Track any Safecart India shipment or TrackCourier AWB code in real time.</p>
         </div>
