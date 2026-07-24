@@ -15,6 +15,7 @@ import CreateShipmentModal from './components/CreateShipmentModal';
 import ShipmentDetailsModal from './components/ShipmentDetailsModal';
 import WalletModal from './components/WalletModal';
 import { profileAPI } from './services/api';
+import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell } from 'lucide-react';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -195,6 +196,57 @@ export default function App() {
         onClose={() => setSelectedShipment(null)}
         onRefresh={() => window.location.reload()}
       />
+
+      {/* FIXED MOBILE BOTTOM NAVIGATION BAR (FOR MOBILE SMARTPHONE SCREENS) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-2 py-2 flex items-center justify-around z-50 shadow-lg select-none">
+        <button
+          onClick={() => setCurrentTab('dashboard')}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
+            currentTab === 'dashboard' ? 'text-[#1E56E3]' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <LayoutDashboard className="w-5 h-5" />
+          <span>Dashboard</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentTab('track')}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
+            currentTab === 'track' ? 'text-[#1E56E3]' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <Navigation className="w-5 h-5" />
+          <span>Tracking</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentTab('create-shipment')}
+          className="flex flex-col items-center gap-1 p-2 bg-[#1E56E3] text-white rounded-2xl text-[10px] font-bold shadow-md shadow-blue-500/30 -mt-5 transition active:scale-95"
+        >
+          <PlusCircle className="w-6 h-6" />
+          <span>Ship</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentTab('delivery-confirm')}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
+            currentTab === 'delivery-confirm' ? 'text-[#1E56E3]' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <CheckCircle2 className="w-5 h-5" />
+          <span>Confirm</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentTab('profile')}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
+            currentTab === 'profile' ? 'text-[#1E56E3]' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <User className="w-5 h-5" />
+          <span>Profile</span>
+        </button>
+      </div>
     </div>
   );
 }

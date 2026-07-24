@@ -6,7 +6,7 @@ import {
 
 export default function Sidebar({ currentTab, setCurrentTab, user, onSignOut, openNewShipmentModal }) {
   return (
-    <aside className="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between h-screen sticky top-0 z-30 select-none">
+    <aside className="hidden md:flex w-64 bg-white border-r border-slate-200/80 flex-col justify-between h-screen sticky top-0 z-30 select-none">
       <div>
         {/* Brand Header */}
         <div className="p-6 border-b border-slate-100 flex items-center gap-3">
