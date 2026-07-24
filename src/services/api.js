@@ -39,6 +39,7 @@ export const profileAPI = {
 export const shipmentAPI = {
   getShipments: () => api.get('/shipments'),
   getShipmentById: (id) => api.get(`/shipments/${id}`),
+  getTrackingByAwb: (awb) => api.get(`/tracking/${awb}`),
   createShipment: (data) => api.post('/shipments', data),
   fundEscrow: (id, data) => api.post(`/shipments/${id}/fund`, data),
   releaseEscrow: (id) => api.put(`/shipments/${id}/release`),
