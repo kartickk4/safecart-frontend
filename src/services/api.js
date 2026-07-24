@@ -27,6 +27,8 @@ export const authAPI = {
   verifyOtp: (phone, code) => api.post('/auth/verify-otp', { phone, code }),
   sendEmailOtp: (email) => api.post('/auth/send-email-otp', { email }),
   verifyEmailOtp: (email, code) => api.post('/auth/verify-email-otp', { email, code }),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (email, code, newPassword) => api.post('/auth/reset-password', { email, code, newPassword }),
 };
 
 export const profileAPI = {
