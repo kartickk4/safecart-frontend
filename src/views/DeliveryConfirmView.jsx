@@ -50,15 +50,35 @@ export default function DeliveryConfirmView({ onConfirmed }) {
               />
             </div>
 
-            <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <p className="text-xs font-bold text-slate-900">Protected Amount Held in Escrow</p>
-                  <p className="text-[11px] text-slate-500">Funds will be immediately disbursed to the seller upon your sign-off.</p>
+            {/* Escrow Amount & 5% Interest Summary Card */}
+            <div className="p-5 rounded-3xl bg-emerald-50/60 border border-emerald-100 space-y-3">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">Protected Escrow Disbursal Summary</p>
+                    <p className="text-[11px] text-slate-500">Includes 5.0% annual interest accrued during 14 days held in escrow.</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                  5.0% p.a. × 14 days
+                </span>
+              </div>
+
+              <div className="space-y-1.5 border-t border-emerald-200/60 pt-3 text-xs">
+                <div className="flex justify-between items-center text-slate-600">
+                  <span>Disputed Escrow Principal</span>
+                  <span className="font-bold text-slate-900 font-mono">₹7,650.00</span>
+                </div>
+                <div className="flex justify-between items-center text-emerald-700 font-medium">
+                  <span>Accrued Interest (5.0% p.a. • 14 days)</span>
+                  <span className="font-bold font-mono">+ ₹14.67</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-900 font-extrabold text-sm border-t border-emerald-200/80 pt-2">
+                  <span>Total Escrow Payout (Principal + Interest)</span>
+                  <span className="text-emerald-700 font-mono font-black text-base">₹7,664.67</span>
                 </div>
               </div>
-              <span className="text-lg font-black text-emerald-700">₹7,650.00</span>
             </div>
 
             <div>

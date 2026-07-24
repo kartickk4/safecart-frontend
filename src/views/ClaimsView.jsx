@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, AlertCircle, CheckCircle2, Clock, Eye, FileText, Send, Upload, Lock } from 'lucide-react';
+import { ShieldAlert, AlertCircle, CheckCircle2, Clock, Eye, FileText, Send, Upload, Lock, TrendingUp } from 'lucide-react';
 import { claimAPI } from '../services/api';
 
 export default function ClaimsView({ onSelectShipment }) {
@@ -8,9 +8,15 @@ export default function ClaimsView({ onSelectShipment }) {
   const [role, setRole] = useState('receiver'); // 'receiver' | 'supplier'
   const [reason, setReason] = useState('Damaged items');
   const [description, setDescription] = useState('Package arrived crushed with visible product damage.');
+  const [customAmount, setCustomAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  const principalVal = Number(customAmount) > 0 ? Number(customAmount) : 3420;
+  const daysHeld = 14;
+  const interestVal = Number((principalVal * 0.05 * (daysHeld / 365)).toFixed(2));
+  const totalClaimVal = Number((principalVal + interestVal).toFixed(2));
 
   const handleFileClaim = async (e) => {
     e.preventDefault();
@@ -173,13 +179,73 @@ export default function ClaimsView({ onSelectShipment }) {
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Detailed Description of Dispute</label>
               <textarea
-                rows="4"
+                rows="3"
                 required
                 placeholder="Provide a clear description of the issue..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
               ></textarea>
+            </div>
+
+            {/* CLAIM SUMMARY CARD (MATCHING USER DESIGN WITH 5% ANNUAL INTEREST) */}
+            <div className="p-6 rounded-3xl bg-[#F0F5FF] border border-blue-100 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-[#1E56E3]" />
+                    Claim Summary
+                  </h3>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Disputed Escrow Amount</p>
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-white px-2.5 py-1 rounded-md border border-slate-200">
+                  All amounts in ₹ INR
+                </span>
+              </div>
+
+              <div className="space-y-2 border-t border-blue-100/80 pt-3 text-xs">
+                <div className="flex justify-between items-center text-slate-700">
+                  <span>Disputed Escrow Amount</span>
+                  <span className="font-bold text-slate-900 font-mono">₹{principalVal.toLocaleString('en-IN')}</span>
+                </div>
+
+                <div className="flex justify-between items-center text-emerald-700 font-medium">
+                  <span className="flex items-center gap-1.5">
+                    <span>📈 Interest Receivable</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                      5.0% p.a. × {daysHeld} days
+                    </span>
+                  </span>
+                  <span className="font-bold font-mono">+ ₹{interestVal.toFixed(2)}</span>
+                </div>
+
+                <div className="flex justify-between items-center text-slate-900 font-extrabold text-sm border-t border-blue-200/80 pt-2">
+                  <div>
+                    <span>Total Claim Amount</span>
+                    <span className="block text-[10px] text-slate-400 font-normal">Principal + Interest</span>
+                  </div>
+                  <span className="text-[#1E56E3] font-mono font-black text-base">
+                    ₹{totalClaimVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  CUSTOM DISPUTED AMOUNT (optional)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">₹</span>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={customAmount}
+                    onChange={(e) => setCustomAmount(e.target.value)}
+                    className="w-full pl-8 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 font-mono"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">Leave blank to dispute the full escrow amount. Interest is calculated on the disputed amount.</p>
+              </div>
             </div>
 
             <button
