@@ -10,8 +10,8 @@ export default function AuthView({ onAuthSuccess }) {
   const [error, setError] = useState('');
 
   // Form states
-  const [email, setEmail] = useState('testuser@example.com');
-  const [password, setPassword] = useState('mySecurePassword123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
@@ -449,14 +449,6 @@ export default function AuthView({ onAuthSuccess }) {
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleQuickDemo}
-              className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-1.5"
-            >
-              <span>Explore Demo Dashboard (Skip Auth)</span>
             </button>
           </form>
         </div>

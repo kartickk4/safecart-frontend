@@ -226,11 +226,6 @@ export default function WalletModal({ user, onUpdateUser }) {
               </p>
             </div>
 
-            <div className="bg-blue-50/60 p-3 rounded-2xl border border-blue-100 text-center">
-              <span className="text-[11px] text-blue-700 font-medium">Demo Test Security OTP: </span>
-              <span className="text-xs font-mono font-bold text-blue-900 bg-blue-100 px-2 py-0.5 rounded-md">654912</span>
-            </div>
-
             <div className="space-y-3">
               <label className="block text-xs font-semibold text-slate-700 text-center">Enter 6-Digit OTP Code</label>
               <input
