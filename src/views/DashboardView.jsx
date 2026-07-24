@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ShieldCheck, Package, Clock, AlertTriangle, TrendingUp, DollarSign, 
+  ShieldCheck, Package, Clock, AlertTriangle, TrendingUp, IndianRupee, 
   Search, Filter, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, ArrowUpRight, ArrowDownRight, Eye 
 } from 'lucide-react';
 import { Line, Bar } from 'react-chartjs-2';
@@ -249,7 +249,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Released Month</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <DollarSign className="w-4 h-4" />
+              <IndianRupee className="w-4 h-4" />
             </div>
           </div>
           <div>

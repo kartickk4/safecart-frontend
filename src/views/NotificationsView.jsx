@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Bell, ShieldCheck, Box, AlertCircle, DollarSign, Check, Filter } from 'lucide-react';
+import { Bell, ShieldCheck, Box, AlertCircle, IndianRupee, Check, Filter } from 'lucide-react';
 
 export default function NotificationsView() {
   const [filter, setFilter] = useState('All');
 
   const notifications = [
-    { id: 1, type: 'payment', title: 'Payment Secured — PSF-2026-00841', desc: 'Escrow amount of $3,420 held securely in ParcelSafe account.', time: '15 min ago', read: false, icon: ShieldCheck, color: 'text-[#1E56E3] bg-blue-50' },
-    { id: 2, type: 'shipping', title: 'Shipment Dispatched — PSF-2026-00841', desc: 'FedEx Express has picked up parcel at New York hub.', time: '1 hour ago', read: false, icon: Box, color: 'text-indigo-600 bg-indigo-50' },
-    { id: 3, type: 'dispute', title: 'Dispute Filed — CLM-9478-X', desc: 'Sofia Mendez opened a dispute on shipment PSF-2026-00838.', time: '3 hours ago', read: true, icon: AlertCircle, color: 'text-rose-600 bg-rose-50' },
-    { id: 4, type: 'escrow', title: 'Funds Disbursed — PSF-2026-00839', desc: '$7,650 disbursed directly to your HDFC bank account.', time: '5 hours ago', read: true, icon: DollarSign, color: 'text-emerald-600 bg-emerald-50' }
+    { id: 1, type: 'payment', title: 'Payment Secured — PSF-2026-00841', desc: 'Escrow amount of ₹3,420 held securely in Safecart India account.', time: '15 min ago', read: false, icon: ShieldCheck, color: 'text-[#1E56E3] bg-blue-50' },
+    { id: 2, type: 'shipping', title: 'Shipment Dispatched — PSF-2026-00841', desc: 'Delhivery Express has picked up parcel at Bhiwandi hub.', time: '1 hour ago', read: false, icon: Box, color: 'text-indigo-600 bg-indigo-50' },
+    { id: 3, type: 'dispute', title: 'Dispute Filed — CLM-9478-X', desc: 'Rohan Gupta opened a dispute on shipment PSF-2026-00838.', time: '3 hours ago', read: true, icon: AlertCircle, color: 'text-rose-600 bg-rose-50' },
+    { id: 4, type: 'escrow', title: 'Funds Disbursed — PSF-2026-00839', desc: '₹7,650 disbursed directly to your HDFC bank account.', time: '5 hours ago', read: true, icon: IndianRupee, color: 'text-emerald-600 bg-emerald-50' }
   ];
 
   const filtered = notifications.filter(n => filter === 'All' || n.type === filter.toLowerCase());

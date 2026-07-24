@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, ShieldCheck, DollarSign, Building, CheckCircle2, Edit } from 'lucide-react';
+import { Wallet, ShieldCheck, IndianRupee, Building, CheckCircle2, Edit } from 'lucide-react';
 import { profileAPI } from '../services/api';
 
 export default function WalletModal({ user, onUpdateUser }) {
@@ -50,7 +50,7 @@ export default function WalletModal({ user, onUpdateUser }) {
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Released Payouts</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <DollarSign className="w-4 h-4" />
+              <IndianRupee className="w-4 h-4" />
             </div>
           </div>
           <h2 className="text-3xl font-extrabold text-slate-900">₹89,240.00</h2>
