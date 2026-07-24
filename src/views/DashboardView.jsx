@@ -114,7 +114,14 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
         intersect: false,
         backgroundColor: '#1E293B',
         padding: 10,
-        cornerRadius: 8
+        cornerRadius: 8,
+        callbacks: {
+          label: (context) => {
+            const label = context.dataset.label || '';
+            const val = context.parsed.y || 0;
+            return `${label}: ₹${val.toLocaleString('en-IN')}`;
+          }
+        }
       }
     },
     scales: {
@@ -122,7 +129,13 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
       y: {
         grid: { color: '#F1F5F9' },
         ticks: {
-          callback: (value) => `$${value / 1000}k`
+          callback: (value) => {
+            if (value >= 100000) {
+              const lakhs = value / 100000;
+              return `₹${lakhs % 1 === 0 ? lakhs : lakhs.toFixed(1)}L`;
+            }
+            return `₹${value / 1000}k`;
+          }
         }
       }
     }
@@ -448,14 +461,14 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
               {/* Event 2 */}
               <div className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <DollarSign className="w-4 h-4" />
+                  <IndianRupee className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold text-slate-900">Funds Released</p>
                     <span className="text-[10px] text-slate-400">11 min ago</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">$7,650 released for PSF-2026-00839</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">₹7,650 released for PSF-2026-00839</p>
                 </div>
               </div>
 
