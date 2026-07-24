@@ -8,7 +8,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user }
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [cityRoute, setCityRoute] = useState('Mumbai → Bengaluru');
-  const [carrierSlug, setCarrierSlug] = useState('delhivery');
+  const [carrierSlug, setCarrierSlug] = useState('add_later');
   const [fundImmediately, setFundImmediately] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -189,6 +189,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user }
                 onChange={(e) => setCarrierSlug(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white cursor-pointer"
               >
+                <option value="add_later">Add Later (Assign Carrier Post-Booking)</option>
                 <option value="delhivery">Delhivery Express</option>
                 <option value="bluedart">BlueDart Logistics</option>
                 <option value="dtdc">DTDC Express</option>

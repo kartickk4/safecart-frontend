@@ -24,7 +24,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('3420');
   const [cityRoute, setCityRoute] = useState('Mumbai → Bengaluru');
-  const [carrierSlug, setCarrierSlug] = useState('delhivery');
+  const [carrierSlug, setCarrierSlug] = useState('add_later');
   const [fundImmediately, setFundImmediately] = useState(true);
 
   // Success state
@@ -269,6 +269,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     onChange={(e) => setCarrierSlug(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white cursor-pointer"
                   >
+                    <option value="add_later">Add Later (Assign Carrier Post-Booking)</option>
                     <option value="delhivery">Delhivery Express</option>
                     <option value="bluedart">BlueDart Logistics</option>
                     <option value="dtdc">DTDC Express</option>
