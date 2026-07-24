@@ -23,7 +23,7 @@ export default function Header({ user, onRefresh, openNewShipmentModal }) {
           </span>
         </div>
         <p className="text-xs text-slate-500 font-medium mt-1">
-          Welcome back, <span className="text-slate-800 font-semibold">{user?.fullName?.split(' ')[0] || 'Marcus'}</span> — here is your escrow overview as of <span className="font-semibold text-slate-700">{currentDate} • {currentTime}</span>
+          Welcome back, <span className="text-slate-800 font-semibold">{user?.fullName?.split(' ')[0] || 'Kartick'}</span> — here is your escrow overview as of <span className="font-semibold text-slate-700">{currentDate} • {currentTime}</span>
         </p>
       </div>
 

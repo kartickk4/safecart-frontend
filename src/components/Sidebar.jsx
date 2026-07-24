@@ -171,11 +171,11 @@ export default function Sidebar({ currentTab, setCurrentTab, user, onSignOut, op
       <div className="p-4 border-t border-slate-100 bg-slate-50/50">
         <div className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-sm">
           <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">
-            {user?.fullName ? user.fullName.split(' ').map(n => n[0]).join('').substring(0, 2) : 'MR'}
+            {user?.fullName ? user.fullName.split(' ').map(n => n[0]).join('').substring(0, 2) : 'KD'}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-slate-900 truncate">
-              {user?.fullName || 'Marcus Rivera'}
+              {user?.fullName || 'Kartick Das'}
             </p>
             <p className="text-[10px] text-slate-500 font-medium capitalize">{user?.activeRole || 'Supplier'} • Pro Plan</p>
           </div>

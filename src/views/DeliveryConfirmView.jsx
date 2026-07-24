@@ -58,7 +58,7 @@ export default function DeliveryConfirmView({ onConfirmed }) {
                   <p className="text-[11px] text-slate-500">Funds will be immediately disbursed to the seller upon your sign-off.</p>
                 </div>
               </div>
-              <span className="text-lg font-black text-emerald-700">$7,650.00</span>
+              <span className="text-lg font-black text-emerald-700">₹7,650.00</span>
             </div>
 
             <div>
