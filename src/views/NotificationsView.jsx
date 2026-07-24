@@ -14,9 +14,15 @@ export default function NotificationsView() {
   const [swipingId, setSwipingId] = useState(null);
   const [swipeOffset, setSwipeOffset] = useState({});
   const [touchStartX, setTouchStartX] = useState(null);
+  const [isMouseDown, setIsMouseDown] = useState(false);
 
   const handleDelete = (id) => {
     setList(prev => prev.filter(n => n.id !== id));
+    setSwipeOffset(prev => {
+      const copy = { ...prev };
+      delete copy[id];
+      return copy;
+    });
   };
 
   const handleClearAll = () => {
@@ -27,26 +33,52 @@ export default function NotificationsView() {
     setList(initialNotifications);
   };
 
-  // Touch & Mouse Swipe Handlers
+  // Touch Handlers for Mobile Swipe
   const handleTouchStart = (id, e) => {
     setSwipingId(id);
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    setTouchStartX(clientX);
+    setTouchStartX(e.touches[0].clientX);
   };
 
   const handleTouchMove = (id, e) => {
     if (touchStartX === null || swipingId !== id) return;
-    const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+    const currentX = e.touches[0].clientX;
     const diff = currentX - touchStartX;
     setSwipeOffset(prev => ({ ...prev, [id]: diff }));
   };
 
   const handleTouchEnd = (id) => {
     const offset = swipeOffset[id] || 0;
-    if (Math.abs(offset) > 100) {
+    if (Math.abs(offset) > 90) {
       handleDelete(id);
+    } else {
+      setSwipeOffset(prev => ({ ...prev, [id]: 0 }));
     }
-    setSwipeOffset(prev => ({ ...prev, [id]: 0 }));
+    setTouchStartX(null);
+    setSwipingId(null);
+  };
+
+  // Mouse Handlers for Desktop Dragging
+  const handleMouseDown = (id, e) => {
+    setIsMouseDown(true);
+    setSwipingId(id);
+    setTouchStartX(e.clientX);
+  };
+
+  const handleMouseMove = (id, e) => {
+    if (!isMouseDown || touchStartX === null || swipingId !== id) return;
+    const diff = e.clientX - touchStartX;
+    setSwipeOffset(prev => ({ ...prev, [id]: diff }));
+  };
+
+  const handleMouseUp = (id) => {
+    if (!isMouseDown) return;
+    const offset = swipeOffset[id] || 0;
+    if (Math.abs(offset) > 90) {
+      handleDelete(id);
+    } else {
+      setSwipeOffset(prev => ({ ...prev, [id]: 0 }));
+    }
+    setIsMouseDown(false);
     setTouchStartX(null);
     setSwipingId(null);
   };
@@ -63,7 +95,6 @@ export default function NotificationsView() {
           </h1>
           <p className="text-xs text-slate-500 mt-1">
             Real-time alerts for escrow movements, carrier milestones, and dispute claims.
-            <span className="font-semibold text-slate-700 ml-1">💡 Swipe left/right (or click 🗑️) to delete any alert.</span>
           </p>
         </div>
 
@@ -117,28 +148,29 @@ export default function NotificationsView() {
             const offset = swipeOffset[n.id] || 0;
 
             return (
-              <div key={n.id} className="relative overflow-hidden rounded-2xl group">
-                {/* Background Swipe Red Delete Layer */}
+              <div key={n.id} className="relative overflow-hidden rounded-2xl group select-none">
+                {/* Background Swipe Red Delete Action Layer */}
                 <div className="absolute inset-0 bg-rose-500 rounded-2xl flex items-center justify-between px-6 text-white font-bold text-xs">
                   <span className="flex items-center gap-1.5"><Trash2 className="w-4 h-4" /> Delete Alert</span>
                   <span className="flex items-center gap-1.5">Delete Alert <Trash2 className="w-4 h-4" /></span>
                 </div>
 
-                {/* Foreground Swipable Notification Card */}
+                {/* Foreground Swipable Card Layer */}
                 <div
                   onTouchStart={(e) => handleTouchStart(n.id, e)}
                   onTouchMove={(e) => handleTouchMove(n.id, e)}
                   onTouchEnd={() => handleTouchEnd(n.id)}
-                  onMouseDown={(e) => handleTouchStart(n.id, e)}
-                  onMouseMove={(e) => handleTouchMove(n.id, e)}
-                  onMouseUp={() => handleTouchEnd(n.id)}
+                  onMouseDown={(e) => handleMouseDown(n.id, e)}
+                  onMouseMove={(e) => handleMouseMove(n.id, e)}
+                  onMouseUp={() => handleMouseUp(n.id)}
+                  onMouseLeave={() => handleMouseUp(n.id)}
                   style={{
                     transform: `translateX(${offset}px)`,
                     transition: swipingId === n.id ? 'none' : 'transform 0.2s ease-out'
                   }}
-                  className={`relative p-4 rounded-2xl border transition flex items-start justify-between gap-4 cursor-grab active:cursor-grabbing select-none ${!n.read ? 'bg-blue-50/30 border-blue-100' : 'bg-white border-slate-200/80 shadow-xs'}`}
+                  className={`relative p-4 rounded-2xl border transition flex items-start justify-between gap-4 cursor-grab active:cursor-grabbing ${!n.read ? 'bg-blue-50/30 border-blue-100' : 'bg-white border-slate-200/80 shadow-xs'}`}
                 >
-                  <div className="flex items-start gap-3.5">
+                  <div className="flex items-start gap-3.5 pointer-events-none">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold shrink-0 mt-0.5 ${n.color}`}>
                       <IconComponent className="w-5 h-5" />
                     </div>
@@ -156,10 +188,13 @@ export default function NotificationsView() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         handleDelete(n.id);
                       }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
                       title="Delete Notification"
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
