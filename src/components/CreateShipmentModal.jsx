@@ -128,7 +128,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user }
               />
               <input
                 type="text"
-                placeholder="UPI ID (e.g. kartick@upi)"
+                placeholder="UPI ID (Optional)"
                 value={upiId}
                 onChange={(e) => setUpiId(e.target.value)}
                 className="w-full px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-xs"
