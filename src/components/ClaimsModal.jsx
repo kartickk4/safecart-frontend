@@ -6,21 +6,21 @@ export default function ClaimsModal({ onSelectShipment }) {
     {
       claimId: 'CLM-9478-X',
       shipmentId: 'PSF-2026-00838',
-      filedBy: 'Sofia Mendez (Receiver)',
+      filedBy: 'Rohan Gupta (Receiver)',
       reason: 'Damaged items',
-      description: 'Outer carton arrived crushed. Playbox console screen has visible scratches.',
+      description: 'Outer carton arrived crushed. Product console screen has visible scratches.',
       status: 'Under Review',
-      amount: '$920',
+      amount: '₹920',
       date: '2026-07-22 09:14 AM'
     },
     {
       claimId: 'CLM-3129-A',
       shipmentId: 'PSF-2026-00812',
-      filedBy: 'Alex Chen (Supplier)',
+      filedBy: 'Kartick Das (Supplier)',
       reason: 'Delivery delay penalty dispute',
       description: 'Carrier weather disruption caused 48h delay beyond control.',
       status: 'Escalated Urgent',
-      amount: '$2,450',
+      amount: '₹2,450',
       date: '2026-07-21 04:30 PM'
     }
   ];

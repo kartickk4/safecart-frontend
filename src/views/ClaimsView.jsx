@@ -202,7 +202,7 @@ export default function ClaimsView({ onSelectShipment }) {
               <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full">CLM-9478-X • Under Review</span>
               <h2 className="text-xl font-black text-slate-900 mt-1">Claim Status Tracker</h2>
             </div>
-            <span className="text-sm font-black text-rose-600">$920 Escrow Locked</span>
+            <span className="text-sm font-black text-rose-600">₹920 Escrow Locked</span>
           </div>
 
           <div className="space-y-6 relative before:absolute before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">

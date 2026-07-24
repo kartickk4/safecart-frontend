@@ -386,7 +386,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
                       {item.carrierSlug || 'FedEx Express'}
                     </td>
                     <td className="py-3.5 px-4 font-bold text-slate-900">
-                      ${item.amount ? item.amount.toLocaleString() : '3,420'}
+                      ₹{item.amount ? item.amount.toLocaleString('en-IN') : '3,420'}
                     </td>
                     <td className="py-3.5 px-4">
                       {renderEscrowPill(item.status)}
