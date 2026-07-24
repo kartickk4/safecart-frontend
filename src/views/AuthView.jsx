@@ -14,6 +14,7 @@ export default function AuthView({ onAuthSuccess }) {
   const [password, setPassword] = useState('mySecurePassword123');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   // Forgot password modal state
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
