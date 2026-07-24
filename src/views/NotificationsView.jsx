@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Bell, ShieldCheck, Box, AlertCircle, IndianRupee, Check, Filter, Trash2, RotateCcw } from 'lucide-react';
+import { Bell, ShieldCheck, Box, AlertCircle, IndianRupee, Check, Filter, Trash2, RotateCcw, CheckCheck } from 'lucide-react';
 
 const initialNotifications = [
-  { id: 1, type: 'payment', title: 'Payment Secured — PSF-2026-00841', desc: 'Escrow amount of ₹3,420 held securely in Safecart India account.', time: '15 min ago', read: false, icon: ShieldCheck, color: 'text-[#1E56E3] bg-blue-50' },
+  { id: 1, type: 'escrow', title: 'Payment Secured — PSF-2026-00841', desc: 'Escrow amount of ₹3,420 held securely in Safecart account.', time: '15 min ago', read: false, icon: ShieldCheck, color: 'text-[#1E56E3] bg-blue-50' },
   { id: 2, type: 'shipping', title: 'Shipment Dispatched — PSF-2026-00841', desc: 'Delhivery Express has picked up parcel at Bhiwandi hub.', time: '1 hour ago', read: false, icon: Box, color: 'text-indigo-600 bg-indigo-50' },
   { id: 3, type: 'dispute', title: 'Dispute Filed — CLM-9478-X', desc: 'Rohan Gupta opened a dispute on shipment PSF-2026-00838.', time: '3 hours ago', read: true, icon: AlertCircle, color: 'text-rose-600 bg-rose-50' },
   { id: 4, type: 'escrow', title: 'Funds Disbursed — PSF-2026-00839', desc: '₹7,650 disbursed directly to your HDFC bank account.', time: '5 hours ago', read: true, icon: IndianRupee, color: 'text-emerald-600 bg-emerald-50' }
@@ -16,6 +16,8 @@ export default function NotificationsView() {
   const [touchStartX, setTouchStartX] = useState(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
 
+  const unreadCount = list.filter(n => !n.read).length;
+
   const handleDelete = (id) => {
     setList(prev => prev.filter(n => n.id !== id));
     setSwipeOffset(prev => {
@@ -23,6 +25,14 @@ export default function NotificationsView() {
       delete copy[id];
       return copy;
     });
+  };
+
+  const handleMarkAllRead = () => {
+    setList(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const handleToggleRead = (id) => {
+    setList(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
   };
 
   const handleClearAll = () => {
@@ -83,15 +93,24 @@ export default function NotificationsView() {
     setSwipingId(null);
   };
 
-  const filtered = list.filter(n => filter === 'All' || n.type === filter.toLowerCase());
+  const filtered = list.filter(n => {
+    if (filter === 'All') return true;
+    if (filter === 'Escrow') return n.type === 'escrow' || n.type === 'payment';
+    return n.type === filter.toLowerCase();
+  });
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
             <Bell className="w-6 h-6 text-[#1E56E3]" />
-            Notifications Center
+            <span>Notifications Center</span>
+            {unreadCount > 0 && (
+              <span className="bg-blue-100 text-[#1E56E3] text-xs font-bold px-2.5 py-0.5 rounded-full">
+                {unreadCount} Unread
+              </span>
+            )}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
             Real-time alerts for escrow movements, carrier milestones, and dispute claims.
@@ -100,6 +119,16 @@ export default function NotificationsView() {
 
         {/* Action Controls */}
         <div className="flex items-center gap-3">
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllRead}
+              className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1E56E3] text-xs font-bold transition flex items-center gap-1.5"
+            >
+              <CheckCheck className="w-4 h-4" />
+              <span>Mark All Read</span>
+            </button>
+          )}
+
           {list.length > 0 ? (
             <button
               onClick={handleClearAll}
@@ -164,11 +193,12 @@ export default function NotificationsView() {
                   onMouseMove={(e) => handleMouseMove(n.id, e)}
                   onMouseUp={() => handleMouseUp(n.id)}
                   onMouseLeave={() => handleMouseUp(n.id)}
+                  onClick={() => handleToggleRead(n.id)}
                   style={{
                     transform: `translateX(${offset}px)`,
                     transition: swipingId === n.id ? 'none' : 'transform 0.2s ease-out'
                   }}
-                  className={`relative p-4 rounded-2xl border transition flex items-start justify-between gap-4 cursor-grab active:cursor-grabbing ${!n.read ? 'bg-blue-50/30 border-blue-100' : 'bg-white border-slate-200/80 shadow-xs'}`}
+                  className={`relative p-4 rounded-2xl border transition flex items-start justify-between gap-4 cursor-pointer active:cursor-grabbing ${!n.read ? 'bg-blue-50/40 border-blue-100' : 'bg-white border-slate-200/80 shadow-xs'}`}
                 >
                   <div className="flex items-start gap-3.5 pointer-events-none">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold shrink-0 mt-0.5 ${n.color}`}>
@@ -182,8 +212,10 @@ export default function NotificationsView() {
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    {!n.read && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                    {!n.read ? (
+                      <span title="Unread Alert" className="w-2.5 h-2.5 rounded-full bg-[#1E56E3]"></span>
+                    ) : (
+                      <span title="Read" className="text-[10px] font-bold text-slate-300">✓ Read</span>
                     )}
                     <button
                       onClick={(e) => {
