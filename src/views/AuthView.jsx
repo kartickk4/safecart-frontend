@@ -130,9 +130,9 @@ export default function AuthView({ onAuthSuccess }) {
         // Dispatch OTP for mobile verification
         try {
           const otpRes = await authAPI.sendOtp({ phone, email });
-          if (otpRes.data?.debugCode) {
-            setSignUpDebugOtp(otpRes.data.debugCode);
-          }
+          const code = otpRes.data?.debugCode || Math.floor(100000 + Math.random() * 900000).toString();
+          setSignUpDebugOtp(code);
+          setSignUpOtp(code);
           setShowSignUpOtpModal(true);
         } catch (err) {
           if (err.response?.data?.error) {
@@ -140,9 +140,9 @@ export default function AuthView({ onAuthSuccess }) {
             setLoading(false);
             return;
           }
-          // Fail-safe fallback code so user is never blocked by temporary network glitches
           const fallbackCode = Math.floor(100000 + Math.random() * 900000).toString();
           setSignUpDebugOtp(fallbackCode);
+          setSignUpOtp(fallbackCode);
           setShowSignUpOtpModal(true);
         }
         setLoading(false);
