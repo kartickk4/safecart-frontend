@@ -17,10 +17,6 @@ export default function Header({ user, onRefresh, openNewShipmentModal }) {
       <div>
         <div className="flex items-center gap-2.5">
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Escrow Dashboard</h1>
-          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[11px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            Live
-          </span>
         </div>
         <p className="text-xs text-slate-500 font-medium mt-1">
           Welcome back, <span className="text-slate-800 font-semibold">{user?.fullName?.split(' ')[0] || 'Kartick'}</span> — here is your escrow overview as of <span className="font-semibold text-slate-700">{currentDate} • {currentTime}</span>

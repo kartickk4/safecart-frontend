@@ -16,7 +16,8 @@ import {
   Legend,
   Filler
 } from 'chart.js';
-import { shipmentAPI } from '../services/api';
+import { shipmentAPI, notificationAPI } from '../services/api';
+import AdBanner from '../components/AdBanner';
 
 ChartJS.register(
   CategoryScale,
@@ -32,6 +33,7 @@ ChartJS.register(
 
 export default function DashboardView({ onSelectShipment, openNewShipmentModal }) {
   const [shipments, setShipments] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEscrow, setFilterEscrow] = useState('All');
@@ -40,22 +42,30 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
   const rowsPerPage = 5;
 
   useEffect(() => {
-    fetchShipments();
+    fetchData();
   }, []);
 
-  const fetchShipments = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await shipmentAPI.getShipments();
-      const data = res.data;
-      if (Array.isArray(data)) {
-        setShipments(data);
+      const [shipRes, notifRes] = await Promise.allSettled([
+        shipmentAPI.getShipments(),
+        notificationAPI.getNotifications()
+      ]);
+
+      if (shipRes.status === 'fulfilled' && Array.isArray(shipRes.value.data)) {
+        setShipments(shipRes.value.data);
       } else {
         setShipments([]);
       }
+
+      if (notifRes.status === 'fulfilled' && Array.isArray(notifRes.value.data)) {
+        setActivities(notifRes.value.data);
+      } else {
+        setActivities([]);
+      }
     } catch (err) {
-      console.warn('Backend API offline, using initial state:', err);
-      setShipments([]);
+      console.warn('Dashboard fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -163,114 +173,77 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
     }
   };
 
+  // Dynamic Summary Metrics
+  const totalEscrowHeld = shipments
+    .filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit')
+    .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+
+  const activeShipmentsCount = shipments.filter(s => s.status !== 'Released').length;
+  const pendingConfirmCount = shipments.filter(s => s.status === 'Delivered' || s.status === 'Out for Delivery').length;
+  const openClaimsCount = shipments.filter(s => s.status === 'Locked').length;
+  const releasedMonthTotal = shipments
+    .filter(s => s.status === 'Released')
+    .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+  const releasedCount = shipments.filter(s => s.status === 'Released').length;
+
   return (
-    <div className="p-8 space-y-8 max-w-[1600px] mx-auto">
-      {/* METRICS CARDS GRID (6 Cards matching Design) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
-        {/* Card 1: Total Escrow Held */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Total Escrow Held</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#1E56E3] flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4" />
+  return (
+    <div className="p-8 space-y-8 max-w-7xl mx-auto">
+      {/* CLEAN CORE METRICS GRID (4 Primary Cards) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Card 1: Active Escrow Balance */}
+        <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">Active Escrow Balance</span>
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold shadow-xs">
+              <ShieldCheck className="w-5 h-5" />
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">₹1,42,380</h3>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">+₹12,450 since yesterday</p>
-          </div>
-          <div className="mt-3 flex items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md w-fit">
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>+9.6%</span>
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight">₹{totalEscrowHeld.toLocaleString('en-IN')}</h3>
+            <p className="text-xs text-slate-500 font-medium mt-1">{shipments.length} total shipments logged</p>
           </div>
         </div>
 
         {/* Card 2: Active Shipments */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Active Shipments</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <Package className="w-4 h-4" />
+        <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">Active Shipments</span>
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shadow-xs">
+              <Package className="w-5 h-5" />
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">47</h3>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">12 out for delivery</p>
-          </div>
-          <div className="mt-3 flex items-center gap-1 text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md w-fit">
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>+3</span>
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight">{activeShipmentsCount}</h3>
+            <p className="text-xs text-slate-500 font-medium mt-1">{pendingConfirmCount} pending sign-off</p>
           </div>
         </div>
 
-        {/* Card 3: Pending Confirmations */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Pending Confirm</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
+        {/* Card 3: Pending Release */}
+        <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">Pending Release</span>
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shadow-xs">
+              <Clock className="w-5 h-5" />
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">8</h3>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">Awaiting buyer sign-off</p>
-          </div>
-          <div className="mt-3 flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md w-fit">
-            <span>±0</span>
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight">{pendingConfirmCount}</h3>
+            <p className="text-xs text-slate-500 font-medium mt-1">Awaiting buyer delivery confirmation</p>
           </div>
         </div>
 
         {/* Card 4: Open Claims */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Open Claims</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4" />
+        <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">Dispute Claims</span>
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold shadow-xs">
+              <AlertTriangle className="w-5 h-5" />
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-extrabold text-rose-600 tracking-tight">3</h3>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">1 escalated — urgent</p>
-          </div>
-          <div className="mt-3 flex items-center gap-1 text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md w-fit">
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>+1 today</span>
-          </div>
-        </div>
-
-        {/* Card 5: Avg Release Time */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Avg Release Time</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">18.4h</h3>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">vs 22.1h last week</p>
-          </div>
-          <div className="mt-3 flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md w-fit">
-            <ArrowDownRight className="w-3.5 h-3.5" />
-            <span>-17%</span>
-          </div>
-        </div>
-
-        {/* Card 6: Released This Month */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Released Month</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <IndianRupee className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">₹89,240</h3>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5 truncate">63 transactions cleared</p>
-          </div>
-          <div className="mt-3 flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md w-fit">
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>+22%</span>
+            <h3 className={`text-3xl font-black tracking-tight ${openClaimsCount > 0 ? 'text-rose-600' : 'text-slate-900'}`}>{openClaimsCount}</h3>
+            <p className="text-xs text-slate-500 font-medium mt-1">{openClaimsCount > 0 ? 'Dispute locked under review' : 'No active disputes'}</p>
           </div>
         </div>
       </div>
@@ -442,76 +415,29 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
             <h3 className="font-bold text-slate-900 text-base mb-1">Activity Feed</h3>
             <p className="text-xs text-slate-500 mb-6">Real-time escrow events</p>
 
-            <div className="space-y-5">
-              {/* Event 1 */}
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle2 className="w-4 h-4" />
+            <div className="space-y-4">
+              {activities.length === 0 ? (
+                <div className="text-center py-8 text-xs text-slate-400">
+                  No activity events recorded yet. Create a shipment to generate live events!
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-900">Delivery Confirmed</p>
-                    <span className="text-[10px] text-slate-400">9 min ago</span>
+              ) : (
+                activities.slice(0, 6).map((act, idx) => (
+                  <div key={act._id || idx} className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-blue-50 text-[#1E56E3] flex items-center justify-center shrink-0 mt-0.5 font-bold">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold text-slate-900 truncate">{act.title}</p>
+                        <span className="text-[10px] text-slate-400 shrink-0 ml-1">
+                          {new Date(act.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5 truncate">{act.message}</p>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">PSF-2026-00839 confirmed by Tariq Hassan</p>
-                </div>
-              </div>
-
-              {/* Event 2 */}
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <IndianRupee className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-900">Funds Released</p>
-                    <span className="text-[10px] text-slate-400">11 min ago</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">₹7,650 released for PSF-2026-00839</p>
-                </div>
-              </div>
-
-              {/* Event 3 */}
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <AlertCircle className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-900">Claim Filed</p>
-                    <span className="text-[10px] text-slate-400">42 min ago</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">Dispute opened on PSF-2026-00838 by Sofia Mendez</p>
-                </div>
-              </div>
-
-              {/* Event 4 */}
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <Package className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-900">Shipment Created</p>
-                    <span className="text-[10px] text-slate-400">1h 14m ago</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">PSF-2026-00841 dispatched via Delhivery Express</p>
-                </div>
-              </div>
-
-              {/* Event 5 */}
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-900">Escrow Funded</p>
-                    <span className="text-[10px] text-slate-400">1h 15m ago</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">₹3,420 held for PSF-2026-00841</p>
-                </div>
-              </div>
+                ))
+              )}
             </div>
           </div>
 

@@ -18,13 +18,14 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
     setLoading(true);
     try {
       const res = await shipmentAPI.getShipments();
-      if (Array.isArray(res.data) && res.data.length > 0) {
+      if (Array.isArray(res.data)) {
         setShipments(res.data);
       } else {
-        setShipments(mockDataset);
+        setShipments([]);
       }
     } catch (err) {
-      setShipments(mockDataset);
+      console.error('Error fetching shipments:', err);
+      setShipments([]);
     } finally {
       setLoading(false);
     }
@@ -45,7 +46,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
   const paginated = filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-6">
+    <div className="p-8 max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

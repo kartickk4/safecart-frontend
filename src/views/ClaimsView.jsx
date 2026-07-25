@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertCircle, CheckCircle2, Clock, Eye, FileText, Send, Upload, Lock, TrendingUp } from 'lucide-react';
-import { claimAPI } from '../services/api';
+import { claimAPI, shipmentAPI } from '../services/api';
 
 export default function ClaimsView({ onSelectShipment }) {
   const [activeSubTab, setActiveSubTab] = useState('list'); // 'list' | 'file' | 'status' | 'supplier'
-  const [shipmentId, setShipmentId] = useState('PSF-2026-00838');
+  const [claimsList, setClaimsList] = useState([]);
+  const [shipmentId, setShipmentId] = useState('');
   const [role, setRole] = useState('receiver'); // 'receiver' | 'supplier'
   const [reason, setReason] = useState('Damaged items');
   const [description, setDescription] = useState('Package arrived crushed with visible product damage.');
@@ -13,6 +14,23 @@ export default function ClaimsView({ onSelectShipment }) {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  useEffect(() => {
+    fetchUserClaims();
+  }, []);
+
+  const fetchUserClaims = async () => {
+    try {
+      const res = await shipmentAPI.getShipments();
+      if (Array.isArray(res.data)) {
+        const lockedShipments = res.data.filter(s => s.status === 'Locked');
+        setClaimsList(lockedShipments);
+        if (lockedShipments.length > 0 && !shipmentId) {
+          setShipmentId(lockedShipments[0].shipmentId);
+        }
+      }
+    } catch (e) {}
+  };
+
   const principalVal = Number(customAmount) > 0 ? Number(customAmount) : 3420;
   const daysHeld = 14;
   const interestVal = Number((principalVal * 0.05 * (daysHeld / 365)).toFixed(2));
@@ -20,6 +38,7 @@ export default function ClaimsView({ onSelectShipment }) {
 
   const handleFileClaim = async (e) => {
     e.preventDefault();
+    if (!shipmentId) return;
     setError('');
     setSuccessMsg('');
     setLoading(true);
@@ -34,9 +53,9 @@ export default function ClaimsView({ onSelectShipment }) {
       setSuccessMsg('Dispute claim filed successfully! Escrow funds locked under review.');
       setActiveSubTab('status');
     } catch (err) {
-      console.warn('API offline, showing demo dispute filing result:', err);
-      setSuccessMsg('Dispute claim filed successfully! Escrow funds locked under review.');
-      setActiveSubTab('status');
+      console.error('File Claim Error:', err);
+      const msg = err.response?.data?.error || 'Failed to file dispute claim. Please verify shipment ID and details.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -86,44 +105,53 @@ export default function ClaimsView({ onSelectShipment }) {
       {/* SUB-TAB 1: ACTIVE CLAIMS LIST */}
       {activeSubTab === 'list' && (
         <div className="space-y-4">
-          {mockClaims.map((claim) => (
-            <div key={claim.claimId} className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-slate-300 transition">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold shrink-0 mt-1">
-                  <Lock className="w-6 h-6" />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-extrabold text-slate-900 text-sm">{claim.claimId}</h3>
-                    <span className="text-xs font-bold text-[#1E56E3] bg-blue-50 px-2 py-0.5 rounded-md">{claim.shipmentId}</span>
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${claim.status.includes('Urgent') ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}`}>
-                      {claim.status}
-                    </span>
+          {claimsList.length === 0 ? (
+            <div className="bg-white p-12 rounded-3xl border border-slate-200/80 shadow-sm text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <p className="text-sm font-bold text-slate-800">No Active Dispute Claims</p>
+              <p className="text-xs text-slate-500">All transactions are proceeding normally. Click "+ File New Claim" if you encounter any parcel issues.</p>
+            </div>
+          ) : (
+            claimsList.map((claim) => (
+              <div key={claim._id || claim.shipmentId} className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-slate-300 transition">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold shrink-0 mt-1">
+                    <Lock className="w-6 h-6" />
                   </div>
 
-                  <p className="text-xs font-bold text-slate-800">Reason: {claim.reason}</p>
-                  <p className="text-xs text-slate-500 max-w-2xl">{claim.description}</p>
-                  <p className="text-[11px] text-slate-400 font-medium">Filed by <span className="text-slate-700 font-semibold">{claim.filedBy}</span> on {claim.date}</p>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-extrabold text-slate-900 text-sm">CLM-{claim.shipmentId}</h3>
+                      <span className="text-xs font-bold text-[#1E56E3] bg-blue-50 px-2 py-0.5 rounded-md">{claim.shipmentId}</span>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800">
+                        Escrow Locked
+                      </span>
+                    </div>
+
+                    <p className="text-xs font-bold text-slate-800">Recipient: {claim.receiverName}</p>
+                    <p className="text-xs text-slate-500 max-w-2xl">Dispute initiated on route {claim.city}. Escrow held under mediator review.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 shrink-0">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Locked Escrow</span>
+                    <span className="text-lg font-extrabold text-rose-600">₹{claim.amount?.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <button
+                    onClick={() => { setShipmentId(claim.shipmentId); setActiveSubTab('status'); }}
+                    className="px-4 py-2 bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md shadow-blue-500/20"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>Inspect Claim</span>
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-center gap-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 shrink-0">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Locked Escrow</span>
-                  <span className="text-lg font-extrabold text-rose-600">{claim.amount}</span>
-                </div>
-
-                <button
-                  onClick={() => setActiveSubTab('status')}
-                  className="px-4 py-2 bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md shadow-blue-500/20"
-                >
-                  <Eye className="w-4 h-4" />
-                  <span>Inspect Claim</span>
-                </button>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
 

@@ -13,31 +13,44 @@ export default function TrackingView({ onSelectShipment }) {
   const [courierAwb, setCourierAwb] = useState('DLV1234567890IN');
   const [dispatched, setDispatched] = useState(false);
 
+  const [errorMsg, setErrorMsg] = useState('');
+
   const handleTrack = async (e) => {
     e.preventDefault();
     if (!searchId) return;
     setLoading(true);
+    setErrorMsg('');
 
     try {
-      const res = await shipmentAPI.getShipmentById(searchId.trim());
+      let res;
+      try {
+        res = await shipmentAPI.getShipmentById(searchId.trim());
+      } catch (e1) {
+        res = await shipmentAPI.getTrackingByAwb(searchId.trim());
+      }
+
       if (res.data) {
+        const ship = res.data.shipment || res.data;
+        const journey = res.data.journey || [];
+        const milestones = Array.isArray(journey) ? journey : (journey.milestones || []);
+
         setTrackingResult({
-          shipmentId: res.data.shipment?.shipmentId || searchId,
-          receiverName: res.data.shipment?.receiverName || 'Priya Nair',
-          route: res.data.shipment?.city || 'Mumbai → Bengaluru',
-          carrier: res.data.shipment?.carrierSlug || 'Delhivery Express',
-          awbCode: res.data.shipment?.awbCode || 'TC-delhivery-7539789936',
-          amount: res.data.shipment?.amount || 3420,
-          status: res.data.shipment?.status || 'In Transit',
-          milestones: res.data.journey?.milestones || defaultTrackingData.milestones
+          shipmentId: ship.shipmentId || searchId,
+          receiverName: ship.receiverName || 'Recipient',
+          route: ship.city || 'Origin → Destination',
+          carrier: ship.carrierSlug || 'Carrier Partner',
+          awbCode: ship.awbCode || res.data.awb || 'N/A',
+          amount: ship.amount || 0,
+          status: ship.status || res.data.status || 'In Transit',
+          milestones: milestones.length > 0 ? milestones : [
+            { status: ship.status || 'Active', location: ship.city || 'Sorting Hub', detail: 'Shipment active in escrow ledger.', time: new Date() }
+          ]
         });
       }
     } catch (err) {
-      console.warn('API error, showing fallback live tracking details:', err);
-      setTrackingResult({
-        ...defaultTrackingData,
-        shipmentId: searchId.toUpperCase()
-      });
+      console.error('Tracking query error:', err);
+      setTrackingResult(null);
+      setErrorMsg(err.response?.data?.error || `No tracking information found for "${searchId}". Please check the Shipment ID or AWB code.`);
     } finally {
       setLoading(false);
     }
@@ -80,6 +93,12 @@ export default function TrackingView({ onSelectShipment }) {
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span>Track Live</span>}
           </button>
         </form>
+
+        {errorMsg && (
+          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+            {errorMsg}
+          </div>
+        )}
       </div>
 
       {/* TRACKING DUAL VIEW CONTAINER */}
@@ -284,7 +303,7 @@ export default function TrackingView({ onSelectShipment }) {
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-xl font-black text-white font-mono">{trackingResult.shipmentId}</h2>
-                      <span className="bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                      <span className="bg-white/20 text-white border border-white/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
                         {trackingResult.status}
                       </span>
                     </div>
@@ -294,13 +313,13 @@ export default function TrackingView({ onSelectShipment }) {
 
                 <div className="text-right border-t md:border-t-0 md:border-l border-white/20 pt-3 md:pt-0 md:pl-6">
                   <span className="text-[10px] font-bold text-blue-200 uppercase tracking-wider block">Escrow Protected Amount</span>
-                  <span className="text-2xl font-black text-emerald-300 font-mono">₹{trackingResult.amount.toLocaleString('en-IN')}</span>
+                  <span className="text-2xl font-black text-white font-mono">₹{trackingResult.amount.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
               {/* VISUAL PROGRESS TIMELINE BAR (TRACKING 2 VIEW) */}
               <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
-                <h3 className="font-bold text-slate-900 text-sm">Live Milestone Progress</h3>
+                <h3 className="font-bold text-slate-900 text-sm">Carrier Milestone Progress</h3>
 
                 {/* Stepper Progress Bar */}
                 <div className="grid grid-cols-4 gap-2 relative">

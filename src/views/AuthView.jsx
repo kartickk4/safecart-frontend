@@ -43,11 +43,12 @@ export default function AuthView({ onAuthSuccess }) {
     try {
       const res = await authAPI.forgotPassword(forgotEmail);
       setResetMsg(res.data?.message || `Password reset verification code sent to ${forgotEmail}`);
+      if (res.data?.debugCode) {
+        setSignUpDebugOtp(res.data.debugCode);
+      }
       setResetStep(2);
     } catch (err) {
-      console.warn('Backend offline/demo mode, sending test OTP:', err);
-      setResetMsg(`Password reset verification code sent to ${forgotEmail}. Test OTP: 489201`);
-      setResetStep(2);
+      setResetErr(err.response?.data?.error || 'Failed to send password reset code. Please verify email.');
     } finally {
       setResetLoading(false);
     }
@@ -72,13 +73,7 @@ export default function AuthView({ onAuthSuccess }) {
       await authAPI.resetPassword(forgotEmail, resetOtp, newPassword);
       setResetStep(3);
     } catch (err) {
-      if (resetOtp.trim() === '489201' || resetOtp.trim() === '123456') {
-        setPassword(newPassword);
-        setEmail(forgotEmail);
-        setResetStep(3);
-      } else {
-        setResetErr('Invalid or expired OTP code. Try test OTP: 489201');
-      }
+      setResetErr(err.response?.data?.error || 'Invalid or expired OTP verification code.');
     } finally {
       setResetLoading(false);
     }
@@ -90,42 +85,30 @@ export default function AuthView({ onAuthSuccess }) {
     setSignUpOtpLoading(true);
 
     try {
-      if (signUpOtp.trim() !== signUpDebugOtp && signUpOtp.trim() !== '948201' && signUpOtp.trim() !== '123456') {
-        try {
-          await authAPI.verifyOtp(phone, signUpOtp);
-        } catch (vErr) {
-          setSignUpOtpErr('Invalid verification OTP code. Try test OTP: 948201');
+      // Verify OTP with backend
+      try {
+        await authAPI.verifyOtp(phone, signUpOtp);
+      } catch (vErr) {
+        // If debug matches, proceed or display real error
+        if (signUpOtp.trim() !== signUpDebugOtp) {
+          setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired verification code.');
           setSignUpOtpLoading(false);
           return;
         }
       }
 
       // Complete Sign Up Registration
-      let registeredUser;
-      try {
-        const res = await authAPI.signup({ email, password, phone, fullName, role: 'User' });
-        registeredUser = res.data?.user;
-        if (res.data?.accessToken) {
-          localStorage.setItem('safecart_token', res.data.accessToken);
-        }
-      } catch (err) {
-        registeredUser = {
-          _id: `user-${Date.now()}`,
-          fullName: fullName,
-          email: email,
-          phone: phone,
-          role: 'User',
-          activeRole: selectedRole,
-          escrowBalance: 0.00
-        };
-        localStorage.setItem('safecart_token', 'demo_jwt_token_123');
+      const res = await authAPI.signup({ email, password, phone, fullName, role: 'User' });
+      const registeredUser = res.data?.user || res.data;
+      const token = res.data?.accessToken;
+      if (token) {
+        localStorage.setItem('safecart_token', token);
       }
-
       registeredUser.activeRole = selectedRole;
       setShowSignUpOtpModal(false);
       onAuthSuccess(registeredUser);
     } catch (err) {
-      setSignUpOtpErr('Verification failed. Please check OTP code.');
+      setSignUpOtpErr(err.response?.data?.error || 'Verification or Registration failed. Please try again.');
     } finally {
       setSignUpOtpLoading(false);
     }
@@ -161,18 +144,8 @@ export default function AuthView({ onAuthSuccess }) {
         onAuthSuccess(user);
       }
     } catch (err) {
-      console.warn('Auth API offline/fallback active, signing into demo session:', err);
-      const mockUser = {
-        _id: 'demo-user-123',
-        fullName: fullName || (email ? email.split('@')[0] : 'Marcus Rivera'),
-        email: email || 'testuser@example.com',
-        phone: phone || '+919876543210',
-        role: 'User',
-        activeRole: selectedRole,
-        escrowBalance: 12450.00
-      };
-      localStorage.setItem('safecart_token', 'demo_jwt_token_123');
-      onAuthSuccess(mockUser);
+      const errMsg = err.response?.data?.error || 'Authentication failed. Please check your credentials and try again.';
+      setError(errMsg);
     } finally {
       setLoading(false);
     }

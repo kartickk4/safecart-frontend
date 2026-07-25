@@ -14,6 +14,7 @@ import Header from './components/Header';
 import CreateShipmentModal from './components/CreateShipmentModal';
 import ShipmentDetailsModal from './components/ShipmentDetailsModal';
 import WalletModal from './components/WalletModal';
+import AdBanner from './components/AdBanner';
 import { profileAPI } from './services/api';
 import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell } from 'lucide-react';
 
@@ -37,34 +38,13 @@ export default function App() {
       return;
     }
 
-    if (token === 'demo_jwt_token_123') {
-      setUser({
-        _id: 'demo-user-123',
-        fullName: 'Kartick Das',
-        email: 'kartick@safecart.in',
-        phone: '+91 98765 43210',
-        role: 'User',
-        activeRole: 'Supplier',
-        escrowBalance: 142380.00
-      });
-      setLoading(false);
-      return;
-    }
-
     try {
       const res = await profileAPI.getProfile();
       setUser(res.data);
     } catch (err) {
-      console.warn('Backend profile API offline or token invalid, loading demo profile:', err);
-      setUser({
-        _id: 'demo-user-123',
-        fullName: 'Kartick Das',
-        email: 'kartick@safecart.in',
-        phone: '+91 98765 43210',
-        role: 'User',
-        activeRole: 'Supplier',
-        escrowBalance: 142380.00
-      });
+      console.warn('Backend profile API error or token invalid:', err);
+      localStorage.removeItem('safecart_token');
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -107,6 +87,11 @@ export default function App() {
           onRefresh={() => window.location.reload()}
           openNewShipmentModal={() => setCurrentTab('create-shipment')}
         />
+
+        {/* TOP OF SCREEN AD BANNER */}
+        <div className="px-8 pt-6 pb-2 max-w-7xl mx-auto w-full">
+          <AdBanner />
+        </div>
 
         <main className="flex-1 pb-12 overflow-y-auto">
           {/* VIEW 1: DASHBOARD */}

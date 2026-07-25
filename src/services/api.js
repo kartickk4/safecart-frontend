@@ -50,4 +50,9 @@ export const claimAPI = {
   getClaimByShipment: (shipmentId) => api.get(`/claims/${shipmentId}`),
 };
 
+export const notificationAPI = {
+  getNotifications: () => api.get('/notifications'),
+  markAsRead: (id) => api.put(`/notifications/${id}/read`),
+};
+
 export default api;

@@ -6,20 +6,21 @@ export default function DeliveryConfirmView({ onConfirmed }) {
   const [shipmentId, setShipmentId] = useState('PSF-2026-00839');
   const [rating, setRating] = useState(5);
   const [comments, setComments] = useState('Parcel arrived in perfect sealed condition. Item verified!');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const handleConfirm = async (e) => {
     e.preventDefault();
+    if (!shipmentId) return;
     setLoading(true);
+    setError('');
 
     try {
       await shipmentAPI.releaseEscrow(shipmentId.trim());
       setSuccess(true);
       if (onConfirmed) onConfirmed();
     } catch (err) {
-      console.warn('API connection offline, simulating delivery sign-off:', err);
-      setSuccess(true);
+      console.error('Release Escrow Error:', err);
+      setError(err.response?.data?.error || 'Failed to release escrow funds. Only the receiver of the shipment can confirm delivery and release funds.');
     } finally {
       setLoading(false);
     }
@@ -37,6 +38,11 @@ export default function DeliveryConfirmView({ onConfirmed }) {
 
       {!success ? (
         <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+          {error && (
+            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleConfirm} className="space-y-5">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Shipment Tracking ID</label>

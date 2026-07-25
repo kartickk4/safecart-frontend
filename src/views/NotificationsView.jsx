@@ -1,38 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, ShieldCheck, Box, AlertCircle, IndianRupee, Check, Filter, Trash2, RotateCcw, CheckCheck } from 'lucide-react';
-
-const initialNotifications = [
-  { id: 1, type: 'escrow', title: 'Payment Secured — PSF-2026-00841', desc: 'Escrow amount of ₹3,420 held securely in Safecart account.', time: '15 min ago', read: false, icon: ShieldCheck, color: 'text-[#1E56E3] bg-blue-50' },
-  { id: 2, type: 'shipping', title: 'Shipment Dispatched — PSF-2026-00841', desc: 'Delhivery Express has picked up parcel at Bhiwandi hub.', time: '1 hour ago', read: false, icon: Box, color: 'text-indigo-600 bg-indigo-50' },
-  { id: 3, type: 'dispute', title: 'Dispute Filed — CLM-9478-X', desc: 'Rohan Gupta opened a dispute on shipment PSF-2026-00838.', time: '3 hours ago', read: true, icon: AlertCircle, color: 'text-rose-600 bg-rose-50' },
-  { id: 4, type: 'escrow', title: 'Funds Disbursed — PSF-2026-00839', desc: '₹7,650 disbursed directly to your HDFC bank account.', time: '5 hours ago', read: true, icon: IndianRupee, color: 'text-emerald-600 bg-emerald-50' }
-];
+import { notificationAPI } from '../services/api';
 
 export default function NotificationsView() {
   const [filter, setFilter] = useState('All');
-  const [list, setList] = useState(initialNotifications);
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [swipingId, setSwipingId] = useState(null);
   const [swipeOffset, setSwipeOffset] = useState({});
   const [touchStartX, setTouchStartX] = useState(null);
-  const [isMouseDown, setIsMouseDown] = useState(false);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      const res = await notificationAPI.getNotifications();
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        setList(res.data.map(n => ({
+          id: n._id,
+          type: n.type || 'shipping',
+          title: n.title,
+          desc: n.message,
+          time: new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          read: n.read,
+          icon: getIcon(n.type),
+          color: getColor(n.type)
+        })));
+      } else {
+        setList([]);
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+      setList([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [deletingIds, setDeletingIds] = useState(new Set());
 
   const unreadCount = list.filter(n => !n.read).length;
 
   const handleDelete = (id) => {
-    setList(prev => prev.filter(n => n.id !== id));
-    setSwipeOffset(prev => {
-      const copy = { ...prev };
-      delete copy[id];
-      return copy;
-    });
+    setDeletingIds(prev => new Set(prev).add(id));
+    setTimeout(() => {
+      setList(prev => prev.filter(n => n.id !== id));
+      setDeletingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      setSwipeOffset(prev => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+    }, 300);
   };
 
   const handleMarkAllRead = () => {
     setList(prev => prev.map(n => ({ ...n, read: true })));
   };
 
-  const handleToggleRead = (id) => {
-    setList(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
+  const handleToggleRead = async (id) => {
+    setList(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    try {
+      await notificationAPI.markAsRead(id);
+    } catch (e) {}
   };
 
   const handleClearAll = () => {
@@ -175,9 +212,21 @@ export default function NotificationsView() {
           filtered.map(n => {
             const IconComponent = n.icon;
             const offset = swipeOffset[n.id] || 0;
+            const isDeleting = deletingIds.has(n.id);
 
             return (
-              <div key={n.id} className="relative overflow-hidden rounded-2xl group select-none">
+              <div
+                key={n.id}
+                style={{
+                  maxHeight: isDeleting ? '0px' : '150px',
+                  opacity: isDeleting ? 0 : 1,
+                  transform: isDeleting ? 'translateX(100%)' : 'none',
+                  transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+                  margin: isDeleting ? 0 : undefined,
+                  padding: isDeleting ? 0 : undefined,
+                }}
+                className="relative overflow-hidden rounded-2xl group select-none transition-all duration-300"
+              >
                 {/* Background Swipe Red Delete Action Layer */}
                 <div className="absolute inset-0 bg-rose-500 rounded-2xl flex items-center justify-between px-6 text-white font-bold text-xs">
                   <span className="flex items-center gap-1.5"><Trash2 className="w-4 h-4" /> Delete Alert</span>
@@ -239,4 +288,18 @@ export default function NotificationsView() {
       </div>
     </div>
   );
+}
+
+function getIcon(type) {
+  if (type === 'payment' || type === 'escrow') return IndianRupee;
+  if (type === 'alert' || type === 'dispute') return AlertCircle;
+  if (type === 'confirmed') return ShieldCheck;
+  return Box;
+}
+
+function getColor(type) {
+  if (type === 'payment' || type === 'escrow') return 'text-emerald-600 bg-emerald-50';
+  if (type === 'alert' || type === 'dispute') return 'text-rose-600 bg-rose-50';
+  if (type === 'confirmed') return 'text-[#1E56E3] bg-blue-50';
+  return 'text-indigo-600 bg-indigo-50';
 }

@@ -76,20 +76,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       setStep(2); // Move to Shipment Success Confirmation view
       if (onCreated) onCreated(res.data);
     } catch (err) {
-      console.warn('Backend API submission offline, showing success preview:', err);
-      const mockResult = {
-        shipmentId: `PSF-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-        receiverName: receiverName || 'Priya Nair',
-        receiverPhone: receiverPhone || '+919876543210',
-        amount: Number(amount) || 3420,
-        city: cityRoute || 'Mumbai → Bengaluru',
-        carrierSlug: carrierSlug || 'Delhivery Express',
-        awbCode: `TC-${carrierSlug}-${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-        status: fundImmediately ? 'Pending Pickup' : 'Awaiting Payment',
-        shippingLabelUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
-      };
-      setCreatedData(mockResult);
-      setStep(2);
+      console.error('Create Shipment API Error:', err);
+      const msg = err.response?.data?.message || err.response?.data?.error || 'Failed to create shipment. Please verify bank details and recipient info.';
+      setError(msg);
+      if (err.response?.data?.error === 'Bank details required') {
+        setShowBankForm(true);
+      }
     } finally {
       setLoading(false);
     }
