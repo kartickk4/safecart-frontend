@@ -129,7 +129,7 @@ export default function AuthView({ onAuthSuccess }) {
         }
         // Dispatch OTP for mobile verification
         try {
-          const otpRes = await authAPI.sendOtp(phone);
+          const otpRes = await authAPI.sendOtp({ phone, email });
           if (otpRes.data?.debugCode) {
             setSignUpDebugOtp(otpRes.data.debugCode);
           }
