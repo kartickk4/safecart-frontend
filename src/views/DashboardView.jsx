@@ -48,15 +48,14 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
     try {
       const res = await shipmentAPI.getShipments();
       const data = res.data;
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         setShipments(data);
       } else {
-        // Fallback default demonstration dataset matching the design screenshot
-        setShipments(defaultMockShipments);
+        setShipments([]);
       }
     } catch (err) {
-      console.warn('Backend API connection offline or empty, using design mock dataset:', err);
-      setShipments(defaultMockShipments);
+      console.warn('Backend API offline, using initial state:', err);
+      setShipments([]);
     } finally {
       setLoading(false);
     }
