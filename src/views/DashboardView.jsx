@@ -187,7 +187,6 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal }
   const releasedCount = shipments.filter(s => s.status === 'Released').length;
 
   return (
-  return (
     <div className="p-8 space-y-8 max-w-7xl mx-auto">
       {/* CLEAN CORE METRICS GRID (4 Primary Cards) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
