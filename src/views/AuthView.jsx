@@ -31,7 +31,7 @@ export default function AuthView({ onAuthSuccess }) {
   const [signUpOtp, setSignUpOtp] = useState('');
   const [signUpOtpErr, setSignUpOtpErr] = useState('');
   const [signUpOtpLoading, setSignUpOtpLoading] = useState(false);
-  const [signUpDebugOtp, setSignUpDebugOtp] = useState('948201');
+  const [signUpDebugOtp, setSignUpDebugOtp] = useState('');
 
   const handleSendResetOtp = async (e) => {
     e.preventDefault();
@@ -85,19 +85,20 @@ export default function AuthView({ onAuthSuccess }) {
     setSignUpOtpLoading(true);
 
     try {
-      // Verify OTP with backend
+      // 1. Verify OTP with backend
       try {
         await authAPI.verifyOtp(phone, signUpOtp);
       } catch (vErr) {
-        // If debug matches, proceed or display real error
-        if (signUpOtp.trim() !== signUpDebugOtp) {
-          setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired verification code.');
+        if (signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim()) {
+          // Allow debug code during testing
+        } else {
+          setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP verification code.');
           setSignUpOtpLoading(false);
           return;
         }
       }
 
-      // Complete Sign Up Registration
+      // 2. Complete Sign Up Registration
       const res = await authAPI.signup({ email, password, phone, fullName, role: 'User' });
       const registeredUser = res.data?.user || res.data;
       const token = res.data?.accessToken;
@@ -129,11 +130,15 @@ export default function AuthView({ onAuthSuccess }) {
         // Dispatch OTP for mobile verification
         try {
           const otpRes = await authAPI.sendOtp(phone);
-          setSignUpDebugOtp(otpRes.data?.debugCode || '948201');
+          if (otpRes.data?.debugCode) {
+            setSignUpDebugOtp(otpRes.data.debugCode);
+          }
+          setShowSignUpOtpModal(true);
         } catch (err) {
-          setSignUpDebugOtp('948201');
+          setError(err.response?.data?.error || 'Failed to dispatch verification OTP. Please check your phone number.');
+          setLoading(false);
+          return;
         }
-        setShowSignUpOtpModal(true);
         setLoading(false);
         return;
       } else {
@@ -589,12 +594,14 @@ export default function AuthView({ onAuthSuccess }) {
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 text-xs text-[#1E56E3] font-semibold flex items-center justify-between">
-              <span>💡 Verification OTP:</span>
-              <span className="font-mono font-black text-slate-900 text-sm tracking-wider bg-white px-3 py-1 rounded-xl border border-blue-200 shadow-xs">
-                {signUpDebugOtp}
-              </span>
-            </div>
+            {signUpDebugOtp && (
+              <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 text-xs text-[#1E56E3] font-semibold flex items-center justify-between">
+                <span>💡 Verification Code:</span>
+                <span className="font-mono font-black text-slate-900 text-sm tracking-wider bg-white px-3 py-1 rounded-xl border border-blue-200 shadow-xs">
+                  {signUpDebugOtp}
+                </span>
+              </div>
+            )}
 
             {signUpOtpErr && (
               <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold">{signUpOtpErr}</div>
@@ -607,7 +614,7 @@ export default function AuthView({ onAuthSuccess }) {
                   type="text"
                   required
                   maxLength="6"
-                  placeholder={signUpDebugOtp}
+                  placeholder="------"
                   value={signUpOtp}
                   onChange={(e) => setSignUpOtp(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-xl font-mono font-black text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500 focus:bg-white"
