@@ -23,12 +23,12 @@ api.interceptors.request.use((config) => {
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   signup: (userData) => api.post('/auth/signup', userData),
-  sendOtp: (phone) => api.post('/auth/send-otp', { phone }),
-  verifyOtp: (phone, code) => api.post('/auth/verify-otp', { phone, code }),
-  sendEmailOtp: (email) => api.post('/auth/send-email-otp', { email }),
-  verifyEmailOtp: (email, code) => api.post('/auth/verify-email-otp', { email, code }),
-  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
-  resetPassword: (email, code, newPassword) => api.post('/auth/reset-password', { email, code, newPassword }),
+  sendOtp: (data) => api.post('/auth/send-otp', typeof data === 'object' ? data : { phone: data }),
+  verifyOtp: (phone, code) => api.post('/auth/verify-otp', typeof phone === 'object' ? phone : { phone, code }),
+  sendEmailOtp: (email) => api.post('/auth/send-email-otp', typeof email === 'object' ? email : { email }),
+  verifyEmailOtp: (email, code) => api.post('/auth/verify-email-otp', typeof email === 'object' ? email : { email, code }),
+  forgotPassword: (email) => api.post('/auth/forgot-password', typeof email === 'object' ? email : { email }),
+  resetPassword: (email, code, newPassword) => api.post('/auth/reset-password', typeof email === 'object' ? email : { email, code, newPassword }),
 };
 
 export const profileAPI = {
