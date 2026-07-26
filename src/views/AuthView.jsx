@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag } from 'lucide-react';
 import { authAPI } from '../services/api';
+import PhoneInput from '../components/PhoneInput';
 
 export default function AuthView({ onAuthSuccess }) {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -351,13 +352,10 @@ export default function AuthView({ onAuthSuccess }) {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
-                  <input
-                    type="tel"
+                  <PhoneInput
                     required
-                    placeholder="+919876543210"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+                    onChange={(val) => setPhone(val)}
                   />
                 </div>
               </>
