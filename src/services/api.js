@@ -41,7 +41,9 @@ export const authAPI = {
   verifyEmailOtp: (email, code) => api.post('/auth/verify-email-otp', typeof email === 'object' ? email : { email, code }),
   forgotPassword: (email) => api.post('/auth/forgot-password', typeof email === 'object' ? email : { email }),
   resetPassword: (email, code, newPassword) => api.post('/auth/reset-password', typeof email === 'object' ? email : { email, code, newPassword }),
+  googleLogin: (data) => api.post('/auth/google', data),
 };
+
 
 export const profileAPI = {
   getProfile: () => api.get('/profile'),
