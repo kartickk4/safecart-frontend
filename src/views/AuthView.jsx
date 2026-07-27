@@ -109,17 +109,24 @@ export default function AuthView({ onAuthSuccess }) {
   };
 
   const setupRecaptcha = () => {
-
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': () => {},
-        'expired-callback': () => {
+    if (window.recaptchaVerifier) {
+      try {
+        window.recaptchaVerifier.clear();
+      } catch (e) {}
+      window.recaptchaVerifier = null;
+    }
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+      'size': 'invisible',
+      'callback': () => {},
+      'expired-callback': () => {
+        if (window.recaptchaVerifier) {
+          try { window.recaptchaVerifier.clear(); } catch(e){}
           window.recaptchaVerifier = null;
         }
-      });
-    }
+      }
+    });
   };
+
 
   const handleVerifySignUpOtp = async (e) => {
     e.preventDefault();
@@ -189,31 +196,26 @@ export default function AuthView({ onAuthSuccess }) {
           setupRecaptcha();
           const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
           window.confirmationResult = confirmationResult;
-          setSignUpDebugOtp('');
+          setSignUpDebugOtp(''); // Clear demo OTP so real SMS is required
           setSignUpOtp('');
           setShowSignUpOtpModal(true);
         } catch (fbErr) {
-          console.warn('Firebase SMS Dispatch error:', fbErr.message);
-          // Fallback to server API dispatch
-          try {
-            const otpRes = await authAPI.sendOtp({ phone: formattedPhone, email });
-            const code = otpRes.data?.debugCode || Math.floor(100000 + Math.random() * 900000).toString();
-            setSignUpDebugOtp(code);
-            setSignUpOtp(code);
-            setShowSignUpOtpModal(true);
-          } catch (err) {
-            if (err.response?.data?.error) {
-              setError(err.response.data.error);
-              setLoading(false);
-              return;
-            }
-            setError(fbErr.message || 'Failed to send SMS to your phone handset.');
-            setLoading(false);
-            return;
+          console.error('Firebase SMS Dispatch error:', fbErr);
+          let userFriendlyMsg = fbErr.message || 'Failed to send SMS to your phone handset.';
+          if (fbErr.code === 'auth/admin-restricted-operation' || fbErr.code === 'auth/operation-not-allowed') {
+            userFriendlyMsg = 'Phone Authentication is not enabled in Firebase Console yet. Please enable Phone sign-in under Firebase Console -> Authentication -> Sign-in method.';
+          } else if (fbErr.code === 'auth/invalid-phone-number') {
+            userFriendlyMsg = 'Invalid phone number format. Please ensure you selected a valid country code and number.';
+          } else if (fbErr.code === 'auth/captcha-check-failed') {
+            userFriendlyMsg = 'reCAPTCHA check failed. Please refresh the page and try again.';
           }
+          setError(userFriendlyMsg);
+          setLoading(false);
+          return;
         }
         setLoading(false);
         return;
+
       } else {
         const res = await authAPI.login({ email, password });
         const { accessToken, user } = res.data;
