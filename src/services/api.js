@@ -32,6 +32,23 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
+// Response interceptor to handle Network Error gracefully with live Render fallback
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.code === 'ERR_NETWORK' && api.defaults.baseURL && api.defaults.baseURL.includes('localhost')) {
+      const renderBackendUrl = 'https://safecart-backend.onrender.com/api/v1';
+      console.warn(`Local backend offline. Retrying request against live Render API: ${renderBackendUrl}`);
+      api.defaults.baseURL = renderBackendUrl;
+      const config = error.config;
+      config.baseURL = renderBackendUrl;
+      return axios(config);
+    }
+    return Promise.reject(error);
+  }
+);
+
+
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   signup: (userData) => api.post('/auth/signup', userData),
