@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Building, ShieldCheck, Mail, Phone, Lock, Save, CheckCircle2, RefreshCw } from 'lucide-react';
+
 import { profileAPI, authAPI } from '../services/api';
 
 export default function ProfileView({ user, onUpdateUser }) {
@@ -26,7 +27,38 @@ export default function ProfileView({ user, onUpdateUser }) {
   const [otpDebug, setOtpDebug] = useState('');
   const [otpVerified, setOtpVerified] = useState(false);
 
+  useEffect(() => {
+    fetchLatestProfile();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      setFullName(user.fullName || '');
+      setEmail(user.email || '');
+      setPhone(user.phone || '');
+      setBankDetails({
+        accountHolderName: user.bankDetails?.accountHolderName || user.fullName || '',
+        accountNumber: user.bankDetails?.accountNumber || '',
+        ifscCode: user.bankDetails?.ifscCode || '',
+        bankName: user.bankDetails?.bankName || 'HDFC Bank',
+        upiId: user.bankDetails?.upiId || ''
+      });
+    }
+  }, [user]);
+
+  const fetchLatestProfile = async () => {
+    try {
+      const res = await profileAPI.getProfile();
+      if (res.data) {
+        if (onUpdateUser) onUpdateUser(res.data);
+      }
+    } catch (err) {
+      console.warn('Failed to load profile:', err);
+    }
+  };
+
   const existingBankExists = !!(user?.bankDetails?.accountNumber);
+
 
   const handleInitiateSave = async (e) => {
     e.preventDefault();

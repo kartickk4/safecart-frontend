@@ -26,6 +26,19 @@ export default function WalletModal({ user, onUpdateUser }) {
     fetchShipments();
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      setBankDetails({
+        accountHolderName: user?.bankDetails?.accountHolderName || user?.fullName || '',
+        accountNumber: user?.bankDetails?.accountNumber || '',
+        ifscCode: user?.bankDetails?.ifscCode || '',
+        bankName: user?.bankDetails?.bankName || 'HDFC Bank',
+        upiId: user?.bankDetails?.upiId || ''
+      });
+    }
+  }, [user]);
+
+
   const fetchShipments = async () => {
     try {
       const res = await shipmentAPI.getShipments();
