@@ -8,15 +8,17 @@ import DeliveryConfirmView from './views/DeliveryConfirmView';
 import ClaimsView from './views/ClaimsView';
 import NotificationsView from './views/NotificationsView';
 import ProfileView from './views/ProfileView';
+import SupportView from './views/SupportView';
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import CreateShipmentModal from './components/CreateShipmentModal';
 import ShipmentDetailsModal from './components/ShipmentDetailsModal';
 import WalletModal from './components/WalletModal';
+import RoleSelectionModal from './components/RoleSelectionModal';
 import AdBanner from './components/AdBanner';
 import { profileAPI } from './services/api';
-import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell } from 'lucide-react';
+import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell, ShieldCheck } from 'lucide-react';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -25,14 +27,22 @@ export default function App() {
   const [signOutStep, setSignOutStep] = useState('');
   const [currentTab, setCurrentTab] = useState('dashboard');
 
-  
   // Modals & Drawers
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState(null);
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
 
   useEffect(() => {
     checkAuth();
   }, []);
+
+  const isSupplier = user?.role === 'Supplier' || user?.activeRole === 'Supplier';
+
+  useEffect(() => {
+    if (user && !isSupplier && (currentTab === 'dashboard' || currentTab === 'wallet')) {
+      setCurrentTab('shipments-list');
+    }
+  }, [user, currentTab, isSupplier]);
 
   const checkAuth = async () => {
     const token = localStorage.getItem('safecart_token');
@@ -50,6 +60,13 @@ export default function App() {
       setUser(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAuthSuccess = (userData, isNewUser) => {
+    setUser(userData);
+    if (isNewUser) {
+      setIsRoleModalOpen(true);
     }
   };
 
@@ -81,7 +98,7 @@ export default function App() {
 
   // Render Authentication View if no active session
   if (!user) {
-    return <AuthView onAuthSuccess={(userData) => setUser(userData)} />;
+    return <AuthView onAuthSuccess={handleAuthSuccess} />;
   }
 
   return (
@@ -152,6 +169,7 @@ export default function App() {
           {/* VIEW 6: DISPUTE CLAIMS CENTER */}
           {currentTab === 'claims' && (
             <ClaimsView
+              user={user}
               onSelectShipment={(shipment) => setSelectedShipment(shipment)}
             />
           )}
@@ -175,6 +193,11 @@ export default function App() {
               user={user}
               onUpdateUser={(updated) => setUser(updated)}
             />
+          )}
+
+          {/* VIEW 10: HELP & SUPPORT CENTER */}
+          {currentTab === 'support' && (
+            <SupportView />
           )}
         </main>
       </div>
@@ -270,6 +293,16 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* FIRST TIME GOOGLE ONBOARDING ROLE SELECTION MODAL */}
+      <RoleSelectionModal
+        isOpen={isRoleModalOpen}
+        user={user}
+        onComplete={(updatedUser) => {
+          setUser(updatedUser);
+          setIsRoleModalOpen(false);
+        }}
+      />
     </div>
   );
 }

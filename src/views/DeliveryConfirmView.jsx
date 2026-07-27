@@ -7,6 +7,8 @@ export default function DeliveryConfirmView({ onConfirmed }) {
   const [rating, setRating] = useState(5);
   const [comments, setComments] = useState('Parcel arrived in perfect sealed condition. Item verified!');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleConfirm = async (e) => {
     e.preventDefault();

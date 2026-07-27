@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard } from 'lucide-react';
+import { X, ShieldCheck, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw } from 'lucide-react';
 import { shipmentAPI, claimAPI } from '../services/api';
 import PaymentCheckoutModal from './PaymentCheckoutModal';
 
@@ -8,12 +8,18 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [showClaimForm, setShowClaimForm] = useState(false);
+  const [showCancelForm, setShowCancelForm] = useState(false);
+  const [showUndeliveredForm, setShowUndeliveredForm] = useState(false);
+  const [showReturnForm, setShowReturnForm] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
 
-  // Claim states
+  // Claim, Cancel, Undelivered & Return states
   const [claimReason, setClaimReason] = useState('Damaged items');
   const [claimDesc, setClaimDesc] = useState('');
+  const [cancelReason, setCancelReason] = useState('Order cancelled by mutual agreement');
+  const [undeliveredReason, setUndeliveredReason] = useState('Courier delivery attempt failed / returned to origin');
+  const [returnReason, setReturnReason] = useState('Defective / Damaged product received');
 
   useEffect(() => {
     if (shipment?.shipmentId && isOpen) {
@@ -74,6 +80,93 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
     }
   };
 
+  const handleCancelShipment = async (e) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      await shipmentAPI.cancelShipment(currentShipment.shipmentId, cancelReason);
+      alert('Shipment cancelled successfully. Escrow funds refunded if applicable.');
+      setShowCancelForm(false);
+      onRefresh();
+      onClose();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to cancel shipment.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReportUndelivered = async (e) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      const res = await shipmentAPI.refundUndelivered(currentShipment.shipmentId, undeliveredReason);
+      const summary = res.data?.refundSummary;
+      const amtStr = summary ? `₹${summary.principal.toLocaleString()} principal + ₹${summary.accruedInterest} accrued interest` : 'Principal + Interest';
+      alert(`Courier marked as undelivered! ${amtStr} successfully refunded to receiver.`);
+      setShowUndeliveredForm(false);
+      onRefresh();
+      onClose();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to process undelivered refund.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRequestReturn = async (e) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      const res = await shipmentAPI.requestReturn(currentShipment.shipmentId, returnReason);
+      const revAwb = res.data?.returnAwbCode || `REV-${currentShipment.shipmentId}`;
+      alert(`Return request submitted successfully! Reverse AWB generated: ${revAwb}. Escrow funds frozen.`);
+      setShowReturnForm(false);
+      onRefresh();
+      fetchFullDetails();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to submit return request.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApproveReturn = async () => {
+    setActionLoading(true);
+    try {
+      await shipmentAPI.approveReturn(currentShipment.shipmentId);
+      alert('Return approved! Reverse courier pickup scheduled.');
+      onRefresh();
+      fetchFullDetails();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to approve return.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleConfirmReturnReceived = async () => {
+    if (!window.confirm('Confirm that the returned package has arrived at your warehouse? (Receiver receives principal + 50% interest, and 50% interest bonus is added to your Escrow Wallet).')) return;
+    setActionLoading(true);
+    try {
+      const res = await shipmentAPI.confirmReturnReceived(currentShipment.shipmentId);
+      const split = res.data?.interestSplit;
+      const recTotal = split ? `₹${split.receiverTotalRefund.toLocaleString('en-IN')}` : 'Principal + 50% Interest';
+      const supBonus = split ? `₹${split.supplierWalletBonus.toLocaleString('en-IN')}` : '50% Interest';
+      alert(`Return confirmed! Receiver refunded ${recTotal}. Your 50% interest share of ${supBonus} has been added to your Escrow Wallet!`);
+      onRefresh();
+      fetchFullDetails();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to confirm return receipt.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const isCancellable = ['Awaiting Payment', 'Pending Pickup'].includes(currentShipment.status);
+  const isUndeliverable = ['In Transit', 'Out for Delivery', 'Pending Pickup', 'Reached Destination Hub'].includes(currentShipment.status);
+  const isReturnable = ['Delivered', 'Out for Delivery', 'Reached Destination Hub', 'In Transit'].includes(currentShipment.status) && !['Released', 'Cancelled', 'Returned & Refunded'].includes(currentShipment.status);
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-end p-0 sm:p-4">
       <div className="bg-white h-full sm:h-auto max-w-xl w-full sm:rounded-3xl p-8 shadow-2xl relative border border-slate-100 overflow-y-auto max-h-screen">
@@ -92,7 +185,11 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-extrabold text-slate-900">{currentShipment.shipmentId}</h2>
-              <span className="bg-blue-50 text-[#1E56E3] border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className={`border text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                currentShipment.status === 'Cancelled' ? 'bg-slate-100 text-slate-600 border-slate-300' : 
+                currentShipment.status === 'Undelivered' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                'bg-blue-50 text-[#1E56E3] border-blue-200'
+              }`}>
                 {currentShipment.status}
               </span>
             </div>
@@ -227,27 +324,247 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               </div>
             </div>
 
+            {/* REVERSE LOGISTICS RETURN CARD */}
+            {(currentShipment.returnAwbCode || currentShipment.returnStatus !== 'None' || currentShipment.status?.includes('Return')) && (
+              <div className="p-5 rounded-3xl bg-amber-50/80 border border-amber-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-amber-900 font-extrabold text-xs">
+                    <RotateCcw className="w-4 h-4 text-amber-600" />
+                    <span>Reverse Logistics Return AWB Issued</span>
+                  </div>
+                  <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full">
+                    {currentShipment.returnStatus || currentShipment.status}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div>
+                    <p className="font-mono font-bold text-slate-900">Reverse AWB: {currentShipment.returnAwbCode || `REV-${currentShipment.shipmentId}`}</p>
+                    <p className="text-[11px] text-slate-600">Reason: {currentShipment.returnReason || 'Product return requested'}</p>
+                  </div>
+                  <a
+                    href={currentShipment.returnShippingLabelUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1 shrink-0"
+                  >
+                    <span>Return Label PDF</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+                <div className="p-3 bg-white/90 rounded-2xl border border-amber-200 text-xs space-y-1">
+                  <div className="flex items-center justify-between font-bold text-amber-900">
+                    <span>💡 Escrow Return Interest Split Rule (50/50)</span>
+                    <span className="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full">5.0% p.a. Yield</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    • <strong>Receiver (Buyer):</strong> Paid Principal + 50% Accrued Interest Refund.<br/>
+                    • <strong>Supplier (Seller):</strong> 50% Accrued Interest added directly to Escrow Wallet.
+                  </p>
+                </div>
+
+                {currentShipment.returnStatus === 'Requested' && (
+                  <button
+                    onClick={handleApproveReturn}
+                    disabled={actionLoading}
+                    className="w-full py-2 bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs rounded-xl transition shadow-sm"
+                  >
+                    Approve Return & Dispatch Reverse Pickup
+                  </button>
+                )}
+                {currentShipment.returnStatus === 'In Return Transit' && (
+                  <button
+                    onClick={handleConfirmReturnReceived}
+                    disabled={actionLoading}
+                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition shadow-sm"
+                  >
+                    Confirm Return Arrived (Refund Receiver + Credit 50% Interest to Wallet)
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Actions Bar */}
-            {!showClaimForm ? (
-              <div className="pt-4 border-t border-slate-100 flex items-center gap-3">
+            {!showClaimForm && !showCancelForm && !showUndeliveredForm && !showReturnForm ? (
+              <div className="pt-4 border-t border-slate-100 flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 <button
                   onClick={handleRelease}
-                  disabled={actionLoading || currentShipment.status === 'Released'}
+                  disabled={actionLoading || ['Released', 'Cancelled', 'Undelivered', 'Returned & Refunded'].includes(currentShipment.status)}
                   className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>{currentShipment.status === 'Released' ? 'Funds Released' : 'Confirm & Release Funds'}</span>
                 </button>
 
+                {isReturnable && (
+                  <button
+                    onClick={() => setShowReturnForm(true)}
+                    disabled={actionLoading || ['Return Requested', 'Return In Transit', 'Returned & Refunded'].includes(currentShipment.status)}
+                    className="py-3 px-3 bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 font-bold text-xs rounded-xl transition flex items-center gap-1 shrink-0"
+                  >
+                    <RotateCcw className="w-4 h-4 text-amber-700" />
+                    <span>Request Return</span>
+                  </button>
+                )}
+
+                {isUndeliverable && (
+                  <button
+                    onClick={() => setShowUndeliveredForm(true)}
+                    disabled={actionLoading || ['Undelivered', 'Released'].includes(currentShipment.status)}
+                    className="py-3 px-3 bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-bold text-xs rounded-xl transition flex items-center gap-1 shrink-0"
+                  >
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    <span>Undelivered</span>
+                  </button>
+                )}
+
+                {isCancellable && (
+                  <button
+                    onClick={() => setShowCancelForm(true)}
+                    disabled={actionLoading}
+                    className="py-3 px-3 bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold text-xs rounded-xl transition flex items-center gap-1 shrink-0"
+                  >
+                    <XCircle className="w-4 h-4 text-slate-500" />
+                    <span>Cancel</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => setShowClaimForm(true)}
-                  disabled={currentShipment.status === 'Locked'}
-                  className="py-3 px-4 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 disabled:opacity-50 font-bold text-xs rounded-xl transition flex items-center gap-1.5"
+                  disabled={['Locked', 'Cancelled', 'Undelivered', 'Returned & Refunded'].includes(currentShipment.status)}
+                  className="py-3 px-3 bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 disabled:opacity-50 font-bold text-xs rounded-xl transition flex items-center gap-1 shrink-0"
                 >
                   <AlertTriangle className="w-4 h-4" />
-                  <span>File Dispute</span>
+                  <span>Dispute</span>
                 </button>
               </div>
+            ) : showReturnForm ? (
+              <form onSubmit={handleRequestReturn} className="pt-4 border-t border-slate-100 space-y-3 bg-amber-50/80 p-4 rounded-2xl border border-amber-200">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-xs text-amber-900 flex items-center gap-1.5">
+                    <RotateCcw className="w-4 h-4 text-amber-600" />
+                    Request Product Return (Issues REV-SPL-XXXX AWB)
+                  </h4>
+                </div>
+
+                <div className="p-3 bg-white rounded-xl border border-amber-200 text-xs text-slate-600">
+                  <p>Requesting a return will issue a Reverse Courier AWB (e.g. <span className="font-mono font-bold text-slate-900">REV-{currentShipment.shipmentId}</span>) and freeze escrow funds until return delivery.</p>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Return Reason</label>
+                  <select
+                    value={returnReason}
+                    onChange={(e) => setReturnReason(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium"
+                  >
+                    <option value="Defective / Damaged product received">Defective / Damaged product received</option>
+                    <option value="Wrong item / size delivered">Wrong item / size delivered</option>
+                    <option value="Product not as described">Product not as described</option>
+                    <option value="Buyer change of mind / cancel order">Buyer change of mind / cancel order</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={actionLoading}
+                    className="py-2.5 px-4 bg-amber-600 text-white font-bold text-xs rounded-xl hover:bg-amber-700 flex-1 shadow-md"
+                  >
+                    Issue Reverse AWB & Request Return
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowReturnForm(false)}
+                    className="py-2.5 px-3 bg-white border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl"
+                  >
+                    Back
+                  </button>
+                </div>
+              </form>
+            ) : showUndeliveredForm ? (
+              <form onSubmit={handleReportUndelivered} className="pt-4 border-t border-slate-100 space-y-3 bg-amber-50/70 p-4 rounded-2xl border border-amber-200">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-xs text-amber-900 flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    Undelivered Courier Refund (Principal + 5% Interest)
+                  </h4>
+                  <span className="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">
+                    5.0% p.a. Yield Included
+                  </span>
+                </div>
+
+                <div className="p-3 bg-white rounded-xl border border-amber-200 text-xs space-y-1">
+                  <p className="text-slate-600">If marked undelivered, escrow principal (₹{currentShipment.amount?.toLocaleString() || '3,420'}) + accrued 5.0% p.a. interest will be refunded to the receiver.</p>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Carrier Undelivered Reason</label>
+                  <select
+                    value={undeliveredReason}
+                    onChange={(e) => setUndeliveredReason(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium"
+                  >
+                    <option value="Courier delivery attempt failed / returned to origin">Courier delivery attempt failed / returned to origin</option>
+                    <option value="Package lost / damaged by carrier">Package lost / damaged by carrier partner</option>
+                    <option value="Address unreachable / recipient uncontactable">Address unreachable / recipient uncontactable</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={actionLoading}
+                    className="py-2.5 px-4 bg-amber-600 text-white font-bold text-xs rounded-xl hover:bg-amber-700 flex-1 shadow-md"
+                  >
+                    Confirm Undelivered Refund to Receiver
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowUndeliveredForm(false)}
+                    className="py-2.5 px-3 bg-white border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl"
+                  >
+                    Back
+                  </button>
+                </div>
+              </form>
+            ) : showCancelForm ? (
+              <form onSubmit={handleCancelShipment} className="pt-4 border-t border-slate-100 space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <h4 className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                  <XCircle className="w-4 h-4 text-rose-600" />
+                  Cancel Shipment & Refund Escrow
+                </h4>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Reason for Cancellation</label>
+                  <select
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs"
+                  >
+                    <option value="Order cancelled by mutual agreement">Order cancelled by mutual agreement</option>
+                    <option value="Incorrect shipment details entered">Incorrect shipment details entered</option>
+                    <option value="Item out of stock / unavailable">Item out of stock / unavailable</option>
+                    <option value="Buyer requested cancellation">Buyer requested cancellation</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={actionLoading}
+                    className="py-2.5 px-4 bg-rose-600 text-white font-bold text-xs rounded-xl hover:bg-rose-700 flex-1"
+                  >
+                    Confirm Cancellation
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCancelForm(false)}
+                    className="py-2.5 px-3 bg-white border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl"
+                  >
+                    Back
+                  </button>
+                </div>
+              </form>
             ) : (
               <form onSubmit={handleFileClaim} className="pt-4 border-t border-slate-100 space-y-3 bg-rose-50/50 p-4 rounded-2xl border border-rose-100">
                 <h4 className="font-bold text-xs text-rose-900 flex items-center gap-1.5">

@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertCircle, CheckCircle2, Clock, Eye, FileText, Send, Upload, Lock, TrendingUp } from 'lucide-react';
 import { claimAPI, shipmentAPI } from '../services/api';
 
-export default function ClaimsView({ onSelectShipment }) {
+export default function ClaimsView({ user, onSelectShipment }) {
   const [activeSubTab, setActiveSubTab] = useState('list'); // 'list' | 'file' | 'status' | 'supplier'
   const [claimsList, setClaimsList] = useState([]);
   const [shipmentId, setShipmentId] = useState('');
-  const [role, setRole] = useState('receiver'); // 'receiver' | 'supplier'
+  
+  const isSupplierUser = user?.role === 'Supplier' || user?.activeRole === 'Supplier';
+  const [role, setRole] = useState(isSupplierUser ? 'supplier' : 'receiver');
   const [reason, setReason] = useState('Damaged items');
   const [description, setDescription] = useState('Package arrived crushed with visible product damage.');
   const [customAmount, setCustomAmount] = useState('');
@@ -17,6 +19,10 @@ export default function ClaimsView({ onSelectShipment }) {
   useEffect(() => {
     fetchUserClaims();
   }, []);
+
+  useEffect(() => {
+    setRole(isSupplierUser ? 'supplier' : 'receiver');
+  }, [user]);
 
   const fetchUserClaims = async () => {
     try {
@@ -178,15 +184,11 @@ export default function ClaimsView({ onSelectShipment }) {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Filing Party Role</label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-                >
-                  <option value="receiver">Receiver (Buyer)</option>
-                  <option value="supplier">Supplier (Seller)</option>
-                </select>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Filing Party Role (Fixed by Account)</label>
+                <div className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 flex items-center justify-between">
+                  <span className="capitalize">{role === 'supplier' ? 'Supplier (Seller)' : 'Receiver (Buyer)'}</span>
+                  <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">Auto-fixed</span>
+                </div>
               </div>
 
               <div>
@@ -313,7 +315,7 @@ export default function ClaimsView({ onSelectShipment }) {
               <div className="w-8 h-8 rounded-full bg-amber-500 text-white font-bold flex items-center justify-center text-xs shadow-md animate-pulse">2</div>
               <div>
                 <p className="text-xs font-bold text-amber-700">Awaiting Supplier Evidence Response</p>
-                <p className="text-[11px] text-slate-500">Supplier given 48 hours to submit proof of dispatch.</p>
+                <p className="text-[11px] text-slate-500">Supplier given 24 hours to submit proof of dispatch.</p>
                 <span className="text-[10px] text-slate-400">In Progress</span>
               </div>
             </div>

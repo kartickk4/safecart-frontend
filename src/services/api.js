@@ -59,6 +59,7 @@ export const authAPI = {
   forgotPassword: (email) => api.post('/auth/forgot-password', typeof email === 'object' ? email : { email }),
   resetPassword: (email, code, newPassword) => api.post('/auth/reset-password', typeof email === 'object' ? email : { email, code, newPassword }),
   googleLogin: (data) => api.post('/auth/google', data),
+  googleAuth: (data) => api.post('/auth/google', data),
 };
 
 
@@ -74,6 +75,11 @@ export const shipmentAPI = {
   createShipment: (data) => api.post('/shipments', data),
   fundEscrow: (id, data) => api.post(`/shipments/${id}/fund`, data),
   releaseEscrow: (id) => api.put(`/shipments/${id}/release`),
+  cancelShipment: (id, reason) => api.put(`/shipments/${id}/cancel`, { reason }),
+  refundUndelivered: (id, reason) => api.put(`/shipments/${id}/undelivered`, { reason }),
+  requestReturn: (id, reason) => api.put(`/shipments/${id}/return-request`, { reason }),
+  approveReturn: (id) => api.put(`/shipments/${id}/return-approve`),
+  confirmReturnReceived: (id) => api.put(`/shipments/${id}/return-confirm`),
 };
 
 export const claimAPI = {

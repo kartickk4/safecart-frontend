@@ -1,10 +1,12 @@
 import React from 'react';
 import { 
   ShieldCheck, LayoutDashboard, PlusCircle, Navigation, Wallet, 
-  AlertCircle, FileText, Bell, Settings, LogOut, Package, CheckCircle2, UserCheck
+  AlertCircle, FileText, Bell, Settings, LogOut, Package, CheckCircle2, UserCheck, HelpCircle
 } from 'lucide-react';
 
 export default function Sidebar({ currentTab, setCurrentTab, user, onSignOut, openNewShipmentModal }) {
+  const isSupplier = user?.role === 'Supplier' || user?.activeRole === 'Supplier';
+
   return (
     <aside className="hidden md:flex w-64 bg-white border-r border-slate-200/80 flex-col justify-between h-screen sticky top-0 z-30 select-none">
       <div>
@@ -15,31 +17,33 @@ export default function Sidebar({ currentTab, setCurrentTab, user, onSignOut, op
           </div>
           <div>
             <h1 className="font-bold text-slate-900 text-sm leading-tight tracking-tight flex items-center gap-1">Safecart</h1>
-            <p className="text-[11px] text-slate-500 font-medium">Escrow Platform</p>
+            <p className="text-[11px] text-slate-500 font-medium">{isSupplier ? 'Supplier Platform' : 'Buyer Escrow Portal'}</p>
           </div>
         </div>
 
         {/* Navigation Links */}
         <div className="px-4 py-4 space-y-5 overflow-y-auto max-h-[calc(100vh-140px)]">
-          {/* Section: OVERVIEW */}
-          <div>
-            <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Overview</p>
-            <button
-              onClick={() => setCurrentTab('dashboard')}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition ${
-                currentTab === 'dashboard'
-                  ? 'bg-blue-50 text-[#1E56E3] shadow-sm'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Dashboard</span>
-            </button>
-          </div>
+          {/* Section: OVERVIEW (SUPPLIER ONLY) */}
+          {isSupplier && (
+            <div>
+              <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Overview</p>
+              <button
+                onClick={() => setCurrentTab('dashboard')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition ${
+                  currentTab === 'dashboard'
+                    ? 'bg-blue-50 text-[#1E56E3] shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard</span>
+              </button>
+            </div>
+          )}
 
           {/* Section: SHIPMENTS */}
           <div>
-            <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Shipments</p>
+            <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Shipments & Orders</p>
             <div className="space-y-1">
               <button
                 onClick={() => setCurrentTab('shipments-list')}
@@ -50,20 +54,22 @@ export default function Sidebar({ currentTab, setCurrentTab, user, onSignOut, op
                 }`}
               >
                 <Package className="w-4 h-4" />
-                <span>All Shipments</span>
+                <span>{isSupplier ? 'All Shipments' : 'My Orders & Packages'}</span>
               </button>
 
-              <button
-                onClick={() => setCurrentTab('create-shipment')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition ${
-                  currentTab === 'create-shipment'
-                    ? 'bg-blue-50 text-[#1E56E3] font-semibold shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                }`}
-              >
-                <PlusCircle className="w-4 h-4 text-[#1E56E3]" />
-                <span>Create Shipment</span>
-              </button>
+              {isSupplier && (
+                <button
+                  onClick={() => setCurrentTab('create-shipment')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                    currentTab === 'create-shipment'
+                      ? 'bg-blue-50 text-[#1E56E3] font-semibold shadow-sm'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                >
+                  <PlusCircle className="w-4 h-4 text-[#1E56E3]" />
+                  <span>Create Shipment</span>
+                </button>
+              )}
 
               <button
                 onClick={() => setCurrentTab('track')}
@@ -95,17 +101,20 @@ export default function Sidebar({ currentTab, setCurrentTab, user, onSignOut, op
           <div>
             <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Escrow & Claims</p>
             <div className="space-y-1">
-              <button
-                onClick={() => setCurrentTab('wallet')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition ${
-                  currentTab === 'wallet'
-                    ? 'bg-blue-50 text-[#1E56E3] font-semibold shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                }`}
-              >
-                <Wallet className="w-4 h-4" />
-                <span>Escrow Wallet</span>
-              </button>
+              {/* ESCROW WALLET (SUPPLIER ONLY) */}
+              {isSupplier && (
+                <button
+                  onClick={() => setCurrentTab('wallet')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                    currentTab === 'wallet'
+                      ? 'bg-blue-50 text-[#1E56E3] font-semibold shadow-sm'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                >
+                  <Wallet className="w-4 h-4" />
+                  <span>Escrow Wallet</span>
+                </button>
+              )}
 
               <button
                 onClick={() => setCurrentTab('claims')}
@@ -126,7 +135,7 @@ export default function Sidebar({ currentTab, setCurrentTab, user, onSignOut, op
 
           {/* Section: ACCOUNT */}
           <div>
-            <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Account</p>
+            <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Account & Help</p>
             <div className="space-y-1">
               <button
                 onClick={() => setCurrentTab('notifications')}
@@ -153,6 +162,18 @@ export default function Sidebar({ currentTab, setCurrentTab, user, onSignOut, op
               >
                 <Settings className="w-4 h-4" />
                 <span>Profile & Bank Payout</span>
+              </button>
+
+              <button
+                onClick={() => setCurrentTab('support')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                  currentTab === 'support'
+                    ? 'bg-blue-50 text-[#1E56E3] font-semibold shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <HelpCircle className="w-4 h-4 text-[#1E56E3]" />
+                <span>Help & Support</span>
               </button>
 
               <button

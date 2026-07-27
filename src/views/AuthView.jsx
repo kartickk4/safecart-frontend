@@ -89,17 +89,20 @@ export default function AuthView({ onAuthSuccess }) {
       const result = await signInWithPopup(auth, googleProvider);
       const googleUser = result.user;
 
-      const res = await authAPI.googleLogin({
+      const res = await authAPI.googleAuth({
         email: googleUser.email,
         fullName: googleUser.displayName || googleUser.email.split('@')[0],
         avatarUrl: googleUser.photoURL || '',
-        googleId: googleUser.uid
+        googleId: googleUser.uid,
+        role: selectedRole === 'Supplier' ? 'Supplier' : 'User'
       });
 
-      const { accessToken, user } = res.data;
-      user.activeRole = selectedRole;
-      localStorage.setItem('safecart_token', accessToken);
-      onAuthSuccess(user);
+      const { accessToken, user, isNewUser } = res.data;
+      if (accessToken) {
+        localStorage.setItem('safecart_token', accessToken);
+      }
+      user.activeRole = user.role || (selectedRole === 'Supplier' ? 'Supplier' : 'User');
+      onAuthSuccess(user, isNewUser);
     } catch (err) {
       console.error('Google Sign-In Error:', err);
       setError(err.response?.data?.error || err.message || 'Google Sign-In failed. Please try again.');
@@ -134,31 +137,19 @@ export default function AuthView({ onAuthSuccess }) {
     setSignUpOtpLoading(true);
 
     try {
-      // 1. Verify OTP using Firebase Confirmation Result if available
-      if (window.confirmationResult) {
-        try {
-          await window.confirmationResult.confirm(signUpOtp);
-        } catch (fbErr) {
-          // If Firebase verify fails, check server OTP or debug fallback
-          if (!(signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim())) {
-            setSignUpOtpErr('Invalid verification code entered or code expired.');
-            setSignUpOtpLoading(false);
-            return;
-          }
-        }
-      } else {
-        // Fallback: Verify OTP with backend API
-        try {
-          await authAPI.verifyOtp(phone, signUpOtp);
-        } catch (vErr) {
-          if (signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim()) {
-            // Allow debug code
-          } else {
-            setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP verification code.');
-            setSignUpOtpLoading(false);
-            return;
-          }
-        }
+      // 1. Verify SMS OTP strictly via Firebase Confirmation Result
+      if (!window.confirmationResult) {
+        setSignUpOtpErr('Firebase Phone Auth session missing. Please click request code again.');
+        setSignUpOtpLoading(false);
+        return;
+      }
+      
+      try {
+        await window.confirmationResult.confirm(signUpOtp);
+      } catch (fbErr) {
+        setSignUpOtpErr('Invalid verification code entered or code expired.');
+        setSignUpOtpLoading(false);
+        return;
       }
 
       // 2. Complete Sign Up Registration
@@ -196,16 +187,16 @@ export default function AuthView({ onAuthSuccess }) {
           setupRecaptcha();
           const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
           window.confirmationResult = confirmationResult;
-          setSignUpDebugOtp(''); // Clear demo OTP so real SMS is required
+          setSignUpDebugOtp('');
           setSignUpOtp('');
           setShowSignUpOtpModal(true);
         } catch (fbErr) {
           console.error('Firebase SMS Dispatch error:', fbErr);
           let userFriendlyMsg = fbErr.message || 'Failed to send SMS to your phone handset.';
           if (fbErr.code === 'auth/admin-restricted-operation' || fbErr.code === 'auth/operation-not-allowed') {
-            userFriendlyMsg = 'Phone Authentication is not enabled in Firebase Console yet. Please enable Phone sign-in under Firebase Console -> Authentication -> Sign-in method.';
+            userFriendlyMsg = 'Phone Authentication is disabled in Firebase Console. (Authentication -> Sign-in method -> Phone).';
           } else if (fbErr.code === 'auth/invalid-phone-number') {
-            userFriendlyMsg = 'Invalid phone number format. Please ensure you selected a valid country code and number.';
+            userFriendlyMsg = 'Invalid phone number format. Please ensure phone starts with country code (e.g. +91).';
           } else if (fbErr.code === 'auth/captcha-check-failed') {
             userFriendlyMsg = 'reCAPTCHA check failed. Please refresh the page and try again.';
           }

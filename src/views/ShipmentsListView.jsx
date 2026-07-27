@@ -176,12 +176,21 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
 function renderEscrowBadge(status) {
   if (status === 'Released') return <span className="pill-released"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Released</span>;
   if (status === 'Locked') return <span className="pill-disputed"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Disputed</span>;
+  if (status === 'Cancelled') return <span className="bg-slate-100 text-slate-600 border border-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Cancelled</span>;
+  if (status === 'Undelivered') return <span className="bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Refunded to Receiver</span>;
+  if (status === 'Return Requested' || status === 'Return In Transit') return <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Return Frozen</span>;
+  if (status === 'Returned & Refunded') return <span className="bg-purple-100 text-purple-900 border border-purple-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>Returned & Refunded</span>;
   return <span className="pill-held"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Held</span>;
 }
 
 function renderDeliveryBadge(status) {
   if (status === 'Released' || status === 'Delivered') return <span className="pill-delivery-delivered">Delivered</span>;
-  if (status === 'Locked') return <span className="pill-delivery-delayed">Delayed</span>;
+  if (status === 'Locked') return <span className="pill-delivery-delayed">Disputed</span>;
+  if (status === 'Cancelled') return <span className="text-slate-500 font-bold text-[11px]">Cancelled</span>;
+  if (status === 'Undelivered') return <span className="text-amber-700 font-bold text-[11px]">Delivery Failed</span>;
+  if (status === 'Return Requested') return <span className="text-amber-800 font-bold text-[11px]">Return Requested</span>;
+  if (status === 'Return In Transit') return <span className="text-purple-700 font-bold text-[11px]">Reverse Transit</span>;
+  if (status === 'Returned & Refunded') return <span className="text-purple-900 font-bold text-[11px]">Return Completed</span>;
   if (status === 'Pending Pickup') return <span className="pill-delivery-out">Out for Delivery</span>;
   return <span className="pill-delivery-transit">In Transit</span>;
 }
