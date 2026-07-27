@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag } from 'lucide-react';
 import { authAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
+import { auth, RecaptchaVerifier, signInWithPhoneNumber } from '../firebase';
 
 export default function AuthView({ onAuthSuccess }) {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -80,22 +81,48 @@ export default function AuthView({ onAuthSuccess }) {
     }
   };
 
+  const setupRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': () => {},
+        'expired-callback': () => {
+          window.recaptchaVerifier = null;
+        }
+      });
+    }
+  };
+
   const handleVerifySignUpOtp = async (e) => {
     e.preventDefault();
     setSignUpOtpErr('');
     setSignUpOtpLoading(true);
 
     try {
-      // 1. Verify OTP with backend
-      try {
-        await authAPI.verifyOtp(phone, signUpOtp);
-      } catch (vErr) {
-        if (signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim()) {
-          // Allow debug code during testing
-        } else {
-          setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP verification code.');
-          setSignUpOtpLoading(false);
-          return;
+      // 1. Verify OTP using Firebase Confirmation Result if available
+      if (window.confirmationResult) {
+        try {
+          await window.confirmationResult.confirm(signUpOtp);
+        } catch (fbErr) {
+          // If Firebase verify fails, check server OTP or debug fallback
+          if (!(signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim())) {
+            setSignUpOtpErr('Invalid verification code entered or code expired.');
+            setSignUpOtpLoading(false);
+            return;
+          }
+        }
+      } else {
+        // Fallback: Verify OTP with backend API
+        try {
+          await authAPI.verifyOtp(phone, signUpOtp);
+        } catch (vErr) {
+          if (signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim()) {
+            // Allow debug code
+          } else {
+            setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP verification code.');
+            setSignUpOtpLoading(false);
+            return;
+          }
         }
       }
 
@@ -128,23 +155,34 @@ export default function AuthView({ onAuthSuccess }) {
           setLoading(false);
           return;
         }
-        // Dispatch OTP for mobile verification
+        // Dispatch Real SMS OTP via Firebase Phone Auth
+        const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
         try {
-          const otpRes = await authAPI.sendOtp({ phone, email });
-          const code = otpRes.data?.debugCode || Math.floor(100000 + Math.random() * 900000).toString();
-          setSignUpDebugOtp(code);
-          setSignUpOtp(code);
+          setupRecaptcha();
+          const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
+          window.confirmationResult = confirmationResult;
+          setSignUpDebugOtp('');
+          setSignUpOtp('');
           setShowSignUpOtpModal(true);
-        } catch (err) {
-          if (err.response?.data?.error) {
-            setError(err.response.data.error);
+        } catch (fbErr) {
+          console.warn('Firebase SMS Dispatch error:', fbErr.message);
+          // Fallback to server API dispatch
+          try {
+            const otpRes = await authAPI.sendOtp({ phone: formattedPhone, email });
+            const code = otpRes.data?.debugCode || Math.floor(100000 + Math.random() * 900000).toString();
+            setSignUpDebugOtp(code);
+            setSignUpOtp(code);
+            setShowSignUpOtpModal(true);
+          } catch (err) {
+            if (err.response?.data?.error) {
+              setError(err.response.data.error);
+              setLoading(false);
+              return;
+            }
+            setError(fbErr.message || 'Failed to send SMS to your phone handset.');
             setLoading(false);
             return;
           }
-          const fallbackCode = Math.floor(100000 + Math.random() * 900000).toString();
-          setSignUpDebugOtp(fallbackCode);
-          setSignUpOtp(fallbackCode);
-          setShowSignUpOtpModal(true);
         }
         setLoading(false);
         return;
@@ -643,6 +681,8 @@ export default function AuthView({ onAuthSuccess }) {
           </div>
         </div>
       )}
+      {/* Invisible reCAPTCHA container for Firebase Phone Auth */}
+      <div id="recaptcha-container"></div>
     </div>
   );
 }
