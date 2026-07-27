@@ -21,7 +21,10 @@ import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell } fro
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [signOutStep, setSignOutStep] = useState('');
   const [currentTab, setCurrentTab] = useState('dashboard');
+
   
   // Modals & Drawers
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -51,9 +54,21 @@ export default function App() {
   };
 
   const handleSignOut = () => {
-    localStorage.removeItem('safecart_token');
-    setUser(null);
+    setIsSigningOut(true);
+    setSignOutStep('Securing active escrow session...');
+
+    setTimeout(() => {
+      setSignOutStep('Clearing authentication tokens...');
+    }, 500);
+
+    setTimeout(() => {
+      localStorage.removeItem('safecart_token');
+      setUser(null);
+      setIsSigningOut(false);
+      setSignOutStep('');
+    }, 1200);
   };
+
 
   if (loading) {
     return (
@@ -232,6 +247,29 @@ export default function App() {
           <span>Profile</span>
         </button>
       </div>
+
+      {/* SIGN OUT ANIMATED LOADING OVERLAY */}
+      {isSigningOut && (
+        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-300 select-none">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-slate-100 text-center space-y-6 animate-in zoom-in-95 duration-200">
+            <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
+              <div className="absolute inset-0 rounded-2xl bg-blue-500/20 animate-ping"></div>
+              <div className="w-16 h-16 rounded-2xl bg-[#1E56E3] text-white flex items-center justify-center font-bold shadow-lg shadow-blue-500/30">
+                <ShieldCheck className="w-8 h-8 animate-pulse" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-xl font-extrabold text-slate-900">Signing Out Safely</h3>
+              <p className="text-xs text-slate-500 font-semibold animate-pulse">{signOutStep || 'Clearing session data...'}</p>
+            </div>
+
+            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div className="bg-[#1E56E3] h-full rounded-full animate-pulse transition-all duration-500 w-full"></div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
