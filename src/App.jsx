@@ -9,6 +9,7 @@ import ClaimsView from './views/ClaimsView';
 import NotificationsView from './views/NotificationsView';
 import ProfileView from './views/ProfileView';
 import SupportView from './views/SupportView';
+import LegalComplianceView from './views/LegalComplianceView';
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -198,6 +199,11 @@ export default function App() {
           {/* VIEW 10: HELP & SUPPORT CENTER */}
           {currentTab === 'support' && (
             <SupportView />
+          )}
+
+          {/* VIEW 11: CASHFREE MERCHANT LEGAL & COMPLIANCE CENTER */}
+          {currentTab === 'legal' && (
+            <LegalComplianceView />
           )}
         </main>
       </div>

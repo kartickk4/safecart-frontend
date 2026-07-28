@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { ShieldCheck, CheckCircle2, ArrowRight, Download, Copy, Printer, Package, Truck, ArrowLeft, Building, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, ArrowRight, Download, Copy, Printer, Package, Truck, ArrowLeft, Building, AlertTriangle, ExternalLink, Link as LinkIcon, Check } from 'lucide-react';
 import { shipmentAPI, profileAPI } from '../services/api';
 
 export default function CreateShipmentView({ onBack, onCreated, user, onOpenProfile }) {
   const [step, setStep] = useState(1); // 1: Form | 2: Success Confirmation Screen
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // Bank details state & validation
   const [bankDetails, setBankDetails] = useState({
@@ -373,6 +374,47 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
               <span className="text-xs font-bold text-slate-800 capitalize">{createdData.carrierSlug || 'Delhivery Express'}</span>
             </div>
           </div>
+
+          {/* Cashfree Receiver Payment Link Banner */}
+          {createdData.paymentLink && (
+            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 p-5 rounded-2xl border border-cyan-200/80 text-left max-w-md mx-auto space-y-3">
+              <div className="flex items-center gap-2 text-cyan-900 font-bold text-xs">
+                <LinkIcon className="w-4 h-4 text-cyan-600" />
+                <span>Cashfree Receiver Payment Link</span>
+              </div>
+              <p className="text-[11px] text-slate-600">
+                Share this link with {createdData.receiverName} to complete or verify their secure escrow payment via Cashfree:
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={createdData.paymentLink}
+                  className="w-full text-xs font-mono bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-700 select-all"
+                />
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(createdData.paymentLink);
+                    setCopiedLink(true);
+                    setTimeout(() => setCopiedLink(false), 2500);
+                  }}
+                  className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shrink-0 transition"
+                >
+                  {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedLink ? 'Copied' : 'Copy'}</span>
+                </button>
+                <a
+                  href={createdData.paymentLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-700 shrink-0 transition"
+                  title="Open Cashfree Payment Link"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex items-center justify-center gap-4 pt-2">

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag } from 'lucide-react';
+import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, X } from 'lucide-react';
 import { authAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
+import LegalComplianceView from './LegalComplianceView';
 import { auth, RecaptchaVerifier, signInWithPhoneNumber, googleProvider, signInWithPopup } from '../firebase';
 
 
@@ -11,6 +12,7 @@ export default function AuthView({ onAuthSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showLegalModal, setShowLegalModal] = useState(null); // null | 'contact' | 'terms' | 'refunds' | 'services'
 
   // Form states
   const [email, setEmail] = useState('');
@@ -534,6 +536,41 @@ export default function AuthView({ onAuthSuccess }) {
               <span>Continue with Google</span>
             </button>
           </form>
+
+          {/* Cashfree Merchant Compliance Footer Links */}
+          <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] font-bold text-slate-500">
+            <button 
+              type="button"
+              onClick={() => setShowLegalModal('contact')} 
+              className="hover:text-[#1E56E3] hover:underline transition"
+            >
+              Contact Us
+            </button>
+            <span>•</span>
+            <button 
+              type="button"
+              onClick={() => setShowLegalModal('terms')} 
+              className="hover:text-[#1E56E3] hover:underline transition"
+            >
+              Terms & Conditions
+            </button>
+            <span>•</span>
+            <button 
+              type="button"
+              onClick={() => setShowLegalModal('refunds')} 
+              className="hover:text-[#1E56E3] hover:underline transition"
+            >
+              Refunds & Cancellations
+            </button>
+            <span>•</span>
+            <button 
+              type="button"
+              onClick={() => setShowLegalModal('services')} 
+              className="hover:text-[#1E56E3] hover:underline transition"
+            >
+              Products & Pricing (INR ₹)
+            </button>
+          </div>
         </div>
       </div>
 
@@ -745,6 +782,22 @@ export default function AuthView({ onAuthSuccess }) {
           </div>
         </div>
       )}
+      {/* CASHFREE MERCHANT LEGAL COMPLIANCE POPUP MODAL */}
+      {showLegalModal && (
+        <div className="fixed inset-0 bg-slate-900/75 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-[#F7F9FC] rounded-3xl max-w-5xl w-full shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto relative my-8">
+            <button
+              onClick={() => setShowLegalModal(null)}
+              className="absolute right-6 top-6 z-20 w-9 h-9 rounded-full bg-slate-900 text-white font-bold text-sm flex items-center justify-center shadow-lg hover:bg-slate-800 transition"
+              title="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <LegalComplianceView initialTab={showLegalModal} />
+          </div>
+        </div>
+      )}
+
       {/* Invisible reCAPTCHA container for Firebase Phone Auth */}
       <div id="recaptcha-container"></div>
     </div>

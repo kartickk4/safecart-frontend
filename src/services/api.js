@@ -81,6 +81,7 @@ export const shipmentAPI = {
   requestReturn: (id, reason) => api.put(`/shipments/${id}/return-request`, { reason }),
   approveReturn: (id) => api.put(`/shipments/${id}/return-approve`),
   confirmReturnReceived: (id) => api.put(`/shipments/${id}/return-confirm`),
+  generatePaymentLink: (id) => api.post(`/shipments/${id}/payment-link`),
 };
 
 export const claimAPI = {
