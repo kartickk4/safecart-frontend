@@ -192,6 +192,7 @@ export default function AuthView({ onAuthSuccess }) {
           setSignUpDebugOtp('');
           setSignUpOtp('');
           setShowSignUpOtpModal(true);
+          setLoading(false);
         } catch (fbErr) {
           console.warn('Firebase SMS Dispatch notice:', fbErr);
           if (fbErr.code === 'auth/admin-restricted-operation' || fbErr.code === 'auth/operation-not-allowed') {
