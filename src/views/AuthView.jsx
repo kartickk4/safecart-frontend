@@ -112,22 +112,24 @@ export default function AuthView({ onAuthSuccess }) {
   };
 
   const setupRecaptcha = () => {
-    if (window.recaptchaVerifier) {
-      try {
-        window.recaptchaVerifier.clear();
-      } catch (e) {}
-      window.recaptchaVerifier = null;
-    }
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      'size': 'invisible',
-      'callback': () => {},
-      'expired-callback': () => {
-        if (window.recaptchaVerifier) {
-          try { window.recaptchaVerifier.clear(); } catch(e){}
-          window.recaptchaVerifier = null;
-        }
+    try {
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          'size': 'invisible',
+          'callback': () => {},
+          'expired-callback': () => {
+            try {
+              if (window.recaptchaVerifier) {
+                window.recaptchaVerifier.clear();
+              }
+            } catch(e){}
+            window.recaptchaVerifier = null;
+          }
+        });
       }
-    });
+    } catch (e) {
+      console.warn('Recaptcha reuse notice:', e);
+    }
   };
 
 
