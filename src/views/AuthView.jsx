@@ -105,11 +105,7 @@ export default function AuthView({ onAuthSuccess }) {
       onAuthSuccess(user, isNewUser);
     } catch (err) {
       console.error('Google Sign-In Error:', err);
-      let userFriendlyMsg = err.response?.data?.error || err.message || 'Google Sign-In failed. Please try again.';
-      if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
-        userFriendlyMsg = `Domain (${window.location.hostname}) is not authorized in Firebase Console. Please add '${window.location.hostname}' to Firebase Console -> Authentication -> Settings -> Authorized Domains.`;
-      }
-      setError(userFriendlyMsg);
+      setError(err.response?.data?.error || err.message || 'Google Sign-In failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -728,8 +724,8 @@ export default function AuthView({ onAuthSuccess }) {
           </div>
         </div>
       )}
-      {/* Invisible reCAPTCHA container for Firebase Phone Auth */}
-      <div id="recaptcha-container"></div>
+      {/* Hidden reCAPTCHA element */}
+      <div id="recaptcha-container" style={{ display: 'none' }}></div>
     </div>
   );
 }
