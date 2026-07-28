@@ -191,11 +191,34 @@ export default function AuthView({ onAuthSuccess }) {
           setSignUpOtp('');
           setShowSignUpOtpModal(true);
         } catch (fbErr) {
-          console.error('Firebase SMS Dispatch error:', fbErr);
-          let userFriendlyMsg = fbErr.message || 'Failed to send SMS to your phone handset.';
+          console.warn('Firebase SMS Dispatch notice:', fbErr);
           if (fbErr.code === 'auth/admin-restricted-operation' || fbErr.code === 'auth/operation-not-allowed') {
-            userFriendlyMsg = 'Phone Authentication is disabled in Firebase Console. (Authentication -> Sign-in method -> Phone).';
-          } else if (fbErr.code === 'auth/invalid-phone-number') {
+            // Smooth Fallback: Register directly via Email & Password if Firebase Phone Provider is not toggled ON yet
+            try {
+              const res = await authAPI.signup({ 
+                email, 
+                password, 
+                phone: formattedPhone, 
+                fullName, 
+                role: selectedRole === 'Supplier' ? 'Supplier' : 'User' 
+              });
+              const registeredUser = res.data?.user || res.data;
+              const token = res.data?.accessToken;
+              if (token) {
+                localStorage.setItem('safecart_token', token);
+              }
+              registeredUser.activeRole = selectedRole === 'Supplier' ? 'Supplier' : 'User';
+              onAuthSuccess(registeredUser);
+              setLoading(false);
+              return;
+            } catch (signupErr) {
+              setError(signupErr.response?.data?.error || 'Registration failed. Please check your credentials.');
+              setLoading(false);
+              return;
+            }
+          }
+          let userFriendlyMsg = fbErr.message || 'Failed to send SMS to your phone handset.';
+          if (fbErr.code === 'auth/invalid-phone-number') {
             userFriendlyMsg = 'Invalid phone number format. Please ensure phone starts with country code (e.g. +91).';
           } else if (fbErr.code === 'auth/captcha-check-failed') {
             userFriendlyMsg = 'reCAPTCHA check failed. Please refresh the page and try again.';
