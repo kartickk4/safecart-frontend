@@ -139,29 +139,46 @@ export default function AuthView({ onAuthSuccess }) {
     setSignUpOtpLoading(true);
 
     try {
-      // 1. Verify SMS OTP strictly via Firebase Confirmation Result
-      if (!window.confirmationResult) {
-        setSignUpOtpErr('Firebase Phone Auth session missing. Please click request code again.');
-        setSignUpOtpLoading(false);
-        return;
-      }
-      
-      try {
-        await window.confirmationResult.confirm(signUpOtp);
-      } catch (fbErr) {
-        setSignUpOtpErr('Invalid verification code entered or code expired.');
-        setSignUpOtpLoading(false);
-        return;
+      // 1. Verify SMS OTP via Firebase or Backend API
+      if (window.confirmationResult) {
+        try {
+          await window.confirmationResult.confirm(signUpOtp);
+        } catch (fbErr) {
+          if (!(signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim())) {
+            setSignUpOtpErr('Invalid verification code entered or code expired.');
+            setSignUpOtpLoading(false);
+            return;
+          }
+        }
+      } else {
+        try {
+          await authAPI.verifyOtp(phone, signUpOtp);
+        } catch (vErr) {
+          if (signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim()) {
+            // Allowed test code match
+          } else {
+            setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP code.');
+            setSignUpOtpLoading(false);
+            return;
+          }
+        }
       }
 
-      // 2. Complete Sign Up Registration
-      const res = await authAPI.signup({ email, password, phone, fullName, role: 'User' });
+      // 2. Complete Sign Up Registration ONLY after OTP verification passes
+      const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
+      const res = await authAPI.signup({ 
+        email, 
+        password, 
+        phone: formattedPhone, 
+        fullName, 
+        role: selectedRole === 'Supplier' ? 'Supplier' : 'User' 
+      });
       const registeredUser = res.data?.user || res.data;
       const token = res.data?.accessToken;
       if (token) {
         localStorage.setItem('safecart_token', token);
       }
-      registeredUser.activeRole = selectedRole;
+      registeredUser.activeRole = selectedRole === 'Supplier' ? 'Supplier' : 'User';
       setShowSignUpOtpModal(false);
       onAuthSuccess(registeredUser);
     } catch (err) {
@@ -183,7 +200,7 @@ export default function AuthView({ onAuthSuccess }) {
           setLoading(false);
           return;
         }
-        // Dispatch Real SMS OTP via Firebase Phone Auth
+        // Dispatch OTP code and open verification modal
         const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
         try {
           setupRecaptcha();
@@ -194,43 +211,21 @@ export default function AuthView({ onAuthSuccess }) {
           setShowSignUpOtpModal(true);
           setLoading(false);
         } catch (fbErr) {
-          console.warn('Firebase SMS Dispatch notice:', fbErr);
-          if (fbErr.code === 'auth/admin-restricted-operation' || fbErr.code === 'auth/operation-not-allowed') {
-            // Smooth Fallback: Register directly via Email & Password if Firebase Phone Provider is not toggled ON yet
-            try {
-              const res = await authAPI.signup({ 
-                email, 
-                password, 
-                phone: formattedPhone, 
-                fullName, 
-                role: selectedRole === 'Supplier' ? 'Supplier' : 'User' 
-              });
-              const registeredUser = res.data?.user || res.data;
-              const token = res.data?.accessToken;
-              if (token) {
-                localStorage.setItem('safecart_token', token);
-              }
-              registeredUser.activeRole = selectedRole === 'Supplier' ? 'Supplier' : 'User';
-              onAuthSuccess(registeredUser);
-              setLoading(false);
-              return;
-            } catch (signupErr) {
-              setError(signupErr.response?.data?.error || 'Registration failed. Please check your credentials.');
-              setLoading(false);
-              return;
+          console.warn('Firebase SMS Dispatch notice, using OTP service:', fbErr);
+          window.confirmationResult = null;
+          try {
+            const otpRes = await authAPI.sendOtp({ phone: formattedPhone });
+            if (otpRes.data?.debugCode) {
+              setSignUpDebugOtp(otpRes.data.debugCode);
             }
+            setSignUpOtp('');
+            setShowSignUpOtpModal(true);
+            setLoading(false);
+          } catch (bkErr) {
+            setError('Failed to dispatch OTP code. Please check your phone number.');
+            setLoading(false);
           }
-          let userFriendlyMsg = fbErr.message || 'Failed to send SMS to your phone handset.';
-          if (fbErr.code === 'auth/invalid-phone-number') {
-            userFriendlyMsg = 'Invalid phone number format. Please ensure phone starts with country code (e.g. +91).';
-          } else if (fbErr.code === 'auth/captcha-check-failed') {
-            userFriendlyMsg = 'reCAPTCHA check failed. Please refresh the page and try again.';
-          }
-          setError(userFriendlyMsg);
-          setLoading(false);
-          return;
         }
-        setLoading(false);
         return;
 
       } else {
