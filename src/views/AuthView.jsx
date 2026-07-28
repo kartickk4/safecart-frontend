@@ -105,7 +105,11 @@ export default function AuthView({ onAuthSuccess }) {
       onAuthSuccess(user, isNewUser);
     } catch (err) {
       console.error('Google Sign-In Error:', err);
-      setError(err.response?.data?.error || err.message || 'Google Sign-In failed. Please try again.');
+      let userFriendlyMsg = err.response?.data?.error || err.message || 'Google Sign-In failed. Please try again.';
+      if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
+        userFriendlyMsg = `Domain (${window.location.hostname}) is not authorized in Firebase Console. Please add '${window.location.hostname}' to Firebase Console -> Authentication -> Settings -> Authorized Domains.`;
+      }
+      setError(userFriendlyMsg);
     } finally {
       setLoading(false);
     }
