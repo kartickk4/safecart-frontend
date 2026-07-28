@@ -747,8 +747,8 @@ export default function AuthView({ onAuthSuccess }) {
           </div>
         </div>
       )}
-      {/* Hidden reCAPTCHA element */}
-      <div id="recaptcha-container" style={{ display: 'none' }}></div>
+      {/* Invisible reCAPTCHA container for Firebase Phone Auth */}
+      <div id="recaptcha-container"></div>
     </div>
   );
 }
