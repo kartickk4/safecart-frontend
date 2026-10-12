@@ -1,6 +1,6 @@
-# Safecart — Secure-Path Logistics & Escrow Platform (Frontend)
+﻿# SecureKaro — Secure-Path Logistics & Escrow Platform (Frontend)
 
-Safecart is India's leading B2B/B2C secure logistics and RBI-compliant escrow payment platform. Built with React, Vite, and Tailwind CSS.
+SecureKaro is India's leading B2B/B2C secure logistics and RBI-compliant escrow payment platform. Built with React, Vite, and Tailwind CSS.
 
 ## 🚀 Features
 

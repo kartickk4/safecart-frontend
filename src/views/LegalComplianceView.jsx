@@ -9,21 +9,6 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-8 shadow-xl relative overflow-hidden">
-        <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold">
-            <ShieldCheck className="w-4 h-4 text-blue-400" />
-            <span>Cashfree Payment Gateway Verified Merchant</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight">
-            Merchant Information & Policy Center
-          </h1>
-          <p className="text-sm text-slate-300 font-medium leading-relaxed">
-            Official business policies, merchant contact details, terms of service, refund rules, and services pricing list in compliance with Cashfree Payment Gateway & RBI guidelines.
-          </p>
-        </div>
-      </div>
 
       {/* Navigation Tabs */}
       <div className="bg-white p-2 rounded-2xl border border-slate-200/80 shadow-sm flex flex-wrap gap-2 text-xs font-bold text-slate-600">
@@ -63,7 +48,7 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
               </div>
               <div>
                 <h2 className="text-xl font-black text-slate-900">Merchant Contact Information</h2>
-                <p className="text-xs text-slate-500 font-medium">SafeCart Technologies Private Limited Customer Support & Nodal Desk</p>
+                <p className="text-xs text-slate-500 font-medium">SecureKaro Technologies Private Limited Customer Support & Nodal Desk</p>
               </div>
             </div>
 
@@ -87,9 +72,9 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
                   <Mail className="w-5 h-5" />
                   <span>Email Support Desk</span>
                 </div>
-                <p className="text-lg font-extrabold text-slate-900 font-mono">support@safecart.app</p>
+                <p className="text-lg font-extrabold text-slate-900 font-mono">support@securekaro.app</p>
                 <p className="text-xs text-slate-500 font-medium">
-                  Compliance & Legal Enquiries: <span className="font-mono text-slate-700">compliance@safecart.app</span>
+                  Compliance & Legal Enquiries: <span className="font-mono text-slate-700">compliance@securekaro.app</span>
                 </p>
               </div>
             </div>
@@ -101,7 +86,7 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
                 <span>Registered Corporate & Merchant Address</span>
               </div>
               <p className="text-xs text-slate-700 font-semibold leading-relaxed">
-                SafeCart Technologies Private Limited<br />
+                SecureKaro Technologies Private Limited<br />
                 4th Floor, Tech Hub Tower, Cyber City, Sector 24,<br />
                 Gurugram, Haryana 122002, India.
               </p>
@@ -121,12 +106,12 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
           <div className="space-y-4 text-xs text-slate-700 leading-relaxed font-medium">
             <h3 className="text-sm font-bold text-slate-900">1. Acceptance of Terms</h3>
             <p>
-              By accessing and creating escrow shipment bookings on SafeCart ("Platform"), operated by SafeCart Technologies Private Limited, users agree to be bound by these Terms & Conditions.
+              By accessing and creating escrow shipment bookings on SecureKaro ("Platform"), operated by SecureKaro Technologies Private Limited, users agree to be bound by these Terms & Conditions.
             </p>
 
             <h3 className="text-sm font-bold text-slate-900">2. Escrow Protection Mechanism</h3>
             <p>
-              All transaction funds deposited via Cashfree Payment Gateway are securely held in nodally-compliant escrow accounts. Funds remain locked until the receiver confirms parcel delivery or the automated 24-hour verification timer completes without active dispute claims.
+              All transaction funds deposited via Cashfree Payment Gateway are securely held in nodally-compliant escrow accounts. Funds remain locked until the receiver confirms parcel delivery or the automated 24-hour verification timer completes without active return requests.
             </p>
 
             <h3 className="text-sm font-bold text-slate-900">3. User Verification & KYC</h3>
@@ -134,7 +119,12 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
               In accordance with Anti-Money Laundering (AML) and RBI regulations, all sellers receiving escrow payouts must complete bank account verification and provide valid IFSC and bank details.
             </p>
 
-            <h3 className="text-sm font-bold text-slate-900">4. Governing Law & Dispute Jurisdiction</h3>
+            <h3 className="text-sm font-bold text-slate-900">4. Payment Gateway (PG) Processing & Disbursals</h3>
+            <p>
+              SecureKaro provides complimentary 0% payment gateway and processing fees for all supplier settlements. All escrow disbursements are processed directly to the supplier's verified bank account or UPI ID with zero deduction upon release.
+            </p>
+
+            <h3 className="text-sm font-bold text-slate-900">5. Governing Law & Dispute Jurisdiction</h3>
             <p>
               These terms shall be governed by and construed in accordance with the laws of India. Any legal proceedings arising out of transactions on this Platform shall be subject to the exclusive jurisdiction of the courts in Gurugram / New Delhi.
             </p>
@@ -159,7 +149,7 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
               </div>
               <ul className="text-xs text-slate-700 space-y-2 list-disc pl-4 font-medium">
                 <li>Shipments can be cancelled prior to courier pickup for a <strong>100% full refund</strong> of the escrow deposit.</li>
-                <li>Once the package is in transit with the courier partner (Delhivery, BlueDart, DTDC), cancellation cannot be performed directly; a return or dispute claim must be filed instead.</li>
+                <li>Once the package is in transit with the courier partner (Delhivery, BlueDart, DTDC), cancellation cannot be performed directly; a return request must be submitted instead.</li>
               </ul>
             </div>
 
@@ -170,8 +160,7 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
                 <span>Refund Processing & Timelines</span>
               </div>
               <ul className="text-xs text-slate-700 space-y-2 list-disc pl-4 font-medium">
-                <li>Undelivered packages or approved returns trigger an automatic escrow refund to the receiver.</li>
-                <li>Accrued escrow interest (@ 5% p.a.) is added to the principal refund amount.</li>
+                <li>Undelivered packages or approved returns trigger an automatic escrow refund of 100% of the principal to the receiver.</li>
                 <li>All refunds are credited via Cashfree Payment Gateway back to the original source (Bank A/C, UPI, Card) within <strong>5 to 7 business days</strong>.</li>
               </ul>
             </div>
@@ -227,7 +216,7 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
 
           <div className="space-y-4 text-xs text-slate-700 leading-relaxed font-medium">
             <p>
-              SafeCart Technologies Private Limited respects your privacy and is committed to protecting personal information such as phone numbers, delivery addresses, and payment details collected via Cashfree Payment Gateway.
+              SecureKaro Technologies Private Limited respects your privacy and is committed to protecting personal information such as phone numbers, delivery addresses, and payment details collected via Cashfree Payment Gateway.
             </p>
             <p>
               We do not sell, rent, or trade your data to third parties. Information is used strictly for fulfilling escrow courier shipments, verifying identities, and processing bank disbursals.

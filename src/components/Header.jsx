@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { RefreshCw, Download, Plus } from 'lucide-react';
+import { RefreshCw, Download, Plus, Truck, ShoppingBag, ArrowLeftRight, CheckCircle2, Crown, Sparkles, ShieldCheck, Wallet, AlertTriangle } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
 
-export default function Header({ user, onRefresh, openNewShipmentModal }) {
+export default function Header({ user, currentRole, onSwitchRole, onRefresh, openNewShipmentModal, onOpenAiAgent, onOpenAdmin, onOpenWallet }) {
   const [exporting, setExporting] = useState(false);
+
+  const isSupplier = (currentRole ? currentRole === 'Supplier' : (user?.role === 'Supplier' || user?.activeRole === 'Supplier'));
+  const isAdmin = user && (
+    user.isAdmin === true ||
+    user.role === 'Admin' ||
+    user.role === 'super_admin' ||
+    user.adminRole ||
+    user.email === 'kartickdas6289@gmail.com'
+  );
 
   const currentDate = new Date().toLocaleDateString('en-IN', {
     month: 'short',
@@ -53,7 +62,7 @@ export default function Header({ user, onRefresh, openNewShipmentModal }) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', `safecart_escrow_report_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `securekaro_escrow_report_${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -67,41 +76,143 @@ export default function Header({ user, onRefresh, openNewShipmentModal }) {
   };
 
   return (
-    <header className="bg-white border-b border-slate-200/80 px-8 py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-0 z-20">
-      <div>
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Escrow Dashboard</h1>
+    <header className="bg-white border-b border-slate-200/80 px-4 md:px-8 py-3.5 md:py-4 sticky top-0 z-20 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.03)]">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">
+              {isSupplier ? 'Supplier Platform' : 'Buyer Escrow Portal'}
+            </h1>
+
+            {/* Quick Status Tag */}
+            <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+              isSupplier 
+                ? 'bg-blue-50 text-[#1E56E3] border-blue-200/80' 
+                : 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+            }`}>
+              {isSupplier ? 'Supplier Mode Active' : 'Receiver Mode Active'}
+            </span>
+
+
+
+            {/* Seller Wallet Balance / Dues Status Badge — Suppliers only */}
+            {isSupplier && (
+              (Number(user?.walletBalance) || 0) < 0 ? (
+                <button
+                  onClick={onOpenWallet}
+                  title="Click to view wallet & clear courier dues"
+                  className="inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-700 shadow-xs cursor-pointer animate-pulse transition"
+                >
+                  <AlertTriangle className="w-3 h-3 text-rose-600" />
+                  <span>Dues: -₹{Math.abs(Number(user?.walletBalance)).toFixed(0)}</span>
+                  <span className="text-[9px] underline">Clear</span>
+                </button>
+              ) : (
+                <button
+                  onClick={onOpenWallet}
+                  title="Click to open shipping wallet"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-700 shadow-2xs cursor-pointer transition"
+                >
+                  <Wallet className="w-3 h-3 text-blue-600" />
+                  <span>Wallet: ₹{(Number(user?.walletBalance) || 0).toFixed(0)}</span>
+                </button>
+              )
+            )}
+          </div>
+
+          <p className="text-xs text-slate-500 font-medium mt-1 truncate">
+            Welcome back, <span className="text-slate-800 font-semibold">{user?.fullName?.split(' ')[0] || 'Partner'}</span> — {isSupplier ? 'overview of your outgoing shipments and escrow vault' : 'manage your incoming deliveries and escrow approvals'} as of <span className="font-semibold text-slate-700">{currentDate} • {currentTime}</span>
+          </p>
         </div>
-        <p className="text-xs text-slate-500 font-medium mt-1">
-          Welcome back, <span className="text-slate-800 font-semibold">{user?.fullName?.split(' ')[0] || 'Kartick'}</span> — here is your escrow overview as of <span className="font-semibold text-slate-700">{currentDate} • {currentTime}</span>
-        </p>
-      </div>
 
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onRefresh}
-          className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition shadow-sm inline-flex items-center gap-1.5"
-        >
-          <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
-          <span>Refresh</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-end shrink-0">
+          {/* INTERACTIVE SEGMENTED ROLE SWITCHER */}
+          <div className="bg-slate-100/90 p-1 rounded-2xl border border-slate-200/90 flex items-center shadow-inner shrink-0">
+            <button
+              type="button"
+              id="switch-to-supplier-btn"
+              onClick={() => onSwitchRole && onSwitchRole('Supplier')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                isSupplier
+                  ? 'bg-white text-[#1E56E3] shadow-md shadow-blue-500/10 ring-1 ring-black/5 font-extrabold scale-[1.02]'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+              title="Switch to Supplier Mode (Merchant & Shipments)"
+            >
+              <Truck className="w-3.5 h-3.5" />
+              <span>Supplier</span>
+            </button>
 
-        <button
-          onClick={handleExportCSV}
-          disabled={exporting}
-          className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm inline-flex items-center gap-1.5"
-        >
-          {exporting ? <RefreshCw className="w-3.5 h-3.5 text-slate-500 animate-spin" /> : <Download className="w-3.5 h-3.5 text-slate-500" />}
-          <span>{exporting ? 'Exporting...' : 'Export'}</span>
-        </button>
+            <button
+              type="button"
+              id="switch-to-receiver-btn"
+              onClick={() => onSwitchRole && onSwitchRole('Receiver')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                !isSupplier
+                  ? 'bg-white text-emerald-600 shadow-md shadow-emerald-500/10 ring-1 ring-black/5 font-extrabold scale-[1.02]'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+              title="Switch to Receiver Mode (Buyer & Delivery Sign-Off)"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>Receiver</span>
+            </button>
+          </div>
 
-        <button
-          onClick={openNewShipmentModal}
-          className="px-4 py-2 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-md shadow-blue-500/20 transition inline-flex items-center gap-1.5"
-        >
-          <Plus className="w-4 h-4 stroke-[3]" />
-          <span>+ New Shipment</span>
-        </button>
+          <button
+            onClick={onRefresh}
+            title="Refresh Dashboard Data"
+            className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition shadow-sm inline-flex items-center gap-1.5 shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
+
+          <button
+            onClick={handleExportCSV}
+            disabled={exporting}
+            title="Export CSV Escrow Ledger"
+            className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm inline-flex items-center gap-1.5 shrink-0"
+          >
+            {exporting ? <RefreshCw className="w-3.5 h-3.5 text-slate-500 animate-spin" /> : <Download className="w-3.5 h-3.5 text-slate-500" />}
+            <span className="hidden sm:inline">{exporting ? 'Exporting...' : 'Export'}</span>
+          </button>
+
+          {isSupplier && (
+            <button
+              onClick={onOpenAiAgent}
+              title="Open AI Shipping Agent"
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-extrabold shadow-md shadow-indigo-500/25 transition inline-flex items-center gap-1.5 active:scale-95 cursor-pointer shrink-0"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+              <span>AI Agent</span>
+            </button>
+          )}
+
+          {isAdmin && (
+            <button
+              onClick={onOpenAdmin}
+              title="Open Executive Admin Terminal"
+              className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-rose-400 border border-slate-700/80 text-xs font-black shadow-md shadow-slate-900/20 transition inline-flex items-center gap-1.5 active:scale-95 cursor-pointer shrink-0"
+            >
+              <ShieldCheck className="w-4 h-4 text-rose-500" />
+              <span className="hidden sm:inline">Admin Console</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+            </button>
+          )}
+
+          {/* PRIMARY ACTION: Anchored at far-right corner of screen */}
+          {isSupplier && (
+            <button
+              onClick={openNewShipmentModal}
+              id="header-new-shipment-btn"
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#1443BC] via-[#1E56E3] to-[#2563EB] hover:from-[#10379b] hover:to-[#1d4ed8] text-white text-xs font-black shadow-md shadow-blue-600/25 hover:shadow-lg hover:shadow-blue-600/35 transition-all duration-200 inline-flex items-center gap-1.5 shrink-0 active:scale-95 cursor-pointer border border-blue-400/30 ml-1"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>New Shipment</span>
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );

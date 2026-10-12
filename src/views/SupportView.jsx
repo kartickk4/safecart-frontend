@@ -33,7 +33,7 @@ const FAQ_DATA = [
     id: 5,
     category: 'Escrow & Payouts',
     question: 'Is there any interest accrued on held escrow funds?',
-    answer: 'Yes! Safecart escrow accounts earn a 5.0% annual yield on funds held longer than 7 days, which is automatically credited to the seller upon disbursal.'
+    answer: 'No. SecureKaro escrow accounts hold your funds safely until delivery is confirmed, then release 100% of the principal to the supplier. No interest is accrued or charged.'
   },
   {
     id: 6,
@@ -56,25 +56,8 @@ export default function SupportView() {
   const [submitting, setSubmitting] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
 
-  // Sample User Tickets
-  const [userTickets, setUserTickets] = useState([
-    {
-      id: 'TKT-2026-8921',
-      subject: 'Payout delay query for SPL-9201-A',
-      category: 'Escrow & Disbursal',
-      priority: 'Normal',
-      status: 'Resolved',
-      date: '2026-07-25 14:30'
-    },
-    {
-      id: 'TKT-2026-9041',
-      subject: 'Update GST registration number on invoice',
-      category: 'Account & KYC',
-      priority: 'Low',
-      status: 'In Progress',
-      date: '2026-07-27 09:15'
-    }
-  ]);
+  // User Tickets (starts empty, populated when user creates a ticket)
+  const [userTickets, setUserTickets] = useState([]);
 
   const filteredFaqs = FAQ_DATA.filter(faq => {
     const matchesSearch = faq.question.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -133,7 +116,7 @@ export default function SupportView() {
           </div>
           <div>
             <h3 className="font-extrabold text-slate-900 text-sm">24/7 Email Support</h3>
-            <p className="text-xs text-blue-600 font-bold mt-0.5">support@safecart.com</p>
+            <p className="text-xs text-blue-600 font-bold mt-0.5">support@securekaro.app</p>
             <p className="text-[11px] text-slate-500 mt-1">Priority ticket responses delivered directly to your inbox.</p>
           </div>
         </div>
@@ -244,43 +227,60 @@ export default function SupportView() {
 
           {/* User Active Tickets Table */}
           <div className="bg-white p-7 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
-            <h2 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#1E56E3]" />
-              My Support Tickets
-            </h2>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-100 text-[10px] font-bold uppercase text-slate-400">
-                    <th className="py-2.5 px-3">Ticket ID</th>
-                    <th className="py-2.5 px-3">Subject</th>
-                    <th className="py-2.5 px-3">Category</th>
-                    <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-3">Created</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-xs">
-                  {userTickets.map(tkt => (
-                    <tr key={tkt.id} className="hover:bg-slate-50 transition">
-                      <td className="py-3 px-3 font-mono font-bold text-[#1E56E3]">{tkt.id}</td>
-                      <td className="py-3 px-3 font-semibold text-slate-900">{tkt.subject}</td>
-                      <td className="py-3 px-3 text-slate-500 text-[11px]">{tkt.category}</td>
-                      <td className="py-3 px-3">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          tkt.status === 'Resolved' ? 'bg-emerald-100 text-emerald-800' :
-                          tkt.status === 'In Progress' ? 'bg-amber-100 text-amber-800' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>
-                          {tkt.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-slate-400 text-[11px]">{tkt.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="flex items-center justify-between">
+              <h2 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[#1E56E3]" />
+                My Support Tickets
+              </h2>
+              {userTickets.length > 0 && (
+                <span className="text-[10px] font-bold bg-blue-50 text-[#1E56E3] px-2.5 py-0.5 rounded-full">
+                  {userTickets.length} {userTickets.length === 1 ? 'Ticket' : 'Tickets'}
+                </span>
+              )}
             </div>
+
+            {userTickets.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-[10px] font-bold uppercase text-slate-400">
+                      <th className="py-2.5 px-3">Ticket ID</th>
+                      <th className="py-2.5 px-3">Subject</th>
+                      <th className="py-2.5 px-3">Category</th>
+                      <th className="py-2.5 px-3">Status</th>
+                      <th className="py-2.5 px-3">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs">
+                    {userTickets.map(tkt => (
+                      <tr key={tkt.id} className="hover:bg-slate-50 transition">
+                        <td className="py-3 px-3 font-mono font-bold text-[#1E56E3]">{tkt.id}</td>
+                        <td className="py-3 px-3 font-semibold text-slate-900">{tkt.subject}</td>
+                        <td className="py-3 px-3 text-slate-500 text-[11px]">{tkt.category}</td>
+                        <td className="py-3 px-3">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            tkt.status === 'Resolved' ? 'bg-emerald-100 text-emerald-800' :
+                            tkt.status === 'In Progress' ? 'bg-amber-100 text-amber-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {tkt.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-slate-400 text-[11px]">{tkt.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="py-10 px-4 text-center border border-dashed border-slate-200 rounded-2xl bg-slate-50/60">
+                <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2.5" />
+                <p className="text-xs font-semibold text-slate-700">No support tickets yet</p>
+                <p className="text-[11px] text-slate-400 mt-1 max-w-sm mx-auto">
+                  Have an inquiry or need assistance with an escrow transaction? Submit a ticket using the form on the right.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -304,7 +304,7 @@ export default function SupportView() {
               >
                 <option value="Escrow & Disbursal">Escrow & Disbursal</option>
                 <option value="Logistics & Delivery Delay">Logistics & Delivery Delay</option>
-                <option value="Dispute Claim Assistance">Dispute Claim Assistance</option>
+                <option value="Return & Reverse Logistics Assistance">Return & Reverse Logistics Assistance</option>
                 <option value="Account & KYC Setup">Account & KYC Setup</option>
                 <option value="Other Inquiries">Other Inquiries</option>
               </select>

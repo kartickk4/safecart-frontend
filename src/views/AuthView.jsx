@@ -1,14 +1,28 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, X } from 'lucide-react';
-import { authAPI } from '../services/api';
+import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, Store, Package, X, Sparkles, ChevronRight, MapPin, Truck, AlertCircle, Gift, Tag } from 'lucide-react';
+import { authAPI, profileAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
 import LegalComplianceView from './LegalComplianceView';
 import { auth, RecaptchaVerifier, signInWithPhoneNumber, googleProvider, signInWithPopup } from '../firebase';
 
 
-export default function AuthView({ onAuthSuccess }) {
+export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [selectedRole, setSelectedRole] = useState('Supplier'); // 'Supplier' | 'Receiver'
+  // Role is determined AFTER signup via the Role Identification Modal
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [roleModalStep, setRoleModalStep] = useState(1); // 1: who are you? 2: platform type? 3: pickup address?
+  const [pendingUser, setPendingUser] = useState(null); // user object waiting for role assignment
+  const [pendingIsNew, setPendingIsNew] = useState(false);
+  const [selectedRoleType, setSelectedRoleType] = useState(''); // 'Supplier' | 'Receiver'
+  const [selectedPlatform, setSelectedPlatform] = useState(''); // 'independent' | 'ecommerce'
+  const [sellerAddress, setSellerAddress] = useState({
+    street: '',
+    city: '',
+    state: '',
+    pincode: '',
+    landmark: ''
+  });
+  const [sellerAddressError, setSellerAddressError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,6 +34,19 @@ export default function AuthView({ onAuthSuccess }) {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
+  // Read referral code from URL ?ref=SK-XXXXX automatically
+  const [referralCode, setReferralCode] = useState(() => {
+    try { return new URLSearchParams(window.location.search).get('ref') || ''; } catch { return ''; }
+  });
+
+  // Post-Verification Referral Code Prompt Modal state
+  const [showReferralModal, setShowReferralModal] = useState(false);
+  const [referralModalCode, setReferralModalCode] = useState('');
+  const [referralLoading, setReferralLoading] = useState(false);
+  const [referralError, setReferralError] = useState('');
+  const [referralSuccess, setReferralSuccess] = useState('');
+  const [userToOnboard, setUserToOnboard] = useState(null);
+
   // Forgot password modal state
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
@@ -38,6 +65,16 @@ export default function AuthView({ onAuthSuccess }) {
   const [signUpOtpLoading, setSignUpOtpLoading] = useState(false);
   const [signUpDebugOtp, setSignUpDebugOtp] = useState('');
 
+  // First-Time Google Sign Up Profile completion & SMS OTP modal state
+  const [showGoogleFirstTimeModal, setShowGoogleFirstTimeModal] = useState(false);
+  const [googleStep, setGoogleStep] = useState(1); // 1: Enter Name & Phone, 2: Enter SMS OTP
+  const [googleProfileData, setGoogleProfileData] = useState({ fullName: '', phone: '' });
+  const [googleOtpCode, setGoogleOtpCode] = useState('');
+  const [googleDebugOtp, setGoogleDebugOtp] = useState('');
+  const [googleProfileErr, setGoogleProfileErr] = useState('');
+  const [googleProfileLoading, setGoogleProfileLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
   const handleSendResetOtp = async (e) => {
     e.preventDefault();
     if (!forgotEmail) return;
@@ -46,7 +83,7 @@ export default function AuthView({ onAuthSuccess }) {
     setResetLoading(true);
 
     try {
-      const res = await authAPI.forgotPassword(forgotEmail);
+      const res = await authAPI.forgotPassword({ email: forgotEmail });
       setResetMsg(res.data?.message || `Password reset verification code sent to ${forgotEmail}`);
       if (res.data?.debugCode) {
         setSignUpDebugOtp(res.data.debugCode);
@@ -75,7 +112,7 @@ export default function AuthView({ onAuthSuccess }) {
     setResetLoading(true);
 
     try {
-      await authAPI.resetPassword(forgotEmail, resetOtp, newPassword);
+      await authAPI.resetPassword({ email: forgotEmail, code: resetOtp, newPassword });
       setResetStep(3);
     } catch (err) {
       setResetErr(err.response?.data?.error || 'Invalid or expired OTP verification code.');
@@ -86,30 +123,209 @@ export default function AuthView({ onAuthSuccess }) {
 
   const handleGoogleSignIn = async () => {
     setError('');
-    setLoading(true);
+    setGoogleLoading(true);
+    let googleUser = null;
+
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const googleUser = result.user;
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        googleUser = result.user;
+      } catch (fbErr) {
+        console.warn('Firebase Popup error:', fbErr);
+        if (fbErr.code === 'auth/popup-closed-by-user' || fbErr.code === 'auth/cancelled-popup-request') {
+          // User intentionally closed the popup
+          setGoogleLoading(false);
+          return;
+        }
+        if (fbErr.code === 'auth/popup-blocked') {
+          setError('Google Sign-In popup was blocked by your browser. Please allow popups for this site and try again.');
+          setGoogleLoading(false);
+          return;
+        }
+        if (fbErr.code === 'auth/unauthorized-domain') {
+          setError('Domain unauthorized in Firebase. Please add this domain to Firebase Console > Authentication > Settings > Authorized Domains.');
+          setGoogleLoading(false);
+          return;
+        }
+        // In local development or if Firebase keys are blocked/network fails, fallback for seamless testing
+        if (window.location.hostname === 'localhost' && (fbErr.code === 'auth/configuration-not-found' || fbErr.code === 'auth/api-key-not-valid' || fbErr.code === 'auth/network-request-failed')) {
+          console.warn('Local dev fallback: using demo Google user');
+          googleUser = {
+            email: email || 'google.user@example.com',
+            displayName: fullName || 'Rahul Sharma',
+            photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+            uid: `google-user-${Date.now()}`
+          };
+        } else {
+          throw new Error(fbErr.message || 'Google sign-in popup failed. Please try again.');
+        }
+      }
+
+      if (!googleUser || !googleUser.email) {
+        throw new Error('No email found from Google account.');
+      }
 
       const res = await authAPI.googleAuth({
         email: googleUser.email,
         fullName: googleUser.displayName || googleUser.email.split('@')[0],
         avatarUrl: googleUser.photoURL || '',
         googleId: googleUser.uid,
-        role: selectedRole === 'Supplier' ? 'Supplier' : 'User'
+        referralCode: referralCode || undefined
       });
 
       const { accessToken, user, isNewUser } = res.data;
       if (accessToken) {
-        localStorage.setItem('safecart_token', accessToken);
+        localStorage.setItem('securekaro_token', accessToken);
       }
-      user.activeRole = user.role || (selectedRole === 'Supplier' ? 'Supplier' : 'User');
-      onAuthSuccess(user, isNewUser);
+      user.activeRole = user.role || 'User';
+      setPendingUser(user);
+
+      setGoogleLoading(false);
+
+      // If user is newly created or missing phone number, prompt for SMS OTP Phone Verification
+      if (isNewUser || !user.phone) {
+        setGoogleProfileData({
+          fullName: user.fullName || googleUser.displayName || googleUser.email.split('@')[0],
+          phone: user.phone || ''
+        });
+        setGoogleStep(1);
+        setGoogleProfileErr('');
+        setShowGoogleFirstTimeModal(true);
+      } else if (isNewUser || !user.role || user.role === 'User') {
+        // Existing user without a role — show role identification
+        triggerRoleModal(user, isNewUser);
+      } else {
+        onAuthSuccess(user, isNewUser);
+      }
     } catch (err) {
       console.error('Google Sign-In Error:', err);
       setError(err.response?.data?.error || err.message || 'Google Sign-In failed. Please try again.');
     } finally {
-      setLoading(false);
+      setGoogleLoading(false);
+    }
+  };
+
+  const getValidatedTenDigitPhone = (phoneInput) => {
+    if (!phoneInput) return null;
+    let digits = phoneInput.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+      digits = digits.slice(2);
+    }
+    if (digits.length === 10) {
+      return digits;
+    }
+    return null;
+  };
+
+  const handleSendGooglePhoneOtp = async (e) => {
+    e.preventDefault();
+    setGoogleProfileErr('');
+
+    if (!googleProfileData.fullName) {
+      setGoogleProfileErr('Please enter your Full Name.');
+      return;
+    }
+
+    const tenDigit = getValidatedTenDigitPhone(googleProfileData.phone);
+    if (!tenDigit) {
+      setGoogleProfileErr('Phone number must be exactly 10 digits.');
+      return;
+    }
+
+    const formattedPhone = `+91${tenDigit}`;
+    setGoogleProfileLoading(true);
+
+    try {
+      // Dispatch SMS OTP code via Firebase or Backend Service
+      try {
+        setupRecaptcha();
+        const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
+        window.googleConfirmationResult = confirmationResult;
+        setGoogleDebugOtp('');
+        setGoogleOtpCode('');
+        setGoogleStep(2);
+      } catch (fbErr) {
+        console.warn('Firebase SMS Dispatch notice, falling back to backend OTP service:', fbErr);
+        window.googleConfirmationResult = null;
+        try {
+          const otpRes = await authAPI.sendOtp({ phone: formattedPhone });
+          if (otpRes.data?.debugCode) {
+            setGoogleDebugOtp(otpRes.data.debugCode);
+          }
+          setGoogleOtpCode('');
+          setGoogleStep(2);
+        } catch (bkErr) {
+          setGoogleProfileErr(bkErr.response?.data?.error || 'Failed to dispatch SMS verification code. Please check phone number.');
+        }
+      }
+    } catch (err) {
+      setGoogleProfileErr(err.message || 'Failed to send SMS verification code.');
+    } finally {
+      setGoogleProfileLoading(false);
+    }
+  };
+
+  const handleVerifyGooglePhoneOtp = async (e) => {
+    e.preventDefault();
+    setGoogleProfileErr('');
+
+    if (!googleOtpCode || googleOtpCode.trim().length < 6) {
+      setGoogleProfileErr('Please enter the 6-digit SMS verification code.');
+      return;
+    }
+
+    const tenDigit = getValidatedTenDigitPhone(googleProfileData.phone);
+    if (!tenDigit) {
+      setGoogleProfileErr('Phone number must be exactly 10 digits.');
+      return;
+    }
+
+    const formattedPhone = `+91${tenDigit}`;
+    setGoogleProfileLoading(true);
+
+    try {
+      // 1. Verify SMS OTP Code
+      if (window.googleConfirmationResult) {
+        try {
+          await window.googleConfirmationResult.confirm(googleOtpCode);
+        } catch (fbErr) {
+          if (!(googleDebugOtp && googleOtpCode.trim() === googleDebugOtp.trim())) {
+            setGoogleProfileErr('Invalid or expired SMS verification code.');
+            setGoogleProfileLoading(false);
+            return;
+          }
+        }
+      } else {
+        try {
+          await authAPI.verifyOtp({ phone: formattedPhone, code: googleOtpCode, purpose: 'verification' });
+        } catch (vErr) {
+          if (googleDebugOtp && googleOtpCode.trim() === googleDebugOtp.trim()) {
+            // Match allowed debug code
+          } else {
+            setGoogleProfileErr(vErr.response?.data?.error || 'Invalid or expired SMS verification code.');
+            setGoogleProfileLoading(false);
+            return;
+          }
+        }
+      }
+
+      // 2. OTP Verification passed! Now save user details & verified phone number to MongoDB
+      const res = await profileAPI.updateProfile({
+        fullName: googleProfileData.fullName,
+        phone: formattedPhone,
+        isPhoneVerified: true
+      });
+
+      const updatedUser = res.data;
+      updatedUser.activeRole = updatedUser.role || 'User';
+
+      setShowGoogleFirstTimeModal(false);
+      // New Google user — prompt referral code after phone OTP verification
+      promptReferralOrAdvance(updatedUser, true);
+    } catch (err) {
+      setGoogleProfileErr(err.response?.data?.error || 'Failed to save profile to MongoDB. Please try again.');
+    } finally {
+      setGoogleProfileLoading(false);
     }
   };
 
@@ -141,6 +357,9 @@ export default function AuthView({ onAuthSuccess }) {
     setSignUpOtpLoading(true);
 
     try {
+      const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
+      let otpVerifyData = null;
+
       // 1. Verify SMS OTP via Firebase or Backend API
       if (window.confirmationResult) {
         try {
@@ -152,37 +371,70 @@ export default function AuthView({ onAuthSuccess }) {
             return;
           }
         }
-      } else {
-        try {
-          await authAPI.verifyOtp(phone, signUpOtp);
-        } catch (vErr) {
-          if (signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim()) {
-            // Allowed test code match
-          } else {
-            setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP code.');
-            setSignUpOtpLoading(false);
-            return;
-          }
+      }
+
+      // 2. Always verify OTP with backend (it creates the user and returns token)
+      try {
+        const verifyRes = await authAPI.verifyOtp({ phone: formattedPhone, code: signUpOtp });
+        otpVerifyData = verifyRes.data;
+      } catch (vErr) {
+        if (signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim()) {
+          // Debug OTP fallback — continue without backend verify data
+        } else {
+          setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP code.');
+          setSignUpOtpLoading(false);
+          return;
         }
       }
 
-      // 2. Complete Sign Up Registration ONLY after OTP verification passes
-      const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
-      const res = await authAPI.signup({ 
-        email, 
-        password, 
-        phone: formattedPhone, 
-        fullName, 
-        role: selectedRole === 'Supplier' ? 'Supplier' : 'User' 
-      });
-      const registeredUser = res.data?.user || res.data;
-      const token = res.data?.accessToken;
-      if (token) {
-        localStorage.setItem('safecart_token', token);
+      // 3. Use the token from verifyOtp (user already created by backend)
+      //    Then update profile with fullName, email, and password
+      if (otpVerifyData?.accessToken) {
+        localStorage.setItem('securekaro_token', otpVerifyData.accessToken);
+
+        // Update the auto-created user with the real name, email, and password
+        try {
+          const { profileAPI: pAPI } = await import('../services/api.js');
+          await pAPI.updateProfile({ fullName, email });
+        } catch (profileErr) {
+          console.warn('Profile update after OTP signup:', profileErr.message);
+        }
+
+        // Try signup to set password — if user already exists, just proceed
+        try {
+          await authAPI.signup({ email, password, phone: formattedPhone, fullName, referralCode: referralCode || undefined });
+        } catch (_) {
+          // User already exists (created by verifyOtp) — this is expected, ignore
+        }
+
+        const registeredUser = {
+          ...(otpVerifyData.user || {}),
+          fullName: fullName || otpVerifyData.user?.fullName,
+          email: email || otpVerifyData.user?.email,
+          activeRole: 'User',
+        };
+        setShowSignUpOtpModal(false);
+        // Account created & OTP verified — ask if user has a referral code
+        promptReferralOrAdvance(registeredUser, true);
+      } else {
+        // Fallback: call signup directly (Firebase path or debug path)
+        const res = await authAPI.signup({
+          email,
+          password,
+          phone: formattedPhone,
+          fullName,
+          referralCode: referralCode || undefined
+        });
+        const registeredUser = res.data?.user || res.data;
+        const token = res.data?.accessToken;
+        if (token) {
+          localStorage.setItem('securekaro_token', token);
+        }
+        registeredUser.activeRole = 'User';
+        setShowSignUpOtpModal(false);
+        // Account created & OTP verified — ask if user has a referral code
+        promptReferralOrAdvance(registeredUser, true);
       }
-      registeredUser.activeRole = selectedRole === 'Supplier' ? 'Supplier' : 'User';
-      setShowSignUpOtpModal(false);
-      onAuthSuccess(registeredUser);
     } catch (err) {
       setSignUpOtpErr(err.response?.data?.error || 'Verification or Registration failed. Please try again.');
     } finally {
@@ -216,7 +468,7 @@ export default function AuthView({ onAuthSuccess }) {
           console.warn('Firebase SMS Dispatch notice, using OTP service:', fbErr);
           window.confirmationResult = null;
           try {
-            const otpRes = await authAPI.sendOtp({ phone: formattedPhone });
+            const otpRes = await authAPI.sendOtp({ phone: formattedPhone, email, role: selectedRole });
             if (otpRes.data?.debugCode) {
               setSignUpDebugOtp(otpRes.data.debugCode);
             }
@@ -224,7 +476,7 @@ export default function AuthView({ onAuthSuccess }) {
             setShowSignUpOtpModal(true);
             setLoading(false);
           } catch (bkErr) {
-            setError('Failed to dispatch OTP code. Please check your phone number.');
+            setError(bkErr.response?.data?.error || 'Failed to dispatch OTP code. Please check your phone number.');
             setLoading(false);
           }
         }
@@ -233,8 +485,8 @@ export default function AuthView({ onAuthSuccess }) {
       } else {
         const res = await authAPI.login({ email, password });
         const { accessToken, user } = res.data;
-        user.activeRole = selectedRole;
-        localStorage.setItem('safecart_token', accessToken);
+        user.activeRole = user.role || 'User';
+        localStorage.setItem('securekaro_token', accessToken);
         onAuthSuccess(user);
       }
     } catch (err) {
@@ -245,23 +497,118 @@ export default function AuthView({ onAuthSuccess }) {
     }
   };
 
+  // Referral Code Prompt handler — asked after account creation and OTP verification
+  const promptReferralOrAdvance = (user, isNew) => {
+    // If user already has a referrer linked, or is not new, proceed directly to role modal
+    if (!isNew || user?.referredBy) {
+      triggerRoleModal(user, isNew);
+      return;
+    }
+    setUserToOnboard(user);
+    setReferralModalCode(referralCode || '');
+    setReferralError('');
+    setReferralSuccess('');
+    setShowReferralModal(true);
+  };
+
+  const handleApplyReferralModal = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!referralModalCode || !referralModalCode.trim()) {
+      setReferralError('Please enter a referral code or click Skip.');
+      return;
+    }
+
+    setReferralLoading(true);
+    setReferralError('');
+    setReferralSuccess('');
+
+    try {
+      const res = await profileAPI.applyReferralCode(referralModalCode.trim().toUpperCase());
+      const updatedUser = {
+        ...(userToOnboard || {}),
+        referredBy: res.data?.user?.referredBy || true
+      };
+      setReferralSuccess(res.data?.message || `Referral code ${referralModalCode.toUpperCase()} applied!`);
+      setTimeout(() => {
+        setShowReferralModal(false);
+        triggerRoleModal(updatedUser, true);
+      }, 1000);
+    } catch (err) {
+      setReferralError(err.response?.data?.error || 'Invalid referral code. Please check and try again, or click Skip.');
+    } finally {
+      setReferralLoading(false);
+    }
+  };
+
+  const handleSkipReferralModal = () => {
+    setShowReferralModal(false);
+    triggerRoleModal(userToOnboard, true);
+  };
+
+  // Role Identification Modal trigger
+  const triggerRoleModal = (user, isNew) => {
+    setPendingUser(user);
+    setPendingIsNew(isNew || false);
+    setSelectedRoleType('');
+    setSelectedPlatform('');
+    setSellerAddress({
+      street: user?.pickupAddress?.street || user?.address || '',
+      city: user?.pickupAddress?.city || user?.city || '',
+      state: user?.pickupAddress?.state || user?.state || '',
+      pincode: user?.pickupAddress?.pincode || user?.pincode || '',
+      landmark: user?.pickupAddress?.landmark || ''
+    });
+    setSellerAddressError('');
+    setRoleModalStep(1);
+    setShowRoleModal(true);
+  };
+
+  const handleRoleConfirm = async (overridePlatform, customAddress) => {
+    if (!selectedRoleType) return;
+    const finalRole = selectedRoleType; // 'Supplier' or 'Receiver'
+    const platformType = overridePlatform || selectedPlatform || 'independent';
+
+    const addrPayload = customAddress !== undefined ? customAddress : (finalRole === 'Supplier' && sellerAddress.street ? {
+      address: sellerAddress.street,
+      city: sellerAddress.city,
+      state: sellerAddress.state,
+      pincode: sellerAddress.pincode,
+      pickupAddress: sellerAddress
+    } : {});
+
+    try {
+      await profileAPI.updateProfile({ role: finalRole, platformType, ...addrPayload });
+    } catch (e) {
+      console.warn('Role/address update notice:', e.message);
+    }
+    const updatedUser = { 
+      ...pendingUser, 
+      role: finalRole, 
+      activeRole: finalRole, 
+      platformType,
+      ...addrPayload
+    };
+    setShowRoleModal(false);
+    onAuthSuccess(updatedUser, pendingIsNew);
+  };
+
   const handleQuickDemo = () => {
     const mockUser = {
       _id: 'demo-user-123',
       fullName: 'Marcus Rivera',
       email: 'testuser@example.com',
       phone: '+919876543210',
-      role: 'User',
-      activeRole: selectedRole,
+      role: 'Supplier',
+      activeRole: 'Supplier',
       escrowBalance: 12450.00
     };
-    localStorage.setItem('safecart_token', 'demo_jwt_token_123');
+    localStorage.setItem('securekaro_token', 'demo_jwt_token_123');
     onAuthSuccess(mockUser);
   };
 
   return (
     <div className="min-h-screen w-full flex bg-[#F7F9FC]">
-      {/* LEFT HERO COLUMN - ROYAL BLUE SAFECART BRANDING */}
+      {/* LEFT HERO COLUMN - ROYAL BLUE SECUREKARO BRANDING */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#1E56E3] via-[#1649CC] to-[#0D38A8] text-white p-12 flex-col justify-between relative overflow-hidden select-none">
         {/* Background glow elements */}
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -275,7 +622,7 @@ export default function AuthView({ onAuthSuccess }) {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                Safecart
+                SecureKaro
               </h1>
               <p className="text-xs text-blue-200 font-medium">India's Premier Logistics Escrow Platform</p>
             </div>
@@ -293,7 +640,7 @@ export default function AuthView({ onAuthSuccess }) {
             Get paid on delivery.
           </h2>
           <p className="text-blue-100 text-sm leading-relaxed mb-8">
-            Safecart holds your funds in a regulated escrow account until your parcel is safely delivered and confirmed — protecting every transaction.
+            SecureKaro holds your funds in a regulated escrow account until your parcel is safely delivered and confirmed — protecting every transaction.
           </p>
 
           <div className="space-y-4">
@@ -331,12 +678,12 @@ export default function AuthView({ onAuthSuccess }) {
 
         {/* Footer info */}
         <div className="relative z-10 text-xs text-blue-200 flex items-center justify-between border-t border-white/10 pt-4">
-          <span>&copy; {new Date().getFullYear()} Safecart Escrow Platform Inc.</span>
+          <span>&copy; {new Date().getFullYear()} SecureKaro Escrow Platform Inc.</span>
           <span className="flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> 256-Bit SSL Encrypted</span>
         </div>
       </div>
 
-      {/* RIGHT AUTH FORM COLUMN WITH 2-ROLE SELECTION (SUPPLIER VS RECEIVER) */}
+      {/* RIGHT AUTH FORM COLUMN */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white">
         <div className="w-full max-w-md space-y-8">
           
@@ -363,56 +710,44 @@ export default function AuthView({ onAuthSuccess }) {
           {/* Heading */}
           <div>
             <h2 className="text-2xl font-bold text-slate-900">
-              {isSignUp ? 'Create your Safecart account' : 'Welcome back'}
+              {isSignUp ? 'Create your SecureKaro account' : 'Welcome back'}
             </h2>
             <p className="text-slate-500 text-sm mt-1">
-              {isSignUp ? 'Join thousands of businesses securing transactions with escrow.' : 'Sign in to access your Safecart escrow overview and shipments.'}
+              {isSignUp ? 'Join thousands of businesses securing transactions with escrow.' : 'Sign in to access your SecureKaro escrow overview and shipments.'}
             </p>
           </div>
 
-          {/* ROLE SELECTION CARDS (2 ROLES ONLY: SUPPLIER VS RECEIVER) */}
-          <div>
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Select Your Role</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setSelectedRole('Supplier')}
-                className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between ${
-                  selectedRole === 'Supplier' 
-                    ? 'border-[#1E56E3] bg-blue-50/60 text-[#1E56E3] shadow-sm' 
-                    : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <ShoppingBag className="w-5 h-5 mb-2" />
-                <div>
-                  <p className="text-xs font-bold leading-tight">Supplier</p>
-                  <p className="text-[10px] text-slate-400">Seller / Vendor</p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedRole('Receiver')}
-                className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between ${
-                  selectedRole === 'Receiver' 
-                    ? 'border-[#1E56E3] bg-blue-50/60 text-[#1E56E3] shadow-sm' 
-                    : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <UserCheck className="w-5 h-5 mb-2" />
-                <div>
-                  <p className="text-xs font-bold leading-tight">Receiver</p>
-                  <p className="text-[10px] text-slate-400">Buyer / Client</p>
-                </div>
-              </button>
+          {/* Quick Public Parcel Tracking Banner */}
+          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200/90 flex items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Truck className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-slate-900">Tracking an incoming parcel?</p>
+                <p className="text-[11px] text-slate-500">Inspect courier milestones & escrow with zero login.</p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={onOpenPublicTrack}
+              className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#1E56E3] border border-blue-200 text-xs font-black transition shrink-0 flex items-center gap-1 shadow-2xs cursor-pointer hover:border-blue-300"
+            >
+              <span>Track Now</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
+
+
 
           {/* Alert Error Message */}
           {error && (
-            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500"></span>
-              {error}
+            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium space-y-2">
+              <div className="flex items-center gap-2 font-semibold">
+                <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                <span>{error}</span>
+              </div>
+
             </div>
           )}
 
@@ -487,6 +822,32 @@ export default function AuthView({ onAuthSuccess }) {
               </div>
             </div>
 
+            {isSignUp && (
+              <div className="pt-0.5">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Referral / Invite Code <span className="text-slate-400 font-normal">(Optional)</span>
+                  </label>
+                  {referralCode && (
+                    <span className="text-[10.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      Invite Applied
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="e.g. SK-7L7RR"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono uppercase text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition pr-9"
+                  />
+                  <Tag className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+            )}
+
             {!isSignUp && (
               <div className="flex items-center gap-2 pt-1">
                 <input
@@ -509,7 +870,7 @@ export default function AuthView({ onAuthSuccess }) {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
-                  <span>{isSignUp ? `Register as ${selectedRole}` : `Sign In as ${selectedRole}`}</span>
+                  <span>{isSignUp ? 'Create Account' : 'Sign In'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -524,16 +885,20 @@ export default function AuthView({ onAuthSuccess }) {
             <button
               type="button"
               onClick={handleGoogleSignIn}
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-3 disabled:opacity-50"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-              </svg>
-              <span>Continue with Google</span>
+              {googleLoading ? (
+                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+              )}
+              <span>{googleLoading ? 'Signing in with Google...' : 'Continue with Google'}</span>
             </button>
           </form>
 
@@ -764,24 +1129,433 @@ export default function AuthView({ onAuthSuccess }) {
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={signUpOtpLoading}
-                className="w-full py-3.5 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2"
-              >
-                {signUpOtpLoading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <span>Verify OTP & Create Account</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSignUpOtpModal(false);
+                    setSignUpOtp('');
+                    setSignUpOtpErr('');
+                  }}
+                  className="flex-1 py-3.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={signUpOtpLoading}
+                  className="flex-[2] py-3.5 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2"
+                >
+                  {signUpOtpLoading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <span>Verify & Create Account</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* REFERRAL CODE PROMPT MODAL — Asked after account creation & OTP verification */}
+      {showReferralModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200 select-none">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 space-y-6 relative overflow-hidden">
+            {/* Top decorative gradient bar */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-[#1E56E3]" />
+
+            {/* Skip button */}
+            <button
+              onClick={handleSkipReferralModal}
+              className="absolute right-5 top-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold text-sm flex items-center justify-center transition cursor-pointer"
+              title="Skip"
+            >
+              ✕
+            </button>
+
+            {/* Header with Gift Icon */}
+            <div className="flex items-center gap-3 pt-2">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center font-bold shadow-md shadow-amber-500/20">
+                <Gift className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black tracking-wider uppercase text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full inline-block mb-1">
+                  SecureKaro Ambassador Program
+                </span>
+                <h3 className="text-xl font-extrabold text-slate-900">Have a Referral Code?</h3>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              If a merchant friend or supplier invited you, enter their unique invite code (e.g. <span className="font-mono font-bold text-slate-900">SK-7L7RR</span>) to link your accounts. When your first order is safely delivered, they unlock ₹40 Pro Credit!
+            </p>
+
+            {referralModalCode && !referralError && (
+              <div className="p-3 rounded-2xl bg-amber-50/80 border border-amber-200/90 text-xs text-amber-900 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Detected from invite pass: <span className="font-mono font-black">{referralModalCode}</span></span>
+              </div>
+            )}
+
+            {referralSuccess && (
+              <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{referralSuccess}</span>
+              </div>
+            )}
+
+            {referralError && (
+              <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                <span>{referralError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleApplyReferralModal} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Unique Referral Code</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength="12"
+                    placeholder="e.g. SK-7L7RR"
+                    value={referralModalCode}
+                    onChange={(e) => {
+                      setReferralModalCode(e.target.value.toUpperCase());
+                      setReferralError('');
+                    }}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-lg font-mono font-black text-slate-900 tracking-wider uppercase focus:ring-2 focus:ring-amber-500 focus:bg-white transition"
+                    autoFocus
+                  />
+                  <Tag className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={referralLoading}
+                  className="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-orange-500/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {referralLoading ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <span>Apply Code &amp; Continue</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSkipReferralModal}
+                  disabled={referralLoading}
+                  className="w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 font-semibold text-xs rounded-xl transition flex items-center justify-center cursor-pointer"
+                >
+                  I don't have a code — Skip this step
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* ROLE IDENTIFICATION MODAL — shown after OTP verification for new users */}
+      {showRoleModal && (
+        <div className="fixed inset-0 bg-blue-950/25 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl border border-slate-100 space-y-6 relative overflow-hidden">
+            {/* Decorative gradient top bar */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#1E56E3] via-blue-400 to-indigo-500 rounded-t-3xl" />
+
+            {/* Header */}
+            <div className="flex items-center gap-3 pt-2">
+              <div className="w-11 h-11 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-slate-900">One last step!</h3>
+                <p className="text-xs text-slate-500">Help us personalise your SecureKaro experience</p>
+              </div>
+            </div>
+
+            {/* Step indicator */}
+            <div className="flex items-center gap-2">
+              <div className={`h-1.5 flex-1 rounded-full transition-all ${roleModalStep >= 1 ? 'bg-[#1E56E3]' : 'bg-slate-200'}`} />
+              <div className={`h-1.5 flex-1 rounded-full transition-all ${roleModalStep >= 2 ? 'bg-[#1E56E3]' : 'bg-slate-200'}`} />
+              {selectedRoleType === 'Supplier' && (
+                <div className={`h-1.5 flex-1 rounded-full transition-all ${roleModalStep >= 3 ? 'bg-[#1E56E3]' : 'bg-slate-200'}`} />
+              )}
+            </div>
+
+            {/* STEP 1: Who are you? */}
+            {roleModalStep === 1 && (
+              <div className="space-y-5">
+                <div>
+                  <p className="text-sm font-bold text-slate-800 mb-3">Who are you on SecureKaro?</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRoleType('Supplier')}
+                      className={`p-5 rounded-2xl border-2 text-left transition-all duration-200 flex flex-col gap-3 ${
+                        selectedRoleType === 'Supplier'
+                          ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
+                          : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        selectedRoleType === 'Supplier' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        <ShoppingBag className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-slate-900">Seller / Supplier</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">I dispatch goods and want payment protection</p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRoleType('Receiver')}
+                      className={`p-5 rounded-2xl border-2 text-left transition-all duration-200 flex flex-col gap-3 ${
+                        selectedRoleType === 'Receiver'
+                          ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
+                          : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        selectedRoleType === 'Receiver' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        <UserCheck className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-slate-900">Buyer / Receiver</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">I receive goods and make escrow payments</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={!selectedRoleType}
+                  onClick={() => {
+                    if (selectedRoleType === 'Receiver') {
+                      // Receivers skip platform question — go directly to dashboard
+                      handleRoleConfirm('independent', {});
+                    } else {
+                      setRoleModalStep(2);
+                    }
+                  }}
+                  className="w-full py-3.5 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span>Continue</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* STEP 2: Platform type (only for Suppliers) */}
+            {roleModalStep === 2 && (
+              <div className="space-y-5">
+                <div>
+                  <p className="text-sm font-bold text-slate-800 mb-1">How do you sell?</p>
+                  <p className="text-xs text-slate-500 mb-4">This helps us tailor tools and features for your workflow.</p>
+                  <div className="space-y-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPlatform('independent')}
+                      className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-200 flex items-center gap-4 ${
+                        selectedPlatform === 'independent'
+                          ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
+                          : 'border-slate-200 bg-slate-50/60 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${
+                        selectedPlatform === 'independent' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        <Store className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-sm text-slate-900">Independent Seller</p>
+                        <p className="text-[11px] text-slate-500">I run my own store, D2C brand, or personal business</p>
+                      </div>
+                      {selectedPlatform === 'independent' && <CheckCircle2 className="w-5 h-5 text-[#1E56E3] shrink-0" />}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPlatform('ecommerce')}
+                      className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-200 flex items-center gap-4 ${
+                        selectedPlatform === 'ecommerce'
+                          ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
+                          : 'border-slate-200 bg-slate-50/60 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${
+                        selectedPlatform === 'ecommerce' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        <Package className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-sm text-slate-900">E-Commerce Platform Seller</p>
+                        <p className="text-[11px] text-slate-500">I sell on Amazon, Flipkart, Meesho, Shopify, etc.</p>
+                      </div>
+                      {selectedPlatform === 'ecommerce' && <CheckCircle2 className="w-5 h-5 text-[#1E56E3] shrink-0" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRoleModalStep(1)}
+                    className="py-3 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!selectedPlatform}
+                    onClick={() => setRoleModalStep(3)}
+                    className="flex-1 py-3.5 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span>Set Pickup Address</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: Seller Courier Pickup Address */}
+            {roleModalStep === 3 && (
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="p-1.5 rounded-lg bg-blue-50 text-[#1E56E3]">
+                      <Truck className="w-4 h-4" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-800">Where should couriers pick up parcels?</p>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Logistics partners (Delhivery, BlueDart, DTDC, India Post) will dispatch pickup executives to this address when you create shipments.
+                  </p>
+                </div>
+
+                {sellerAddressError && (
+                  <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{sellerAddressError}</span>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Shop / Flat / Warehouse / Street Address *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Shop 12, Ground Floor, MG Road Market / Plot 44 Industrial Area"
+                      value={sellerAddress.street}
+                      onChange={(e) => setSellerAddress({ ...sellerAddress, street: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">City / District *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Bengaluru / Mumbai"
+                        value={sellerAddress.city}
+                        onChange={(e) => setSellerAddress({ ...sellerAddress, city: e.target.value })}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">State *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Karnataka / Maharashtra"
+                        value={sellerAddress.state}
+                        onChange={(e) => setSellerAddress({ ...sellerAddress, state: e.target.value })}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">6-Digit Pincode *</label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="e.g. 560001"
+                        value={sellerAddress.pincode}
+                        onChange={(e) => setSellerAddress({ ...sellerAddress, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) })}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Nearby Landmark (Optional)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Opp Metro Station"
+                        value={sellerAddress.landmark}
+                        onChange={(e) => setSellerAddress({ ...sellerAddress, landmark: e.target.value })}
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setRoleModalStep(2)}
+                    className="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!sellerAddress.street || !sellerAddress.pincode || sellerAddress.pincode.length !== 6) {
+                        setSellerAddressError('Please enter your street address and a valid 6-digit pincode.');
+                        return;
+                      }
+                      setSellerAddressError('');
+                      handleRoleConfirm();
+                    }}
+                    className="flex-1 py-3 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2"
+                  >
+                    <span>Save Pickup Address & Launch Dashboard</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleRoleConfirm(undefined, {})}
+                    className="text-[11px] font-semibold text-slate-400 hover:text-slate-600 underline"
+                  >
+                    I'll add pickup address later from my profile
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* CASHFREE MERCHANT LEGAL COMPLIANCE POPUP MODAL */}
       {showLegalModal && (
         <div className="fixed inset-0 bg-slate-900/75 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
@@ -794,6 +1568,174 @@ export default function AuthView({ onAuthSuccess }) {
               <X className="w-5 h-5" />
             </button>
             <LegalComplianceView initialTab={showLegalModal} />
+          </div>
+        </div>
+      )}
+
+      {/* FIRST-TIME GOOGLE SIGN UP SMS PHONE VERIFICATION MODAL */}
+      {showGoogleFirstTimeModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200 select-none">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 space-y-6 relative">
+            <button
+              type="button"
+              onClick={() => {
+                setShowGoogleFirstTimeModal(false);
+                if (pendingUser) {
+                  if (!pendingUser.role || pendingUser.role === 'User') {
+                    triggerRoleModal(pendingUser, isSignUp);
+                  } else {
+                    onAuthSuccess(pendingUser, isSignUp);
+                  }
+                }
+              }}
+              className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+              title="Close and continue"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+
+            {googleStep === 1 && (
+              <>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-900">Verify Mobile Number</h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Complete your Google sign-up by verifying your mobile phone number with a 6-digit SMS OTP code.
+                  </p>
+                </div>
+
+                {googleProfileErr && (
+                  <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+                    {googleProfileErr}
+                  </div>
+                )}
+
+                <form onSubmit={handleSendGooglePhoneOtp} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Rahul Sharma"
+                      value={googleProfileData.fullName}
+                      onChange={(e) => setGoogleProfileData({ ...googleProfileData, fullName: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
+                    <PhoneInput
+                      required
+                      value={googleProfileData.phone}
+                      onChange={(val) => setGoogleProfileData({ ...googleProfileData, phone: val })}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={googleProfileLoading}
+                    className="w-full py-3.5 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
+                  >
+                    {googleProfileLoading ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <span>Send SMS Verification Code</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              </>
+            )}
+
+            {googleStep === 2 && (
+              <>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-900">Enter 6-Digit Security Code</h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Enter the 6-digit SMS verification code sent to <span className="font-mono font-bold text-slate-900">{googleProfileData.phone}</span>.
+                  </p>
+                </div>
+
+                {googleDebugOtp && (
+                  <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 text-xs text-[#1E56E3] font-semibold flex items-center justify-between">
+                    <span>💡 Verification Code:</span>
+                    <span className="font-mono font-black text-slate-900 text-sm tracking-wider bg-white px-3 py-1 rounded-xl border border-blue-200 shadow-xs">
+                      {googleDebugOtp}
+                    </span>
+                  </div>
+                )}
+
+                {googleProfileErr && (
+                  <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+                    {googleProfileErr}
+                  </div>
+                )}
+
+                <form onSubmit={handleVerifyGooglePhoneOtp} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">6-Digit SMS Security Code</label>
+                    <input
+                      type="text"
+                      required
+                      maxLength="6"
+                      placeholder="------"
+                      value={googleOtpCode}
+                      onChange={(e) => setGoogleOtpCode(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-xl font-mono font-black text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { setGoogleStep(1); setGoogleProfileErr(''); }}
+                      className="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={googleProfileLoading}
+                      className="flex-1 py-3.5 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 font-bold text-xs"
+                    >
+                      {googleProfileLoading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <>
+                          <span>Verify</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowGoogleFirstTimeModal(false);
+                  if (pendingUser) {
+                    if (!pendingUser.role || pendingUser.role === 'User') {
+                      triggerRoleModal(pendingUser, isSignUp);
+                    } else {
+                      onAuthSuccess(pendingUser, isSignUp);
+                    }
+                  }
+                }}
+                className="text-xs text-slate-400 hover:text-[#1E56E3] font-semibold transition cursor-pointer"
+              >
+                Skip for now &amp; continue to dashboard →
+              </button>
+            </div>
           </div>
         </div>
       )}

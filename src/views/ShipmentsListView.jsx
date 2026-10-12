@@ -1,23 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Eye, ChevronLeft, ChevronRight, Download, Plus, Box, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
+import { Search, Filter, Eye, ChevronLeft, ChevronRight, Download, Plus, Box, CheckCircle2, Clock, AlertTriangle, QrCode, Camera, RotateCcw } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
+import QrScannerModal from '../components/QrScannerModal';
 
-export default function ShipmentsListView({ onSelectShipment, openNewShipmentModal }) {
+export default function ShipmentsListView({ onSelectShipment, openNewShipmentModal, user, currentRole, isSupplier, onRepeatShipment }) {
+  const isMerchant = isSupplier !== undefined 
+    ? isSupplier 
+    : (currentRole ? currentRole === 'Supplier' : (user?.role === 'Supplier' || user?.activeRole === 'Supplier'));
+
   const [shipments, setShipments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('All'); // 'All' | 'Held' | 'Released' | 'Disputed'
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showQrScanner, setShowQrScanner] = useState(false);
+  const [selectedShipmentForQr, setSelectedShipmentForQr] = useState(null);
   const rowsPerPage = 8;
+
+  const handleQrScanSuccess = async ({ token, shipmentId: scannedId, rawText }) => {
+    try {
+      let targetShipment = null;
+      if (token) {
+        const res = await shipmentAPI.publicQrGetInfo(token);
+        if (res.data?.shipmentId) {
+          targetShipment = shipments.find(s => s.shipmentId === res.data.shipmentId) || res.data;
+        }
+      }
+      if (!targetShipment && scannedId) {
+        targetShipment = shipments.find(s => s.shipmentId === scannedId) || { shipmentId: scannedId };
+      }
+      if (targetShipment && onSelectShipment) {
+        onSelectShipment(targetShipment);
+      }
+    } catch (e) {
+      console.warn('QR scan match error in list:', e);
+      if (scannedId && onSelectShipment) {
+        onSelectShipment({ shipmentId: scannedId });
+      }
+    }
+  };
 
   useEffect(() => {
     fetchShipments();
-  }, []);
+  }, [isMerchant]); // re-fetch whenever role changes
 
   const fetchShipments = async () => {
     setLoading(true);
     try {
-      const res = await shipmentAPI.getShipments();
+      const role = isMerchant ? 'Supplier' : 'Receiver';
+      const res = await shipmentAPI.getShipments(role);
       if (Array.isArray(res.data)) {
         setShipments(res.data);
       } else {
@@ -38,7 +69,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
     const matchesTab = activeTab === 'All' ||
                        (activeTab === 'Held' && (item.status === 'Awaiting Payment' || item.status === 'Pending Pickup' || item.status === 'In Transit')) ||
                        (activeTab === 'Released' && item.status === 'Released') ||
-                       (activeTab === 'Disputed' && item.status === 'Locked');
+                       (activeTab === 'Returns' && ((item.returnStatus && item.returnStatus !== 'None') || item.status?.includes('Return') || item.returnAwbCode));
     return matchesSearch && matchesTab;
   });
 
@@ -50,17 +81,40 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Shipment Management</h1>
-          <p className="text-xs text-slate-500 font-medium mt-1">View, track, and manage all your escrow-protected parcel shipments.</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            {isMerchant ? 'Shipment Management' : 'My Orders & Packages'}
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            {isMerchant 
+              ? 'View, track, and manage all your escrow-protected parcel shipments.' 
+              : 'Track your incoming parcels, delivery status, and protected escrow transactions.'}
+          </p>
         </div>
 
-        <button
-          onClick={openNewShipmentModal}
-          className="px-4 py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-md shadow-blue-500/20 transition inline-flex items-center gap-1.5 w-fit"
-        >
-          <Plus className="w-4 h-4 stroke-[3]" />
-          <span>+ Create New Shipment</span>
-        </button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          {/* Scan QR button for Buyers/Receivers */}
+          {!isMerchant && (
+            <button
+              onClick={() => setShowQrScanner(true)}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-extrabold shadow-md shadow-emerald-500/20 transition inline-flex items-center gap-2 w-fit group hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Camera className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>Scan In-Box QR</span>
+            </button>
+          )}
+
+          {/* Create Shipment button ONLY rendered for Merchants/Suppliers */}
+          {isMerchant && openNewShipmentModal && (
+            <button
+              onClick={openNewShipmentModal}
+              className="px-4 py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-md shadow-blue-500/20 transition inline-flex items-center gap-1.5 w-fit"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>Create New Shipment</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Main Table Card */}
@@ -69,7 +123,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
           {/* Filter Pills */}
           <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1 text-xs font-semibold text-slate-600">
-            {['All', 'Held', 'Released', 'Disputed'].map(tab => (
+            {['All', 'Held', 'Released', 'Returns'].map(tab => (
               <button
                 key={tab}
                 onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
@@ -99,7 +153,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
             <thead>
               <tr className="border-b border-slate-100 text-[11px] font-bold uppercase text-slate-400 tracking-wider">
                 <th className="py-3 px-4">Tracking ID</th>
-                <th className="py-3 px-4">Recipient</th>
+                <th className="py-3 px-4">{isMerchant ? 'Recipient' : 'Sender / Merchant'}</th>
                 <th className="py-3 px-4">Shipping Route</th>
                 <th className="py-3 px-4">Carrier</th>
                 <th className="py-3 px-4">Escrow Value</th>
@@ -109,40 +163,87 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
-              {paginated.map((item, idx) => (
-                <tr
-                  key={item.shipmentId || idx}
-                  onClick={() => onSelectShipment(item)}
-                  className="hover:bg-slate-50/80 transition cursor-pointer"
-                >
-                  <td className="py-3.5 px-4 font-bold text-[#1E56E3]">
-                    {item.shipmentId}
-                  </td>
-                  <td className="py-3.5 px-4 font-semibold text-slate-900">
-                    {item.receiverName}
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-600 font-medium">
-                    {item.city}
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-500 capitalize">
-                    {item.carrierSlug}
-                  </td>
-                  <td className="py-3.5 px-4 font-bold text-slate-900">
-                    ₹{item.amount ? item.amount.toLocaleString() : '3,420'}
-                  </td>
-                  <td className="py-3.5 px-4">
-                    {renderEscrowBadge(item.status)}
-                  </td>
-                  <td className="py-3.5 px-4">
-                    {renderDeliveryBadge(item.status)}
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <button className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition">
-                      <Eye className="w-4 h-4" />
-                    </button>
+              {paginated.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="py-12 text-center text-slate-400">
+                    <Box className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="font-bold text-slate-600 text-sm">
+                      {isMerchant ? 'No shipments found' : 'No orders or packages found'}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {isMerchant 
+                        ? 'Create a shipment to start tracking parcels with escrow protection.' 
+                        : 'Any parcel shipments dispatched to your mobile number will appear here automatically.'}
+                    </p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                paginated.map((item, idx) => (
+                  <tr
+                    key={item.shipmentId || idx}
+                    onClick={() => onSelectShipment(item)}
+                    className="hover:bg-slate-50/80 transition cursor-pointer"
+                  >
+                    <td className="py-3.5 px-4 font-bold text-[#1E56E3]">
+                      {item.shipmentId}
+                    </td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-900">
+                      {item.receiverName}
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-600 font-medium">
+                      {item.city}
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-500 capitalize">
+                      {item.carrierSlug}
+                    </td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900">
+                      ₹{item.amount ? item.amount.toLocaleString() : '3,420'}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      {renderEscrowBadge(item.status)}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      {renderDeliveryBadge(item.status)}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      {isMerchant && onRepeatShipment && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRepeatShipment(item);
+                          }}
+                          className="px-2.5 py-1 bg-blue-50 hover:bg-[#1E56E3] text-[#1E56E3] hover:text-white font-bold text-[10px] rounded-lg transition inline-flex items-center gap-1 border border-blue-200 mr-2 shadow-2xs group cursor-pointer"
+                          title="Repeat Shipment with same details"
+                        >
+                          <RotateCcw className="w-3 h-3 group-hover:-rotate-90 transition-transform" />
+                          <span>Repeat</span>
+                        </button>
+                      )}
+                      {!isMerchant && ['In Transit', 'Out for Delivery', 'Delivered', 'Reached Destination Hub'].includes(item.status) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedShipmentForQr(item);
+                            setShowQrScanner(true);
+                          }}
+                          className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[10px] rounded-lg transition inline-flex items-center gap-1 border border-emerald-200 mr-2 shadow-2xs group"
+                          title="Scan In-Box QR Code"
+                        >
+                          <Camera className="w-3 h-3 text-emerald-600 group-hover:scale-110 transition-transform" />
+                          <span>Scan QR</span>
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => onSelectShipment(item)}
+                        className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition"
+                        title="View Shipment Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -169,6 +270,16 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
           </div>
         </div>
       </div>
+
+      {/* ── IN-BOX QR SCANNER MODAL ── */}
+      <QrScannerModal
+        isOpen={showQrScanner}
+        onClose={() => {
+          setShowQrScanner(false);
+          setSelectedShipmentForQr(null);
+        }}
+        onScanSuccess={handleQrScanSuccess}
+      />
     </div>
   );
 }
@@ -194,13 +305,3 @@ function renderDeliveryBadge(status) {
   if (status === 'Pending Pickup') return <span className="pill-delivery-out">Out for Delivery</span>;
   return <span className="pill-delivery-transit">In Transit</span>;
 }
-
-const mockDataset = [
-  { shipmentId: 'PSF-2026-00841', receiverName: 'Priya Nair', city: 'Mumbai → Bengaluru', carrierSlug: 'Delhivery Express', amount: 3420, status: 'In Transit' },
-  { shipmentId: 'PSF-2026-00840', receiverName: 'Aarav Sharma', city: 'Delhi → Mumbai', carrierSlug: 'BlueDart Logistics', amount: 1890, status: 'Pending Pickup' },
-  { shipmentId: 'PSF-2026-00839', receiverName: 'Ananya Iyer', city: 'Chennai → Hyderabad', carrierSlug: 'DTDC Express', amount: 7650, status: 'Released' },
-  { shipmentId: 'PSF-2026-00838', receiverName: 'Rohan Gupta', city: 'Kolkata → Pune', carrierSlug: 'Ekart Logistics', amount: 920, status: 'Locked' },
-  { shipmentId: 'PSF-2026-00837', receiverName: 'Vikram Singh', city: 'Ahmedabad → Jaipur', carrierSlug: 'India Post Speed Post', amount: 4200, status: 'In Transit' },
-  { shipmentId: 'PSF-2026-00836', receiverName: 'Kartick Das', city: 'Kolkata → Delhi', carrierSlug: 'Delhivery Express', amount: 2310, status: 'Released' },
-  { shipmentId: 'PSF-2026-00835', receiverName: 'Neha Verma', city: 'Bengaluru → Chennai', carrierSlug: 'BlueDart Logistics', amount: 5100, status: 'In Transit' }
-];

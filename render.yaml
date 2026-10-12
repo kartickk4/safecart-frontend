@@ -1,6 +1,6 @@
-services:
+﻿services:
   - type: web
-    name: safecart-frontend
+    name: securekaro-frontend
     env: static
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
