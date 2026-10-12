@@ -126,11 +126,18 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
     setGoogleLoading(true);
     let googleUser = null;
 
+    // Safety timeout in case popup hangs or is hidden behind browser window
+    const popupTimeout = setTimeout(() => {
+      setGoogleLoading(false);
+      setError('Google Sign-In took too long or the popup was closed. Please try again.');
+    }, 35000);
+
     try {
       try {
         const result = await signInWithPopup(auth, googleProvider);
         googleUser = result.user;
       } catch (fbErr) {
+        clearTimeout(popupTimeout);
         console.warn('Firebase Popup error:', fbErr);
         if (fbErr.code === 'auth/popup-closed-by-user' || fbErr.code === 'auth/cancelled-popup-request') {
           // User intentionally closed the popup
@@ -201,6 +208,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
       console.error('Google Sign-In Error:', err);
       setError(err.response?.data?.error || err.message || 'Google Sign-In failed. Please try again.');
     } finally {
+      clearTimeout(popupTimeout);
       setGoogleLoading(false);
     }
   };

@@ -6,7 +6,8 @@ const getBaseUrl = () => {
     // If accessed from a mobile phone or another device on the Wi-Fi/LAN (not localhost/127.0.0.1)
     if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
       if (hostname.includes('onrender.com')) {
-        const backendHost = hostname.replace(/-frontend(-\d+)?/, '-backend');
+        // Correctly maps safecart-frontend-1.onrender.com -> safecart-backend-1.onrender.com
+        const backendHost = hostname.replace('-frontend', '-backend');
         return `${window.location.protocol}//${backendHost}/api/v1`;
       }
       // On mobile devices, window.location.origin is e.g. http://10.128.121.6:3001.
@@ -34,6 +35,7 @@ const API_BASE_URL = getBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 30000, // 30s timeout so requests never hang infinitely
   headers: {
     'Content-Type': 'application/json',
   },
@@ -60,8 +62,9 @@ api.interceptors.response.use(
       typeof window !== 'undefined' && 
       window.location.hostname.includes('onrender.com')
     ) {
-      const renderBackendUrl = 'https://securekaro-backend.onrender.com/api/v1';
-      console.warn(`Render backend offline. Retrying request: ${renderBackendUrl}`);
+      const backendHost = window.location.hostname.replace('-frontend', '-backend');
+      const renderBackendUrl = `${window.location.protocol}//${backendHost}/api/v1`;
+      console.warn(`Retrying request on backend: ${renderBackendUrl}`);
       api.defaults.baseURL = renderBackendUrl;
       const config = error.config;
       config.baseURL = renderBackendUrl;
