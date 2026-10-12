@@ -1,21 +1,6 @@
 import axios from 'axios';
 
 const getBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    // If accessed from a mobile phone or another device on the Wi-Fi/LAN (not localhost/127.0.0.1)
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      if (hostname.includes('onrender.com')) {
-        // Correctly maps safecart-frontend-1.onrender.com -> safecart-backend-1.onrender.com
-        const backendHost = hostname.replace('-frontend', '-backend');
-        return `${window.location.protocol}//${backendHost}/api/v1`;
-      }
-      // On mobile devices, window.location.origin is e.g. http://10.128.121.6:3001.
-      // Vite dev server proxies all /api requests directly to backend on port 5001.
-      return `${window.location.origin}/api/v1`;
-    }
-  }
-
   let url = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
   if (url) {
     url = url.trim().replace(/\/+$/, '');
@@ -23,6 +8,22 @@ const getBaseUrl = () => {
       url = `${url}/api/v1`;
     }
     return url;
+  }
+
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      if (hostname.includes('onrender.com')) {
+        // Correctly maps safecart-frontend-1.onrender.com -> safecart-backend-1.onrender.com
+        const backendHost = hostname.replace('-frontend', '-backend');
+        return `${window.location.protocol}//${backendHost}/api/v1`;
+      }
+      if (hostname.includes('securekaro.in')) {
+        return 'https://safecart-backend-1.onrender.com/api/v1';
+      }
+      // On mobile devices, window.location.origin is e.g. http://10.128.121.6:3001.
+      return `${window.location.origin}/api/v1`;
+    }
   }
 
   if (typeof window !== 'undefined') {
@@ -56,13 +57,15 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Only fallback to Render if explicitly running on a Render deployed domain
+    // Only fallback to Render if explicitly running on a Render deployed domain or securekaro.in
     if (
       error.code === 'ERR_NETWORK' && 
       typeof window !== 'undefined' && 
-      window.location.hostname.includes('onrender.com')
+      (window.location.hostname.includes('onrender.com') || window.location.hostname.includes('securekaro.in'))
     ) {
-      const backendHost = window.location.hostname.replace('-frontend', '-backend');
+      const backendHost = window.location.hostname.includes('securekaro.in')
+        ? 'safecart-backend-1.onrender.com'
+        : window.location.hostname.replace('-frontend', '-backend');
       const renderBackendUrl = `${window.location.protocol}//${backendHost}/api/v1`;
       console.warn(`Retrying request on backend: ${renderBackendUrl}`);
       api.defaults.baseURL = renderBackendUrl;
