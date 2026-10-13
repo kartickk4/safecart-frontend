@@ -79,13 +79,13 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
     <header className="bg-white border-b border-slate-200/80 px-4 md:px-8 py-2.5 md:py-4 sticky top-0 z-20 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.03)]">
       {/* ── MOBILE HEADER (< lg) ── */}
       <div className="flex lg:hidden items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 shrink-0">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#1E56E3] to-[#0D38A8] text-white flex items-center justify-center shrink-0 shadow-xs">
             <ShieldCheck className="w-4 h-4" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-sm text-slate-900 truncate">
+              <span className="font-extrabold text-sm text-slate-900 whitespace-nowrap">
                 {isSupplier ? 'Supplier Hub' : 'Buyer Escrow'}
               </span>
               <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-md shrink-0 border ${
@@ -96,7 +96,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
                 {isSupplier ? 'Seller' : 'Buyer'}
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 font-medium truncate">
+            <p className="text-[10px] text-slate-400 font-medium truncate max-w-[120px]">
               {user?.fullName?.split(' ')[0] || 'User'} • SecureKaro
             </p>
           </div>
@@ -108,11 +108,11 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
           <button
             type="button"
             onClick={() => onSwitchRole && onSwitchRole(isSupplier ? 'Receiver' : 'Supplier')}
-            className="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 text-[10px] font-bold flex items-center gap-1 transition active:scale-95"
+            className="px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 text-[10px] font-bold flex items-center gap-1 transition active:scale-95 whitespace-nowrap"
             title={`Switch to ${isSupplier ? 'Receiver' : 'Supplier'} Mode`}
           >
             <ArrowLeftRight className="w-3 h-3 text-[#1E56E3]" />
-            <span>{isSupplier ? 'To Buyer' : 'To Seller'}</span>
+            <span>{isSupplier ? 'Buyer' : 'Seller'}</span>
           </button>
 
           {/* Seller Wallet Balance */}
@@ -120,7 +120,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
             (Number(user?.walletBalance) || 0) < 0 ? (
               <button
                 onClick={onOpenWallet}
-                className="px-2 py-1 rounded-xl bg-rose-50 text-rose-700 border border-rose-300 text-[10px] font-black flex items-center gap-1 animate-pulse"
+                className="px-2 py-1 rounded-xl bg-rose-50 text-rose-700 border border-rose-300 text-[10px] font-black flex items-center gap-1 animate-pulse whitespace-nowrap"
                 title="Negative Balance - Clear Courier Dues"
               >
                 <AlertTriangle className="w-3 h-3 text-rose-600" />
@@ -129,7 +129,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
             ) : (
               <button
                 onClick={onOpenWallet}
-                className="px-2 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-200/80 text-[10px] font-bold flex items-center gap-1"
+                className="px-2 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-200/80 text-[10px] font-bold flex items-center gap-1 whitespace-nowrap"
                 title="Wallet Balance"
               >
                 <Wallet className="w-3 h-3 text-blue-600" />
@@ -138,11 +138,11 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
             )
           )}
 
-          {/* Quick New Shipment on Mobile */}
+          {/* Quick New Shipment on Mobile (only on sm+ screens to preserve mobile width) */}
           {isSupplier && (
             <button
               onClick={openNewShipmentModal}
-              className="p-1.5 rounded-xl bg-[#1E56E3] text-white shadow-sm active:scale-95 transition"
+              className="hidden sm:flex p-1.5 rounded-xl bg-[#1E56E3] text-white shadow-sm active:scale-95 transition"
               title="New Shipment"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
@@ -152,7 +152,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
           {isAdmin && (
             <button
               onClick={onOpenAdmin}
-              className="p-1.5 rounded-xl bg-slate-900 text-rose-400 border border-slate-700 active:scale-95 transition"
+              className="hidden sm:flex p-1.5 rounded-xl bg-slate-900 text-rose-400 border border-slate-700 active:scale-95 transition"
               title="Admin Console"
             >
               <ShieldCheck className="w-4 h-4 text-rose-500" />

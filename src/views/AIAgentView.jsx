@@ -689,37 +689,37 @@ export default function AIAgentView({ onBack }) {
       <main className="flex-1 flex flex-col min-w-0 bg-white relative">
         
         {/* Top Navbar */}
-        <header className="h-16 px-6 border-b border-slate-200/80 bg-white/80 backdrop-blur-md flex items-center justify-between shrink-0 z-10 shadow-2xs">
+        <header className="px-3 sm:px-6 py-2 sm:py-3 border-b border-slate-200/80 bg-white/95 backdrop-blur-md flex items-center justify-between shrink-0 z-10 shadow-2xs">
           
           {/* Left Title & Status */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-800 p-0.5 shadow-sm overflow-hidden shrink-0 flex items-center justify-center">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-800 p-0.5 shadow-sm overflow-hidden shrink-0 flex items-center justify-center">
               <img src={SK_LOGO} alt="SecureKaro" className="w-full h-full object-cover rounded-[10px]" />
             </div>
-            <div>
-              <div className="text-sm font-black text-slate-900 flex items-center gap-2">
-                AI Logistics Assistant & Problem Solver
-                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/60">
+            <div className="min-w-0">
+              <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5 truncate">
+                <span className="truncate">SecureKaro AI Agent</span>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/60 shrink-0">
                   <Sparkles size={11} className="text-indigo-600" />
                   Neural Solver v2.5
                 </span>
               </div>
-              <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Autonomous Shipping, Live Tracking & Dispute Resolution</span>
+              <div className="text-[10px] sm:text-xs text-slate-500 font-medium flex items-center gap-1.5 truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="truncate">Autonomous Shipping & Dispute Solver</span>
               </div>
             </div>
           </div>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             
             {/* Voice Readout Toggle */}
             <button
               type="button"
               onClick={toggleVoiceEnabled}
               title={voiceEnabled ? "Voice Readout: Active (Click to mute)" : "Voice Readout: Inactive (Click to hear AI responses)"}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer ${
                 voiceEnabled
                   ? "bg-emerald-50 border-emerald-300 text-emerald-700 shadow-xs"
                   : "bg-slate-100/80 hover:bg-slate-200/70 border-slate-200 text-slate-600"
@@ -735,10 +735,10 @@ export default function AIAgentView({ onBack }) {
                 type="button"
                 onClick={stopSpeaking}
                 title="Stop current speech"
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold cursor-pointer transition animate-pulse"
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold cursor-pointer transition animate-pulse"
               >
                 <Radio size={13} />
-                <span>Stop</span>
+                <span className="hidden sm:inline">Stop</span>
               </button>
             )}
 
@@ -747,9 +747,9 @@ export default function AIAgentView({ onBack }) {
               type="button"
               onClick={handleReset}
               title="Start fresh conversation"
-              className="w-9 h-9 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition cursor-pointer"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition cursor-pointer"
             >
-              <RotateCcw size={15} />
+              <RotateCcw size={14} />
             </button>
 
             {/* Exit AI Agent */}
@@ -757,10 +757,10 @@ export default function AIAgentView({ onBack }) {
               <button
                 type="button"
                 onClick={onBack}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition cursor-pointer ml-1"
+                className="flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition cursor-pointer ml-0.5 sm:ml-1"
                 title="Return to Dashboard / Orders"
               >
-                <ArrowRight size={14} className="rotate-180 text-slate-500" />
+                <ArrowRight size={13} className="rotate-180 text-slate-500" />
                 <span>Exit</span>
               </button>
             )}
@@ -899,7 +899,7 @@ export default function AIAgentView({ onBack }) {
         )}
 
         {/* ── BOTTOM INPUT BOX ── */}
-        <footer className="p-4 sm:p-5 border-t border-slate-200/80 bg-white/95 backdrop-blur-md shrink-0">
+        <footer className="p-3 sm:p-5 pb-20 md:pb-5 border-t border-slate-200/80 bg-white/95 backdrop-blur-md shrink-0">
           
           {/* Active Voice Waveform Indicator */}
           {isListening && (
@@ -957,13 +957,13 @@ export default function AIAgentView({ onBack }) {
               }}
               placeholder={
                 isLoading 
-                  ? "AI Assistant is reasoning..." 
+                  ? "AI reasoning..." 
                   : isListening 
-                    ? "Listening... spoken text will appear here" 
-                    : "Ask AI Agent: book shipment, track order, check wallet, replacement guide, dispute help..."
+                    ? "Listening to voice..." 
+                    : "Ask AI Agent: book shipment, track order, check wallet..."
               }
               disabled={isLoading}
-              className="flex-1 bg-transparent border-none text-sm text-slate-900 placeholder-slate-400 focus:outline-none py-2"
+              className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none py-2"
             />
 
             {/* Voice Input Microphone */}
@@ -1009,8 +1009,8 @@ export default function AIAgentView({ onBack }) {
           </div>
 
           {/* Quick Prompts Footnote */}
-          <div className="flex items-center justify-center gap-2 mt-2.5 text-[11px] text-slate-400 flex-wrap">
-            <span className="font-semibold text-slate-500">Quick Inquiries:</span>
+          <div className="flex items-center justify-center gap-2 mt-2 text-[10px] sm:text-[11px] text-slate-400 flex-wrap">
+            <span className="font-semibold text-slate-500">Quick:</span>
             <button
               type="button"
               onClick={() => sendMessage("Book a new shipment")}
@@ -1034,19 +1034,19 @@ export default function AIAgentView({ onBack }) {
             >
               "My wallet"
             </button>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <button
               type="button"
               onClick={() => sendMessage("How does replacement work?")}
-              className="hover:text-indigo-600 hover:underline cursor-pointer"
+              className="hidden sm:inline hover:text-indigo-600 hover:underline cursor-pointer"
             >
               "Replacement guide"
             </button>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <button
               type="button"
               onClick={() => sendMessage("Explain RTO protection rules")}
-              className="hover:text-indigo-600 hover:underline cursor-pointer"
+              className="hidden sm:inline hover:text-indigo-600 hover:underline cursor-pointer"
             >
               "RTO rules"
             </button>

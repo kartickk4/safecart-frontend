@@ -400,25 +400,29 @@ export default function App() {
 
       {/* Main Content Workspace */}
       <div className="flex-1 flex flex-col min-w-0">
-        <Header
-          user={user}
-          currentRole={isSupplier ? 'Supplier' : 'Receiver'}
-          onSwitchRole={handleSwitchRole}
-          onRefresh={() => window.location.reload()}
-          openNewShipmentModal={() => setCurrentTab('create-shipment')}
-          onOpenAiAgent={() => setCurrentTab('ai-agent')}
-          onOpenAdmin={() => setCurrentTab('admin')}
-          onOpenWallet={() => setCurrentTab('wallet')}
-        />
+        {currentTab !== 'ai-agent' && (
+          <Header
+            user={user}
+            currentRole={isSupplier ? 'Supplier' : 'Receiver'}
+            onSwitchRole={handleSwitchRole}
+            onRefresh={() => window.location.reload()}
+            openNewShipmentModal={() => setCurrentTab('create-shipment')}
+            onOpenAiAgent={() => setCurrentTab('ai-agent')}
+            onOpenAdmin={() => setCurrentTab('admin')}
+            onOpenWallet={() => setCurrentTab('wallet')}
+          />
+        )}
 
-        {/* TOP OF SCREEN AD BANNER */}
-        <div className="px-4 md:px-8 pt-2 pb-2 max-w-7xl mx-auto w-full">
-          <AdBanner onNavigateTrack={() => setCurrentTab('track')} />
-        </div>
+        {/* TOP OF SCREEN AD BANNER (Hidden on AI Agent and transaction forms) */}
+        {currentTab !== 'ai-agent' && currentTab !== 'create-shipment' && currentTab !== 'delivery-confirm' && (
+          <div className="px-4 md:px-8 pt-2 pb-2 max-w-7xl mx-auto w-full">
+            <AdBanner onNavigateTrack={() => setCurrentTab('track')} />
+          </div>
+        )}
 
         {/* AI AGENT: Full-screen, no padding, no extra scroll */}
         {currentTab === 'ai-agent' ? (
-          <div className="flex-1 overflow-hidden min-h-0">
+          <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
             <AIAgentView onBack={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')} />
           </div>
         ) : (
