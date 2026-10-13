@@ -912,7 +912,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             }`}
           >
             <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>{isSupplier ? 'Shipping & Wallet Ledger' : 'Wallet Transactions'} ({walletTransactions.length})</span>
+            <span>Wallet History ({walletTransactions.length})</span>
           </button>
           <button
             onClick={() => setActiveLedgerTab('REWARDS')}
@@ -933,7 +933,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100">
               <div>
                 <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">
-                  {isSupplier ? 'Shipping Wallet Transactions' : 'Wallet Transaction History'}
+                  Wallet History
                 </h3>
                 <p className="text-[11px] sm:text-xs text-slate-500 hidden sm:block">
                   {isSupplier

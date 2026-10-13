@@ -40,24 +40,59 @@ export default function App() {
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.get('tab')) return searchParams.get('tab');
-      if (window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin')) return 'admin';
+      const path = window.location.pathname.replace(/^\/|\/$/g, '');
+      if (path === 'admin') return 'admin';
+      if (path === 'ai-agent') return 'ai-agent';
+      if (path === 'wallet') return 'wallet';
+      if (path === 'track') return 'track';
+      if (path === 'orders' || path === 'shipments') return 'shipments-list';
+      if (path === 'profile') return 'profile';
       if (window.location.hash === '#admin') return 'admin';
+      if (window.location.hash === '#ai-agent') return 'ai-agent';
+      if (window.location.hash === '#wallet') return 'wallet';
     }
     return 'dashboard';
   });
   const [roleNotification, setRoleNotification] = useState(null);
 
+  // Synchronize active tab with browser URL history without page reload
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const currentUrl = new URL(window.location.href);
+    const existingTab = currentUrl.searchParams.get('tab');
+    if (currentTab === 'dashboard') {
+      if (existingTab) {
+        currentUrl.searchParams.delete('tab');
+        window.history.replaceState({ tab: currentTab }, '', currentUrl.pathname + (currentUrl.search ? currentUrl.search : ''));
+      }
+    } else {
+      if (existingTab !== currentTab) {
+        currentUrl.searchParams.set('tab', currentTab);
+        window.history.replaceState({ tab: currentTab }, '', currentUrl.toString());
+      }
+    }
+  }, [currentTab]);
+
   useEffect(() => {
     const handleUrlNavigation = () => {
       if (typeof window === 'undefined') return;
       const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.get('tab')) {
-        setCurrentTab(searchParams.get('tab'));
-      } else if (window.location.hash === '#admin' || window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin')) {
-        setCurrentTab('admin');
-      } else if (window.location.hash === '#ai-agent') {
-        setCurrentTab('ai-agent');
+      const tabParam = searchParams.get('tab');
+      if (tabParam) {
+        setCurrentTab(tabParam);
+        return;
       }
+      const path = window.location.pathname.replace(/^\/|\/$/g, '');
+      if (path === 'admin') setCurrentTab('admin');
+      else if (path === 'ai-agent') setCurrentTab('ai-agent');
+      else if (path === 'wallet') setCurrentTab('wallet');
+      else if (path === 'track') setCurrentTab('track');
+      else if (path === 'orders' || path === 'shipments') setCurrentTab('shipments-list');
+      else if (path === 'profile') setCurrentTab('profile');
+      else if (window.location.hash === '#admin') setCurrentTab('admin');
+      else if (window.location.hash === '#ai-agent') setCurrentTab('ai-agent');
+      else if (window.location.hash === '#wallet') setCurrentTab('wallet');
+      else setCurrentTab('dashboard');
     };
 
     const handleNavigateTab = (e) => {
