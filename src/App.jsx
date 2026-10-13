@@ -360,28 +360,26 @@ export default function App() {
     );
   }
 
-  // Render public tracking page directly with zero login barriers
-  if (publicTrackParams || isPublicTrackingActive) {
-    return (
-      <PublicTrackingView
-        initialTrackingId={publicTrackParams?.trackingId || ''}
-        initialPhone={publicTrackParams?.phone || ''}
-        onBackToAuth={() => {
-          setIsPublicTrackingActive(false);
-          if (window.location.pathname.startsWith('/track')) {
-            window.history.pushState({}, '', '/');
-          }
-        }}
-      />
-    );
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F7F9FC] flex flex-col items-center justify-center space-y-4">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         <p className="text-xs font-bold text-slate-500 tracking-wide uppercase">Loading SecureKaro Escrow Platform...</p>
       </div>
+    );
+  }
+
+  // Allow unauthenticated visitors to track parcels publicly with zero login barriers
+  if (!user && (publicTrackParams || isPublicTrackingActive || currentTab === 'track')) {
+    return (
+      <PublicTrackingView
+        initialTrackingId={publicTrackParams?.trackingId || ''}
+        initialPhone={publicTrackParams?.phone || ''}
+        onBackToAuth={() => {
+          setIsPublicTrackingActive(false);
+          setCurrentTab('dashboard');
+        }}
+      />
     );
   }
 
@@ -595,7 +593,7 @@ export default function App() {
           {currentTab === 'track' && (
             <TrackingView
               user={user}
-              selectedShipment={selectedShipment}
+              selectedShipment={selectedShipment || (publicTrackParams?.trackingId ? { shipmentId: publicTrackParams.trackingId } : null)}
               onSelectShipment={(shipment) => setSelectedShipment(shipment)}
             />
           )}
