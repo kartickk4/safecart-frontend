@@ -345,19 +345,19 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="px-4 py-5 md:p-8 space-y-5 md:space-y-8 max-w-7xl mx-auto">
       {/* SUPPLIER EXECUTIVE HEADER & CONTROL BAR */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 md:gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[11px] font-extrabold uppercase tracking-wide border border-blue-200/60">
+            <span className="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wide border border-blue-200/60">
               Supplier Command Center
             </span>
-            <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+            <span className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-emerald-600">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Sync
             </span>
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight mt-1 flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight mt-1 flex items-center gap-2">
             Business Performance & Escrow Analytics
           </h1>
           <p className="text-xs text-slate-500 font-medium">
@@ -366,121 +366,121 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         </div>
 
         {/* Quick Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <button
             onClick={() => setIsTaxModalOpen(true)}
             title="Open CA-Ready Tax & P&L Statement"
-            className="px-3.5 py-2 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-blue-800 transition shadow-xs active:scale-95 flex items-center gap-2 text-xs font-black cursor-pointer"
+            className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-blue-800 transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-black cursor-pointer"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
-            <span>One-Click Tax &amp; P&amp;L</span>
+            <span>Tax &amp; P&amp;L</span>
             <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
           </button>
 
           <button
             onClick={fetchData}
             title="Refresh Live Analytics Data"
-            className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shadow-xs active:scale-95 flex items-center gap-2 text-xs font-bold"
+            className="px-3 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin text-blue-600' : ''}`} />
-            <span>Sync Data</span>
+            <span>Sync</span>
           </button>
         </div>
       </div>
 
-      {/* 4 PRIMARY EXECUTIVE KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* 4 PRIMARY EXECUTIVE KPI CARDS (2x2 on Mobile, 4x1 on Desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
         {/* KPI 1: Active Escrow in Pipeline */}
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition group relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-100 transition"></div>
-          <div className="flex items-center justify-between mb-3 relative">
-            <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Escrow in Pipeline</span>
-            <div className="w-9 h-9 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold">
-              <ShieldCheck className="w-5 h-5" />
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-100 transition pointer-events-none"></div>
+          <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">In Escrow</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold shrink-0">
+              <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div className="relative">
-            <h3 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight truncate">
               ₹{analytics.activeEscrowHeld.toLocaleString('en-IN')}
             </h3>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px] font-semibold text-slate-500">
-              <span className="text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded">
+            <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
+              <span className="text-blue-600 font-bold bg-blue-50 px-1 py-0.2 rounded">
                 {analytics.activeEscrowHeldCount} orders
               </span>
-              <span>awaiting final delivery</span>
+              <span className="hidden sm:inline">in pipeline</span>
             </div>
           </div>
         </div>
 
         {/* KPI 2: Realized / Payout Revenue */}
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition group relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-emerald-100 transition"></div>
-          <div className="flex items-center justify-between mb-3 relative">
-            <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Settled Payouts</span>
-            <div className="w-9 h-9 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-              <TrendingUp className="w-5 h-5" />
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition group relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-emerald-100 transition pointer-events-none"></div>
+          <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Settled</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div className="relative">
-            <h3 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight truncate">
               ₹{analytics.totalReleasedRevenue.toLocaleString('en-IN')}
             </h3>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px] font-semibold text-slate-500">
-              <span className="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
+            <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
+              <span className="text-emerald-700 font-bold bg-emerald-50 px-1 py-0.2 rounded">
                 {analytics.releasedCount} payouts
               </span>
-              <span>fully settled into bank</span>
+              <span className="hidden sm:inline">in bank</span>
             </div>
           </div>
         </div>
 
         {/* KPI 3: Fulfillment Success Rate */}
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition group relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-indigo-100 transition"></div>
-          <div className="flex items-center justify-between mb-3 relative">
-            <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Fulfillment Rate</span>
-            <div className="w-9 h-9 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-              <Target className="w-5 h-5" />
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition group relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-indigo-100 transition pointer-events-none"></div>
+          <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Fulfillment</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shrink-0">
+              <Target className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div className="relative">
-            <h3 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight truncate">
               {analytics.deliverySuccessRate}%
             </h3>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px] font-semibold text-slate-500">
-              <span className="text-indigo-700 font-bold bg-indigo-50 px-1.5 py-0.5 rounded">
-                {analytics.totalOrders} total
+            <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
+              <span className="text-indigo-700 font-bold bg-indigo-50 px-1 py-0.2 rounded">
+                {analytics.totalOrders} orders
               </span>
-              <span>AOV: ₹{analytics.averageOrderValue.toLocaleString('en-IN')}</span>
+              <span className="hidden sm:inline">delivered</span>
             </div>
           </div>
         </div>
 
         {/* KPI 4: Pending Buyer Confirmations */}
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition group relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-amber-100 transition"></div>
-          <div className="flex items-center justify-between mb-3 relative">
-            <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Pending Sign-Off</span>
-            <div className="w-9 h-9 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-              <Clock className="w-5 h-5" />
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition group relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-amber-100 transition pointer-events-none"></div>
+          <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Sign-Off Due</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shrink-0">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div className="relative">
-            <h3 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight truncate">
               ₹{analytics.pendingSignoffAmount.toLocaleString('en-IN')}
             </h3>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px] font-semibold text-slate-500">
-              <span className="text-amber-700 font-bold bg-amber-50 px-1.5 py-0.5 rounded">
-                {analytics.pendingSignoffCount} delivered
+            <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
+              <span className="text-amber-700 font-bold bg-amber-50 px-1 py-0.2 rounded">
+                {analytics.pendingSignoffCount} pending
               </span>
-              <span>auto-release in 24-48h</span>
+              <span className="hidden sm:inline">auto-release</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* SECONDARY OPERATIONAL EFFICIENCY METRICS (4 Micro Cards) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-blue-600 font-bold shadow-2xs">
             <Truck className="w-4 h-4" />
@@ -724,18 +724,18 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
       {/* LOWER SECTION: ACTIVE SHIPMENTS TABLE + LIVE AUDIT STREAM */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* RECENT SHIPMENTS TABLE (3 COLUMNS SPAN) */}
-        <div className="xl:col-span-3 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div className="xl:col-span-3 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div>
             {/* Table Header & Controls */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div>
                 <h3 className="font-extrabold text-slate-900 text-base">Escrow Shipment Manifest</h3>
                 <p className="text-xs text-slate-500">{filteredShipments.length} matching escrow orders</p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex flex-wrap items-center gap-2">
                 {/* Search */}
-                <div className="relative">
+                <div className="relative w-full sm:w-56">
                   <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
@@ -745,7 +745,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
                       setSearchTerm(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition w-56 font-medium"
+                    className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition font-medium"
                   />
                 </div>
 
@@ -767,8 +767,48 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
               </div>
             </div>
 
-            {/* Table */}
-            <div className="overflow-x-auto">
+            {/* ── MOBILE MANIFEST CARDS (block md:hidden) ── */}
+            <div className="block md:hidden space-y-2.5">
+              {paginatedShipments.length > 0 ? (
+                paginatedShipments.map((item, idx) => (
+                  <div
+                    key={item.shipmentId || idx}
+                    onClick={() => onSelectShipment(item)}
+                    className="p-3.5 rounded-xl bg-slate-50/60 border border-slate-200/80 hover:border-blue-400 transition cursor-pointer active:scale-[0.99] space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-extrabold text-xs text-[#1E56E3]">
+                        {item.shipmentId}
+                      </span>
+                      <div>{renderEscrowPill(item.status)}</div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-xs text-slate-900 truncate">
+                        {item.receiverName || 'Buyer'}
+                      </span>
+                      <span className="font-black text-xs text-slate-900 shrink-0">
+                        ₹{item.amount ? Number(item.amount).toLocaleString('en-IN') : '0'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-200/50">
+                      <span className="truncate">{item.city || 'Domestic'}</span>
+                      <span className="capitalize text-slate-600 font-semibold shrink-0 ml-2">
+                        {item.carrierSlug || 'Delhivery'}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-xs text-slate-400">
+                  No shipments found matching current filters.
+                </div>
+              )}
+            </div>
+
+            {/* ── DESKTOP MANIFEST TABLE (hidden md:block) ── */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-100 text-[10px] font-black uppercase text-slate-400 tracking-wider">

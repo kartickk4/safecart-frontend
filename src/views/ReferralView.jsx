@@ -139,7 +139,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 select-none">
+    <div className="max-w-7xl mx-auto px-4 py-5 sm:px-6 lg:px-8 sm:py-8 space-y-5 sm:space-y-8 select-none">
       
       {/* ── HERO BANNER: AMBASSADOR WALLET CASH BANNER ── */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-50/70 via-white to-blue-50/50 border border-emerald-200/90 shadow-sm p-5 sm:p-7 text-slate-900">
@@ -285,82 +285,82 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
         </div>
       </div>
 
-      {/* ── 4-STAT PERFORMANCE DASHBOARD ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ── 4-STAT PERFORMANCE DASHBOARD (2x2 on Mobile, 4x1 on Desktop) ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         
         {/* Stat 1: Total Invited */}
-        <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3 hover:shadow-md transition-all">
+        <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-2.5 sm:space-y-3 hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Friends Invited</span>
-            <div className="w-9 h-9 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center">
-              <Users className="w-5 h-5" />
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Invited</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center shrink-0">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-slate-900 font-mono">
+          <div className="flex items-baseline gap-1.5 sm:gap-2">
+            <span className="text-xl sm:text-3xl font-black text-slate-900 font-mono">
               {loading ? '...' : totalReferred}
             </span>
-            <span className="text-xs font-semibold text-slate-500">accounts</span>
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-500">accounts</span>
           </div>
-          <p className="text-[11px] text-slate-400">Total merchants registered via your link</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-400 truncate">Via your referral link</p>
         </div>
 
         {/* Stat 2: Delivered & Converted */}
-        <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3 hover:shadow-md transition-all">
+        <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-2.5 sm:space-y-3 hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Orders Delivered</span>
-            <div className="w-9 h-9 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <CheckCircle2 className="w-5 h-5" />
+            <span className="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider truncate">Delivered</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-emerald-600 font-mono">
+          <div className="flex items-baseline gap-1.5 sm:gap-2">
+            <span className="text-xl sm:text-3xl font-black text-emerald-600 font-mono">
               {loading ? '...' : earnedReferrals}
             </span>
-            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] sm:text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
               Qualified ✓
             </span>
           </div>
-          <p className="text-[11px] text-slate-400">Completed 1st shipment delivery</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-400 truncate">Completed 1st delivery</p>
         </div>
 
         {/* Stat 3: In Transit / Pending */}
-        <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3 hover:shadow-md transition-all">
+        <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-2.5 sm:space-y-3 hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Awaiting 1st Delivery</span>
-            <div className="w-9 h-9 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Clock className="w-5 h-5" />
+            <span className="text-[10px] sm:text-xs font-bold text-amber-800 uppercase tracking-wider truncate">In Transit</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-amber-600 font-mono">
+          <div className="flex items-baseline gap-1.5 sm:gap-2">
+            <span className="text-xl sm:text-3xl font-black text-amber-600 font-mono">
               {loading ? '...' : pendingReferrals}
             </span>
-            <span className="text-xs font-semibold text-slate-500">in-pipeline</span>
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-500">pipeline</span>
           </div>
-          <p className="text-[11px] text-slate-400">₹{pendingReferrals * 40} pending in pipeline payouts</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-400 truncate">₹{pendingReferrals * 40} pending</p>
         </div>
 
         {/* Stat 4: Total Wallet Cash Earned */}
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-emerald-50/60 to-white text-slate-900 border border-emerald-200/90 shadow-sm space-y-3 hover:shadow-md transition-all relative overflow-hidden">
+        <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-emerald-500/10 via-emerald-50/60 to-white text-slate-900 border border-emerald-200/90 shadow-sm space-y-2.5 sm:space-y-3 hover:shadow-md transition-all relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-400/10 rounded-full blur-xl pointer-events-none"></div>
           <div className="flex items-center justify-between relative z-10">
-            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Total Referral Cash</span>
-            <div className="w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
-              <Coins className="w-5 h-5" />
+            <span className="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider truncate">Referral Cash</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+              <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2 relative z-10">
-            <span className="text-3xl font-black text-emerald-900 font-mono">
+          <div className="flex items-baseline gap-1.5 sm:gap-2 relative z-10">
+            <span className="text-xl sm:text-3xl font-black text-emerald-900 font-mono">
               ₹{loading ? '...' : totalEarnedCash}
             </span>
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] sm:text-xs font-bold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 rounded-full">
               In Wallet ✓
             </span>
           </div>
           <div className="relative z-10">
-            <p className="text-[11px] text-slate-500 font-medium">
-              Current total wallet balance: <strong className="text-slate-900 font-bold">₹{currentWalletBalance.toLocaleString('en-IN')}</strong>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
+              Balance: <strong className="text-slate-900 font-bold">₹{currentWalletBalance.toLocaleString('en-IN')}</strong>
             </p>
           </div>
         </div>
@@ -368,7 +368,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
       </div>
 
       {/* ── 3-STEP VISUAL ROADMAP ── */}
-      <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-6">
+      <div className="p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-5 sm:space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <span className="text-xs font-black text-[#1E56E3] uppercase tracking-wider block">HOW REFERRAL REWARDS WORK</span>
@@ -430,10 +430,10 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
       </div>
 
       {/* ── DUAL SECTION: REWARD CALCULATOR + WALLET ACTIONS ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 items-start">
         
         {/* Left: Interactive Earnings Calculator */}
-        <div className="lg:col-span-6 p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-6">
+        <div className="lg:col-span-6 p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-5 sm:space-y-6">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
               <TrendingUp className="w-3.5 h-3.5" />
@@ -495,7 +495,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
         </div>
 
         {/* Right: Wallet Cash Actions Hub */}
-        <div className="lg:col-span-6 p-8 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-blue-50/40 to-white border border-emerald-200/80 shadow-sm space-y-6">
+        <div className="lg:col-span-6 p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-emerald-500/10 via-blue-50/40 to-white border border-emerald-200/80 shadow-sm space-y-5 sm:space-y-6">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
               <Wallet className="w-3.5 h-3.5 text-emerald-700" />

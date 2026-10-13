@@ -692,23 +692,45 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
       </div>
 
       {/* RIGHT AUTH FORM COLUMN */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white">
-        <div className="w-full max-w-md space-y-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-6 sm:p-12 bg-white">
+        <div className="w-full max-w-md space-y-6 sm:space-y-8">
+
+          {/* MOBILE BRAND IDENTITY HEADER (SHOWN ONLY ON MOBILE PHONES) */}
+          <div className="lg:hidden pb-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#1E56E3] via-[#1649CC] to-[#0D38A8] text-white flex items-center justify-center shadow-md shadow-blue-600/25">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-lg font-black tracking-tight text-slate-900">SecureKaro</h1>
+                  <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-50 text-[#1E56E3] border border-blue-200">
+                    Escrow
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 font-medium">India's Logistics Escrow Platform</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[10px] font-extrabold shadow-2xs">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>RBI Regulated</span>
+            </div>
+          </div>
           
           {/* Top Pill Tab Switcher */}
           <div className="flex justify-end">
-            <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1 text-sm font-medium text-slate-600">
+            <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1 text-sm font-medium text-slate-600 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setIsSignUp(false)}
-                className={`px-5 py-1.5 rounded-lg transition-all ${!isSignUp ? 'bg-white text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
+                className={`flex-1 sm:flex-initial px-5 py-2 rounded-lg transition-all text-center ${!isSignUp ? 'bg-white text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
               >
                 Sign In
               </button>
               <button
                 type="button"
                 onClick={() => setIsSignUp(true)}
-                className={`px-5 py-1.5 rounded-lg transition-all ${isSignUp ? 'bg-white text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
+                className={`flex-1 sm:flex-initial px-5 py-2 rounded-lg transition-all text-center ${isSignUp ? 'bg-white text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
               >
                 Create Account
               </button>
@@ -906,12 +928,29 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                 </svg>
               )}
-              <span>{googleLoading ? 'Signing in with Google...' : 'Continue with Google'}</span>
             </button>
           </form>
 
+          {/* Trust & Regulatory Guarantee Bar */}
+          <div className="pt-2 flex items-center justify-center gap-4 text-[10px] font-semibold text-slate-500 text-center">
+            <span className="flex items-center gap-1">
+              <Lock className="w-3 h-3 text-slate-400" />
+              <span>256-Bit SSL</span>
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+              <span>RBI Regulated Trustee</span>
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3 text-[#1E56E3]" />
+              <span>Instant UPI</span>
+            </span>
+          </div>
+
           {/* Cashfree Merchant Compliance Footer Links */}
-          <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] font-bold text-slate-500">
+          <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] font-bold text-slate-500">
             <button 
               type="button"
               onClick={() => setShowLegalModal('contact')} 

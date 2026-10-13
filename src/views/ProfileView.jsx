@@ -361,10 +361,10 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
+    <div className="px-4 py-5 md:p-8 max-w-4xl mx-auto space-y-5 md:space-y-8">
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
-          <User className="w-6 h-6 text-[#1E56E3]" />
+        <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+          <User className="w-5 h-5 md:w-6 md:h-6 text-[#1E56E3]" />
           Account & Escrow Profile
         </h1>
         <p className="text-xs text-slate-500 mt-1">Manage your identity details and bank account for automated escrow payouts.</p>
@@ -377,9 +377,9 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
         </div>
       )}
 
-      <form onSubmit={handleInitiateSave} className="space-y-8">
+      <form onSubmit={handleInitiateSave} className="space-y-5 md:space-y-8">
         {/* Personal Details */}
-        <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
+        <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <h2 className="font-bold text-slate-900 text-sm">Personal Identity Information</h2>
           </div>
@@ -638,7 +638,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
         </div>
 
         {/* Physical Address / Courier Pickup Hub */}
-        <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
+        <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold">
@@ -809,10 +809,10 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
         </div>
 
         {/* Payout Bank Details */}
-        <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold shrink-0">
                 <Building className="w-5 h-5" />
               </div>
               <div>
@@ -824,9 +824,9 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
               </div>
             </div>
 
-            <span className="bg-blue-50 text-[#1E56E3] border border-blue-200 text-[10px] font-bold px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5 shrink-0">
+            <span className="bg-blue-50 text-[#1E56E3] border border-blue-200 text-[10px] font-bold px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
               <ShieldCheck className="w-3.5 h-3.5" />
-              {otpVerified ? 'OTP Verified' : 'OTP Security Protected (Phone / Email)'}
+              {otpVerified ? 'OTP Verified' : 'OTP Security Protected'}
             </span>
           </div>
 

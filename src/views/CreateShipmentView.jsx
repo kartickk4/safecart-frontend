@@ -423,21 +423,21 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
+    <div className="px-4 py-5 md:p-8 max-w-4xl mx-auto space-y-5 md:space-y-8">
       {/* STEP 1: MULTI-STEP CREATION WIZARD */}
       {step === 1 && (
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
           <div className="flex items-center gap-3">
             <button onClick={onBack} className="p-2 rounded-xl hover:bg-slate-100 text-slate-500">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-extrabold text-slate-900">Create Escrow Shipment Booking</h1>
+              <h1 className="text-xl md:text-2xl font-extrabold text-slate-900">Create Escrow Shipment Booking</h1>
               <p className="text-xs text-slate-500">Fill in the order details to lock funds in SecureKaro RBI-compliant escrow.</p>
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+          <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-5 sm:space-y-6">
             {error && (
               <div className="p-3.5 rounded-xl bg-red-50 text-red-700 text-xs font-medium border border-red-200 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />

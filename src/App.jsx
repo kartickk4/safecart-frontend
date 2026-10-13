@@ -412,7 +412,7 @@ export default function App() {
         />
 
         {/* TOP OF SCREEN AD BANNER */}
-        <div className="px-8 pt-2 pb-2 max-w-7xl mx-auto w-full">
+        <div className="px-4 md:px-8 pt-2 pb-2 max-w-7xl mx-auto w-full">
           <AdBanner onNavigateTrack={() => setCurrentTab('track')} />
         </div>
 
@@ -422,7 +422,7 @@ export default function App() {
             <AIAgentView onBack={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')} />
           </div>
         ) : (
-        <main className="flex-1 pb-12 overflow-y-auto">
+        <main className="flex-1 pb-28 md:pb-12 overflow-y-auto">
           {/* VIEW 1: DASHBOARD */}
           {currentTab === 'dashboard' && (
             <DashboardView
@@ -639,10 +639,11 @@ export default function App() {
       )}
 
       {/* FIXED MOBILE BOTTOM NAVIGATION BAR (FOR MOBILE SMARTPHONE SCREENS) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-2 py-2 flex items-center justify-around z-50 shadow-lg select-none">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-2 py-1.5 pb-safe flex items-center justify-around z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] select-none">
+        {/* TAB 1: DASHBOARD / ORDERS */}
         <button
           onClick={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-bold transition active:scale-95 ${
             (currentTab === 'dashboard' || currentTab === 'shipments-list') ? 'text-[#1E56E3]' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
@@ -650,10 +651,11 @@ export default function App() {
           <span>{isSupplier ? 'Dashboard' : 'Orders'}</span>
         </button>
 
+        {/* TAB 2: AI AGENT (SUPPLIER) OR LIVE TRACKING (RECEIVER) */}
         {isSupplier ? (
           <button
             onClick={() => setCurrentTab('ai-agent')}
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
+            className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-bold transition active:scale-95 ${
               currentTab === 'ai-agent' ? 'text-purple-600 font-extrabold' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
@@ -662,71 +664,53 @@ export default function App() {
           </button>
         ) : (
           <button
-            onClick={() => setCurrentTab('delivery-confirm')}
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
-              currentTab === 'delivery-confirm' ? 'text-emerald-600 font-extrabold' : 'text-slate-500 hover:text-slate-900'
+            onClick={() => setCurrentTab('track')}
+            className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-bold transition active:scale-95 ${
+              currentTab === 'track' ? 'text-[#1E56E3] font-extrabold' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            <span>Sign-Off</span>
+            <Navigation className="w-5 h-5" />
+            <span>Tracking</span>
           </button>
         )}
 
-        <button
-          onClick={() => setCurrentTab('track')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
-            currentTab === 'track' ? 'text-[#1E56E3]' : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          <Navigation className="w-5 h-5" />
-          <span>Tracking</span>
-        </button>
-
+        {/* TAB 3: CENTER ACTION (SHIP FOR SELLER, SIGN-OFF FOR BUYER) */}
         {isSupplier ? (
           <button
             onClick={() => setCurrentTab('create-shipment')}
-            className="flex flex-col items-center gap-1 p-2 bg-[#1E56E3] text-white rounded-2xl text-[10px] font-bold shadow-md shadow-blue-500/30 -mt-5 transition active:scale-95"
+            className="flex flex-col items-center justify-center -mt-5 w-12 h-12 bg-gradient-to-tr from-[#1443BC] to-[#2563EB] text-white rounded-2xl shadow-lg shadow-blue-600/35 active:scale-95 transition border-2 border-white"
+            title="Create New Escrow Shipment"
           >
-            <PlusCircle className="w-6 h-6" />
-            <span>Ship</span>
+            <PlusCircle className="w-6 h-6 stroke-[2.5]" />
+            <span className="text-[9px] font-black tracking-tight leading-none mt-0.5">Ship</span>
           </button>
         ) : (
           <button
-            onClick={() => handleSwitchRole('Supplier')}
-            className="flex flex-col items-center gap-1 p-2 bg-blue-50 text-[#1E56E3] border border-blue-200 rounded-2xl text-[10px] font-bold shadow-sm transition active:scale-95"
-            title="Switch to Supplier Portal"
-          >
-            <ArrowLeftRight className="w-5 h-5" />
-            <span>To Seller</span>
-          </button>
-        )}
-
-        {!isSupplier && (
-          <button
             onClick={() => setCurrentTab('delivery-confirm')}
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
-              currentTab === 'delivery-confirm' ? 'text-[#1E56E3]' : 'text-slate-500 hover:text-slate-900'
-            }`}
+            className="flex flex-col items-center justify-center -mt-5 w-12 h-12 bg-gradient-to-tr from-emerald-600 to-teal-600 text-white rounded-2xl shadow-lg shadow-emerald-600/35 active:scale-95 transition border-2 border-white"
+            title="Inspect & Sign Off Delivery"
           >
-            <CheckCircle2 className="w-5 h-5" />
-            <span>Confirm</span>
+            <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
+            <span className="text-[9px] font-black tracking-tight leading-none mt-0.5">Sign</span>
           </button>
         )}
 
+        {/* TAB 4: WALLET */}
         <button
           onClick={() => setCurrentTab('wallet')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-bold transition active:scale-95 ${
             currentTab === 'wallet' ? 'text-[#1E56E3] font-extrabold' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Wallet className="w-5 h-5 text-[#1E56E3]" />
+          <Wallet className="w-5 h-5" />
           <span>Wallet</span>
         </button>
 
+        {/* TAB 5: PROFILE */}
         <button
           onClick={() => setCurrentTab('profile')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-[10px] font-bold transition ${
-            currentTab === 'profile' ? 'text-[#1E56E3]' : 'text-slate-500 hover:text-slate-900'
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-bold transition active:scale-95 ${
+            currentTab === 'profile' ? 'text-[#1E56E3] font-extrabold' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           <User className="w-5 h-5" />

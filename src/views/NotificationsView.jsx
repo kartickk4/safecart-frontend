@@ -151,10 +151,10 @@ export default function NotificationsView({ onSelectShipment, onNotificationsCha
   });
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="px-4 py-5 md:p-8 max-w-4xl mx-auto space-y-5 md:space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
+          <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
             <Bell className="w-6 h-6 text-[#1E56E3]" />
             <span>Notifications Center</span>
             {unreadCount > 0 && (
