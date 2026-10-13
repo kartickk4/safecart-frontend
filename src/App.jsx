@@ -31,68 +31,136 @@ import AdBanner from './components/AdBanner';
 import { profileAPI, authAPI, notificationAPI } from './services/api';
 import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell, ShieldCheck, Wallet, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles } from 'lucide-react';
 
+export const TAB_ROUTES = {
+  'dashboard': '/dashboard',
+  'shipments-list': '/orders',
+  'create-shipment': '/create-shipment',
+  'ai-agent': '/ai-agent',
+  'track': '/track',
+  'delivery-confirm': '/delivery-confirm',
+  'wallet': '/wallet',
+  'refer': '/refer',
+  'notifications': '/notifications',
+  'profile': '/profile',
+  'support': '/support',
+  'legal': '/legal',
+  'roi-calculator': '/roi-calculator',
+  'return-orders': '/return-orders',
+  'return-tracking': '/return-tracking',
+  'admin': '/admin'
+};
+
+export const ROUTE_TABS = {
+  '': 'dashboard',
+  '/': 'dashboard',
+  '/dashboard': 'dashboard',
+  '/orders': 'shipments-list',
+  '/shipments': 'shipments-list',
+  '/create-shipment': 'create-shipment',
+  '/ship': 'create-shipment',
+  '/ai-agent': 'ai-agent',
+  '/track': 'track',
+  '/tracking': 'track',
+  '/delivery-confirm': 'delivery-confirm',
+  '/sign-off': 'delivery-confirm',
+  '/wallet': 'wallet',
+  '/payouts': 'wallet',
+  '/escrow': 'wallet',
+  '/refer': 'refer',
+  '/notifications': 'notifications',
+  '/profile': 'profile',
+  '/support': 'support',
+  '/help': 'support',
+  '/legal': 'legal',
+  '/compliance': 'legal',
+  '/roi-calculator': 'roi-calculator',
+  '/calculator': 'roi-calculator',
+  '/return-orders': 'return-orders',
+  '/return-tracking': 'return-tracking',
+  '/admin': 'admin'
+};
+
+export const TAB_TITLES = {
+  'dashboard': 'Dashboard | SecureKaro — Escrow Logistics Platform',
+  'shipments-list': 'Orders & Shipments | SecureKaro Escrow Platform',
+  'create-shipment': 'Create Shipment | SecureKaro Escrow Platform',
+  'ai-agent': 'AI Shipping Agent | SecureKaro Automation',
+  'track': 'Live Tracking & Journey | SecureKaro',
+  'delivery-confirm': 'Delivery Sign-Off & Inspection | SecureKaro',
+  'wallet': 'Wallet History & Escrow Payouts | SecureKaro',
+  'refer': 'Refer & Earn Ambassador Hub | SecureKaro',
+  'notifications': 'Notification Center | SecureKaro',
+  'profile': 'Profile & Bank Payout Settings | SecureKaro',
+  'support': '24/7 Help & Support | SecureKaro',
+  'legal': 'Legal & Merchant Compliance | SecureKaro',
+  'roi-calculator': 'COD vs Escrow Savings Calculator | SecureKaro',
+  'return-orders': 'Return Orders & Reverse Logistics | SecureKaro',
+  'return-tracking': 'Return Package Tracking | SecureKaro',
+  'admin': 'Executive Admin Console | SecureKaro'
+};
+
+export function getTabFromLocation() {
+  if (typeof window === 'undefined') return 'dashboard';
+
+  const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
+  if (ROUTE_TABS[pathname]) {
+    return ROUTE_TABS[pathname];
+  }
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const tabParam = searchParams.get('tab');
+  if (tabParam && (TAB_ROUTES[tabParam] || ROUTE_TABS['/' + tabParam])) {
+    return TAB_ROUTES[tabParam] ? tabParam : ROUTE_TABS['/' + tabParam];
+  }
+
+  const hash = window.location.hash.replace(/^#/, '');
+  if (hash && ROUTE_TABS['/' + hash]) {
+    return ROUTE_TABS['/' + hash];
+  }
+
+  return 'dashboard';
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutStep, setSignOutStep] = useState('');
-  const [currentTab, setCurrentTab] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.get('tab')) return searchParams.get('tab');
-      const path = window.location.pathname.replace(/^\/|\/$/g, '');
-      if (path === 'admin') return 'admin';
-      if (path === 'ai-agent') return 'ai-agent';
-      if (path === 'wallet') return 'wallet';
-      if (path === 'track') return 'track';
-      if (path === 'orders' || path === 'shipments') return 'shipments-list';
-      if (path === 'profile') return 'profile';
-      if (window.location.hash === '#admin') return 'admin';
-      if (window.location.hash === '#ai-agent') return 'ai-agent';
-      if (window.location.hash === '#wallet') return 'wallet';
-    }
-    return 'dashboard';
-  });
+  const [currentTab, _setCurrentTab] = useState(() => getTabFromLocation());
   const [roleNotification, setRoleNotification] = useState(null);
 
-  // Synchronize active tab with browser URL history without page reload
+  // Central navigation dispatcher that updates React state, URL path in history, and page title
+  const setCurrentTab = (nextTab, options = {}) => {
+    const targetTab = typeof nextTab === 'function' ? nextTab(currentTab) : nextTab;
+    if (!targetTab) return;
+
+    _setCurrentTab(targetTab);
+
+    if (typeof window !== 'undefined') {
+      const targetRoute = TAB_ROUTES[targetTab] || `/${targetTab}`;
+      const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+
+      if (options.replace) {
+        window.history.replaceState({ tab: targetTab }, '', targetRoute);
+      } else if (currentPath !== targetRoute && !(currentPath === '/' && targetRoute === '/dashboard')) {
+        window.history.pushState({ tab: targetTab }, '', targetRoute);
+      }
+
+      document.title = TAB_TITLES[targetTab] || 'SecureKaro — Escrow Logistics & Safe Commerce';
+    }
+  };
+
+  // Synchronize initial document.title and handle browser Back/Forward (popstate)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const currentUrl = new URL(window.location.href);
-    const existingTab = currentUrl.searchParams.get('tab');
-    if (currentTab === 'dashboard') {
-      if (existingTab) {
-        currentUrl.searchParams.delete('tab');
-        window.history.replaceState({ tab: currentTab }, '', currentUrl.pathname + (currentUrl.search ? currentUrl.search : ''));
-      }
-    } else {
-      if (existingTab !== currentTab) {
-        currentUrl.searchParams.set('tab', currentTab);
-        window.history.replaceState({ tab: currentTab }, '', currentUrl.toString());
-      }
-    }
-  }, [currentTab]);
 
-  useEffect(() => {
-    const handleUrlNavigation = () => {
-      if (typeof window === 'undefined') return;
-      const searchParams = new URLSearchParams(window.location.search);
-      const tabParam = searchParams.get('tab');
-      if (tabParam) {
-        setCurrentTab(tabParam);
-        return;
-      }
-      const path = window.location.pathname.replace(/^\/|\/$/g, '');
-      if (path === 'admin') setCurrentTab('admin');
-      else if (path === 'ai-agent') setCurrentTab('ai-agent');
-      else if (path === 'wallet') setCurrentTab('wallet');
-      else if (path === 'track') setCurrentTab('track');
-      else if (path === 'orders' || path === 'shipments') setCurrentTab('shipments-list');
-      else if (path === 'profile') setCurrentTab('profile');
-      else if (window.location.hash === '#admin') setCurrentTab('admin');
-      else if (window.location.hash === '#ai-agent') setCurrentTab('ai-agent');
-      else if (window.location.hash === '#wallet') setCurrentTab('wallet');
-      else setCurrentTab('dashboard');
+    // Set initial title based on initial route
+    document.title = TAB_TITLES[currentTab] || 'SecureKaro — Escrow Logistics & Safe Commerce';
+
+    const handlePopState = () => {
+      const tab = getTabFromLocation();
+      _setCurrentTab(tab);
+      document.title = TAB_TITLES[tab] || 'SecureKaro — Escrow Logistics & Safe Commerce';
     };
 
     const handleNavigateTab = (e) => {
@@ -101,12 +169,11 @@ export default function App() {
       }
     };
 
-    window.addEventListener('popstate', handleUrlNavigation);
-    window.addEventListener('hashchange', handleUrlNavigation);
+    window.addEventListener('popstate', handlePopState);
     window.addEventListener('navigate-tab', handleNavigateTab);
+
     return () => {
-      window.removeEventListener('popstate', handleUrlNavigation);
-      window.removeEventListener('hashchange', handleUrlNavigation);
+      window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('navigate-tab', handleNavigateTab);
     };
   }, []);
@@ -395,6 +462,77 @@ export default function App() {
       <div className="min-h-screen bg-[#F7F9FC] flex flex-col items-center justify-center space-y-4">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         <p className="text-xs font-bold text-slate-500 tracking-wide uppercase">Loading SecureKaro Escrow Platform...</p>
+      </div>
+    );
+  }
+
+  // Allow unauthenticated visitors to view standalone public pages (legal, support, roi-calculator)
+  if (!user && (currentTab === 'legal' || currentTab === 'support' || currentTab === 'roi-calculator')) {
+    return (
+      <div className="min-h-screen bg-[#F7F9FC] flex flex-col text-slate-800">
+        <header className="bg-white border-b border-slate-200/80 px-4 md:px-8 py-3.5 sticky top-0 z-30 shadow-xs flex items-center justify-between">
+          <button
+            onClick={() => {
+              setCurrentTab('dashboard');
+            }}
+            className="flex items-center gap-2.5 text-left group"
+          >
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1E56E3] to-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-black text-slate-900 text-base tracking-tight block">SecureKaro</span>
+              <span className="text-[10px] text-slate-400 font-semibold block -mt-0.5">Escrow Logistics Platform</span>
+            </div>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentTab('roi-calculator')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                currentTab === 'roi-calculator' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Calculator
+            </button>
+            <button
+              onClick={() => setCurrentTab('support')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                currentTab === 'support' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Support
+            </button>
+            <button
+              onClick={() => setCurrentTab('legal')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                currentTab === 'legal' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Legal & Compliance
+            </button>
+            <button
+              onClick={() => {
+                setCurrentTab('dashboard');
+              }}
+              className="px-4 py-2 bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition flex items-center gap-1.5"
+            >
+              Sign In / Register →
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-1 pb-16 overflow-y-auto">
+          {currentTab === 'legal' && <LegalComplianceView />}
+          {currentTab === 'support' && <SupportView />}
+          {currentTab === 'roi-calculator' && (
+            <ROISavingsCalculatorView
+              onNavigateCreateShipment={() => {
+                setCurrentTab('dashboard');
+              }}
+            />
+          )}
+        </main>
       </div>
     );
   }
