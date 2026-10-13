@@ -418,10 +418,10 @@ export default function WalletModal({ user, onUpdateUser }) {
   });
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 select-none">
+    <div className="p-3 sm:p-6 md:p-8 max-w-6xl mx-auto space-y-6 sm:space-y-8 select-none">
       {/* Clean Header */}
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
           {isSupplier ? 'Supplier Escrow Wallet' : 'Receiver Escrow Wallet'}
         </h1>
         <p className="text-xs text-slate-500 mt-1">
@@ -433,11 +433,11 @@ export default function WalletModal({ user, onUpdateUser }) {
       </div>
 
       {/* Balance Grid Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {isSupplier ? (
           <>
             {/* Supplier Card 1: Main Unified Wallet Card */}
-            <div className="sm:col-span-2 lg:col-span-2 bg-gradient-to-br from-[#1E3A6E] via-[#1A459C] to-[#1E56E3] text-white p-6 md:p-7 rounded-3xl shadow-xl shadow-blue-900/20 border border-blue-400/20 relative overflow-hidden flex flex-col justify-between group hover:shadow-2xl hover:shadow-blue-900/30 transition">
+            <div className="sm:col-span-2 lg:col-span-2 bg-gradient-to-br from-[#1E3A6E] via-[#1A459C] to-[#1E56E3] text-white p-4 sm:p-6 md:p-7 rounded-2xl sm:rounded-3xl shadow-xl shadow-blue-900/20 border border-blue-400/20 relative overflow-hidden flex flex-col justify-between group hover:shadow-2xl hover:shadow-blue-900/30 transition">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition pointer-events-none">
                 <Wallet className="w-32 h-32 text-white" />
               </div>
@@ -900,55 +900,55 @@ export default function WalletModal({ user, onUpdateUser }) {
       </div>
 
       {/* REWARD & ESCROW / WALLET TRANSACTIONS HISTORY */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+      <div className="bg-white p-3.5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-4 sm:space-y-6">
         {/* Dual Ledger Tab Switcher for All Users */}
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveLedgerTab('WALLET')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 cursor-pointer ${
+            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
               activeLedgerTab === 'WALLET'
                 ? 'bg-[#1E56E3] text-white shadow-md shadow-blue-500/25'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
             }`}
           >
-            <Wallet className="w-4 h-4" />
+            <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{isSupplier ? 'Shipping & Wallet Ledger' : 'Wallet Transactions'} ({walletTransactions.length})</span>
           </button>
           <button
             onClick={() => setActiveLedgerTab('REWARDS')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 cursor-pointer ${
+            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
               activeLedgerTab === 'REWARDS'
                 ? 'bg-[#1E56E3] text-white shadow-md shadow-blue-500/25'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
             }`}
           >
-            <Gift className="w-4 h-4" />
+            <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{isSupplier ? 'Prepayment Cash Rewards' : 'Cashback & Rewards'} ({rewardHistory.length})</span>
           </button>
         </div>
 
         {/* 1. WALLET TRANSACTIONS LEDGER VIEW */}
         {activeLedgerTab === 'WALLET' ? (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100">
               <div>
-                <h3 className="font-extrabold text-slate-900 text-base">
+                <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">
                   {isSupplier ? 'Shipping Wallet Transactions' : 'Wallet Transaction History'}
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-[11px] sm:text-xs text-slate-500 hidden sm:block">
                   {isSupplier
                     ? 'Real-time record of all top-ups, courier freight deductions, and COD balance settlements.'
                     : 'Real-time record of all top-ups, refunds, escrow releases, and UPI withdrawals.'}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
                 {/* Filter Pills */}
-                <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
+                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl sm:rounded-2xl">
                   <button
                     type="button"
                     onClick={() => setWalletFilter('ALL')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition cursor-pointer ${
+                    className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-extrabold transition cursor-pointer whitespace-nowrap ${
                       walletFilter === 'ALL' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
                     }`}
                   >
@@ -957,7 +957,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                   <button
                     type="button"
                     onClick={() => setWalletFilter('CREDIT')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition cursor-pointer ${
+                    className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-extrabold transition cursor-pointer whitespace-nowrap ${
                       walletFilter === 'CREDIT' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
                     }`}
                   >
@@ -966,7 +966,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                   <button
                     type="button"
                     onClick={() => setWalletFilter('DEBIT')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition cursor-pointer ${
+                    className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-extrabold transition cursor-pointer whitespace-nowrap ${
                       walletFilter === 'DEBIT' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
                     }`}
                   >
@@ -977,7 +977,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <button
                   type="button"
                   onClick={() => setShowRechargeModal(true)}
-                  className="px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1E56E3] font-black text-xs border border-blue-200 flex items-center gap-1.5 cursor-pointer transition"
+                  className="px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1E56E3] font-black text-[11px] sm:text-xs border border-blue-200 flex items-center gap-1.5 cursor-pointer transition shrink-0 whitespace-nowrap"
                 >
                   <Zap className="w-3.5 h-3.5" />
                   <span>+ Recharge</span>
@@ -1008,25 +1008,25 @@ export default function WalletModal({ user, onUpdateUser }) {
             ) : (
               <div className="divide-y divide-slate-100">
                 {filteredWalletTransactions.map((tx) => (
-                  <div key={tx._id} className="py-4 flex items-center justify-between gap-4 hover:bg-slate-50/80 px-2 rounded-2xl transition">
-                    <div className="flex items-center gap-3.5">
-                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 font-bold ${
+                  <div key={tx._id} className="py-3.5 sm:py-4 flex items-start sm:items-center justify-between gap-3 hover:bg-slate-50/80 px-2 sm:px-3 rounded-2xl transition border-b border-slate-100/70 last:border-b-0">
+                    <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 font-bold ${
                         tx.type === 'credit'
                           ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                           : 'bg-rose-50 text-rose-600 border border-rose-100'
                       }`}>
                         {tx.type === 'credit' ? (
-                          <ArrowDownLeft className="w-5 h-5" />
+                          <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                         ) : (
-                          <ArrowUpRight className="w-5 h-5" />
+                          <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
                         )}
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-extrabold text-slate-900 text-xs md:text-sm">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-extrabold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2">
                             {tx.description || (tx.type === 'credit' ? 'Wallet Top-up' : 'Courier Deduction')}
                           </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                          <span className={`px-1.5 py-0.2 rounded-md text-[9px] sm:text-[10px] font-extrabold uppercase shrink-0 ${
                             tx.source === 'recharge'
                               ? 'bg-blue-100 text-blue-800'
                               : tx.source === 'freight_deduction'
@@ -1036,36 +1036,38 @@ export default function WalletModal({ user, onUpdateUser }) {
                             {tx.source?.replace('_', ' ') || tx.type}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5 font-mono">
-                          <span>
-                            {new Date(tx.createdAt).toLocaleString('en-IN', {
+                        <div className="flex items-center gap-x-2 gap-y-0.5 text-[10px] sm:text-[11px] text-slate-400 mt-1 flex-wrap">
+                          <span className="whitespace-nowrap font-medium text-slate-500">
+                            {new Date(tx.createdAt).toLocaleDateString('en-IN', {
                               day: 'numeric',
                               month: 'short',
-                              year: 'numeric',
+                              year: 'numeric'
+                            })}, {new Date(tx.createdAt).toLocaleTimeString('en-IN', {
                               hour: '2-digit',
-                              minute: '2-digit'
+                              minute: '2-digit',
+                              hour12: true
                             })}
                           </span>
                           {tx.gatewayPaymentId && (
-                            <>
-                              <span>•</span>
-                              <span>Ref: {tx.gatewayPaymentId.slice(-8)}</span>
-                            </>
+                            <span className="whitespace-nowrap">
+                              • Ref: <span className="font-mono text-slate-600">{tx.gatewayPaymentId.slice(-8)}</span>
+                            </span>
                           )}
-                          <span>•</span>
-                          <span className="text-slate-600 font-sans font-medium">Bal: ₹{Number(tx.balanceAfter).toFixed(2)}</span>
+                          <span className="whitespace-nowrap text-slate-600 font-semibold font-sans">
+                            • Bal: ₹{Number(tx.balanceAfter || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <span className={`font-mono font-black text-sm md:text-base block ${
+                    <div className="text-right shrink-0 pl-2">
+                      <span className={`font-mono font-black text-xs sm:text-sm md:text-base block whitespace-nowrap ${
                         tx.type === 'credit' ? 'text-emerald-600' : 'text-rose-600'
                       }`}>
-                        {tx.type === 'credit' ? '+' : '-'}₹{Number(tx.amount).toFixed(2)}
+                        {tx.type === 'credit' ? '+' : '-'}₹{Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold tracking-wider uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md mt-0.5">
-                        <CheckCircle2 className="w-3 h-3" />
+                      <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold tracking-wider uppercase text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap">
+                        <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         <span>{tx.status || 'Success'}</span>
                       </span>
                     </div>
@@ -1140,23 +1142,23 @@ export default function WalletModal({ user, onUpdateUser }) {
             ) : (
               <div className="divide-y divide-slate-100">
                 {filteredHistory.map((item) => (
-                  <div key={item._id} className="py-4 flex items-center justify-between gap-4 hover:bg-slate-50/80 px-2 rounded-2xl transition">
-                    <div className="flex items-center gap-3.5">
-                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 font-bold ${
+                  <div key={item._id} className="py-3.5 sm:py-4 flex items-start sm:items-center justify-between gap-3 hover:bg-slate-50/80 px-2 sm:px-3 rounded-2xl transition border-b border-slate-100/70 last:border-b-0">
+                    <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 font-bold ${
                         item.type === 'CASHBACK_EARNED' 
                           ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
                           : 'bg-blue-50 text-blue-600 border border-blue-100'
                       }`}>
                         {item.type === 'CASHBACK_EARNED' ? (
-                          <ArrowDownLeft className="w-5 h-5" />
+                          <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                         ) : (
-                          <ArrowUpRight className="w-5 h-5" />
+                          <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
                         )}
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-slate-900 text-xs md:text-sm">{item.description}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-extrabold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2">{item.description}</span>
+                          <span className={`px-1.5 py-0.2 rounded-md text-[9px] sm:text-[10px] font-extrabold shrink-0 ${
                             item.type === 'CASHBACK_EARNED' 
                               ? 'bg-emerald-100 text-emerald-800' 
                               : 'bg-blue-100 text-blue-800'
@@ -1164,26 +1166,30 @@ export default function WalletModal({ user, onUpdateUser }) {
                             {item.type === 'CASHBACK_EARNED' ? 'Credited' : `Disbursed (${item.payoutMethod || 'UPI'})`}
                           </span>
                         </div>
-                        <span className="text-[11px] text-slate-400 block mt-0.5">
-                          {new Date(item.createdAt).toLocaleString('en-IN', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </span>
+                        <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1">
+                          <span className="whitespace-nowrap font-medium text-slate-500">
+                            {new Date(item.createdAt).toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })}, {new Date(item.createdAt).toLocaleTimeString('en-IN', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: true
+                            })}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <span className={`font-mono font-black text-sm md:text-base block ${
+                    <div className="text-right shrink-0 pl-2">
+                      <span className={`font-mono font-black text-xs sm:text-sm md:text-base block whitespace-nowrap ${
                         item.type === 'CASHBACK_EARNED' ? 'text-emerald-600' : 'text-slate-900'
                       }`}>
-                        {item.type === 'CASHBACK_EARNED' ? '+' : '-'}₹{item.amount}
+                        {item.type === 'CASHBACK_EARNED' ? '+' : '-'}₹{Number(item.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold tracking-wider uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md mt-0.5">
-                        <CheckCircle2 className="w-3 h-3" />
+                      <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold tracking-wider uppercase text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap">
+                        <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         <span>{item.status}</span>
                       </span>
                     </div>

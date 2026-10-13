@@ -637,9 +637,11 @@ export default function App() {
         />
       )}
 
-      {/* FLOATING AI AGENT WIDGET (Available for suppliers when not in full-screen ai-agent view and no modal/drawer is active) */}
+      {/* FLOATING AI AGENT WIDGET (Available for suppliers on desktop when not in full-screen ai-agent view and no modal/drawer is active) */}
       {isSupplier && currentTab !== 'ai-agent' && !selectedShipment && !isCreateModalOpen && (
-        <AgentWidget onNavigate={(tab) => setCurrentTab(tab || 'ai-agent')} />
+        <div className="hidden md:block">
+          <AgentWidget onNavigate={(tab) => setCurrentTab(tab || 'ai-agent')} />
+        </div>
       )}
 
       {/* FIXED MOBILE BOTTOM NAVIGATION BAR (FOR MOBILE SMARTPHONE SCREENS) */}
