@@ -115,29 +115,6 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
             <span>{isSupplier ? 'Buyer' : 'Seller'}</span>
           </button>
 
-          {/* Seller Wallet Balance */}
-          {isSupplier && (
-            (Number(user?.walletBalance) || 0) < 0 ? (
-              <button
-                onClick={onOpenWallet}
-                className="px-2 py-1 rounded-xl bg-rose-50 text-rose-700 border border-rose-300 text-[10px] font-black flex items-center gap-1 animate-pulse whitespace-nowrap"
-                title="Negative Balance - Clear Courier Dues"
-              >
-                <AlertTriangle className="w-3 h-3 text-rose-600" />
-                <span>-₹{Math.abs(Number(user?.walletBalance)).toFixed(0)}</span>
-              </button>
-            ) : (
-              <button
-                onClick={onOpenWallet}
-                className="px-2 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-200/80 text-[10px] font-bold flex items-center gap-1 whitespace-nowrap"
-                title="Wallet Balance"
-              >
-                <Wallet className="w-3 h-3 text-blue-600" />
-                <span>₹{(Number(user?.walletBalance) || 0).toFixed(0)}</span>
-              </button>
-            )
-          )}
-
           {/* Quick New Shipment on Mobile (only on sm+ screens to preserve mobile width) */}
           {isSupplier && (
             <button
@@ -177,30 +154,6 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
             }`}>
               {isSupplier ? 'Supplier Mode Active' : 'Receiver Mode Active'}
             </span>
-
-            {/* Seller Wallet Balance / Dues Status Badge — Suppliers only */}
-            {isSupplier && (
-              (Number(user?.walletBalance) || 0) < 0 ? (
-                <button
-                  onClick={onOpenWallet}
-                  title="Click to view wallet & clear courier dues"
-                  className="inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-700 shadow-xs cursor-pointer animate-pulse transition"
-                >
-                  <AlertTriangle className="w-3 h-3 text-rose-600" />
-                  <span>Dues: -₹{Math.abs(Number(user?.walletBalance)).toFixed(0)}</span>
-                  <span className="text-[9px] underline">Clear</span>
-                </button>
-              ) : (
-                <button
-                  onClick={onOpenWallet}
-                  title="Click to open shipping wallet"
-                  className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-700 shadow-2xs cursor-pointer transition"
-                >
-                  <Wallet className="w-3 h-3 text-blue-600" />
-                  <span>Wallet: ₹{(Number(user?.walletBalance) || 0).toFixed(0)}</span>
-                </button>
-              )
-            )}
           </div>
 
           <p className="text-xs text-slate-500 font-medium mt-1 truncate">
