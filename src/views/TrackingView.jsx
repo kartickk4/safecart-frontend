@@ -621,10 +621,6 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                 <Navigation className="w-6 h-6 text-[#1E56E3]" />
                 Live Parcel & Escrow Tracking
               </h1>
-              <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Auto-Sync Active (Every 8s)
-              </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">Real-time escrow money flow and multi-carrier logistics tracking.</p>
           </div>
@@ -632,22 +628,12 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
             <button
               type="button"
               onClick={() => fetchTrackingData(searchId, false)}
-              className="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+              className="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
               title="Sync latest live shipment status"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
               <span>Refresh Now</span>
             </button>
-            <a
-              href={`/track${searchId ? `?id=${encodeURIComponent(searchId)}` : ''}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3.5 py-2 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-[#1E56E3] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0 shadow-2xs"
-              title="Open Zero-Login Public Tracking page that you can share with buyers"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Buyer Public Tracking (No Login)</span>
-            </a>
           </div>
         </div>
 
