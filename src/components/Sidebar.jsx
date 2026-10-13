@@ -3,6 +3,7 @@ import {
   ShieldCheck, LayoutDashboard, PlusCircle, Navigation, Wallet, 
   AlertCircle, FileText, Bell, Settings, LogOut, Package, CheckCircle2, UserCheck, HelpCircle, ChevronRight, Sparkles, RotateCcw, ArrowLeftRight, Truck, ShoppingBag, Crown, Gift, QrCode, Calculator
 } from 'lucide-react';
+import { TAB_ROUTES } from '../utils/routes';
 
 export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, onSwitchRole, onSignOut, openNewShipmentModal, notifCount = 0 }) {
   const isSupplier = currentRole ? currentRole === 'Supplier' : (user?.role === 'Supplier' || user?.activeRole === 'Supplier');
@@ -185,12 +186,15 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentTab === item.id;
+                const routeUrl = TAB_ROUTES[item.id] || `/${item.id}`;
 
                 return (
-                  <button
+                  <a
                     key={item.id}
+                    href={routeUrl}
                     data-tab={item.id}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       if (item.onClick) {
                         item.onClick();
                       } else {
@@ -215,7 +219,7 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
                     ) : isActive ? (
                       <ChevronRight className="w-3.5 h-3.5 text-white/80" />
                     ) : null}
-                  </button>
+                  </a>
                 );
               })}
             </div>

@@ -31,95 +31,7 @@ import AdBanner from './components/AdBanner';
 import { profileAPI, authAPI, notificationAPI } from './services/api';
 import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell, ShieldCheck, Wallet, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles } from 'lucide-react';
 
-export const TAB_ROUTES = {
-  'dashboard': '/dashboard',
-  'shipments-list': '/orders',
-  'create-shipment': '/create-shipment',
-  'ai-agent': '/ai-agent',
-  'track': '/track',
-  'delivery-confirm': '/delivery-confirm',
-  'wallet': '/wallet',
-  'refer': '/refer',
-  'notifications': '/notifications',
-  'profile': '/profile',
-  'support': '/support',
-  'legal': '/legal',
-  'roi-calculator': '/roi-calculator',
-  'return-orders': '/return-orders',
-  'return-tracking': '/return-tracking',
-  'admin': '/admin'
-};
-
-export const ROUTE_TABS = {
-  '': 'dashboard',
-  '/': 'dashboard',
-  '/dashboard': 'dashboard',
-  '/orders': 'shipments-list',
-  '/shipments': 'shipments-list',
-  '/create-shipment': 'create-shipment',
-  '/ship': 'create-shipment',
-  '/ai-agent': 'ai-agent',
-  '/track': 'track',
-  '/tracking': 'track',
-  '/delivery-confirm': 'delivery-confirm',
-  '/sign-off': 'delivery-confirm',
-  '/wallet': 'wallet',
-  '/payouts': 'wallet',
-  '/escrow': 'wallet',
-  '/refer': 'refer',
-  '/notifications': 'notifications',
-  '/profile': 'profile',
-  '/support': 'support',
-  '/help': 'support',
-  '/legal': 'legal',
-  '/compliance': 'legal',
-  '/roi-calculator': 'roi-calculator',
-  '/calculator': 'roi-calculator',
-  '/return-orders': 'return-orders',
-  '/return-tracking': 'return-tracking',
-  '/admin': 'admin'
-};
-
-export const TAB_TITLES = {
-  'dashboard': 'Dashboard | SecureKaro — Escrow Logistics Platform',
-  'shipments-list': 'Orders & Shipments | SecureKaro Escrow Platform',
-  'create-shipment': 'Create Shipment | SecureKaro Escrow Platform',
-  'ai-agent': 'AI Shipping Agent | SecureKaro Automation',
-  'track': 'Live Tracking & Journey | SecureKaro',
-  'delivery-confirm': 'Delivery Sign-Off & Inspection | SecureKaro',
-  'wallet': 'Wallet History & Escrow Payouts | SecureKaro',
-  'refer': 'Refer & Earn Ambassador Hub | SecureKaro',
-  'notifications': 'Notification Center | SecureKaro',
-  'profile': 'Profile & Bank Payout Settings | SecureKaro',
-  'support': '24/7 Help & Support | SecureKaro',
-  'legal': 'Legal & Merchant Compliance | SecureKaro',
-  'roi-calculator': 'COD vs Escrow Savings Calculator | SecureKaro',
-  'return-orders': 'Return Orders & Reverse Logistics | SecureKaro',
-  'return-tracking': 'Return Package Tracking | SecureKaro',
-  'admin': 'Executive Admin Console | SecureKaro'
-};
-
-export function getTabFromLocation() {
-  if (typeof window === 'undefined') return 'dashboard';
-
-  const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
-  if (ROUTE_TABS[pathname]) {
-    return ROUTE_TABS[pathname];
-  }
-
-  const searchParams = new URLSearchParams(window.location.search);
-  const tabParam = searchParams.get('tab');
-  if (tabParam && (TAB_ROUTES[tabParam] || ROUTE_TABS['/' + tabParam])) {
-    return TAB_ROUTES[tabParam] ? tabParam : ROUTE_TABS['/' + tabParam];
-  }
-
-  const hash = window.location.hash.replace(/^#/, '');
-  if (hash && ROUTE_TABS['/' + hash]) {
-    return ROUTE_TABS['/' + hash];
-  }
-
-  return 'dashboard';
-}
+import { TAB_ROUTES, ROUTE_TABS, TAB_TITLES, getTabFromLocation } from './utils/routes';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -142,7 +54,7 @@ export default function App() {
 
       if (options.replace) {
         window.history.replaceState({ tab: targetTab }, '', targetRoute);
-      } else if (currentPath !== targetRoute && !(currentPath === '/' && targetRoute === '/dashboard')) {
+      } else if (currentPath !== targetRoute) {
         window.history.pushState({ tab: targetTab }, '', targetRoute);
       }
 
@@ -150,9 +62,16 @@ export default function App() {
     }
   };
 
-  // Synchronize initial document.title and handle browser Back/Forward (popstate)
+  // Synchronize initial document.title, history URL, and handle browser Back/Forward (popstate)
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // Ensure the browser address bar immediately reflects the full clean route on initial load (e.g. /dashboard)
+    const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+    const targetRoute = TAB_ROUTES[currentTab] || `/${currentTab}`;
+    if (currentPath === '/' || currentPath !== targetRoute) {
+      window.history.replaceState({ tab: currentTab }, '', targetRoute);
+    }
 
     // Set initial title based on initial route
     document.title = TAB_TITLES[currentTab] || 'SecureKaro — Escrow Logistics & Safe Commerce';
