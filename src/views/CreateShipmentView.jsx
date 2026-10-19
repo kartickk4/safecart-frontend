@@ -201,6 +201,32 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
   // Success state
   const [createdData, setCreatedData] = useState(null);
+  const [simulatingBuyerPay, setSimulatingBuyerPay] = useState(false);
+  const [simulationNotice, setSimulationNotice] = useState('');
+  const [simulateCarrier, setSimulateCarrier] = useState('delhivery'); // 'delhivery' | 'bluedart'
+
+  const handleSimulateBuyerPayment = async () => {
+    if (!createdData?.shipmentId) return;
+    setSimulatingBuyerPay(true);
+    setSimulationNotice('');
+    try {
+      const res = await shipmentAPI.publicPay(createdData.shipmentId, {
+        gateway: 'simulated_buyer_pay',
+        carrierSlug: simulateCarrier,
+        transactionRef: `SIM_PAY_${Date.now()}`
+      });
+      if (res.data && res.data.shipment) {
+        setCreatedData(res.data.shipment);
+        const bookedCarrier = res.data.shipment.pickupCarrier || (res.data.shipment.carrierSlug === 'bluedart' ? 'Blue Dart Express' : 'Delhivery Express');
+        setSimulationNotice(`🎉 Buyer payment received! Carrier Booked: ${bookedCarrier} (AWB: ${res.data.shipment.awbCode}). Pickup scheduled.`);
+      }
+    } catch (err) {
+      console.error('Simulate payment error:', err);
+      setSimulationNotice('Payment simulation failed: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setSimulatingBuyerPay(false);
+    }
+  };
 
   const fetchQuotesForRoute = async (preferredSlug = null) => {
     if (!senderPincode || senderPincode.length < 6) {
@@ -340,7 +366,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
     const currentWalletBal = Number(user?.walletBalance) || 0;
     if (currentWalletBal < 0 && (paymentMode === 'cod' || paymentMode === 'paid_offline')) {
-      setError(`Your seller wallet balance is negative (-₹${Math.abs(currentWalletBal).toFixed(2)}). COD and Offline Paid shipment bookings are suspended until outstanding dues are cleared. Please select Prepaid Escrow or recharge your wallet.`);
+      setError(`Your seller wallet balance is negative (-₹${Math.abs(currentWalletBal).toFixed(2)}). COD and Offline Paid shipment bookings are suspended until outstanding dues are cleared. Please select Prepaid Protection or recharge your wallet.`);
       setLoading(false);
       return;
     }
@@ -432,8 +458,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-xl md:text-2xl font-extrabold text-slate-900">Create Escrow Shipment Booking</h1>
-              <p className="text-xs text-slate-500">Fill in the order details to lock funds in SecureKaro RBI-compliant escrow.</p>
+              <h1 className="text-xl md:text-2xl font-extrabold text-slate-900">Create Courier Shipment Booking</h1>
+              <p className="text-xs text-slate-500">Fill in the order details to book pickup with Indian carrier partners and Delivery Protection.</p>
             </div>
           </div>
 
@@ -710,7 +736,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Escrow Value (₹ INR)</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Parcel Value / Order Amount (₹ INR)</label>
                   <input
                     type="number"
                     required
@@ -959,8 +985,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         </span>
                       )}
                     </div>
-                    <p className={`text-xs font-extrabold ${ paymentMode === 'prepaid' ? 'text-blue-700' : 'text-slate-800'}`}>Prepaid Escrow</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">Buyer pays via secure Escrow link. Courier pickup is auto-booked once payment is locked and paid to sender after the delivery confirmed.</p>
+                    <p className={`text-xs font-extrabold ${ paymentMode === 'prepaid' ? 'text-blue-700' : 'text-slate-800'}`}>Prepaid Delivery Protection</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">Buyer pays upfront via secure payment link. Courier pickup is auto-booked once payment is secured and settled to sender after delivery sign-off.</p>
                   </button>
 
                   {/* COD */}
@@ -968,7 +994,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     type="button"
                     onClick={() => {
                       if ((Number(user?.walletBalance) || 0) < 0) {
-                        alert(`🚫 COD Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab or select Prepaid Escrow.`);
+                        alert(`🚫 COD Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab or select Prepaid Delivery Protection.`);
                         return;
                       }
                       setPaymentMode('cod');
@@ -1005,7 +1031,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     type="button"
                     onClick={() => {
                       if ((Number(user?.walletBalance) || 0) < 0) {
-                        alert(`🚫 Offline Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab or select Prepaid Escrow.`);
+                        alert(`🚫 Offline Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab or select Prepaid Delivery Protection.`);
                         return;
                       }
                       setPaymentMode('paid_offline');
@@ -1043,11 +1069,11 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 space-y-1">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="text-xs font-black text-emerald-950">Prepaid Escrow Selected (Zero Doorstep RTO)</span>
+                      <span className="text-xs font-black text-emerald-950">Prepaid Delivery Protection Selected (Zero Doorstep RTO)</span>
                       <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-200 text-emerald-800">FREE ✓</span>
                     </div>
                     <p className="text-[11px] text-emerald-800 leading-relaxed pl-6">
-                      Buyer pays upfront via secure Cashfree nodal link. Because money is committed, doorstep rejection drops to &lt;4%. SecureKaro escrow is <strong>100% FREE (₹0 platform fee)</strong>. You receive full settlement minus only courier charges.
+                      Buyer pays upfront via secure payment gateway. Because money is committed, doorstep rejection drops to &lt;4%. Delivery Protection is <strong>100% FREE (₹0 platform fee)</strong>. You receive full settlement minus only courier charges.
                     </p>
                   </div>
                 )}
@@ -1059,7 +1085,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         <span className="text-xs font-black text-amber-950">Transparency Notice: COD Does Not Prevent RTO</span>
                       </div>
                       <p className="text-[11px] text-amber-800 leading-relaxed pl-6">
-                        Because no money is held in escrow upfront, the receiver can refuse or reject the parcel at delivery. You remain responsible for round-trip courier shipping charges if rejected. <em>Tip: Educate buyers to use SecureKaro Escrow to lock in zero-RTO protection.</em>
+                        Because no upfront payment commitment is made, the receiver can refuse or reject the parcel at delivery. You remain responsible for round-trip courier shipping charges if rejected. <em>Tip: Educate buyers to use Prepaid Delivery Protection to lock in zero-RTO protection.</em>
                       </p>
                     </div>
 
@@ -1195,7 +1221,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         <p className="text-xs font-bold text-slate-900">RTO &amp; Undelivered Protection</p>
                         {paymentMode !== 'prepaid' ? (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                            Unavailable for {paymentMode === 'cod' ? 'COD' : 'Offline'} (Prepaid Escrow Only)
+                            Unavailable for {paymentMode === 'cod' ? 'COD' : 'Offline'} (Prepaid Protection Only)
                           </span>
                         ) : (
                           <>
@@ -1210,7 +1236,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       </div>
                       <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
                         {paymentMode !== 'prepaid'
-                          ? 'Smart RTO Protection is exclusive to Prepaid Escrow orders where payment is secured upfront. For COD and Offline shipments, carrier standard RTO terms apply.'
+                          ? 'Smart RTO Protection is exclusive to Prepaid orders where payment is secured upfront. For COD and Offline shipments, carrier standard RTO terms apply.'
                           : 'SecureKaro compensates seller ₹40 per rejected parcel — buyers get 2 free rejections/week. From 3rd rejection, buyer pays ₹40 (₹30 to seller, ₹10 to SecureKaro).'}
                       </p>
                     </div>
@@ -1269,7 +1295,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                      Photo proof of packed parcel & contents is mandatory for all shipments before courier dispatch, ensuring maximum escrow trust and protection for both parties.
+                      Photo proof of packed parcel & contents is mandatory for all shipments before courier dispatch, ensuring maximum delivery trust and protection for both parties.
                     </p>
                   </div>
                 </div>
@@ -1627,363 +1653,324 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       )}
 
       {/* STEP 2: SHIPMENT SUCCESS / CONFIRMATION SUCCESS RECEIPT SCREEN */}
-      {step === 2 && createdData && (
-        <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-lg space-y-8 animate-in fade-in zoom-in-95 duration-200 text-center">
-          <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
-            <CheckCircle2 className="w-10 h-10" />
-          </div>
+      {step === 2 && createdData && (() => {
+        const isAwaitingBuyerPayment = createdData.status === 'Awaiting Payment' || 
+          (!createdData.receiverPaymentDone && createdData.paymentMode !== 'cod' && createdData.paymentMode !== 'paid_offline');
+        const formattedAmount = createdData?.amount 
+          ? Number(createdData.amount).toLocaleString('en-IN') 
+          : '3,420';
+        const originUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
+        const buyerPayUrl = `${originUrl}/pay/${createdData?.shipmentId || ''}`;
+        const assignedCarrierName = createdData.pickupCarrier || createdData.autoSelectedCarrier?.name || (createdData.carrierSlug ? createdData.carrierSlug.toUpperCase() : 'Delhivery Express');
 
-          <div>
-            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1 rounded-full inline-flex items-center gap-1.5 mb-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              Escrow Booking Confirmed & Secured
-            </span>
-            <h1 className="text-3xl font-black text-slate-900 mt-2">Shipment Success!</h1>
-            <p className="text-xs text-slate-500 mt-1">Escrow funds have been locked safely under ParcelSafe protection.</p>
-          </div>
+        return (
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-lg space-y-6 sm:space-y-8 animate-in fade-in zoom-in-95 duration-200 text-center">
+            
+            {/* Top Status Icon & Header */}
+            {isAwaitingBuyerPayment ? (
+              <div className="space-y-3">
+                <div className="w-16 h-16 rounded-3xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto shadow-inner border border-amber-200">
+                  <Clock className="w-9 h-9 animate-pulse" />
+                </div>
+                <div>
+                  <span className="bg-amber-100 text-amber-800 border border-amber-300 text-xs font-extrabold px-3 py-1 rounded-full inline-flex items-center gap-1.5 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                    Order Saved • Awaiting Buyer Payment
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">Order Details Saved!</h1>
+                  <p className="text-xs text-slate-500 mt-1 max-w-lg mx-auto leading-relaxed">
+                    Shipment data is securely saved. Once the buyer completes payment via the link below, <strong>SafeCart will automatically book the courier shipment, generate the official AWB code, and schedule carrier pickup</strong>.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-inner border border-emerald-200">
+                  <CheckCircle2 className="w-9 h-9" />
+                </div>
+                <div>
+                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1 rounded-full inline-flex items-center gap-1.5 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Courier Shipment Auto-Created &amp; Protected
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">Shipment Booked Successfully!</h1>
+                  <p className="text-xs text-slate-500 mt-1">Courier pickup scheduled and AWB code generated under SafeCart Delivery Protection.</p>
+                </div>
+              </div>
+            )}
 
-          {/* Receipt Card */}
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-left max-w-md mx-auto space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <span className="text-xs font-bold text-slate-400 uppercase">Tracking ID</span>
-              <span className="text-base font-extrabold text-[#1E56E3] font-mono">{createdData.shipmentId}</span>
-            </div>
+            {simulationNotice && (
+              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold text-left max-w-md mx-auto flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{simulationNotice}</span>
+              </div>
+            )}
 
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <span className="text-xs font-bold text-slate-400 uppercase">AWB Tracking Code</span>
-              <span className="text-xs font-bold text-slate-800 font-mono">{createdData.awbCode || 'TC-delhivery-7539789936'}</span>
-            </div>
+            {/* Receipt Card */}
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-left max-w-md mx-auto space-y-3.5">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                <span className="text-xs font-bold text-slate-400 uppercase">Order ID</span>
+                <span className="text-base font-extrabold text-[#1E56E3] font-mono">{createdData.shipmentId}</span>
+              </div>
 
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <span className="text-xs font-bold text-slate-400 uppercase">Recipient</span>
-              <span className="text-xs font-bold text-slate-900">{createdData.receiverName} ({createdData.receiverPhone})</span>
-            </div>
-
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <span className="text-xs font-bold text-slate-400 uppercase">Locked Escrow Amount</span>
-              <span className="text-base font-black text-emerald-600">₹{createdData.amount ? createdData.amount.toLocaleString() : '3,420'}</span>
-            </div>
-
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <span className="text-xs font-bold text-slate-400 uppercase">Carrier Partner</span>
-              <div className="text-right">
-                <span className="text-xs font-bold text-slate-800">
-                  {createdData.autoSelectedCarrier?.name || createdData.carrierSlug || 'Auto-Selected'}
-                </span>
-                {createdData.autoSelectedCarrier?.shippingRate && (
-                  <span className="block text-[10px] text-emerald-600 font-semibold">
-                    ₹{createdData.autoSelectedCarrier.shippingRate} shipping · 🏆 Cheapest available
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                <span className="text-xs font-bold text-slate-400 uppercase">AWB Tracking Code</span>
+                {isAwaitingBuyerPayment ? (
+                  <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                    ⏳ Auto-generates upon buyer payment
+                  </span>
+                ) : (
+                  <span className="text-xs font-bold text-slate-900 font-mono bg-white px-2 py-0.5 rounded border border-slate-200">
+                    {createdData.awbCode || 'Assigned'}
                   </span>
                 )}
               </div>
-            </div>
 
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <span className="text-xs font-bold text-slate-400 uppercase">Payment Mode</span>
-              {(() => {
-                const mode = createdData.paymentMode || 'prepaid';
-                const modeMap = {
-                  prepaid: { label: '💳 Prepaid (Online)', cls: 'bg-blue-100 text-blue-800' },
-                  cod: { label: '🚚 COD', cls: 'bg-amber-100 text-amber-800' },
-                  paid_offline: { label: '✅ Payment Paid', cls: 'bg-emerald-100 text-emerald-800' }
-                };
-                const m = modeMap[mode] || modeMap.prepaid;
-                return <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${m.cls}`}>{m.label}</span>;
-              })()}
-            </div>
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                <span className="text-xs font-bold text-slate-400 uppercase">Recipient</span>
+                <span className="text-xs font-bold text-slate-900">{createdData.receiverName} ({createdData.receiverPhone})</span>
+              </div>
 
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <span className="text-xs font-bold text-slate-400 uppercase">Return Option</span>
-              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${createdData.returnAllowed !== false ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>
-                <RotateCcw className="w-3 h-3" />
-                {createdData.returnAllowed !== false ? 'Returns Allowed (24h Window)' : 'Returns Disabled'}
-              </span>
-            </div>
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                <span className="text-xs font-bold text-slate-400 uppercase">Protected Order Amount</span>
+                <span className="text-base font-black text-emerald-600">₹{formattedAmount}</span>
+              </div>
 
-            {createdData.paymentMode === 'cod' && (
-              <div className="pt-1 space-y-2.5 border-t border-dashed border-amber-200 bg-amber-50/60 -mx-6 -mb-6 p-4 rounded-b-2xl">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-amber-900 uppercase text-[10px]">COD Booking Charges</span>
-                  <span className="font-extrabold text-amber-950 font-mono">
-                    ₹{createdData.codUpfrontFee || (Number(createdData.deliveryCharge || 0) + Number(createdData.codCharge || 0))}
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                <span className="text-xs font-bold text-slate-400 uppercase">
+                  {isAwaitingBuyerPayment ? 'Default / Selected Carrier' : 'Carrier Booked'}
+                </span>
+                <div className="text-right">
+                  <span className="text-xs font-black text-slate-900 flex items-center justify-end gap-1.5">
+                    <Truck className="w-3.5 h-3.5 text-[#1E56E3]" />
+                    {assignedCarrierName}
+                  </span>
+                  <span className={`block text-[10px] font-semibold ${isAwaitingBuyerPayment ? 'text-blue-600' : 'text-emerald-600'}`}>
+                    {isAwaitingBuyerPayment ? 'Buyer can select Delhivery or Blue Dart on payment' : '✅ Official Courier AWB Assigned'}
                   </span>
                 </div>
-                <div className="text-[10px] text-amber-700/80 flex items-center justify-between">
-                  <span>Courier: ₹{createdData.deliveryCharge || 40} · COD Fee: ₹{createdData.codCharge || 40}</span>
+              </div>
+
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                <span className="text-xs font-bold text-slate-400 uppercase">Payment Mode</span>
+                {isAwaitingBuyerPayment ? (
+                  <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                    ⏳ Awaiting Buyer Payment
+                  </span>
+                ) : (
+                  <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    ✅ Payment Secured (Escrow)
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-400 uppercase">Return Policy</span>
+                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${createdData.returnAllowed !== false ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>
+                  <RotateCcw className="w-3 h-3" />
+                  {createdData.returnAllowed !== false ? '24h Protection Window' : 'Returns Disabled'}
+                </span>
+              </div>
+            </div>
+
+            {/* COURIER PICKUP STATUS CARD */}
+            {isAwaitingBuyerPayment ? (
+              <div className="bg-gradient-to-br from-amber-50/80 via-white to-blue-50/50 p-5 rounded-2xl border border-amber-200/90 text-left max-w-md mx-auto space-y-3 shadow-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                    <Truck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-extrabold text-slate-900">
+                      Courier Pickup: Auto-Books on Payment
+                    </h3>
+                    <p className="text-[11px] text-slate-500 font-medium">Assigned carrier: <strong>{assignedCarrierName}</strong></p>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-xs pt-1 border-t border-amber-200/60">
-                  <span className="font-bold text-amber-900 uppercase text-[10px]">Settlement</span>
-                  {createdData.codFeePaymentMethod === 'wallet_adjustment' ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-black text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-300">
-                      <Wallet className="w-3 h-3 text-emerald-700" />
-                      Adjusted from Wallet
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-black text-blue-800 bg-blue-100/90 px-2.5 py-0.5 rounded-full border border-blue-300">
-                      <CreditCard className="w-3 h-3 text-blue-700" />
-                      Paid Online Upfront
-                    </span>
-                  )}
+                <div className="text-[11px] text-amber-900/90 bg-amber-100/60 p-2.5 rounded-xl border border-amber-200/60 leading-relaxed">
+                  As soon as {createdData.receiverName} pays ₹{formattedAmount}, SafeCart instantly books the courier pickup, dispatches the tracking AWB, and generates your printable shipping label.
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-emerald-50/90 via-teal-50/30 to-white p-6 rounded-3xl border border-emerald-200/90 text-left max-w-md mx-auto space-y-4 shadow-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                    <Truck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                      <span>Courier Pickup Auto-Scheduled</span>
+                      <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
+                        Confirmed
+                      </span>
+                    </h3>
+                    <p className="text-[11px] text-slate-500 font-medium">{assignedCarrierName} auto-booked</p>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-white rounded-2xl border border-emerald-100 shadow-2xs space-y-1.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Pickup Slot:</span>
+                    <span className="font-bold text-slate-900">{createdData.pickupSlot || 'Tomorrow Morning'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">AWB Code:</span>
+                    <span className="font-mono font-black text-blue-700">{createdData.awbCode}</span>
+                  </div>
                 </div>
               </div>
             )}
-          </div>
 
-          {/* AUTO-SCHEDULED COURIER PICKUP CARD */}
-          <div className="bg-gradient-to-br from-emerald-50/90 via-teal-50/30 to-white p-6 rounded-3xl border border-emerald-200/90 text-left max-w-md mx-auto space-y-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
-                  <Truck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5 flex-wrap">
-                    <span>Courier Pickup Auto-Scheduled</span>
-                    <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
-                      Confirmed
-                    </span>
-                  </h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Lowest delivery charge auto-assigned</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Carrier Selection */}
-            <div className="p-3.5 bg-white rounded-2xl border border-emerald-100 shadow-2xs space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-500 uppercase text-[10px]">Assigned Carrier</span>
-                <span className="font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
-                  {createdData.pickupCarrier || createdData.autoSelectedCarrier?.name || 'Delhivery Express'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-500 uppercase text-[10px]">Delivery Charge</span>
-                <span className="font-black text-slate-900">
-                  ₹{createdData.pickupRate || createdData.autoSelectedCarrier?.shippingRate || 40}
-                  <span className="ml-1 text-[10px] text-emerald-600 font-bold">(Lowest Charge on Route)</span>
-                </span>
-              </div>
-            </div>
-
-            {/* Pickup Slot & Token */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div className="bg-white p-3 rounded-2xl border border-emerald-100 shadow-2xs">
-                <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Pickup Slot</span>
-                <span className="text-xs font-extrabold text-slate-900 block leading-tight">
-                  {createdData.pickupSlot || 'Tomorrow, 10:00 AM - 01:00 PM (Morning Slot)'}
-                </span>
-              </div>
-
-              <div className="bg-white p-3 rounded-2xl border border-emerald-100 shadow-2xs">
-                <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Pickup Token</span>
+            {/* PROMINENT BUYER PAYMENT LINK & SHARE CARD */}
+            {isAwaitingBuyerPayment && (
+              <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50/80 p-5 sm:p-6 rounded-3xl border border-blue-200/90 text-left max-w-md mx-auto space-y-4 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-black text-blue-700 select-all">
-                    {createdData.pickupToken || 'PKP-DLV-749201'}
+                  <div className="flex items-center gap-2 text-blue-900 font-extrabold text-xs">
+                    <LinkIcon className="w-4 h-4 text-blue-600" />
+                    <span>Send Payment Link to Buyer</span>
+                  </div>
+                  <span className="text-[10px] font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200">
+                    Required for Auto-Dispatch
                   </span>
+                </div>
+
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  Share this secure payment link with <strong className="text-slate-800">{createdData.receiverName}</strong> to pay ₹{formattedAmount} via UPI, Cards, or NetBanking:
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={buyerPayUrl}
+                    className="w-full text-xs font-mono bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 select-all"
+                  />
                   <button
-                    type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(createdData.pickupToken || '');
-                      setCopiedPickupToken(true);
-                      setTimeout(() => setCopiedPickupToken(false), 2000);
+                      navigator.clipboard.writeText(buyerPayUrl);
+                      setCopiedLink(true);
+                      setTimeout(() => setCopiedLink(false), 2500);
                     }}
-                    className="text-[10px] text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 transition"
-                    title="Copy Pickup Token"
+                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 shrink-0 transition cursor-pointer"
                   >
-                    {copiedPickupToken ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedLink ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedLink ? 'Copied' : 'Copy'}</span>
                   </button>
+                  <a
+                    href={buyerPayUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-700 shrink-0 transition"
+                    title="Open Buyer Checkout"
+                  >
+                    <ExternalLink className="w-4 h-4 text-blue-600" />
+                  </a>
                 </div>
-              </div>
-            </div>
 
-            {/* Assigned Executive */}
-            <div className="bg-white p-3 rounded-2xl border border-emerald-100 shadow-2xs flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Assigned Executive</span>
-                <span className="text-xs font-extrabold text-slate-900 block">
-                  {createdData.pickupAgentName || 'Rajesh Kumar'}
-                </span>
-                <span className="text-[11px] font-mono text-slate-500">
-                  {createdData.pickupAgentPhone || '+91 98112 40912'}
-                </span>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                  Auto-Dispatched
-                </span>
-              </div>
-            </div>
+                {/* Instant WhatsApp Share */}
+                {(() => {
+                  const receiverFirstName = createdData?.receiverName?.split(' ')[0] || 'Customer';
+                  const whatsappMessage = 
+                    `Hello ${receiverFirstName}! 📦 Your order for ₹${formattedAmount} (${createdData.description || 'Parcel'}) is registered on SafeCart.\n\n` +
+                    `🔒 Please complete payment via this secure escrow link:\n${buyerPayUrl}\n\n` +
+                    `🚚 Courier: ${assignedCarrierName}\n` +
+                    `Once payment is confirmed, your parcel will be automatically dispatched by the courier partner with live tracking!`;
 
-            {createdData.pickupLocationAddress && (
-              <div className="text-[11px] text-slate-600 bg-white/80 p-2.5 rounded-xl border border-emerald-100 flex items-start gap-2">
-                <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                <div className="truncate">
-                  <span className="font-bold text-slate-700">Pickup Address: </span>
-                  <span>{createdData.pickupLocationAddress}</span>
-                </div>
-              </div>
-            )}
+                  const rawPhone = (createdData?.receiverPhone || '').replace(/\D/g, '');
+                  const cleanPhone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
+                  const whatsappUrl = cleanPhone
+                    ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(whatsappMessage)}`
+                    : `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappMessage)}`;
 
-            <div className="text-[11px] text-slate-600 flex items-center gap-1.5 pt-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-              <span>Courier agent will arrive at your address with shipping barcode label during the slot.</span>
-            </div>
-          </div>
-
-          {/* INSTANT SHARE TO WHATSAPP CARD */}
-          {(() => {
-            const formattedAmount = createdData?.amount 
-              ? Number(createdData.amount).toLocaleString('en-IN') 
-              : '14,500';
-            const receiverFirstName = createdData?.receiverName 
-              ? createdData.receiverName.split(' ')[0] 
-              : 'Customer';
-            const originUrl = window.location.origin;
-            const payUrl = createdData?.paymentLink || `${originUrl}/pay/${createdData?.shipmentId || 'SPL-5396-U'}`;
-            const courierUpper = createdData?.autoSelectedCarrier?.name
-              || (createdData?.carrierSlug && createdData?.carrierSlug !== 'add_later' && createdData?.carrierSlug !== 'auto'
-                ? createdData.carrierSlug.toUpperCase()
-                : 'Auto-Selected Carrier');
-            const awbText = createdData?.awbCode || 'Auto-Assigned';
-
-            const mode = (createdData?.paymentMode || '').toLowerCase();
-            const isCodOrder = mode === 'cod';
-            const isPrepaidOrder = mode === 'prepaid' || mode === 'paid_offline' || createdData?.isPrepaid;
-
-            let paymentInstruction = `🔒 Pay into Escrow:\n${payUrl}\n\n`;
-            if (isCodOrder) {
-              paymentInstruction = `💵 Payment Mode: Cash on Delivery (COD)\nPay ₹${formattedAmount} to the delivery courier agent upon arrival.\n\n`;
-            } else if (mode === 'paid_offline') {
-              paymentInstruction = `✅ Payment Status: PREPAID (Confirmed)\nNo payment required on delivery.\n\n`;
-            }
-
-            const whatsappMessage = 
-              `Hello ${receiverFirstName}! 📦 Your order for ₹${formattedAmount} is booked & secured by SecureKaro.\n\n` +
-              `🚚 Courier: ${courierUpper} | AWB: ${awbText}\n\n` +
-              paymentInstruction +
-              `📸 Note: Parcel & product photo verification is mandatory before dispatch for buyer protection.\n\n` +
-              `Your order is fully protected by SecureKaro!`;
-
-            const rawPhone = (createdData?.receiverPhone || '').replace(/\D/g, '');
-            const cleanPhone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
-            const whatsappUrl = cleanPhone
-              ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(whatsappMessage)}`
-              : `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappMessage)}`;
-
-            return (
-              <div className="bg-gradient-to-br from-emerald-50 via-white to-green-50/80 p-5 sm:p-6 rounded-3xl border border-emerald-200/90 text-left max-w-md mx-auto space-y-4 shadow-[0_4px_20px_-4px_rgba(37,211,102,0.15)]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-[#25D366] text-white flex items-center justify-center shadow-sm shrink-0">
-                      <svg className="w-4.5 h-4.5 fill-white" viewBox="0 0 24 24">
-                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-                      </svg>
+                  return (
+                    <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2.5 px-3 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-black text-xs flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
+                      >
+                        <svg className="w-4 h-4 fill-white shrink-0" viewBox="0 0 24 24">
+                          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                        </svg>
+                        <span>Share on WhatsApp</span>
+                      </a>
                     </div>
-                    <div>
-                      <h4 className="text-xs font-black text-slate-900">Share to WhatsApp</h4>
-                      <p className="text-[10px] text-slate-500 font-medium">Auto-generated with courier details & secure escrow link</p>
+                  );
+                })()}
+
+                {/* Simulated Buyer Payment Button for Testing */}
+                <div className="pt-2 border-t border-slate-100 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Simulate Buyer Choice:</p>
+                    <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200 text-[10px]">
+                      <button
+                        type="button"
+                        onClick={() => setSimulateCarrier('delhivery')}
+                        className={`px-2 py-0.5 rounded font-bold transition cursor-pointer ${
+                          simulateCarrier === 'delhivery' ? 'bg-blue-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Delhivery
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSimulateCarrier('bluedart')}
+                        className={`px-2 py-0.5 rounded font-bold transition cursor-pointer ${
+                          simulateCarrier === 'bluedart' ? 'bg-blue-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Blue Dart
+                      </button>
                     </div>
                   </div>
-                  <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100/90 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    Recommended
-                  </span>
-                </div>
-
-                {/* Action Buttons: 1-Click WhatsApp & Copy */}
-                <div className="flex items-center gap-2 pt-1">
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 py-3 px-4 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-200 active:scale-95 cursor-pointer"
-                  >
-                    <svg className="w-4 h-4 fill-white shrink-0" viewBox="0 0 24 24">
-                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-                    </svg>
-                    <span>Share to WhatsApp</span>
-                  </a>
 
                   <button
                     type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(whatsappMessage);
-                      setCopiedWhatsApp(true);
-                      setTimeout(() => setCopiedWhatsApp(false), 2500);
-                    }}
-                    className="py-3 px-3.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0"
+                    onClick={handleSimulateBuyerPayment}
+                    disabled={simulatingBuyerPay}
+                    className="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 active:scale-95 transition cursor-pointer disabled:opacity-60"
                   >
-                    {copiedWhatsApp ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedWhatsApp ? 'Copied' : 'Copy Message'}</span>
+                    {simulatingBuyerPay ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Booking with {simulateCarrier === 'bluedart' ? 'Blue Dart Express' : 'Delhivery Express'}...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <span>⚡ Simulate Buyer Payment &amp; Book with {simulateCarrier === 'bluedart' ? 'Blue Dart' : 'Delhivery'}</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
-            );
-          })()}
+            )}
 
-          {/* Cashfree Receiver Payment Link Banner (Skipped for COD and Prepaid orders) */}
-          {createdData.paymentLink && createdData.paymentMode !== 'cod' && createdData.paymentMode !== 'prepaid' && createdData.paymentMode !== 'paid_offline' && !createdData.isPrepaid && (
-            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 p-5 rounded-2xl border border-cyan-200/80 text-left max-w-md mx-auto space-y-3">
-              <div className="flex items-center gap-2 text-cyan-900 font-bold text-xs">
-                <LinkIcon className="w-4 h-4 text-cyan-600" />
-                <span>Cashfree Receiver Payment Link</span>
-              </div>
-              <p className="text-[11px] text-slate-600">
-                Share this link with {createdData.receiverName} to complete or verify their secure escrow payment via Cashfree:
-              </p>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  readOnly
-                  value={createdData.paymentLink}
-                  className="w-full text-xs font-mono bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-700 select-all"
-                />
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(createdData.paymentLink);
-                    setCopiedLink(true);
-                    setTimeout(() => setCopiedLink(false), 2500);
-                  }}
-                  className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shrink-0 transition"
-                >
-                  {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedLink ? 'Copied' : 'Copy'}</span>
-                </button>
+            {/* Actions */}
+            <div className="flex items-center justify-center gap-4 pt-2">
+              {!isAwaitingBuyerPayment && (
                 <a
-                  href={createdData.paymentLink}
+                  href={createdData.shippingLabelUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-700 shrink-0 transition"
-                  title="Open Cashfree Payment Link"
+                  className="px-5 py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-md inline-flex items-center gap-1.5"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <Download className="w-4 h-4" />
+                  <span>Download Label PDF</span>
                 </a>
-              </div>
+              )}
+
+              <button
+                onClick={onBack}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition"
+              >
+                Return to Dashboard
+              </button>
             </div>
-          )}
-
-
-
-          {/* Actions */}
-          <div className="flex items-center justify-center gap-4 pt-2">
-            <a
-              href={createdData.shippingLabelUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'}
-              target="_blank"
-              rel="noreferrer"
-              className="px-5 py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-md inline-flex items-center gap-1.5"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download Label PDF</span>
-            </a>
-
-            <button
-              onClick={onBack}
-              className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition"
-            >
-              Return to Dashboard
-            </button>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Wallet Recharge Modal */}
       <RechargeModal

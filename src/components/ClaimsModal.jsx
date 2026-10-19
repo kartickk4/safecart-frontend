@@ -35,7 +35,7 @@ export default function ClaimsModal({ onSelectShipment }) {
               2 Active Claims
             </span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Escrow funds remain locked under protection while claims are reviewed by compliance admins.</p>
+          <p className="text-xs text-slate-500 mt-1">Disputed order funds remain safely protected while claims are reviewed by support specialists.</p>
         </div>
       </div>
 

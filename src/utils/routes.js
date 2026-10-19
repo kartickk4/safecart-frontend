@@ -48,19 +48,19 @@ export const ROUTE_TABS = {
 };
 
 export const TAB_TITLES = {
-  'dashboard': 'Dashboard | SecureKaro — Escrow Logistics Platform',
-  'shipments-list': 'Orders & Shipments | SecureKaro Escrow Platform',
-  'create-shipment': 'Create Shipment | SecureKaro Escrow Platform',
+  'dashboard': 'Dashboard | SecureKaro — Logistics & Shipping Software',
+  'shipments-list': 'Orders & Shipments | SecureKaro Courier Platform',
+  'create-shipment': 'Book Courier Shipment | SecureKaro Shipping Software',
   'ai-agent': 'AI Shipping Agent | SecureKaro Automation',
   'track': 'Live Tracking & Journey | SecureKaro',
-  'delivery-confirm': 'Delivery Sign-Off & Inspection | SecureKaro',
-  'wallet': 'Wallet History & Escrow Payouts | SecureKaro',
+  'delivery-confirm': 'Delivery Sign-Off & Verification | SecureKaro',
+  'wallet': 'Wallet History & Payouts | SecureKaro',
   'refer': 'Refer & Earn Ambassador Hub | SecureKaro',
   'notifications': 'Notification Center | SecureKaro',
   'profile': 'Profile & Bank Payout Settings | SecureKaro',
   'support': '24/7 Help & Support | SecureKaro',
   'legal': 'Legal & Merchant Compliance | SecureKaro',
-  'roi-calculator': 'COD vs Escrow Savings Calculator | SecureKaro',
+  'roi-calculator': 'COD vs Shipping Savings Calculator | SecureKaro',
   'return-orders': 'Return Orders & Reverse Logistics | SecureKaro',
   'return-tracking': 'Return Package Tracking | SecureKaro',
   'admin': 'Executive Admin Console | SecureKaro'

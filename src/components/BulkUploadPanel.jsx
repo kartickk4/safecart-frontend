@@ -31,7 +31,7 @@ const REQUIRED_SCHEMA = [
   { col: 'pincode',              colLetter: 'D', label: 'Pincode',              required: true,  example: '560001',                             tip: '6-digit valid Indian delivery pincode' },
   { col: 'weight_kg',            colLetter: 'E', label: 'Weight (kg)',          required: true,  example: '1.2',                                tip: 'Parcel weight in kilograms (e.g. 0.5, 1.2, 5.0)' },
   { col: 'description',          colLetter: 'F', label: 'Item Description',     required: true,  example: 'Cotton Kurta Set',                   tip: 'Product/package description (min 3 characters)' },
-  { col: 'amount',               colLetter: 'G', label: 'Declared Value (₹)',   required: true,  example: '1200',                               tip: 'Invoice / escrow value in ₹ (min ₹1)' },
+  { col: 'amount',               colLetter: 'G', label: 'Declared Value (₹)',   required: true,  example: '1200',                               tip: 'Invoice / declared value in ₹ (min ₹1)' },
 ];
 
 const OPTIONAL_SCHEMA = [

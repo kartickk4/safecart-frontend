@@ -45,20 +45,20 @@ export default function PaymentCheckoutModal({ shipmentId = 'PSF-2026-00841', am
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900">SecureKaro Escrow Payment</h2>
+                <h2 className="text-xl font-extrabold text-slate-900">SecureKaro Delivery Protection Checkout</h2>
                 <p className="text-xs text-slate-500">Order ID: <span className="font-mono font-bold text-slate-900">{shipmentId}</span></p>
               </div>
             </div>
 
-            {/* Escrow Amount Highlight */}
+            {/* Amount Highlight */}
             <div className="p-5 rounded-3xl bg-blue-50/60 border border-blue-100 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Amount to Lock in Escrow</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Amount Under Delivery Protection</span>
                 <span className="text-2xl font-black text-slate-900 font-mono">₹{Number(amount).toLocaleString('en-IN')}</span>
               </div>
               <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
                 <Lock className="w-3 h-3 text-emerald-600" />
-                RBI Protected Vault
+                256-Bit SSL Protected
               </span>
             </div>
 
@@ -67,7 +67,7 @@ export default function PaymentCheckoutModal({ shipmentId = 'PSF-2026-00841', am
               <span className="text-xl animate-bounce">🎁</span>
               <div>
                 <h4 className="text-[11px] font-extrabold text-emerald-950">Instant Buyer Payment Cashback!</h4>
-                <p className="text-[10px] text-emerald-700">Prepaying into RBI-regulated escrow unlocks an instant ₹1–₹10 cash reward credited straight to your receiver wallet!</p>
+                <p className="text-[10px] text-emerald-700">Prepaying with delivery protection unlocks an instant cash reward credited straight to your receiver wallet!</p>
               </div>
             </div>
 
@@ -183,7 +183,7 @@ export default function PaymentCheckoutModal({ shipmentId = 'PSF-2026-00841', am
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Pay ₹{Number(amount).toLocaleString('en-IN')} Into Escrow Vault</span>
+                    <span>Pay ₹{Number(amount).toLocaleString('en-IN')} with Delivery Protection</span>
                   </>
                 )}
               </button>
@@ -195,17 +195,17 @@ export default function PaymentCheckoutModal({ shipmentId = 'PSF-2026-00841', am
               <CheckCircle2 className="w-10 h-10" />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-slate-900">Payment Secured in Escrow!</h3>
-              <p className="text-xs text-slate-500 mt-1">₹{Number(amount).toLocaleString('en-IN')} successfully transferred into SecureKaro RBI Escrow Vault for shipment <span className="font-mono font-bold text-slate-800">{shipmentId}</span>.</p>
+              <h3 className="text-2xl font-black text-slate-900">Payment Secured Successfully!</h3>
+              <p className="text-xs text-slate-500 mt-1">₹{Number(amount).toLocaleString('en-IN')} successfully secured under SecureKaro Delivery Protection for shipment <span className="font-mono font-bold text-slate-800">{shipmentId}</span>.</p>
             </div>
             
-            {/* Escrow Protection Notice */}
+            {/* Delivery Protection Notice */}
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs space-y-1">
               <div className="flex items-center gap-1.5 font-extrabold text-emerald-900 justify-center">
-                <span>🛡️ Escrow Protection Active!</span>
+                <span>🛡️ Delivery Protection Active!</span>
               </div>
               <p className="text-center text-[11px] text-emerald-700">
-                Funds are safely locked in RBI-regulated escrow until parcel delivery is verified and signed off.
+                Funds are safely secured until parcel delivery is verified and signed off.
               </p>
             </div>
             <button

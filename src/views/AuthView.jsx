@@ -632,12 +632,12 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
               <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 SecureKaro
               </h1>
-              <p className="text-xs text-blue-200 font-medium">India's Premier Logistics Escrow Platform</p>
+              <p className="text-xs text-blue-200 font-medium">Logistics Aggregator & Shipping Software</p>
             </div>
           </div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-blue-100 font-medium mt-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            RBI Compliant Escrow Protection & UPI Instant Payouts
+            B2B Courier Booking & Delivery Protection Platform
           </div>
         </div>
 
@@ -645,10 +645,10 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
         <div className="my-auto relative z-10 max-w-lg">
           <h2 className="text-4xl font-extrabold tracking-tight leading-tight text-white mb-4">
             Ship with confidence.<br />
-            Get paid on delivery.
+            Protected on delivery.
           </h2>
           <p className="text-blue-100 text-sm leading-relaxed mb-8">
-            SecureKaro holds your funds in a regulated escrow account until your parcel is safely delivered and confirmed — protecting every transaction.
+            E-commerce Shipping Label & Parcel Tracking Tool with COD Protection. Multi-courier booking, live tracking, and digital doorstep sign-off protection.
           </p>
 
           <div className="space-y-4">
@@ -657,8 +657,8 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-white">Funds Protected in Escrow</h3>
-                <p className="text-xs text-blue-100 mt-0.5">Your payment is held securely until delivery is confirmed by the recipient.</p>
+                <h3 className="font-semibold text-sm text-white">Delivery Protection Suite</h3>
+                <p className="text-xs text-blue-100 mt-0.5">Shipments and COD values are safeguarded until verified delivery confirmation.</p>
               </div>
             </div>
 
@@ -667,8 +667,8 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                 <Box className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-white">Real-Time Parcel Tracking</h3>
-                <p className="text-xs text-blue-100 mt-0.5">Monitor every step from pickup to doorstep with live carrier updates.</p>
+                <h3 className="font-semibold text-sm text-white">Multi-Carrier Live Tracking</h3>
+                <p className="text-xs text-blue-100 mt-0.5">Integrate Delhivery, Blue Dart, DTDC, and Shadowfax with live parcel milestones.</p>
               </div>
             </div>
 
@@ -677,8 +677,8 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                 <RefreshCw className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-white">Instant Fund Release</h3>
-                <p className="text-xs text-blue-100 mt-0.5">Escrow clears within 24 hours of confirmed delivery — no manual steps.</p>
+                <h3 className="font-semibold text-sm text-white">Prompt Courier Settlement</h3>
+                <p className="text-xs text-blue-100 mt-0.5">Fast automated settlement within 24 hours of confirmed delivery sign-off.</p>
               </div>
             </div>
           </div>
@@ -686,7 +686,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
 
         {/* Footer info */}
         <div className="relative z-10 text-xs text-blue-200 flex items-center justify-between border-t border-white/10 pt-4">
-          <span>&copy; {new Date().getFullYear()} SecureKaro Escrow Platform Inc.</span>
+          <span>&copy; {new Date().getFullYear()} SecureKaro Logistics & Shipping Software</span>
           <span className="flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> 256-Bit SSL Encrypted</span>
         </div>
       </div>
@@ -705,15 +705,15 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                 <div className="flex items-center gap-1.5">
                   <h1 className="text-lg font-black tracking-tight text-slate-900">SecureKaro</h1>
                   <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-50 text-[#1E56E3] border border-blue-200">
-                    Escrow
+                    Logistics
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 font-medium">India's Logistics Escrow Platform</p>
+                <p className="text-[11px] text-slate-500 font-medium">B2B Courier Booking & Delivery Protection</p>
               </div>
             </div>
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[10px] font-extrabold shadow-2xs">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span>RBI Regulated</span>
+              <span>SSL Secured</span>
             </div>
           </div>
           
@@ -743,7 +743,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
               {isSignUp ? 'Create your SecureKaro account' : 'Welcome back'}
             </h2>
             <p className="text-slate-500 text-sm mt-1">
-              {isSignUp ? 'Join thousands of businesses securing transactions with escrow.' : 'Sign in to access your SecureKaro escrow overview and shipments.'}
+              {isSignUp ? 'Join thousands of businesses streamlining courier shipping & delivery protection.' : 'Sign in to access your SecureKaro shipping dashboard and tracking.'}
             </p>
           </div>
 
@@ -755,7 +755,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
               </div>
               <div>
                 <p className="text-xs font-black text-slate-900">Tracking an incoming parcel?</p>
-                <p className="text-[11px] text-slate-500">Inspect courier milestones & escrow with zero login.</p>
+                <p className="text-[11px] text-slate-500">Inspect courier milestones & delivery protection with zero login.</p>
               </div>
             </div>
             <button
@@ -1382,7 +1382,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                       </div>
                       <div>
                         <p className="font-bold text-sm text-slate-900">Buyer / Receiver</p>
-                        <p className="text-[11px] text-slate-500 mt-0.5">I receive goods and make escrow payments</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">I receive goods and track delivery status</p>
                       </div>
                     </button>
                   </div>

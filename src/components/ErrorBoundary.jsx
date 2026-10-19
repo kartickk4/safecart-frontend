@@ -38,7 +38,7 @@ export default class ErrorBoundary extends React.Component {
               Application Error
             </h1>
             <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-              We encountered an unexpected problem while rendering this view. Your account and escrow funds remain completely secure.
+              We encountered an unexpected problem while rendering this view. Your account and data remain completely secure.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">

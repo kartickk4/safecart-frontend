@@ -123,7 +123,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       if (isMatch) {
         if (currentShipment?.deliveryConfirmed || currentShipment?.status === 'Released') {
           const isClosed = currentShipment.returnWindowClosed || currentShipment.status === 'Released';
-          alert(`Parcel already confirmed! ${isClosed ? 'Return window is closed and escrow funds released.' : '24-hour return window is currently active.'}`);
+          alert(`Parcel already confirmed! ${isClosed ? 'Return window is closed and payment has been settled.' : '24-hour return window is currently active.'}`);
           return;
         }
         setQrScanVerifiedNotice(true);
@@ -295,7 +295,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       setShowConfirmChoiceModal(false);
       const isClosed = currentShipment.returnWindowClosed || currentShipment.status === 'Released' || currentShipment.returnWindowChoice === 'ImmediateClose';
       const windowMsg = isClosed
-        ? 'Return window is closed and escrow funds have been released.'
+        ? 'Return window is closed and payment has been settled.'
         : '24-hour return window is currently active.';
       alert(`Parcel already confirmed! ${windowMsg}`);
       return;

@@ -673,7 +673,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }) {
         <div className="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-semibold px-5">
           <span className="flex items-center gap-1.5 text-emerald-600 font-bold">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Escrow 100% Protected</span>
+            <span>Delivery 100% Protected</span>
           </span>
           <span className="text-slate-400">SecureKaro Tamper-Evident QR</span>
         </div>

@@ -244,7 +244,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-black text-slate-900">
-                {modalStep === 1 ? 'Create Escrow Shipment Booking' : 'Select Delivery Courier & Review Rates'}
+                {modalStep === 1 ? 'Create Courier Shipment Booking' : 'Select Delivery Courier & Review Rates'}
               </h2>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
                 Step {modalStep} of 2
@@ -430,7 +430,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
 
               <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Escrow Amount (₹ INR) *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Parcel Value / Amount (₹ INR) *</label>
                   <input
                     type="number"
                     required

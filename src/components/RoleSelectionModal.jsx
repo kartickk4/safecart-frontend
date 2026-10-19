@@ -60,7 +60,7 @@ export default function RoleSelectionModal({ isOpen, user, onComplete }) {
           </h2>
           <p className="text-xs text-slate-500 font-medium">
             {step === 1 
-              ? 'Select your primary account role to customize your escrow workspace.'
+              ? 'Select your primary account role to customize your shipping & tracking workspace.'
               : 'Where should courier partners (Delhivery, BlueDart, DTDC, India Post) pick up your parcels?'}
           </p>
         </div>
@@ -85,7 +85,7 @@ export default function RoleSelectionModal({ isOpen, user, onComplete }) {
                   <h3 className="font-extrabold text-sm text-slate-900">Buyer / Customer</h3>
                   {selectedRole === 'User' && <CheckCircle2 className="w-5 h-5 text-[#1E56E3]" />}
                 </div>
-                <p className="text-xs text-slate-500 mt-1">I want to pay securely via escrow, track parcel deliveries, and inspect orders.</p>
+                <p className="text-xs text-slate-500 mt-1">I want to pay securely with delivery protection, track parcel deliveries, and verify orders.</p>
               </div>
             </div>
 

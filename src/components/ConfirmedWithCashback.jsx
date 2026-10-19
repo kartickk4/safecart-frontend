@@ -305,14 +305,14 @@ export default function ConfirmedWithCashback({
                 <h1 className="text-xl font-bold text-slate-900">Delivery Confirmed</h1>
                 <p className="text-sm text-slate-500 mt-1 leading-relaxed">
                   {returnWindowChoice === 'confirm_and_close'
-                    ? 'Escrow funds have been released to the seller.'
+                    ? 'Payment has been settled to the seller.'
                     : 'Your 24-hour inspection window is now active.'}
                 </p>
               </div>
 
               <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                Escrow Delivery Verified
+                Doorstep Delivery Verified
               </div>
             </div>
           </div>
@@ -559,7 +559,7 @@ export default function ConfirmedWithCashback({
           <div className="flex items-center justify-center gap-3 text-[11px] text-slate-400 pb-2">
             <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> 256-bit SSL</span>
             <span>·</span>
-            <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Escrow Protected</span>
+            <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Delivery Protected</span>
           </div>
         </div>
       </div>

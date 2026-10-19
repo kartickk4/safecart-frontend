@@ -857,40 +857,90 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
 
                 <div className="space-y-8 relative before:absolute before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-blue-100">
                   {/* Stage 1 */}
+                  {/* Stage 1: Order Registered */}
                   <div className="flex items-start gap-4 relative z-10">
                     <div className="w-10 h-10 rounded-full bg-[#1E56E3] text-white font-bold flex items-center justify-center text-sm shadow-md shrink-0">✓</div>
                     <div>
                       <div className="flex items-center gap-3">
-                        <h4 className="text-xs font-extrabold text-slate-900">Shipping order created</h4>
-                        <span className="text-[10px] text-slate-400">16 Jul 2026</span>
+                        <h4 className="text-xs font-extrabold text-slate-900">Order details saved on platform</h4>
+                        <span className="text-[10px] text-slate-400">
+                          {trackingResult.createdAt ? new Date(trackingResult.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Saved'}
+                        </span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">The digital shipping manifest has been registered on SecureKaro Escrow.</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Seller registered parcel details and assigned courier preferences on SafeCart.</p>
                     </div>
                   </div>
 
-                  {/* Stage 2 */}
+                  {/* Stage 2: Payment Request Generated */}
                   <div className="flex items-start gap-4 relative z-10">
                     <div className="w-10 h-10 rounded-full bg-[#1E56E3] text-white font-bold flex items-center justify-center text-sm shadow-md shrink-0">✓</div>
                     <div>
                       <div className="flex items-center gap-3">
-                        <h4 className="text-xs font-extrabold text-slate-900">Payment request sent to receiver</h4>
-                        <span className="text-[10px] text-slate-400">17 Jul 2026</span>
+                        <h4 className="text-xs font-extrabold text-slate-900">Secure payment link generated</h4>
+                        <span className="text-[10px] text-slate-400">
+                          {trackingResult.createdAt ? new Date(trackingResult.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Active'}
+                        </span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">Secure escrow payment request dispatched to {trackingResult.receiverName}.</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Payment request for ₹{Number(trackingResult.amount || 0).toLocaleString('en-IN')} dispatched to {trackingResult.receiverName}.</p>
                     </div>
                   </div>
 
-                  {/* Stage 3 */}
-                  <div className="flex items-start gap-4 relative z-10">
-                    <div className="w-10 h-10 rounded-full bg-[#1E56E3] text-white font-bold flex items-center justify-center text-sm shadow-md shrink-0">✓</div>
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h4 className="text-xs font-extrabold text-slate-900">Payment received by receiver</h4>
-                        <span className="text-[10px] text-slate-400">18 Jul 2026</span>
+                  {/* Stage 3: Buyer Payment & Escrow Lock */}
+                  {(() => {
+                    const isPaymentReceived = Boolean(
+                      trackingResult?.receiverPaymentDone || 
+                      trackingResult?.escrowStage >= 3 || 
+                      (trackingResult?.status && trackingResult.status !== 'Awaiting Payment' && trackingResult.status !== 'Draft')
+                    );
+
+                    return (
+                      <div className="flex items-start gap-4 relative z-10">
+                        <div className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm shadow-md shrink-0 transition-all ${
+                          isPaymentReceived 
+                            ? 'bg-[#1E56E3] text-white' 
+                            : 'bg-amber-500 text-white ring-4 ring-amber-100 shadow-amber-400/30 animate-pulse'
+                        }`}>
+                          {isPaymentReceived ? '✓' : <Clock className="w-4 h-4" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <h4 className="text-xs font-extrabold text-slate-900">
+                              {isPaymentReceived ? 'Buyer payment confirmed & locked in Escrow' : `Awaiting payment from ${trackingResult.receiverName}`}
+                            </h4>
+                            <span className="text-[10px] text-slate-400">
+                              {isPaymentReceived && trackingResult.receiverPaidAt 
+                                ? new Date(trackingResult.receiverPaidAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) 
+                                : isPaymentReceived ? 'Confirmed' : 'Pending'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {isPaymentReceived
+                              ? `₹${Number(trackingResult.amount || 0).toLocaleString('en-IN')} is locked safely in SafeCart Escrow. Courier shipment was automatically booked upon payment.`
+                              : `SafeCart will automatically book the courier pickup and assign the AWB code as soon as ${trackingResult.receiverName} pays.`}
+                          </p>
+
+                          {!isPaymentReceived && (
+                            <div className="mt-3 p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                              <span className="text-xs font-bold text-amber-900">
+                                Link: <code className="font-mono text-[11px] text-blue-700 bg-white px-2 py-0.5 rounded border border-amber-200">/pay/{trackingResult.shipmentId}</code>
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <a
+                                  href={`/pay/${trackingResult.shipmentId}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-xs"
+                                >
+                                  <span>Open Pay Page</span>
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">{trackingResult.receiverName} has funded the escrow vault. Funds are securely locked.</p>
-                    </div>
-                  </div>
+                    );
+                  })()}
 
                   {/* Stage 4: Enter Courier Details — Supplier or Buyer */}
                   {isSupplier ? (

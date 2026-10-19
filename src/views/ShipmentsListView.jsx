@@ -189,8 +189,8 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                 {/* Line 3: Route & Carrier */}
                 <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
                   <span className="truncate">{item.city || 'Domestic Delivery'}</span>
-                  <span className="capitalize text-slate-600 font-semibold shrink-0 ml-2">
-                    {item.carrierSlug || 'Delhivery'}
+                  <span className="text-slate-700 font-bold shrink-0 ml-2">
+                    {item.carrierSlug === 'bluedart' ? 'Blue Dart' : (item.carrierSlug ? item.carrierSlug.charAt(0).toUpperCase() + item.carrierSlug.slice(1) : 'Delhivery')}
                   </span>
                 </div>
 
@@ -279,8 +279,8 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                     <td className="py-3.5 px-4 text-slate-600 font-medium">
                       {item.city}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-500 capitalize">
-                      {item.carrierSlug}
+                    <td className="py-3.5 px-4 text-slate-700 font-bold">
+                      {item.carrierSlug === 'bluedart' ? 'Blue Dart' : (item.carrierSlug ? item.carrierSlug.charAt(0).toUpperCase() + item.carrierSlug.slice(1) : 'Delhivery')}
                     </td>
                     <td className="py-3.5 px-4 font-bold text-slate-900">
                       ₹{item.amount ? Number(item.amount).toLocaleString('en-IN') : '3,420'}
@@ -371,16 +371,19 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
 }
 
 function renderEscrowBadge(status) {
+  if (status === 'Awaiting Payment') return <span className="bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Awaiting Payment</span>;
   if (status === 'Released') return <span className="pill-released"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Released</span>;
   if (status === 'Locked') return <span className="pill-disputed"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Disputed</span>;
   if (status === 'Cancelled') return <span className="bg-slate-100 text-slate-600 border border-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Cancelled</span>;
   if (status === 'Undelivered') return <span className="bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Refunded to Receiver</span>;
   if (status === 'Return Requested' || status === 'Return In Transit') return <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Return Frozen</span>;
   if (status === 'Returned & Refunded') return <span className="bg-purple-100 text-purple-900 border border-purple-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>Returned & Refunded</span>;
-  return <span className="pill-held"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Held</span>;
+  return <span className="pill-held"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Held in Escrow</span>;
 }
 
 function renderDeliveryBadge(status) {
+  if (status === 'Awaiting Payment') return <span className="text-amber-600 font-extrabold text-[11px] bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 inline-block">Waiting for Buyer</span>;
+  if (status === 'Pending Pickup') return <span className="text-blue-700 font-bold text-[11px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 inline-block">Pickup Scheduled</span>;
   if (status === 'Released' || status === 'Delivered') return <span className="pill-delivery-delivered">Delivered</span>;
   if (status === 'Locked') return <span className="pill-delivery-delayed">Disputed</span>;
   if (status === 'Cancelled') return <span className="text-slate-500 font-bold text-[11px]">Cancelled</span>;
@@ -388,6 +391,5 @@ function renderDeliveryBadge(status) {
   if (status === 'Return Requested') return <span className="text-amber-800 font-bold text-[11px]">Return Requested</span>;
   if (status === 'Return In Transit') return <span className="text-purple-700 font-bold text-[11px]">Reverse Transit</span>;
   if (status === 'Returned & Refunded') return <span className="text-purple-900 font-bold text-[11px]">Return Completed</span>;
-  if (status === 'Pending Pickup') return <span className="pill-delivery-out">Out for Delivery</span>;
   return <span className="pill-delivery-transit">In Transit</span>;
 }

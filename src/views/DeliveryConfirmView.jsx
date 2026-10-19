@@ -174,7 +174,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
       return;
     }
     if (isDeliveryAlreadyConfirmed) {
-      setError(`Parcel already confirmed. ${isReturnWindowClosed ? 'Return window is closed and escrow funds have been released.' : '24-hour return window is currently active.'}`);
+      setError(`Parcel already confirmed. ${isReturnWindowClosed ? 'Return window is closed and payment has been settled.' : '24-hour return window is currently active.'}`);
       return;
     }
     setActionLoading(true);
@@ -186,7 +186,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
       setSuccessType('confirm');
       setSuccessMessage(
         confirmChoice === 'confirm_and_close'
-          ? 'Parcel confirmed and return window closed! Escrow funds released to the seller.'
+          ? 'Parcel confirmed and return window closed! Payment released to the seller.'
           : 'Delivery confirmed! Your 24-hour return window is now active.'
       );
       if (onConfirmed) onConfirmed();
@@ -207,7 +207,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
       await shipmentAPI.closeReturnWindow(shipmentId.trim());
       setSuccess(true);
       setSuccessType('confirm');
-      setSuccessMessage('Return window closed early! Escrow funds released to the seller.');
+      setSuccessMessage('Return window closed early! Payment released to the seller.');
       await loadShipmentDetails(shipmentId.trim());
       if (onConfirmed) onConfirmed();
     } catch (err) {
@@ -377,7 +377,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
           <span>Buyer Delivery Sign-Off & Return Portal</span>
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          Inspect your delivered package and either confirm receipt to release escrow or file a return request under SecureKaro buyer protection.
+          Inspect your delivered package and either confirm receipt to complete delivery or file a return request under SecureKaro buyer protection.
         </p>
       </div>
 
@@ -396,7 +396,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
               </span>
             </div>
             <p className="text-xs text-white/85 font-medium mt-1 leading-relaxed">
-              Open your package and scan the tamper-evident QR confirmation slip placed inside to verify physical delivery and release escrow.
+              Open your package and scan the tamper-evident QR confirmation slip placed inside to verify physical delivery and complete sign-off.
             </p>
           </div>
         </div>
@@ -526,17 +526,17 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                 </div>
               )}
 
-              {/* Escrow summary badge */}
+              {/* Order summary badge */}
               {selectedShipmentData && (
                 <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-wrap items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2.5">
                     <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
                     <div>
                       <p className="font-bold text-slate-900">
-                        {selectedShipmentData.description || 'Secure Escrow Order'}
+                        {selectedShipmentData.description || 'Secure Protected Order'}
                       </p>
                       <p className="text-[11px] text-slate-500">
-                        Status: <strong className="text-slate-700">{selectedShipmentData.status}</strong> • Escrow Principal: <strong className="text-emerald-700 font-mono">₹{selectedShipmentData.amount?.toLocaleString('en-IN')}</strong>
+                        Status: <strong className="text-slate-700">{selectedShipmentData.status}</strong> • Order Value: <strong className="text-emerald-700 font-mono">₹{selectedShipmentData.amount?.toLocaleString('en-IN')}</strong>
                       </p>
                     </div>
                   </div>

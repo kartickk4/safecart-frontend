@@ -229,7 +229,7 @@ export default function PublicQrConfirmView({ qrToken }) {
       if (returnType === 'full_refund') {
         if (refundMethod === 'upi') {
           if (!upiId.trim() || !upiId.includes('@')) {
-            setActionError('Please provide a valid UPI ID (e.g. mobile@upi or name@okaxis) to receive your escrow refund.');
+            setActionError('Please provide a valid UPI ID (e.g. mobile@upi or name@okaxis) to receive your refund.');
             return;
           }
         } else {
@@ -305,7 +305,7 @@ export default function PublicQrConfirmView({ qrToken }) {
             <Loader2 className="w-7 h-7 animate-spin" />
           </div>
           <h2 className="text-lg font-bold text-slate-900">Verifying Parcel QR Code</h2>
-          <p className="text-xs text-slate-500">Connecting to SecureKaro Escrow Network to load your order details...</p>
+          <p className="text-xs text-slate-500">Connecting to SecureKaro Logistics Network to load your order details...</p>
         </div>
       </div>
     );
@@ -416,7 +416,7 @@ export default function PublicQrConfirmView({ qrToken }) {
               <span className="font-bold text-slate-900">{parcelInfo?.description}</span>
             </div>
             <div className="flex justify-between items-center text-slate-600">
-              <span>Escrow Value:</span>
+              <span>Parcel Value:</span>
               <span className="font-extrabold text-emerald-700 font-mono">₹{parcelInfo?.amount?.toLocaleString('en-IN')}</span>
             </div>
           </div>
@@ -443,8 +443,8 @@ export default function PublicQrConfirmView({ qrToken }) {
               </div>
               <p className={`text-[11px] leading-relaxed ${isRefundCompleted ? 'text-emerald-800' : 'text-amber-800'}`}>
                 {isRefundCompleted
-                  ? '100% of escrow funds have been successfully refunded to your buyer wallet.'
-                  : 'A return request has already been filed for this package. Your escrow payment is safely locked under Escrow protection.'}
+                  ? '100% of payment funds have been successfully refunded to your buyer wallet.'
+                  : 'A return request has already been filed for this package. Your payment is safely secured under SecureKaro Delivery Protection.'}
               </p>
               <div className={`p-3 bg-white rounded-xl text-xs space-y-1.5 border ${
                 isRefundCompleted ? 'border-emerald-200' : 'border-amber-200'
@@ -494,7 +494,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                 </span>
               </div>
               <p className="text-[11px] text-amber-800 leading-relaxed">
-                Found an issue with the product? You are protected under Escrow and can choose any of the 3 return resolutions:
+                Found an issue with the product? You are protected under SecureKaro Delivery Protection and can choose any of the 3 return resolutions:
               </p>
               <div className="grid grid-cols-3 gap-2 text-[10.5px] font-bold text-slate-800">
                 <div className="p-2 rounded-xl bg-white border border-amber-200 text-center shadow-xs">
@@ -529,7 +529,7 @@ export default function PublicQrConfirmView({ qrToken }) {
             href="/"
             className="w-full py-3 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold rounded-xl transition block"
           >
-            Access Buyer Escrow Portal
+            Access Buyer Delivery Portal
           </a>
         </div>
       </div>
@@ -581,8 +581,8 @@ export default function PublicQrConfirmView({ qrToken }) {
             </h2>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
               {isRefundCompleted
-                ? '100% of escrow funds have been successfully refunded to your buyer wallet.'
-                : 'A return or resolution request is already in progress for this parcel. Your payment remains safely locked in SecureKaro Escrow.'
+                ? '100% of payment funds have been successfully refunded to your buyer wallet.'
+                : 'A return or resolution request is already in progress for this parcel. Your payment remains safely secured under SecureKaro Delivery Protection.'
               }
             </p>
           </div>
@@ -616,9 +616,9 @@ export default function PublicQrConfirmView({ qrToken }) {
               </span>
             </div>
             <div className="flex justify-between items-center text-slate-600">
-              <span>{isRefundCompleted ? 'Refund Payout:' : 'Escrow Security:'}</span>
+              <span>{isRefundCompleted ? 'Refund Payout:' : 'Payment Security:'}</span>
               <span className="font-extrabold text-emerald-700">
-                ₹{parcelInfo?.amount?.toLocaleString('en-IN') || '—'} {isRefundCompleted ? 'Credited to Wallet' : 'Frozen Under Protection'}
+                ₹{parcelInfo?.amount?.toLocaleString('en-IN') || '—'} {isRefundCompleted ? 'Credited to Wallet' : 'Secured Under Protection'}
               </span>
             </div>
           </div>
@@ -699,14 +699,14 @@ export default function PublicQrConfirmView({ qrToken }) {
                 <span className="font-bold text-emerald-700">Order Completed &amp; Released</span>
               </div>
               <div className="flex justify-between items-center text-slate-600">
-                <span>Escrow Settlement:</span>
+                <span>Delivery Settlement:</span>
                 <span className="font-bold text-slate-900">Disbursed to Seller</span>
               </div>
             </div>
 
             <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-800 font-medium text-left flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-[#1E56E3] shrink-0" />
-              <span>Replacement completed under SafeCart Escrow Protection. Thank you!</span>
+              <span>Replacement completed under SecureKaro Delivery Protection. Thank you!</span>
             </div>
 
             <a
@@ -758,11 +758,11 @@ export default function PublicQrConfirmView({ qrToken }) {
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-bold mb-2">
               <ShieldAlert className="w-3.5 h-3.5" />
-              <span>Escrow Protected Return</span>
+              <span>Protected Return Resolution</span>
             </div>
             <h2 className="text-2xl font-black text-slate-900">Return Request Submitted</h2>
             <p className="text-xs text-slate-500 mt-1.5">
-              The merchant has been alerted. Your payment remains safely frozen in SecureKaro Escrow.
+              The merchant has been alerted. Your payment remains safely secured under SecureKaro Delivery Protection.
             </p>
           </div>
 
@@ -783,8 +783,8 @@ export default function PublicQrConfirmView({ qrToken }) {
               <span className="font-bold text-slate-900">{resultData?.returnReason || returnReason}</span>
             </div>
             <div className="flex justify-between items-center text-slate-600">
-              <span>Escrow Security:</span>
-              <span className="font-black text-emerald-700">₹{parcelInfo?.amount?.toLocaleString('en-IN') || '—'} Frozen Under Protection</span>
+              <span>Payment Security:</span>
+              <span className="font-black text-emerald-700">₹{parcelInfo?.amount?.toLocaleString('en-IN') || '—'} Secured Under Protection</span>
             </div>
           </div>
 
@@ -795,7 +795,7 @@ export default function PublicQrConfirmView({ qrToken }) {
               <>
                 <p>1. The seller reviews your replacement request in their Return Orders portal.</p>
                 <p>2. Once dispatched, a replacement courier parcel will be shipped to your address.</p>
-                <p>3. If seller cannot fulfill replacement, 100% full escrow refund is automatically triggered.</p>
+                <p>3. If seller cannot fulfill replacement, 100% full refund is automatically triggered.</p>
               </>
             )}
             {chosenType === 'partial_discount' && (
@@ -809,7 +809,7 @@ export default function PublicQrConfirmView({ qrToken }) {
               <>
                 <p>1. The seller reviews your full return application in their Return Orders portal.</p>
                 <p>2. Reverse courier pickup is scheduled directly from your doorstep.</p>
-                <p>3. 100% of escrow funds will be disbursed to your provided payout account once picked up.</p>
+                <p>3. 100% of funds will be disbursed to your provided payout account once picked up.</p>
               </>
             )}
           </div>
@@ -857,7 +857,7 @@ export default function PublicQrConfirmView({ qrToken }) {
 
         <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
           <ShieldCheck className="w-3.5 h-3.5" />
-          <span>100% Escrow Protected</span>
+          <span>100% Delivery Protected</span>
         </div>
       </header>
 
@@ -885,7 +885,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                 </p>
               </div>
               <div className="text-right">
-                <span className="text-[10px] uppercase text-slate-400 block font-semibold">Protected Escrow</span>
+                <span className="text-[10px] uppercase text-slate-400 block font-semibold">Protected Parcel</span>
                 <span className="text-lg font-mono font-black text-emerald-400">
                   ₹{parcelInfo?.amount?.toLocaleString('en-IN') || '—'}
                 </span>
@@ -1230,7 +1230,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                           </span>
                         </div>
                         <p className="text-[10.5px] text-slate-500 mt-1">
-                          Confirms delivery now. You keep 24 hours to thoroughly test the product before escrow releases to seller.
+                          Confirms delivery now. You keep 24 hours to thoroughly test the product before funds release to seller.
                         </p>
                         <div className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[10px] font-bold text-[#1E56E3]">
                           <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
@@ -1251,7 +1251,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                       }`}
                     >
                       <div>
-                        <span className="text-xs font-bold text-slate-900">Confirm & Release Escrow Immediately</span>
+                        <span className="text-xs font-bold text-slate-900">Confirm Delivery & Sign-Off Immediately</span>
                         <p className="text-[10.5px] text-slate-500 mt-0.5">
                           Close return window right now and release payment instantly to seller.
                         </p>
@@ -1308,7 +1308,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                             Fresh Unit
                           </span>
                           <p className="text-[10.5px] text-slate-500 mt-1.5 leading-snug">
-                            Seller ships a brand-new replacement parcel. If rejected or unavailable, 100% full escrow refund is triggered.
+                            Seller ships a brand-new replacement parcel. If rejected or unavailable, 100% full refund is triggered.
                           </p>
                         </div>
                       </button>
@@ -1366,7 +1366,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                             100% Money Back
                           </span>
                           <p className="text-[10.5px] text-slate-500 mt-1.5 leading-snug">
-                            Schedule reverse courier pickup and receive 100% of your escrow payment (₹{parcelInfo?.amount?.toLocaleString('en-IN')}) back.
+                            Schedule reverse courier pickup and receive 100% of your parcel payment (₹{parcelInfo?.amount?.toLocaleString('en-IN')}) back.
                           </p>
                         </div>
                       </button>
@@ -1492,7 +1492,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                         <div className="flex items-center justify-between">
                           <label className="block text-xs font-bold text-emerald-950 flex items-center gap-1.5">
                             <CreditCard className="w-4 h-4 text-emerald-700" />
-                            <span>Escrow Refund Payout Destination</span>
+                            <span>Refund Payout Destination</span>
                             <span className="text-rose-600">*</span>
                           </label>
                           <span className="text-[10px] font-bold text-emerald-800">
@@ -1685,7 +1685,7 @@ export default function PublicQrConfirmView({ qrToken }) {
 
       {/* Footer Branding */}
       <footer className="max-w-xl mx-auto w-full text-center mt-6 text-xs text-slate-400">
-        <p>Protected by SecureKaro Escrow &amp; Smart-Path Milestone Logistics</p>
+        <p>Protected by SecureKaro Delivery Protection &amp; Smart-Path Milestone Logistics</p>
         <p className="text-[11px] mt-0.5">Need help? Log in to your SecureKaro account or contact support.</p>
       </footer>
 

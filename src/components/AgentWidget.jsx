@@ -232,7 +232,7 @@ const AgentWidget = ({ onNavigate }) => {
   };
 
   const QUICK_REPLIES = {
-    7: ['Prepaid Escrow', 'Cash on Delivery (COD)'],
+    7: ['Prepaid (Online Link)', 'Cash on Delivery (COD)'],
     8: ['Yes, Enable RTO Protection', 'No, Skip RTO'],
     9: ['Yes, Allow Returns', 'No, Final Sale'],
     10: ['Confirm Courier', 'Change Courier'],
@@ -242,6 +242,7 @@ const AgentWidget = ({ onNavigate }) => {
 
   // Maps display label → exact keyword backend expects
   const QUICK_REPLY_KEYWORDS = {
+    'Prepaid (Online Link)':      '1',
     'Prepaid Escrow':             '1',
     'Prepaid (Online)':            '1',
     'Cash on Delivery (COD)':      '2',

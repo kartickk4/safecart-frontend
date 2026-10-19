@@ -31,7 +31,7 @@ export default function AdBanner() {
         <div className="flex items-center gap-3">
           <span className="text-[11px] font-bold text-slate-400 hidden sm:inline-flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Real-time Escrow Monitored</span>
+            <span>Real-time Delivery Protected</span>
           </span>
           <button
             onClick={handleDismiss}

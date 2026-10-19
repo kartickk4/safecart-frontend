@@ -45,7 +45,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
         ];
       }
 
-      const headers = ['Tracking ID', 'Recipient Name', 'Recipient Phone', 'Route', 'Carrier', 'Escrow Amount (INR)', 'Status', 'Date Created'];
+      const headers = ['Tracking ID', 'Recipient Name', 'Recipient Phone', 'Route', 'Carrier', 'Parcel Value (INR)', 'Status', 'Date Created'];
       const rows = data.map(item => [
         `"${item.shipmentId || ''}"`,
         `"${item.receiverName || ''}"`,
@@ -62,7 +62,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', `securekaro_escrow_report_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `securekaro_shipment_report_${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -86,7 +86,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-sm text-slate-900 whitespace-nowrap">
-                {isSupplier ? 'Supplier Hub' : 'Buyer Escrow'}
+                {isSupplier ? 'Supplier Hub' : 'Buyer Hub'}
               </span>
               <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-md shrink-0 border ${
                 isSupplier 
@@ -141,23 +141,14 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
       {/* ── DESKTOP HEADER (lg+) ── */}
       <div className="hidden lg:flex lg:items-center justify-between gap-4">
         <div className="flex flex-col min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
             <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">
-              {isSupplier ? 'Supplier Platform' : 'Buyer Escrow Portal'}
+              {isSupplier ? 'Supplier Platform' : 'Buyer Portal'}
             </h1>
-
-            {/* Quick Status Tag */}
-            <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
-              isSupplier 
-                ? 'bg-blue-50 text-[#1E56E3] border-blue-200/80' 
-                : 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-            }`}>
-              {isSupplier ? 'Supplier Mode Active' : 'Receiver Mode Active'}
-            </span>
           </div>
 
           <p className="text-xs text-slate-500 font-medium mt-1 truncate">
-            Welcome back, <span className="text-slate-800 font-semibold">{user?.fullName?.split(' ')[0] || 'Partner'}</span> — {isSupplier ? 'overview of your outgoing shipments and escrow vault' : 'manage your incoming deliveries and escrow approvals'} as of <span className="font-semibold text-slate-700">{currentDate} • {currentTime}</span>
+            Welcome back, <span className="text-slate-800 font-semibold">{user?.fullName?.split(' ')[0] || 'Partner'}</span> — {isSupplier ? 'overview of your outgoing shipments and courier settlements' : 'manage your incoming deliveries and order confirmations'} as of <span className="font-semibold text-slate-700">{currentDate} • {currentTime}</span>
           </p>
         </div>
 
@@ -207,7 +198,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
           <button
             onClick={handleExportCSV}
             disabled={exporting}
-            title="Export CSV Escrow Ledger"
+            title="Export CSV Shipment Ledger"
             className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 transition shadow-sm inline-flex items-center gap-1.5 shrink-0"
           >
             {exporting ? <RefreshCw className="w-3.5 h-3.5 text-slate-500 animate-spin" /> : <Download className="w-3.5 h-3.5 text-slate-500" />}

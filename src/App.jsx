@@ -34,12 +34,34 @@ import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell, Shie
 import { TAB_ROUTES, ROUTE_TABS, TAB_TITLES, getTabFromLocation } from './utils/routes';
 
 export default function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem('securekaro_user');
+      return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  // If user profile is already cached in localStorage, start with loading = false so UI renders instantly!
+  const [loading, setLoading] = useState(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('securekaro_token') : null;
+    const cached = typeof window !== 'undefined' ? localStorage.getItem('securekaro_user') : null;
+    return Boolean(token && !cached);
+  });
+  const [slowServerWarning, setSlowServerWarning] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutStep, setSignOutStep] = useState('');
   const [currentTab, _setCurrentTab] = useState(() => getTabFromLocation());
   const [roleNotification, setRoleNotification] = useState(null);
+
+  useEffect(() => {
+    if (!loading) return;
+    const timer = setTimeout(() => {
+      setSlowServerWarning(true);
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   // Central navigation dispatcher that updates React state, URL path in history, and page title
   const setCurrentTab = (nextTab, options = {}) => {
@@ -58,7 +80,7 @@ export default function App() {
         window.history.pushState({ tab: targetTab }, '', targetRoute);
       }
 
-      document.title = TAB_TITLES[targetTab] || 'SecureKaro — Escrow Logistics & Safe Commerce';
+      document.title = TAB_TITLES[targetTab] || 'SecureKaro — Logistics Aggregator & Shipping Software';
     }
   };
 
@@ -74,12 +96,12 @@ export default function App() {
     }
 
     // Set initial title based on initial route
-    document.title = TAB_TITLES[currentTab] || 'SecureKaro — Escrow Logistics & Safe Commerce';
+    document.title = TAB_TITLES[currentTab] || 'SecureKaro — Logistics Aggregator & Shipping Software';
 
     const handlePopState = () => {
       const tab = getTabFromLocation();
       _setCurrentTab(tab);
-      document.title = TAB_TITLES[tab] || 'SecureKaro — Escrow Logistics & Safe Commerce';
+      document.title = TAB_TITLES[tab] || 'SecureKaro — Logistics Aggregator & Shipping Software';
     };
 
     const handleNavigateTab = (e) => {
@@ -143,21 +165,34 @@ export default function App() {
     const token = localStorage.getItem('securekaro_token');
     if (!token) {
       setLoading(false);
+      setUser(null);
+      localStorage.removeItem('securekaro_user');
       return;
     }
 
     try {
-      const res = await profileAPI.getProfile();
+      // 8-second timeout guard to prevent freezing if Render backend is sleeping
+      const res = await Promise.race([
+        profileAPI.getProfile(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('AUTH_TIMEOUT')), 8000))
+      ]);
+
       const savedRole = localStorage.getItem('securekaro_active_role');
       const loadedUser = res.data;
       if (savedRole && (savedRole === 'Supplier' || savedRole === 'Receiver')) {
         loadedUser.activeRole = savedRole;
       }
       setUser(loadedUser);
+      localStorage.setItem('securekaro_user', JSON.stringify(loadedUser));
     } catch (err) {
-      console.warn('Backend profile API error or token invalid:', err);
-      localStorage.removeItem('securekaro_token');
-      setUser(null);
+      console.warn('Backend profile API check notice:', err.message);
+      // Only clear credentials if explicitly rejected as 401/403 Unauthorized
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('securekaro_token');
+        localStorage.removeItem('securekaro_user');
+        setUser(null);
+      }
+      // If network timeout or cold start, keep the cached user so dashboard stays functional
     } finally {
       setLoading(false);
     }
@@ -169,6 +204,7 @@ export default function App() {
       userData.activeRole = savedRole;
     }
     setUser(userData);
+    localStorage.setItem('securekaro_user', JSON.stringify(userData));
     setIsNewUser(!!newUserFlag);
     setShowWelcomeModal(true);
 
@@ -176,11 +212,12 @@ export default function App() {
     try {
       const res = await profileAPI.getProfile();
       if (res.data) {
-        setUser(prev => ({
-          ...prev,
+        const fullUser = {
           ...res.data,
-          activeRole: savedRole || res.data.role || prev?.activeRole
-        }));
+          activeRole: savedRole || res.data.role || userData.activeRole
+        };
+        setUser(fullUser);
+        localStorage.setItem('securekaro_user', JSON.stringify(fullUser));
       }
     } catch (e) {
       console.warn('Profile sync on auth success notice:', e);
@@ -217,8 +254,8 @@ export default function App() {
       role: nextRole,
       title: nextRole === 'Supplier' ? 'Switched to Supplier Mode' : 'Switched to Receiver Mode',
       desc: nextRole === 'Supplier' 
-        ? 'Merchant Portal: Create shipments, manage orders, pickups & escrow payouts.' 
-        : 'Buyer Portal: Inspect incoming parcels, sign-off deliveries & manage escrow.'
+        ? 'Merchant Portal: Create shipments, manage orders, pickups & shipping settlements.' 
+        : 'Buyer Portal: Inspect incoming parcels, sign-off deliveries & manage orders.'
     });
 
     setTimeout(() => {
@@ -255,7 +292,7 @@ export default function App() {
 
   const handleSignOut = () => {
     setIsSigningOut(true);
-    setSignOutStep('Securing active escrow session...');
+    setSignOutStep('Securing active session...');
 
     setTimeout(() => {
       setSignOutStep('Clearing authentication tokens...');
@@ -264,6 +301,7 @@ export default function App() {
     setTimeout(() => {
       localStorage.removeItem('securekaro_token');
       localStorage.removeItem('securekaro_active_role');
+      localStorage.removeItem('securekaro_user');
       setUser(null);
       setCurrentTab('dashboard'); // Reset tab so next login starts fresh
       setIsSigningOut(false);
@@ -362,9 +400,34 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F7F9FC] flex flex-col items-center justify-center space-y-4">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs font-bold text-slate-500 tracking-wide uppercase">Loading SecureKaro Escrow Platform...</p>
+      <div className="min-h-screen bg-[#F7F9FC] flex flex-col items-center justify-center p-6 text-center select-none">
+        <div className="w-12 h-12 border-4 border-[#1E56E3] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-xs font-black text-slate-700 tracking-wide uppercase">
+          Loading SecureKaro Platform...
+        </p>
+
+        {slowServerWarning && (
+          <div className="mt-5 max-w-sm w-full p-4 rounded-2xl bg-white border border-amber-200/90 shadow-md text-left space-y-2 animate-in fade-in duration-300">
+            <div className="flex items-center gap-2 text-amber-800 font-extrabold text-xs">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+              <span>Connecting to Cloud Server...</span>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              The free-tier backend sleeps after 15 minutes of inactivity and takes ~20–30s to boot up. Please hold on.
+            </p>
+            <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+              <button
+                onClick={() => {
+                  setLoading(false);
+                  setUser(null);
+                }}
+                className="text-xs font-bold text-[#1E56E3] hover:underline cursor-pointer"
+              >
+                Go to Sign In / Public Tracking →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -399,7 +462,7 @@ export default function App() {
             </div>
             <div>
               <span className="font-black text-slate-900 text-base tracking-tight block">SecureKaro</span>
-              <span className="text-[10px] text-slate-400 font-semibold block -mt-0.5">Escrow Logistics Platform</span>
+              <span className="text-[10px] text-slate-400 font-semibold block -mt-0.5">Logistics & Shipping Software</span>
             </div>
           </button>
 
@@ -577,7 +640,7 @@ export default function App() {
                 </div>
                 <h2 className="text-lg font-black text-slate-900">Supplier Feature Only</h2>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Only verified merchants and suppliers can create escrow-backed parcel shipments. Receivers and buyers use SecureKaro to inspect parcels, fund escrow, and sign off on deliveries.
+                  Only verified merchants and suppliers can create protected parcel shipments. Receivers and buyers use SecureKaro to inspect parcels, verify courier delivery, and sign off on arrivals.
                 </p>
                 <button
                   onClick={() => setCurrentTab('shipments-list')}
@@ -606,7 +669,7 @@ export default function App() {
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <h3 className="text-base font-extrabold text-slate-900">Receiver Only Feature</h3>
-                <p className="text-xs text-slate-500">Delivery Sign-Off is exclusively reserved for Receiver accounts to inspect parcel delivery and release escrow funds.</p>
+                <p className="text-xs text-slate-500">Delivery Sign-Off is exclusively reserved for Receiver accounts to inspect parcel delivery and confirm safe arrival.</p>
                 <button
                   onClick={() => setCurrentTab('dashboard')}
                   className="px-4 py-2 bg-[#1E56E3] hover:bg-[#1848BF] text-white text-xs font-bold rounded-xl transition"
@@ -775,7 +838,7 @@ export default function App() {
           <button
             onClick={() => setCurrentTab('create-shipment')}
             className="flex flex-col items-center justify-center -mt-5 w-12 h-12 bg-gradient-to-tr from-[#1443BC] to-[#2563EB] text-white rounded-2xl shadow-lg shadow-blue-600/35 active:scale-95 transition border-2 border-white"
-            title="Create New Escrow Shipment"
+            title="Book Courier Shipment"
           >
             <PlusCircle className="w-6 h-6 stroke-[2.5]" />
             <span className="text-[9px] font-black tracking-tight leading-none mt-0.5">Ship</span>

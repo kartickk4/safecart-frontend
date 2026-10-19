@@ -180,11 +180,13 @@ export default function WalletModal({ user, onUpdateUser }) {
       const baseDate = s.trackingSubmittedAt || s.receiverPaidAt || s.createdAt || new Date();
       const expiresAt = s.confirmationWindowExpiresAt || new Date(new Date(baseDate).getTime() + 24 * 60 * 60 * 1000);
       const remainingMs = Math.max(0, new Date(expiresAt).getTime() - Date.now());
+      const cbAmt = s.supplierCashbackPaid > 0 ? s.supplierCashbackPaid : 3;
       return {
         shipmentId: s.shipmentId,
         parcelAmount: s.amount || 0,
-        cashbackAmount: 0,
-        totalAmount: s.amount || 0,
+        cashbackAmount: cbAmt,
+        cashbackRate: '₹2 – ₹3',
+        totalAmount: (s.amount || 0) + cbAmt,
         awbCode: s.awbCode,
         carrierSlug: s.carrierSlug || 'delhivery',
         status: s.status,
@@ -923,7 +925,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             }`}
           >
             <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>{isSupplier ? 'Prepayment Cash Rewards' : 'Cashback & Rewards'} ({rewardHistory.length})</span>
+            <span>{isSupplier ? 'Seller Shipping Cashback (₹2 – ₹3)' : 'Cashback & Rewards'} ({rewardHistory.length})</span>
           </button>
         </div>
 
@@ -1086,11 +1088,11 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-base">
-                    {isSupplier ? 'Cash Reward Transactions' : 'Escrow & Payout History'}
+                    {isSupplier ? 'Seller Shipping Cashback Transactions' : 'Escrow & Payout History'}
                   </h3>
                   <p className="text-xs text-slate-500">
                     {isSupplier 
-                      ? 'History of all earned prepayment cash rewards and completed withdrawals.'
+                      ? 'History of all earned ₹2 – ₹3 seller cashbacks and completed payouts.'
                       : 'History of all escrow receipts and withdrawals.'}
                   </p>
                 </div>

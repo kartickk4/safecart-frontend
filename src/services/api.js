@@ -140,6 +140,7 @@ export const shipmentAPI = {
   publicQrGetInfo: (token) => api.get(`/shipments/public/qr-info/${token}`),
   publicQrSendOtp: (token, payload) => api.post(`/shipments/public/send-otp/${token}`, payload || {}),
   publicQrConfirm: (token, payload) => api.post(`/shipments/public/qr-confirm/${token}`, payload || {}),
+  publicPay: (id, data) => api.post(`/shipments/public/pay/${id}`, data || {}),
   getNetworkInfo: () => api.get('/network-info'),
   exportTaxStatementCSV: () => api.get('/shipments/export?format=csv', { responseType: 'blob' }),
   exportTaxStatementJSON: () => api.get('/shipments/export?format=json'),

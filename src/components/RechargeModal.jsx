@@ -181,7 +181,7 @@ export default function RechargeModal({ isOpen, onClose, currentBalance = 0, onS
               <div>
                 <h4 className="text-2xl font-black text-slate-900 tracking-tight">Recharge Successful!</h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  ₹{successData.amount.toFixed(2)} has been credited instantly to your seller escrow balance.
+                  ₹{successData.amount.toFixed(2)} has been credited instantly to your seller shipping wallet balance.
                 </p>
               </div>
 
