@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, ShieldCheck, ArrowRight, ArrowLeft, AlertTriangle, RotateCcw, 
-  Camera, Phone, Truck, Star, Zap, Check, Lock, RefreshCw, Clock, Award
+  Camera, Phone, Truck, Star, Zap, Check, Lock, RefreshCw, Clock, Award,
+  CreditCard, Banknote
 } from 'lucide-react';
 import { shipmentAPI, profileAPI, agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
@@ -19,6 +20,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   const [amount, setAmount] = useState('');
   const [cityRoute, setCityRoute] = useState('');
   const [fundImmediately, setFundImmediately] = useState(true);
+  const [paymentMode, setPaymentMode] = useState('prepaid'); // 'prepaid' | 'cod'
   const [returnAllowed, setReturnAllowed] = useState(true);
   const [rtoProtectionEnabled, setRtoProtectionEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -136,12 +138,21 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       return;
     }
 
+    await fetchQuotes(paymentMode);
+    setModalStep(2);
+  };
+
+  const fetchQuotes = async (targetMode = paymentMode) => {
     setFetchingQuotes(true);
+    setError('');
     try {
+      const isCod = targetMode === 'cod';
       const res = await agentAPI.getCarrierRates({
         fromPincode: senderPincode,
         toPincode: receiverPincode,
-        weightKg: parseFloat(parcelWeight) || 0.5
+        weightKg: parseFloat(parcelWeight) || 0.5,
+        paymentMode: targetMode,
+        cod: isCod ? 1 : 0
       });
 
       const quotes = res.data?.quotes || [];
@@ -152,9 +163,14 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       });
 
       if (quotes.length > 0) {
-        setSelectedQuote(quotes[0]); // Default to cheapest
+        setSelectedQuote(prev => {
+          if (prev) {
+            const matched = quotes.find(q => q.slug === prev.slug);
+            if (matched) return matched;
+          }
+          return quotes[0];
+        });
       }
-      setModalStep(2);
     } catch (err) {
       console.error('Failed to fetch carrier quotes in modal:', err);
       setError(err.response?.data?.error || 'Could not fetch live rates for this pincode. Please verify the pincode.');
@@ -170,6 +186,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     setError('');
 
     try {
+      const isCod = paymentMode === 'cod';
       const payload = {
         receiverName,
         receiverPhone,
@@ -181,9 +198,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         city: cityRoute,
         senderAddress,
         senderPincode,
-        carrierSlug: selectedQuote.slug,
-        deliveryCharge: selectedQuote.price,
-        fundEscrow: fundImmediately,
+        carrierSlug: selectedQuote.baseSlug || selectedQuote.slug,
+        deliveryCharge: selectedQuote.exactRate || selectedQuote.price,
+        paymentMode,
+        isPrepaid: !isCod,
+        codCharge: isCod ? (selectedQuote.codCharge || 52) : 0,
+        fundEscrow: isCod ? false : fundImmediately,
         returnAllowed,
         photoReviewEnabled: true,
         rtoProtectionEnabled
@@ -459,6 +479,37 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 </div>
               </div>
 
+              {/* Payment Mode Selector */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Payment Mode *</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMode('prepaid')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                      paymentMode === 'prepaid'
+                        ? 'bg-blue-50 border-blue-600 text-blue-700 shadow-xs ring-1 ring-blue-500'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Prepaid (Escrow)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMode('cod')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                      paymentMode === 'cod'
+                        ? 'bg-amber-50 border-amber-600 text-amber-800 shadow-xs ring-1 ring-amber-500'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    <Truck className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Cash on Delivery (COD)</span>
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Parcel Description *</label>
                 <input
@@ -526,62 +577,135 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               </span>
             </div>
 
-            {/* Courier Cards List */}
-            <div className="space-y-2.5">
-              {carrierQuotes.map((quote) => {
-                const isSelected = selectedQuote?.slug === quote.slug;
+            {/* Live Payment Mode Switcher */}
+            <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-slate-700 ml-1">Payment Mode:</span>
+                <span className="text-[10px] text-slate-500 font-medium hidden sm:inline">
+                  (Rates update live)
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setPaymentMode('prepaid');
+                    await fetchQuotes('prepaid');
+                  }}
+                  disabled={fetchingQuotes}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    paymentMode === 'prepaid'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Prepaid (Escrow)</span>
+                </button>
 
-                return (
-                  <div
-                    key={quote.slug}
-                    onClick={() => setSelectedQuote(quote)}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                      isSelected
-                        ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-500'
-                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <CarrierLogo 
-                        slug={quote.slug} 
-                        name={quote.name} 
-                        size="md" 
-                        className={isSelected ? 'ring-2 ring-blue-500 shadow-md' : 'shadow-2xs'}
-                      />
-                      <div>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className="text-xs font-bold text-slate-900">{quote.name}</h4>
-                          <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                            <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
-                            {quote.rating ? quote.rating.toFixed(1) : '4.6'}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setPaymentMode('cod');
+                    await fetchQuotes('cod');
+                  }}
+                  disabled={fetchingQuotes}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    paymentMode === 'cod'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <Banknote className="w-3.5 h-3.5" />
+                  <span>Cash on Delivery (COD)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Courier Cards List */}
+            {fetchingQuotes ? (
+              <div className="py-12 flex flex-col items-center justify-center gap-3">
+                <RefreshCw className="w-6 h-6 text-blue-600 animate-spin" />
+                <p className="text-xs font-semibold text-slate-600">Fetching live rates from Shiprocket...</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {carrierQuotes.map((quote) => {
+                  const isSelected = selectedQuote?.slug === quote.slug;
+                  const displayRate = Number(quote.exactRate ?? quote.price ?? 0);
+                  const codFee = Number(quote.codCharge || (paymentMode === 'cod' ? (quote.slug?.includes('xpressbees') ? 48 : 52) : 0));
+                  const freightFee = Number(quote.freightCharge || (displayRate - codFee));
+
+                  return (
+                    <div
+                      key={quote.slug}
+                      onClick={() => setSelectedQuote(quote)}
+                      className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                        isSelected
+                          ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-500'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <CarrierLogo 
+                          slug={quote.baseSlug || quote.slug} 
+                          name={quote.name} 
+                          size="md" 
+                          className={isSelected ? 'ring-2 ring-blue-500 shadow-md' : 'shadow-2xs'}
+                        />
+                        <div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="text-xs font-bold text-slate-900">{quote.name}</h4>
+                            <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                              <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
+                              {quote.rating ? quote.rating.toFixed(1) : '4.6'}
+                            </span>
+                            {quote.isLowest && (
+                              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                                Lowest Rate
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-0.5">
+                            {quote.serviceType || 'Surface & Express'} · ETA: <strong className="text-slate-700">{quote.eta}</strong>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right flex items-center gap-3">
+                        <div>
+                          <div className="flex items-center justify-end gap-1">
+                            <span className="text-[10px] text-slate-400 font-medium block">Rate</span>
+                            {quote.apiSource?.includes('Live') && (
+                              <span className="text-[8px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
+                                Live API
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-base font-black text-slate-900 font-mono">
+                            ₹{displayRate.toFixed(2)}
                           </span>
-                          {quote.isLowest && (
-                            <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
-                              Lowest Rate
+                          {paymentMode === 'cod' ? (
+                            <span className="text-[9.5px] font-semibold text-amber-700 block whitespace-nowrap">
+                              Freight: ₹{freightFee.toFixed(2)} + COD: ₹{codFee.toFixed(2)}
+                            </span>
+                          ) : (
+                            <span className="text-[9.5px] font-medium text-slate-400 block whitespace-nowrap">
+                              Incl. 18% GST
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5">
-                          Surface &amp; Express · ETA: <strong className="text-slate-700">{quote.eta}</strong>
-                        </p>
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
+                          isSelected ? 'bg-blue-600 text-white' : 'border border-slate-300'
+                        }`}>
+                          {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                        </div>
                       </div>
                     </div>
-
-                    <div className="text-right flex items-center gap-3">
-                      <div>
-                        <span className="text-[10px] text-slate-400 font-medium block">Rate</span>
-                        <span className="text-base font-bold text-slate-900 font-mono">₹{quote.price}</span>
-                      </div>
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
-                        isSelected ? 'bg-blue-600 text-white' : 'border border-slate-300'
-                      }`}>
-                        {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Bottom Actions */}
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
@@ -604,7 +728,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <span>Finalize with {selectedQuote?.name} (₹{selectedQuote?.price})</span>
+                    <span>Finalize with {selectedQuote?.name} (₹{Number(selectedQuote?.exactRate ?? selectedQuote?.price ?? 0).toFixed(2)})</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
