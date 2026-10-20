@@ -661,7 +661,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   const displayRate = Number(quote.exactRate ?? quote.price ?? 0);
                   const codFee = Number(quote.codCharge || 0);
                   const secureFee = Number(quote.secureShipmentCharge || (secureShipmentEnabled ? 54 : 0));
-                  const freightFee = Number(quote.freightCharge || (displayRate - codFee - secureFee));
+                  const waFee = Number(quote.whatsappCharge || 5.00);
+                  const freightFee = Number(quote.freightCharge || (displayRate - codFee - secureFee - waFee));
 
                   return (
                     <div
@@ -714,11 +715,11 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                           </span>
                           {paymentMode === 'cod' ? (
                             <span className="text-[9.5px] font-semibold text-amber-700 block whitespace-nowrap">
-                              Freight: ₹{freightFee.toFixed(2)} + COD: ₹{codFee.toFixed(2)}{secureFee > 0 ? ` + Secure: ₹${secureFee.toFixed(2)}` : ''}
+                              Freight: ₹{freightFee.toFixed(2)} + COD: ₹{codFee.toFixed(2)} + WA: ₹{waFee.toFixed(2)}{secureFee > 0 ? ` + Secure: ₹${secureFee.toFixed(2)}` : ''}
                             </span>
                           ) : (
                             <span className="text-[9.5px] font-medium text-slate-500 block whitespace-nowrap">
-                              Freight: ₹{freightFee.toFixed(2)}{secureFee > 0 ? ` + Secure: ₹${secureFee.toFixed(2)}` : ' (Incl. GST)'}
+                              Freight: ₹{freightFee.toFixed(2)} + WhatsApp: ₹{waFee.toFixed(2)}{secureFee > 0 ? ` + Secure: ₹${secureFee.toFixed(2)}` : ' (Incl. GST)'}
                             </span>
                           )}
                         </div>
