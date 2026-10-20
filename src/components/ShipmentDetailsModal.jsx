@@ -713,16 +713,19 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
   const handleConfirmReturnReceived = async () => {
     const isReplacement = currentShipment.returnType === 'replacement';
+    const revCharge = currentShipment.returnShippingRate || 55;
     const confirmMsg = isReplacement
       ? 'Confirm that the returned defective package has arrived at your warehouse? The replacement is complete and your escrow payment will be released to you.'
-      : 'Confirm that the returned package has arrived at your warehouse? Receiver will be refunded their escrow principal.';
+      : `Confirm that the returned package has arrived at your warehouse?\n\n• Receiver will be refunded 100% of their escrow deposit.\n• Reverse courier shipping fee (₹${revCharge}) will be charged to your seller wallet.`;
     if (!window.confirm(confirmMsg)) return;
     setActionLoading(true);
     try {
-      await shipmentAPI.confirmReturnReceived(currentShipment.shipmentId);
+      const res = await shipmentAPI.confirmReturnReceived(currentShipment.shipmentId);
+      const data = res.data?.refundSummary || {};
+      const charged = data.reverseShippingChargedToSeller || revCharge;
       alert(isReplacement
         ? 'Return delivery confirmed! Replacement cycle is complete and escrow payment has been released to your account.'
-        : 'Return confirmed! Receiver has been refunded their escrow principal.');
+        : `✅ Return confirmed and settled!\n\n• Buyer refunded 100% principal.\n• Reverse shipping fee (₹${charged}) debited from your seller wallet.`);
       onRefresh();
       fetchFullDetails();
     } catch (err) {

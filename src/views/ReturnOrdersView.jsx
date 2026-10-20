@@ -300,12 +300,16 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
   };
 
   const handleConfirmReceived = async (shipmentId) => {
-    const confirmMsg = `Confirm return package receipt for ${shipmentId}?\n\nBuyer will be refunded their escrow principal from the vault.`;
+    const order = returnOrders.find(o => o.shipmentId === shipmentId);
+    const revCharge = order?.returnShippingRate || 55;
+    const confirmMsg = `Confirm return package receipt for ${shipmentId}?\n\n• Buyer will receive 100% full escrow refund.\n• Reverse courier shipping fee (₹${revCharge}) will be charged to your seller wallet.`;
     if (!window.confirm(confirmMsg)) return;
     setActionLoading(true);
     try {
-      await shipmentAPI.confirmReturnReceived(shipmentId);
-      alert(`Return delivery confirmed! Buyer has been refunded their escrow principal.`);
+      const res = await shipmentAPI.confirmReturnReceived(shipmentId);
+      const data = res.data?.refundSummary || {};
+      const charged = data.reverseShippingChargedToSeller || revCharge;
+      alert(`✅ Return received and settled!\n\n• 100% escrow principal refunded to buyer.\n• Reverse courier fee (₹${charged}) debited from your seller wallet.`);
       fetchReturnOrders();
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to confirm return received.');
@@ -690,8 +694,15 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                     </div>
                     <div className="flex items-center gap-2">
                       {order.returnShippingRate > 0 && (
-                        <span className="text-slate-600 font-medium">
-                          Rate: <strong className="text-slate-900 font-mono">₹{order.returnShippingRate}</strong>
+                        <span className="text-slate-600 font-medium flex items-center gap-1.5">
+                          Reverse Freight: <strong className="text-slate-900 font-mono">₹{order.returnShippingRate}</strong>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
+                            order.returnShippingChargeStatus === 'Deducted'
+                              ? 'bg-purple-100 text-purple-800 border-purple-200'
+                              : 'bg-amber-100 text-amber-800 border-amber-200'
+                          }`}>
+                            {order.returnShippingChargeStatus === 'Deducted' ? 'Deducted from Seller' : 'Charged to Seller'}
+                          </span>
                         </span>
                       )}
                       {order.returnEstimatedSavings > 0 && (
