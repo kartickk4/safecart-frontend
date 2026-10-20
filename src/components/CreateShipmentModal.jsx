@@ -633,7 +633,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 {carrierQuotes.map((quote) => {
                   const isSelected = selectedQuote?.slug === quote.slug;
                   const displayRate = Number(quote.exactRate ?? quote.price ?? 0);
-                  const codFee = Number(quote.codCharge || (paymentMode === 'cod' ? (quote.slug?.includes('xpressbees') ? 48 : 52) : 0));
+                  const codFee = Number(quote.codCharge || (paymentMode === 'cod' ? 54.00 : 0));
                   const freightFee = Number(quote.freightCharge || (displayRate - codFee));
 
                   return (
