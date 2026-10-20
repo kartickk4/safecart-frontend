@@ -23,6 +23,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   const [paymentMode, setPaymentMode] = useState('prepaid'); // 'prepaid' | 'cod'
   const [returnAllowed, setReturnAllowed] = useState(true);
   const [rtoProtectionEnabled, setRtoProtectionEnabled] = useState(false);
+  const [secureShipmentEnabled, setSecureShipmentEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -142,17 +143,21 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     setModalStep(2);
   };
 
-  const fetchQuotes = async (targetMode = paymentMode) => {
+  const fetchQuotes = async (targetMode = paymentMode, isSecure = secureShipmentEnabled) => {
     setFetchingQuotes(true);
     setError('');
     try {
       const isCod = targetMode === 'cod';
+      const decVal = parseFloat(amount) || 3000;
       const res = await agentAPI.getCarrierRates({
         fromPincode: senderPincode,
         toPincode: receiverPincode,
         weightKg: parseFloat(parcelWeight) || 0.5,
         paymentMode: targetMode,
-        cod: isCod ? 1 : 0
+        cod: isCod ? 1 : 0,
+        amount: decVal,
+        declaredValue: decVal,
+        isSecureShipment: isSecure
       });
 
       const quotes = res.data?.quotes || [];
@@ -577,7 +582,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               </span>
             </div>
 
-            {/* Live Payment Mode Switcher */}
+            {/* Live Mode & Secure Shipment Bar */}
             <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-bold text-slate-700 ml-1">Payment Mode:</span>
@@ -585,39 +590,60 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   (Rates update live)
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setPaymentMode('prepaid');
-                    await fetchQuotes('prepaid');
-                  }}
-                  disabled={fetchingQuotes}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                    paymentMode === 'prepaid'
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>Prepaid (Escrow)</span>
-                </button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setPaymentMode('prepaid');
+                      await fetchQuotes('prepaid', secureShipmentEnabled);
+                    }}
+                    disabled={fetchingQuotes}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                      paymentMode === 'prepaid'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    }`}
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>Prepaid (Escrow)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setPaymentMode('cod');
+                      await fetchQuotes('cod', secureShipmentEnabled);
+                    }}
+                    disabled={fetchingQuotes}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                      paymentMode === 'cod'
+                        ? 'bg-amber-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    }`}
+                  >
+                    <Banknote className="w-3.5 h-3.5" />
+                    <span>Cash on Delivery (COD)</span>
+                  </button>
+                </div>
 
                 <button
                   type="button"
                   onClick={async () => {
-                    setPaymentMode('cod');
-                    await fetchQuotes('cod');
+                    const nextVal = !secureShipmentEnabled;
+                    setSecureShipmentEnabled(nextVal);
+                    await fetchQuotes(paymentMode, nextVal);
                   }}
                   disabled={fetchingQuotes}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                    paymentMode === 'cod'
-                      ? 'bg-amber-600 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    secureShipmentEnabled
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-800 ring-1 ring-emerald-400'
+                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-100'
                   }`}
+                  title="Shiprocket parcel transit insurance cover"
                 >
-                  <Banknote className="w-3.5 h-3.5" />
-                  <span>Cash on Delivery (COD)</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Secure Cover {secureShipmentEnabled ? 'ON (+₹54)' : 'OFF'}</span>
                 </button>
               </div>
             </div>
@@ -633,8 +659,9 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 {carrierQuotes.map((quote) => {
                   const isSelected = selectedQuote?.slug === quote.slug;
                   const displayRate = Number(quote.exactRate ?? quote.price ?? 0);
-                  const codFee = Number(quote.codCharge || (paymentMode === 'cod' ? 54.00 : 0));
-                  const freightFee = Number(quote.freightCharge || (displayRate - codFee));
+                  const codFee = Number(quote.codCharge || 0);
+                  const secureFee = Number(quote.secureShipmentCharge || (secureShipmentEnabled ? 54 : 0));
+                  const freightFee = Number(quote.freightCharge || (displayRate - codFee - secureFee));
 
                   return (
                     <div
@@ -687,11 +714,11 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                           </span>
                           {paymentMode === 'cod' ? (
                             <span className="text-[9.5px] font-semibold text-amber-700 block whitespace-nowrap">
-                              Freight: ₹{freightFee.toFixed(2)} + COD: ₹{codFee.toFixed(2)}
+                              Freight: ₹{freightFee.toFixed(2)} + COD: ₹{codFee.toFixed(2)}{secureFee > 0 ? ` + Secure: ₹${secureFee.toFixed(2)}` : ''}
                             </span>
                           ) : (
-                            <span className="text-[9.5px] font-medium text-slate-400 block whitespace-nowrap">
-                              Incl. 18% GST
+                            <span className="text-[9.5px] font-medium text-slate-500 block whitespace-nowrap">
+                              Freight: ₹{freightFee.toFixed(2)}{secureFee > 0 ? ` + Secure: ₹${secureFee.toFixed(2)}` : ' (Incl. GST)'}
                             </span>
                           )}
                         </div>
