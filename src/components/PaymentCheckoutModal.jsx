@@ -63,11 +63,16 @@ export default function PaymentCheckoutModal({ shipmentId = 'PSF-2026-00841', am
             </div>
 
             {/* Buyer Prepayment Cashback Promo Banner */}
-            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center gap-3">
-              <span className="text-xl animate-bounce">🎁</span>
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 via-emerald-50 to-blue-50 border border-emerald-200/80 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-600/20 font-black text-sm">
+                ₹5
+              </div>
               <div>
-                <h4 className="text-[11px] font-extrabold text-emerald-950">Instant Buyer Payment Cashback!</h4>
-                <p className="text-[10px] text-emerald-700">Prepaying with delivery protection unlocks an instant cash reward credited straight to your receiver wallet!</p>
+                <h4 className="text-[11px] font-extrabold text-emerald-950 flex items-center gap-1.5">
+                  <span>₹5 Instant Cashback on Online Payment</span>
+                  <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.2 rounded-full border border-emerald-300">Active</span>
+                </h4>
+                <p className="text-[10px] text-emerald-700 leading-tight">Pay online now to earn ₹5 in your SecureKaro wallet + ₹2 on delivery confirmation (₹1–₹10 promotional)!</p>
               </div>
             </div>
 

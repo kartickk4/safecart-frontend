@@ -32,8 +32,8 @@ export default function ConfirmedWithCashback({
   const productName = parcelInfo?.description || 'Parcel Item';
   const orderAmount = parcelInfo?.amount || 0;
 
-  // Use the real cashback amount from backend (₹3-6)
-  const cashbackAmount = Number(cashback?.amount) || 3;
+  // Use the real cashback amount from backend (Flat ₹2 for buyer on confirmation)
+  const cashbackAmount = Number(cashback?.amount) || 2;
   const totalBalance = Number(cashback?.totalBalance || cashbackAmount);
   const minWithdrawal = cashback?.minWithdrawal || 50;
   const neededForWithdrawal = Math.max(0, minWithdrawal - totalBalance);
@@ -368,7 +368,7 @@ export default function ConfirmedWithCashback({
                   </span>
                 ) : isBonus ? (
                   <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">
-                    Promotional
+                    Promotional (₹1 – ₹10)
                   </span>
                 ) : (
                   <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
@@ -447,7 +447,9 @@ export default function ConfirmedWithCashback({
 
                         {/* Description */}
                         <p className="text-[11px] text-slate-500 text-center leading-tight">
-                          {isLucky ? '🌟 Lucky bonus on SafeCart delivery' : 'Instant wallet credit on delivery'}
+                          {isBonus 
+                            ? '🎉 Promotional campaign reward (₹1 to ₹10)' 
+                            : (isLucky ? '🌟 Lucky bonus on SafeCart delivery' : 'Instant wallet credit on delivery')}
                         </p>
                       </div>
                     </div>

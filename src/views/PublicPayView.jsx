@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, Lock, CheckCircle2, ArrowRight, ExternalLink,
-  Package, RotateCcw, AlertCircle, RefreshCw, Truck, QrCode, CreditCard, Landmark, Sparkles
+  Package, RotateCcw, AlertCircle, RefreshCw, Truck, QrCode, CreditCard, Landmark, Sparkles, Clock, Gift
 } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
 
@@ -14,6 +14,7 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
   const [upiId, setUpiId] = useState('');
   const [paidSuccess, setPaidSuccess] = useState(false);
   const [selectedCarrier, setSelectedCarrier] = useState('delhivery'); // 'delhivery' | 'bluedart' | 'dtdc' | 'xpressbees'
+  const [cashbackInfo, setCashbackInfo] = useState(null);
 
   const AVAILABLE_CARRIERS = [
     {
@@ -105,6 +106,9 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
 
       if (res.data && res.data.shipment) {
         setShipment(res.data.shipment);
+        if (res.data.cashback) {
+          setCashbackInfo(res.data.cashback);
+        }
         setPaidSuccess(true);
         if (onPaymentComplete) onPaymentComplete(res.data.shipment);
       }
@@ -195,6 +199,36 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
             </div>
           </div>
 
+          {/* Payment Link Cashback Reward Card */}
+          <div className="p-4 rounded-2xl bg-gradient-to-tr from-amber-50 via-emerald-50 to-teal-50 border border-emerald-200 text-left space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black text-sm shadow-sm shadow-emerald-500/20">
+                  ₹{cashbackInfo?.amount || 5}
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-emerald-950 flex items-center gap-1.5">
+                    <span>🎉 ₹{cashbackInfo?.amount || 5} Instant Cashback Credited!</span>
+                  </h4>
+                  <p className="text-[10px] text-emerald-800">
+                    Payment link reward added to your SecureKaro Wallet
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-200/80 text-emerald-900 border border-emerald-300">
+                Credited
+              </span>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-white/80 border border-emerald-100 text-[11px] text-slate-700 flex items-center justify-between">
+              <span className="flex items-center gap-1.5 font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Next reward on delivery:</span>
+              </span>
+              <span className="font-extrabold text-[#1E56E3]">₹2 on Confirm (₹1 to ₹10 for promotional)</span>
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <a
               href={`/track/${shipment?.shipmentId || ''}`}
@@ -234,6 +268,22 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
             <span>{error}</span>
           </div>
         )}
+
+        {/* Payment Link Cashback Incentive Banner */}
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 via-emerald-50 to-blue-50 border border-emerald-200/80 flex items-start gap-3 shadow-xs">
+          <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-600/20 font-black text-sm">
+            ₹5
+          </div>
+          <div className="space-y-0.5 text-xs text-left">
+            <div className="flex items-center gap-1.5 font-black text-slate-900">
+              <span>₹5 Instant Cashback for Paying Online</span>
+              <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.2 rounded-full border border-emerald-300">Active</span>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-snug">
+              Complete payment now to earn ₹5 in your SecureKaro Wallet + scan parcel QR on delivery to get ₹2 confirmation cashback (₹1 to ₹10 for promotional events)!
+            </p>
+          </div>
+        </div>
 
         {/* Order Summary Card */}
         <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2.5 text-xs">

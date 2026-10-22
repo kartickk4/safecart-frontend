@@ -180,12 +180,12 @@ export default function WalletModal({ user, onUpdateUser }) {
       const baseDate = s.trackingSubmittedAt || s.receiverPaidAt || s.createdAt || new Date();
       const expiresAt = s.confirmationWindowExpiresAt || new Date(new Date(baseDate).getTime() + 24 * 60 * 60 * 1000);
       const remainingMs = Math.max(0, new Date(expiresAt).getTime() - Date.now());
-      const cbAmt = s.supplierCashbackPaid > 0 ? s.supplierCashbackPaid : 3;
+      const cbAmt = s.supplierCashbackPaid > 0 ? s.supplierCashbackPaid : 4;
       return {
         shipmentId: s.shipmentId,
         parcelAmount: s.amount || 0,
         cashbackAmount: cbAmt,
-        cashbackRate: '₹2 – ₹3',
+        cashbackRate: '₹3 – ₹6',
         totalAmount: (s.amount || 0) + cbAmt,
         awbCode: s.awbCode,
         carrierSlug: s.carrierSlug || 'delhivery',
@@ -925,7 +925,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             }`}
           >
             <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>{isSupplier ? 'Seller Shipping Cashback (₹2 – ₹3)' : 'Cashback & Rewards'} ({rewardHistory.length})</span>
+            <span>{isSupplier ? 'Seller Shipping Cashback (₹3 – ₹6)' : 'Cashback & Rewards'} ({rewardHistory.length})</span>
           </button>
         </div>
 
@@ -1092,7 +1092,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                   </h3>
                   <p className="text-xs text-slate-500">
                     {isSupplier 
-                      ? 'History of all earned ₹2 – ₹3 seller cashbacks and completed payouts.'
+                      ? 'History of all earned ₹3 – ₹6 seller cashbacks and completed payouts.'
                       : 'History of all escrow receipts and withdrawals.'}
                   </p>
                 </div>
