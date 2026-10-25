@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="shieldGrad" x1="50" y1="50" x2="450" y2="450" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Rounded Rect -->
+  <rect width="512" height="512" rx="128" fill="#FFFFFF"/>
+  <!-- Shield Outline -->
+  <path d="M256 60C340 100 420 100 420 100V250C420 360 330 435 256 460C182 435 92 360 92 250V100C92 100 172 100 256 60Z" 
+        stroke="url(#shieldGrad)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Inner Checkmark in Shield -->
+  <path d="M195 245L235 305L340 175" 
+        stroke="url(#shieldGrad)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
