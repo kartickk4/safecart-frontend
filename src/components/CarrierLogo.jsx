@@ -313,6 +313,136 @@ export default function CarrierLogo({ slug = '', name = '', size = 'md', classNa
     );
   }
 
+  // 10. AMAZON SHIPPING (Official Amazon Wordmark with Iconic #FF9900 Smile Arrow & Shipping Tag)
+  if (normalized.includes('amazon') || normalized.includes('ats')) {
+    return (
+      <div 
+        className={`${containerClass} bg-white rounded-lg border border-slate-200/90 p-1 flex items-center justify-center shrink-0 shadow-2xs ${className}`}
+        title="Amazon Shipping"
+      >
+        <svg viewBox="0 0 140 40" className="w-full h-full object-contain" xmlns="http://www.w3.org/2000/svg">
+          {/* amazon wordmark */}
+          <text 
+            x="6" 
+            y="22" 
+            fill="#131921" 
+            fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+            fontWeight="900" 
+            fontSize="19" 
+            letterSpacing="-0.8px"
+          >
+            amazon
+          </text>
+          {/* shipping sub-label */}
+          <text 
+            x="77" 
+            y="22" 
+            fill="#007185" 
+            fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+            fontWeight="800" 
+            fontSize="10" 
+            letterSpacing="0.2px"
+          >
+            shipping
+          </text>
+          {/* Iconic Amazon Smile Curve from first 'a' (x=10) to 'z' (x=62) */}
+          <path 
+            d="M 10 26 Q 36 37 62 26" 
+            stroke="#FF9900" 
+            strokeWidth="3.2" 
+            strokeLinecap="round" 
+            fill="none" 
+          />
+          {/* Smile Arrowhead */}
+          <path 
+            d="M 59 23 L 67 26.5 L 61.5 30 Z" 
+            fill="#FF9900" 
+          />
+        </svg>
+      </div>
+    );
+  }
+
+  // 11. SMARTR LOGISTICS (Official Navy & Bright Green Wings)
+  if (normalized.includes('smartr')) {
+    return (
+      <div 
+        className={`${containerClass} bg-white rounded-lg border border-slate-200/90 p-1 flex items-center justify-center shrink-0 shadow-2xs ${className}`}
+        title="Smartr Logistics"
+      >
+        <svg viewBox="0 0 140 40" className="w-full h-full object-contain" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="20" r="10" fill="#00A859" />
+          <path d="M12 20L15 23L21 17" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <text 
+            x="32" 
+            y="25" 
+            fill="#0B2341" 
+            fontFamily="system-ui, -apple-system, sans-serif" 
+            fontWeight="900" 
+            fontSize="17" 
+            letterSpacing="-0.3px"
+          >
+            smartr
+          </text>
+          <text x="86" y="25" fill="#00A859" fontFamily="sans-serif" fontWeight="900" fontSize="17">.</text>
+        </svg>
+      </div>
+    );
+  }
+
+  // 12. THE PROFESSIONAL COURIERS (TPC)
+  if (normalized.includes('professional') || normalized.includes('tpc')) {
+    return (
+      <div 
+        className={`${containerClass} bg-white rounded-lg border border-slate-200/90 p-1 flex items-center justify-center shrink-0 shadow-2xs ${className}`}
+        title="The Professional Couriers"
+      >
+        <svg viewBox="0 0 140 40" className="w-full h-full object-contain" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="10" width="20" height="20" rx="3" fill="#D32F2F" />
+          <text x="9" y="24" fill="white" fontFamily="sans-serif" fontWeight="900" fontSize="11">TPC</text>
+          <text 
+            x="30" 
+            y="22" 
+            fill="#1E3A8A" 
+            fontFamily="system-ui, -apple-system, sans-serif" 
+            fontWeight="900" 
+            fontSize="11" 
+            letterSpacing="-0.2px"
+          >
+            PROFESSIONAL
+          </text>
+          <text x="30" y="30" fill="#D32F2F" fontFamily="sans-serif" fontWeight="800" fontSize="8" letterSpacing="0.5px">COURIERS</text>
+        </svg>
+      </div>
+    );
+  }
+
+  // 13. TRACKON COURIERS
+  if (normalized.includes('trackon')) {
+    return (
+      <div 
+        className={`${containerClass} bg-white rounded-lg border border-slate-200/90 p-1 flex items-center justify-center shrink-0 shadow-2xs ${className}`}
+        title="Trackon Couriers"
+      >
+        <svg viewBox="0 0 140 40" className="w-full h-full object-contain" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="8,10 18,20 8,30" fill="#E53935" />
+          <polygon points="14,10 24,20 14,30" fill="#1E88E5" />
+          <text 
+            x="30" 
+            y="26" 
+            fill="#212121" 
+            fontFamily="system-ui, -apple-system, sans-serif" 
+            fontWeight="900" 
+            fontSize="17" 
+            letterSpacing="-0.3px"
+          >
+            Trackon
+          </text>
+        </svg>
+      </div>
+    );
+  }
+
   // Fallback
   return (
     <div 

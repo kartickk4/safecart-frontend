@@ -65,6 +65,31 @@ const CarrierComparisonCard = ({ quotes = [], selectedSlug, onSelect }) => {
                     <span style={{ color: '#1e293b', fontSize: '13px', fontWeight: '700' }}>
                       {q.name}
                     </span>
+                    {q.aggregator === 'nimbuspost' || (q.slug && q.slug.startsWith('nimbus')) ? (
+                      <span style={{
+                        background: '#f3e8ff',
+                        color: '#7e22ce',
+                        fontSize: '9.5px',
+                        fontWeight: '800',
+                        padding: '2px 7px',
+                        borderRadius: '8px',
+                        border: '1px solid #e9d5ff'
+                      }}>
+                        NimbusPost
+                      </span>
+                    ) : (
+                      <span style={{
+                        background: '#e0e7ff',
+                        color: '#3730a3',
+                        fontSize: '9.5px',
+                        fontWeight: '800',
+                        padding: '2px 7px',
+                        borderRadius: '8px',
+                        border: '1px solid #c7d2fe'
+                      }}>
+                        Shiprocket
+                      </span>
+                    )}
                     {isLowest && (
                       <span style={{
                         background: '#dcfce7',

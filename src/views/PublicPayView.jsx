@@ -15,6 +15,8 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
   const [paidSuccess, setPaidSuccess] = useState(false);
   const [selectedCarrier, setSelectedCarrier] = useState('delhivery'); // 'delhivery' | 'bluedart' | 'dtdc' | 'xpressbees'
   const [cashbackInfo, setCashbackInfo] = useState(null);
+  const [youpiCheckoutUrl, setYoupiCheckoutUrl] = useState('');
+  const [waitingForGateway, setWaitingForGateway] = useState(false);
 
   const AVAILABLE_CARRIERS = [
     {
@@ -90,6 +92,25 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
     }
   };
 
+  const startPollingStatus = (targetId) => {
+    const id = targetId || shipment?.shipmentId;
+    if (!id) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await shipmentAPI.getTrackingByAwb(id);
+        const ship = res.data?.shipment;
+        if (ship && (ship.receiverPaymentDone || ship.escrowStage >= 3 || ship.status === 'Pending Pickup' || ship.youpiPaymentConfirmed)) {
+          clearInterval(interval);
+          setShipment(ship);
+          setWaitingForGateway(false);
+          setPaidSuccess(true);
+          if (onPaymentComplete) onPaymentComplete(ship);
+        }
+      } catch (e) {}
+    }, 2500);
+    setTimeout(() => clearInterval(interval), 300000);
+  };
+
   const handleCompletePayment = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!shipment?.shipmentId) return;
@@ -98,6 +119,25 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
     setError('');
 
     try {
+      if (paymentMethod === 'upi') {
+        try {
+          const youpiRes = await shipmentAPI.generateYoupiLink(shipment.shipmentId, {
+            carrierSlug: selectedCarrier,
+            returnUrl: window.location.href
+          });
+          if (youpiRes.data?.checkoutUrl) {
+            setYoupiCheckoutUrl(youpiRes.data.checkoutUrl);
+            setWaitingForGateway(true);
+            window.open(youpiRes.data.checkoutUrl, '_blank');
+            startPollingStatus(shipment.shipmentId);
+            setPaying(false);
+            return;
+          }
+        } catch (youpiErr) {
+          console.warn('[YouPI Gateway] Direct gateway notice, proceeding with direct payment:', youpiErr.message);
+        }
+      }
+
       const res = await shipmentAPI.publicPay(shipment.shipmentId, {
         gateway: paymentMethod,
         carrierSlug: selectedCarrier,
@@ -115,6 +155,35 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
     } catch (err) {
       console.error('Payment Error:', err);
       setError(err.response?.data?.error || 'Payment failed. Please try again.');
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const handleSimulatePayment = async () => {
+    if (!shipment?.shipmentId) return;
+    setPaying(true);
+    try {
+      await shipmentAPI.simulateYoupiPayment(shipment.shipmentId);
+      const res = await shipmentAPI.getTrackingByAwb(shipment.shipmentId);
+      if (res.data?.shipment) {
+        setShipment(res.data.shipment);
+        setWaitingForGateway(false);
+        setPaidSuccess(true);
+        if (onPaymentComplete) onPaymentComplete(res.data.shipment);
+      }
+    } catch (e) {
+      const res = await shipmentAPI.publicPay(shipment.shipmentId, {
+        gateway: 'prepaid_youpi',
+        carrierSlug: selectedCarrier,
+        transactionRef: `SIM_${Date.now()}`
+      });
+      if (res.data?.shipment) {
+        setShipment(res.data.shipment);
+        setWaitingForGateway(false);
+        setPaidSuccess(true);
+        if (onPaymentComplete) onPaymentComplete(res.data.shipment);
+      }
     } finally {
       setPaying(false);
     }
@@ -457,6 +526,43 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
           <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>Money is securely held in SafeCart Escrow and will NOT be released to seller until you receive the package.</span>
         </div>
+
+        {/* YouPI Gateway Active Banner */}
+        {waitingForGateway && (
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-900 to-indigo-950 text-white shadow-xl space-y-3 animate-in fade-in">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+                YouPI Gateway Session Active
+              </span>
+              <span className="text-xs font-mono font-bold text-blue-200">₹{orderAmount}</span>
+            </div>
+            <p className="text-xs text-blue-100/90 leading-relaxed">
+              Complete your payment in the opened YouPI checkout tab. Your funds will automatically lock in escrow once confirmed.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              {youpiCheckoutUrl && (
+                <a
+                  href={youpiCheckoutUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-center font-bold text-xs text-white flex items-center justify-center gap-1.5 transition"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Re-open Checkout Portal
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={handleSimulatePayment}
+                className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-center font-bold text-xs text-blue-200 flex items-center justify-center gap-1.5 transition cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                Simulate Instant Confirmation
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Pay Button */}
         <button

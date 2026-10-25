@@ -17,6 +17,16 @@ export default function PaymentCheckoutModal({ shipmentId = 'PSF-2026-00841', am
     setLoading(true);
 
     try {
+      if (paymentMethod === 'upi') {
+        try {
+          const youpiRes = await shipmentAPI.generateYoupiLink(shipmentId);
+          if (youpiRes.data?.checkoutUrl) {
+            window.open(youpiRes.data.checkoutUrl, '_blank');
+          }
+        } catch (youpiErr) {
+          console.warn('[YouPI Modal] Direct gateway notice:', youpiErr.message);
+        }
+      }
       await shipmentAPI.fundEscrow(shipmentId);
     } catch (err) {
       console.warn('Escrow fund API note:', err.response?.data?.error || err.message);

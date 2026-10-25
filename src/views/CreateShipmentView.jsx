@@ -4,7 +4,8 @@ import {
   Truck, ArrowLeft, Building, AlertTriangle, ExternalLink, Link as LinkIcon, 
   Check, RotateCcw, MessageSquare, Camera, Sparkles, Bot, MapPin, Edit3, 
   Phone, Send, RefreshCw, Wallet, CreditCard, QrCode, Landmark, Lock, X,
-  Star, ChevronRight, Zap, Award, Clock
+  Star, ChevronRight, Zap, Award, Clock, Search, SlidersHorizontal, TrendingDown, Plane, Layers,
+  LayoutGrid, List, Scale
 } from 'lucide-react';
 import { shipmentAPI, profileAPI, agentAPI } from '../services/api';
 import RechargeModal from '../components/RechargeModal';
@@ -55,9 +56,91 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [fetchingQuotes, setFetchingQuotes] = useState(false);
   const [carrierQuotesError, setCarrierQuotesError] = useState('');
   const [routeInfo, setRouteInfo] = useState(null);
+  const [carrierTab, setCarrierTab] = useState('all'); // 'all' | 'cheapest' | 'nimbuspost' | 'shiprocket' | 'surface' | 'air' | 'heavy'
+  const [carrierSearch, setCarrierSearch] = useState('');
+  const [carrierSort, setCarrierSort] = useState('price'); // 'price' | 'rating'
+  const [rateViewMode, setRateViewMode] = useState('grid'); // 'grid' | 'table'
+  const [onlyCloseToWeight, setOnlyCloseToWeight] = useState(true);
+
+  // Summary counts and stats
+  const carrierStats = useMemo(() => {
+    if (!carrierQuotes || carrierQuotes.length === 0) {
+      return { total: 0, nimbusCount: 0, srCount: 0, airCount: 0, surfaceCount: 0, suitableCount: 0, heavyCount: 0, cheapest: null, highest: null, savings: 0 };
+    }
+    const targetW = parseFloat(parcelWeight) || 0.5;
+    const maxCloseKg = Math.max(1.5, targetW * 2);
+    const suitableQuotes = carrierQuotes.filter(q => q.isCloseToWeight !== false && (!q.minWeightKg || q.minWeightKg <= maxCloseKg));
+    const heavyQuotes = carrierQuotes.filter(q => q.isCloseToWeight === false || (q.minWeightKg && q.minWeightKg > maxCloseKg));
+
+    const activePool = onlyCloseToWeight && suitableQuotes.length > 0 ? suitableQuotes : carrierQuotes;
+    const sorted = [...activePool].sort((a, b) => a.price - b.price);
+    const cheapest = sorted[0];
+    const highest = sorted[sorted.length - 1];
+    const nimbusCount = activePool.filter(q => (q.aggregator || '').toLowerCase().includes('nimbus') || (q.slug || '').startsWith('nimbus')).length;
+    const srCount = activePool.filter(q => (q.aggregator || '').toLowerCase().includes('shiprocket') || !(q.slug || '').startsWith('nimbus')).length;
+    const airCount = activePool.filter(q => (q.mode || '').toLowerCase().includes('air') || (q.name || '').toLowerCase().includes('air')).length;
+    const surfaceCount = activePool.filter(q => (q.mode || '').toLowerCase().includes('surface') || !(q.mode || '').toLowerCase().includes('air')).length;
+    const savings = Math.max(0, (highest ? highest.price : 0) - (cheapest ? cheapest.price : 0));
+    return {
+      total: carrierQuotes.length,
+      suitableCount: suitableQuotes.length,
+      heavyCount: heavyQuotes.length,
+      nimbusCount,
+      srCount,
+      airCount,
+      surfaceCount,
+      cheapest,
+      highest,
+      savings
+    };
+  }, [carrierQuotes, parcelWeight, onlyCloseToWeight]);
+
   const sortedCarrierQuotes = useMemo(() => {
-    return [...carrierQuotes].sort((a, b) => a.price - b.price);
-  }, [carrierQuotes]);
+    let list = [...carrierQuotes];
+    const targetW = parseFloat(parcelWeight) || 0.5;
+    const maxCloseKg = Math.max(1.5, targetW * 2);
+
+    // Filter by Weight Proximity
+    if (onlyCloseToWeight && carrierTab !== 'heavy') {
+      list = list.filter(q => q.isCloseToWeight !== false && (!q.minWeightKg || q.minWeightKg <= maxCloseKg));
+    } else if (carrierTab === 'heavy') {
+      list = list.filter(q => q.isCloseToWeight === false || (q.minWeightKg && q.minWeightKg > maxCloseKg));
+    }
+
+    // Filter by Tab
+    if (carrierTab === 'nimbuspost') {
+      list = list.filter(q => (q.aggregator || '').toLowerCase().includes('nimbus') || (q.slug || '').startsWith('nimbus'));
+    } else if (carrierTab === 'shiprocket') {
+      list = list.filter(q => (q.aggregator || '').toLowerCase().includes('shiprocket') || !(q.slug || '').startsWith('nimbus'));
+    } else if (carrierTab === 'surface') {
+      list = list.filter(q => (q.mode || '').toLowerCase().includes('surface') || !(q.mode || '').toLowerCase().includes('air'));
+    } else if (carrierTab === 'air') {
+      list = list.filter(q => (q.mode || '').toLowerCase().includes('air') || (q.name || '').toLowerCase().includes('air'));
+    } else if (carrierTab === 'cheapest') {
+      list = list.slice(0, 6);
+    }
+
+    // Filter by Search Query
+    if (carrierSearch.trim()) {
+      const q = carrierSearch.toLowerCase();
+      list = list.filter(item => 
+        (item.name || '').toLowerCase().includes(q) || 
+        (item.courierPartner || '').toLowerCase().includes(q) ||
+        (item.aggregatorName || '').toLowerCase().includes(q) ||
+        (item.serviceType || '').toLowerCase().includes(q) ||
+        (item.weightSlab || '').toLowerCase().includes(q)
+      );
+    }
+
+    // Sort
+    if (carrierSort === 'price') {
+      list.sort((a, b) => a.price - b.price);
+    } else if (carrierSort === 'rating') {
+      list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
+
+    return list;
+  }, [carrierQuotes, carrierTab, carrierSearch, carrierSort, onlyCloseToWeight, parcelWeight]);
 
   const [paymentMode, setPaymentMode] = useState('prepaid'); // 'prepaid' | 'cod' | 'paid_offline'
   const [returnAllowed, setReturnAllowed] = useState(true);
@@ -228,7 +311,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     }
   };
 
-  const fetchQuotesForRoute = async (preferredSlug = null) => {
+  const fetchQuotesForRoute = async (preferredSlug = null, targetMode = paymentMode) => {
     if (!senderPincode || senderPincode.length < 6) {
       setError('Please provide a valid 6-digit Pickup Pincode.');
       return null;
@@ -242,13 +325,20 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     setCarrierQuotesError('');
 
     try {
+      const isCod = targetMode === 'cod';
+      const decVal = parseFloat(amount || orderAmount) || 2500;
       const res = await agentAPI.getCarrierRates({
         fromPincode: senderPincode,
         toPincode: receiverPincode,
         weightKg: parseFloat(parcelWeight) || 0.5,
         length: parseFloat(parcelLength) || 15,
         width: parseFloat(parcelWidth) || 10,
-        height: parseFloat(parcelHeight) || 5
+        height: parseFloat(parcelHeight) || 5,
+        paymentMode: targetMode,
+        cod: isCod ? 1 : 0,
+        amount: decVal,
+        declaredValue: decVal,
+        isSecureShipment: false
       });
 
       const quotes = res.data?.quotes || [];
@@ -272,6 +362,22 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       if (chosen) {
         setSelectedQuote(chosen);
         setCarrierSlug(chosen.slug);
+
+        // Sync codQuote state with courier-specific live COD charges
+        const freight = Number(chosen.freightCharge || (isCod ? chosen.price - (chosen.codCharge || 0) : chosen.price) || 0);
+        const codFee = Number(chosen.codCharge || 0);
+        const total = Number(chosen.exactRate || chosen.price || (freight + codFee));
+        const walletBal = Number(user?.walletBalance) || 0;
+
+        setCodQuote({
+          deliveryCharge: freight,
+          codCharge: codFee,
+          totalCharge: total,
+          walletBalance: walletBal,
+          canAdjustWallet: walletBal >= total,
+          shortfall: Math.max(0, total - walletBal),
+          carrierName: chosen.courierPartner || chosen.name
+        });
       }
 
       return quotes;
@@ -329,23 +435,24 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     setSelectedQuote(quote);
     setShowCarrierModal(false);
 
-    // If COD, verify wallet sufficiency with this courier's rate
+    // If COD, verify wallet sufficiency with this courier's live rate & live COD fee
     if (paymentMode === 'cod') {
-      const requiredDelivery = quote.price;
-      const requiredCodFee = codQuote.codCharge || 40;
-      const totalFee = requiredDelivery + requiredCodFee;
+      const requiredDelivery = Number(quote.freightCharge || (quote.price - (quote.codCharge || 0)));
+      const requiredCodFee = Number(quote.codCharge || 0);
+      const totalFee = Number(quote.exactRate || quote.price || (requiredDelivery + requiredCodFee));
       const currentWallet = Number(user?.walletBalance) || 0;
 
+      setCodQuote({
+        deliveryCharge: requiredDelivery,
+        codCharge: requiredCodFee,
+        totalCharge: totalFee,
+        carrierName: quote.courierPartner || quote.name,
+        walletBalance: currentWallet,
+        canAdjustWallet: currentWallet >= totalFee,
+        shortfall: Math.max(0, totalFee - currentWallet)
+      });
+
       if (currentWallet < totalFee) {
-        setCodQuote(prev => ({
-          ...prev,
-          deliveryCharge: requiredDelivery,
-          codCharge: requiredCodFee,
-          totalCharge: totalFee,
-          carrierName: quote.name,
-          canAdjustWallet: false,
-          shortfall: totalFee - currentWallet
-        }));
         setShowCodPaymentModal(true);
         return;
       }
@@ -970,7 +1077,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   {/* Prepaid */}
                   <button
                     type="button"
-                    onClick={() => setPaymentMode('prepaid')}
+                    onClick={async () => {
+                      setPaymentMode('prepaid');
+                      if (senderPincode && receiverPincode && receiverPincode.length === 6) {
+                        await fetchQuotesForRoute(carrierSlug, 'prepaid');
+                      }
+                    }}
                     className={`p-3.5 rounded-2xl border-2 text-left transition-all duration-150 ${
                       paymentMode === 'prepaid'
                         ? 'border-blue-500 bg-blue-50 shadow-sm shadow-blue-200'
@@ -992,13 +1104,16 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   {/* COD */}
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       if ((Number(user?.walletBalance) || 0) < 0) {
                         alert(`🚫 COD Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab or select Prepaid Delivery Protection.`);
                         return;
                       }
                       setPaymentMode('cod');
                       setRtoProtectionEnabled(false);
+                      if (senderPincode && receiverPincode && receiverPincode.length === 6) {
+                        await fetchQuotesForRoute(carrierSlug, 'cod');
+                      }
                     }}
                     className={`p-3.5 rounded-2xl border-2 text-left transition-all duration-150 ${
                       (Number(user?.walletBalance) || 0) < 0
@@ -1348,62 +1463,505 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
             {/* Courier Rates & Customer Ratings Comparison Modal */}
             {showCarrierModal && (
-              <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
-                <div className="bg-white rounded-2xl max-w-3xl w-full shadow-xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden">
+              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
+                <div className="bg-white rounded-3xl w-[96vw] max-w-7xl shadow-2xl border border-slate-200 flex flex-col max-h-[94vh] overflow-hidden">
+                  
                   {/* Modal Header */}
-                  <div className="p-4 sm:p-5 border-b border-slate-100">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-base sm:text-lg font-bold text-slate-900">
-                          Select Courier Partner for Delivery
-                        </h3>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          Delivery rates &amp; estimated transit to Pincode <strong className="text-slate-800 font-mono">{receiverPincode}</strong>
+                  <div className="p-4 sm:p-6 bg-gradient-to-b from-slate-50/90 to-white border-b border-slate-100">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                            <Truck className="w-4 h-4" />
+                          </span>
+                          <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                            Select Courier Partner for Delivery
+                          </h3>
+                          <span className="text-[11px] font-extrabold text-blue-700 bg-blue-50 border border-blue-200/80 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs">
+                            <Sparkles className="w-3 h-3 text-blue-600" />
+                            Hybrid Rate Engine
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500">
+                          Comparing live discounted rates across <strong>Shiprocket</strong> and <strong>NimbusPost</strong> for destination pincode <strong className="text-slate-900 font-mono">{receiverPincode}</strong>
                         </p>
                       </div>
 
                       <button
                         type="button"
                         onClick={() => setShowCarrierModal(false)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                        className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                        title="Close Modal"
                       >
                         <X className="w-5 h-5" />
                       </button>
                     </div>
 
-                    {/* Simple Route Info */}
-                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
-                      <span>
-                        📍 Pickup: <strong className="text-slate-800 font-mono">{senderPincode || 'Sender'}</strong> → Delivery: <strong className="text-blue-600 font-mono">{receiverPincode}</strong>
-                      </span>
-                      <span>
-                        Weight: <strong className="text-slate-800 font-mono">{activeBillableWeight} kg</strong>
-                      </span>
+                    {/* Route & Shipment Meta Bar */}
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-lg font-medium">
+                          📍 Origin: <strong className="text-slate-900 font-mono">{senderPincode || 'Sender'}</strong>
+                        </span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-900 px-2.5 py-1 rounded-lg font-medium border border-blue-100">
+                          🎯 Destination: <strong className="text-blue-700 font-mono">{receiverPincode}</strong>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 font-medium">
+                        <span className="bg-slate-100 px-2.5 py-1 rounded-lg">
+                          Weight: <strong className="text-slate-900 font-mono">{activeBillableWeight} kg</strong>
+                        </span>
+                        {paymentMode === 'cod' ? (
+                          <span className="bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-lg font-bold">
+                            Cash on Delivery (COD)
+                          </span>
+                        ) : (
+                          <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg font-bold">
+                            Prepaid Delivery
+                          </span>
+                        )}
+                      </div>
                     </div>
+
+                    {/* Interactive Aggregator Tabs & Filter Controls */}
+                    {!fetchingQuotes && !carrierQuotesError && carrierQuotes.length > 0 && (
+                      <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                        {/* Tabs */}
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+                          <button
+                            type="button"
+                            onClick={() => { setCarrierTab('all'); setOnlyCloseToWeight(true); }}
+                            className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                              carrierTab === 'all' && onlyCloseToWeight
+                                ? 'bg-slate-900 text-white shadow-xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            <Scale className="w-3.5 h-3.5 text-blue-400" />
+                            <span>Close to {parcelWeight || 0.5} KG</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${carrierTab === 'all' && onlyCloseToWeight ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                              {carrierStats.suitableCount}
+                            </span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setCarrierTab('cheapest')}
+                            className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                              carrierTab === 'cheapest'
+                                ? 'bg-emerald-600 text-white shadow-xs'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200/60 hover:bg-emerald-100'
+                            }`}
+                          >
+                            <TrendingDown className="w-3.5 h-3.5" />
+                            <span>Top Cheapest</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setCarrierTab('nimbuspost')}
+                            className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                              carrierTab === 'nimbuspost'
+                                ? 'bg-purple-700 text-white shadow-xs'
+                                : 'bg-purple-50 text-purple-700 border border-purple-200/60 hover:bg-purple-100'
+                            }`}
+                          >
+                            <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                            <span>via NimbusPost</span>
+                            {carrierStats.nimbusCount > 0 && (
+                              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${carrierTab === 'nimbuspost' ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-800'}`}>
+                                {carrierStats.nimbusCount}
+                              </span>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setCarrierTab('shiprocket')}
+                            className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                              carrierTab === 'shiprocket'
+                                ? 'bg-indigo-700 text-white shadow-xs'
+                                : 'bg-indigo-50 text-indigo-700 border border-indigo-200/60 hover:bg-indigo-100'
+                            }`}
+                          >
+                            <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                            <span>via Shiprocket</span>
+                            {carrierStats.srCount > 0 && (
+                              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${carrierTab === 'shiprocket' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-800'}`}>
+                                {carrierStats.srCount}
+                              </span>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setCarrierTab('surface')}
+                            className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                              carrierTab === 'surface'
+                                ? 'bg-amber-700 text-white shadow-xs'
+                                : 'bg-amber-50 text-amber-800 border border-amber-200/60 hover:bg-amber-100'
+                            }`}
+                          >
+                            <Truck className="w-3.5 h-3.5" />
+                            <span>Surface</span>
+                            {carrierStats.surfaceCount > 0 && (
+                              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${carrierTab === 'surface' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-900'}`}>
+                                {carrierStats.surfaceCount}
+                              </span>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setCarrierTab('air')}
+                            className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                              carrierTab === 'air'
+                                ? 'bg-sky-600 text-white shadow-xs'
+                                : 'bg-sky-50 text-sky-700 border border-sky-200/60 hover:bg-sky-100'
+                            }`}
+                          >
+                            <Plane className="w-3.5 h-3.5" />
+                            <span>Air Express</span>
+                            {carrierStats.airCount > 0 && (
+                              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${carrierTab === 'air' ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-800'}`}>
+                                {carrierStats.airCount}
+                              </span>
+                            )}
+                          </button>
+
+                          {carrierStats.heavyCount > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => { setCarrierTab('heavy'); setOnlyCloseToWeight(false); }}
+                              className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                                carrierTab === 'heavy'
+                                  ? 'bg-orange-700 text-white shadow-xs'
+                                  : 'bg-orange-50 text-orange-800 border border-orange-200/70 hover:bg-orange-100'
+                              }`}
+                              title="Bulk heavy freight slabs (5 KG - 20 KG)"
+                            >
+                              <Scale className="w-3.5 h-3.5" />
+                              <span>Heavy Cargo (5-20 KG)</span>
+                              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${carrierTab === 'heavy' ? 'bg-white/20 text-white' : 'bg-orange-200 text-orange-900'}`}>
+                                {carrierStats.heavyCount}
+                              </span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Search, Weight Toggle, Sort & View Mode */}
+                        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                          <div className="relative flex-1 min-w-[140px] md:w-44">
+                            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="text"
+                              value={carrierSearch}
+                              onChange={(e) => setCarrierSearch(e.target.value)}
+                              placeholder="Search Ekart, 10 K.G..."
+                              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            />
+                            {carrierSearch && (
+                              <button
+                                type="button"
+                                onClick={() => setCarrierSearch('')}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                              >
+                                ×
+                              </button>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOnlyCloseToWeight(!onlyCloseToWeight);
+                              if (carrierTab === 'heavy') setCarrierTab('all');
+                            }}
+                            className={`px-2.5 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
+                              onlyCloseToWeight
+                                ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                            title={onlyCloseToWeight ? 'Click to show all weight slabs including heavy 10-20 KG' : 'Click to filter only couriers matching your parcel weight'}
+                          >
+                            <Scale className="w-3 h-3 text-blue-600" />
+                            <span>{onlyCloseToWeight ? `≤${parcelWeight || 0.5} KG Matching` : 'All Weights'}</span>
+                          </button>
+
+                          <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl text-xs font-semibold">
+                            <button
+                              type="button"
+                              onClick={() => setCarrierSort('price')}
+                              className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${carrierSort === 'price' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'}`}
+                              title="Sort by lowest price"
+                            >
+                              ₹ Price
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCarrierSort('rating')}
+                              className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${carrierSort === 'rating' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'}`}
+                              title="Sort by customer rating"
+                            >
+                              ★ Rating
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-xl text-xs font-semibold">
+                            <button
+                              type="button"
+                              onClick={() => setRateViewMode('grid')}
+                              className={`p-1.5 rounded-lg transition cursor-pointer ${rateViewMode === 'grid' ? 'bg-white text-blue-600 shadow-2xs' : 'text-slate-500 hover:text-slate-900'}`}
+                              title="Cards View"
+                            >
+                              <LayoutGrid className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRateViewMode('table')}
+                              className={`p-1.5 rounded-lg transition cursor-pointer ${rateViewMode === 'table' ? 'bg-white text-blue-600 shadow-2xs' : 'text-slate-500 hover:text-slate-900'}`}
+                              title="Organized Table View"
+                            >
+                              <List className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Modal Body: Courier Cards Grid */}
-                  <div className="p-4 sm:p-5 overflow-y-auto space-y-3 flex-1 scrollbar-thin">
+                  {/* Modal Body: Courier Cards / Table */}
+                  <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 scrollbar-thin bg-slate-50/40">
+                    
+                    {/* Hero Best Value Recommendation Banner */}
+                    {!fetchingQuotes && !carrierQuotesError && carrierStats.cheapest && (
+                      <div className="bg-gradient-to-r from-emerald-50 via-teal-50/60 to-blue-50 border border-emerald-300/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                        <div className="flex items-start gap-3.5">
+                          <div className="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                            <Award className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900 bg-emerald-200/70 border border-emerald-300 px-2 py-0.5 rounded-md">
+                                Recommended Best Deal
+                              </span>
+                              {carrierStats.savings > 0 && (
+                                <span className="text-xs font-bold text-slate-700">
+                                  Save up to <strong className="text-emerald-700 font-mono font-black">₹{carrierStats.savings.toFixed(2)}</strong> on this shipment!
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-600 mt-1">
+                              <strong>{carrierStats.cheapest.name || carrierStats.cheapest.courierPartner}</strong> via <strong className="text-slate-900 font-bold">{carrierStats.cheapest.aggregatorName || (carrierStats.cheapest.slug.startsWith('nimbus') ? 'NimbusPost' : 'Shiprocket')}</strong> offers the lowest delivery rate at only <strong className="text-emerald-800 font-mono font-black text-sm">₹{carrierStats.cheapest.price}</strong> ({carrierStats.cheapest.eta}).
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedQuote(carrierStats.cheapest);
+                            setCarrierSlug(carrierStats.cheapest.slug);
+                          }}
+                          className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                        >
+                          <Zap className="w-3.5 h-3.5 fill-current" />
+                          <span>Select Best Deal (₹{carrierStats.cheapest.price})</span>
+                        </button>
+                      </div>
+                    )}
+
                     {fetchingQuotes ? (
-                      <div className="py-16 text-center space-y-2">
-                        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                        <p className="text-xs text-slate-500 font-medium">Fetching available courier rates...</p>
+                      <div className="py-20 text-center space-y-3">
+                        <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                        <p className="text-sm font-bold text-slate-800">Fetching live rates across Shiprocket &amp; NimbusPost...</p>
+                        <p className="text-xs text-slate-500">Pinging both multi-carrier gateways simultaneously</p>
                       </div>
                     ) : carrierQuotesError ? (
-                      <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs space-y-2">
-                        <p className="font-bold">{carrierQuotesError}</p>
+                      <div className="p-5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs space-y-3 text-center py-10">
+                        <AlertTriangle className="w-8 h-8 text-red-500 mx-auto" />
+                        <p className="text-sm font-bold">{carrierQuotesError}</p>
+                        <p className="text-slate-500">Please verify that both pickup and destination pincodes are serviceable.</p>
                         <button
                           type="button"
                           onClick={() => fetchQuotesForRoute(carrierSlug)}
-                          className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition cursor-pointer"
+                          className="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 transition cursor-pointer"
                         >
-                          Retry
+                          Retry Comparison
                         </button>
                       </div>
+                    ) : sortedCarrierQuotes.length === 0 ? (
+                      <div className="py-16 text-center space-y-2 text-slate-500">
+                        <Search className="w-8 h-8 mx-auto text-slate-400" />
+                        <p className="text-sm font-bold text-slate-700">No couriers match your filter</p>
+                        <p className="text-xs">Try selecting a different tab, clearing search, or showing all weight slabs.</p>
+                        <button
+                          type="button"
+                          onClick={() => { setCarrierTab('all'); setCarrierSearch(''); setOnlyCloseToWeight(false); }}
+                          className="px-3.5 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-semibold mt-2 cursor-pointer"
+                        >
+                          Reset Filters &amp; Show All
+                        </button>
+                      </div>
+                    ) : rateViewMode === 'table' ? (
+                      /* Enterprise Organized Table View */
+                      <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-2xs">
+                        <div className="overflow-x-auto max-h-[55vh] scrollbar-thin">
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead className="bg-slate-50/90 text-[10.5px] font-bold text-slate-500 uppercase tracking-wider sticky top-0 border-b border-slate-200 z-10 backdrop-blur-xs">
+                              <tr>
+                                <th className="py-2.5 px-3.5">Courier Partner</th>
+                                <th className="py-2.5 px-3">Gateway</th>
+                                <th className="py-2.5 px-3">Mode</th>
+                                <th className="py-2.5 px-3">Weight Slab</th>
+                                <th className="py-2.5 px-3">Est. Delivery</th>
+                                <th className="py-2.5 px-3 text-right">Freight</th>
+                                {paymentMode === 'cod' && <th className="py-2.5 px-3 text-right">COD Fee</th>}
+                                <th className="py-2.5 px-3.5 text-right font-black text-slate-700">Total Rate</th>
+                                <th className="py-2.5 px-3 text-center">Rating</th>
+                                <th className="py-2.5 px-3.5 text-center">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {sortedCarrierQuotes.map((quote) => {
+                                const isSelected = selectedQuote?.slug === quote.slug;
+                                const isNimbus = (quote.aggregator || '').toLowerCase().includes('nimbus') || (quote.slug || '').startsWith('nimbus');
+                                const isAir = (quote.mode || '').toLowerCase().includes('air') || (quote.name || '').toLowerCase().includes('air');
+                                const displayRate = Number(quote.price || 0);
+                                const codFee = Number(quote.codCharge || 0);
+                                const freightFee = Number(quote.freightCharge || (displayRate - codFee));
+                                const isHeavy = quote.minWeightKg && quote.minWeightKg >= 5;
+
+                                return (
+                                  <tr
+                                    key={quote.slug}
+                                    onClick={() => {
+                                      setSelectedQuote(quote);
+                                      setCarrierSlug(quote.slug);
+                                    }}
+                                    className={`cursor-pointer transition-colors duration-100 ${
+                                      isSelected
+                                        ? 'bg-blue-50/70 border-l-4 border-l-blue-600 font-semibold'
+                                        : 'hover:bg-slate-50/80'
+                                    }`}
+                                  >
+                                    <td className="py-2.5 px-3.5">
+                                      <div className="flex items-center gap-2.5">
+                                        <CarrierLogo
+                                          slug={quote.baseSlug || quote.slug}
+                                          name={quote.name}
+                                          size="sm"
+                                          className="shrink-0"
+                                        />
+                                        <div className="min-w-0">
+                                          <div className="font-extrabold text-slate-900 truncate">
+                                            {quote.courierPartner || quote.name}
+                                          </div>
+                                          {quote.isLowest && (
+                                            <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded inline-block mt-0.5">
+                                              Lowest Rate
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </td>
+
+                                    <td className="py-2.5 px-3 whitespace-nowrap">
+                                      {isNimbus ? (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+                                          NimbusPost
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                                          Shiprocket
+                                        </span>
+                                      )}
+                                    </td>
+
+                                    <td className="py-2.5 px-3 whitespace-nowrap">
+                                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                        isAir ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                      }`}>
+                                        {isAir ? <Plane className="w-3 h-3" /> : <Truck className="w-3 h-3" />}
+                                        <span>{isAir ? 'Air' : 'Surface'}</span>
+                                      </span>
+                                    </td>
+
+                                    <td className="py-2.5 px-3 whitespace-nowrap">
+                                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                        isHeavy ? 'bg-orange-100 text-orange-900 border border-orange-200 font-extrabold' : 'bg-slate-100 text-slate-700'
+                                      }`}>
+                                        <Scale className="w-3 h-3 text-slate-500" />
+                                        <span>{quote.weightSlab || `${parcelWeight || 0.5} K.G`}</span>
+                                      </span>
+                                    </td>
+
+                                    <td className="py-2.5 px-3 whitespace-nowrap text-slate-700 font-medium">
+                                      <div className="flex items-center gap-1">
+                                        <Clock className="w-3 h-3 text-blue-600 shrink-0" />
+                                        <span>{quote.eta || '2-3 Days'}</span>
+                                      </div>
+                                    </td>
+
+                                    <td className="py-2.5 px-3 text-right font-mono text-slate-700 font-semibold">
+                                      ₹{freightFee.toFixed(2)}
+                                    </td>
+
+                                    {paymentMode === 'cod' && (
+                                      <td className="py-2.5 px-3 text-right font-mono text-emerald-700 font-bold">
+                                        ₹{codFee.toFixed(2)}
+                                      </td>
+                                    )}
+
+                                    <td className="py-2.5 px-3.5 text-right font-mono font-black text-slate-900 text-sm">
+                                      ₹{displayRate.toFixed(2)}
+                                    </td>
+
+                                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                                      <span className="inline-flex items-center gap-0.5 text-[10.5px] font-bold text-amber-900 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                                        <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
+                                        {quote.rating ? quote.rating.toFixed(1) : '4.7'}
+                                      </span>
+                                    </td>
+
+                                    <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedQuote(quote);
+                                          setCarrierSlug(quote.slug);
+                                        }}
+                                        className={`px-2.5 py-1 text-xs font-bold rounded-lg transition cursor-pointer ${
+                                          isSelected
+                                            ? 'bg-blue-600 text-white shadow-2xs'
+                                            : 'bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700'
+                                        }`}
+                                      >
+                                        {isSelected ? 'Selected ✓' : 'Select'}
+                                      </button>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      /* Spacious Organized 3-Column Grid View */
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                         {sortedCarrierQuotes.map((quote) => {
                           const isSelected = selectedQuote?.slug === quote.slug;
+                          const isNimbus = (quote.aggregator || '').toLowerCase().includes('nimbus') || (quote.slug || '').startsWith('nimbus');
+                          const isAir = (quote.mode || '').toLowerCase().includes('air') || (quote.name || '').toLowerCase().includes('air');
+                          const displayRate = Number(quote.price || 0);
+                          const codFee = Number(quote.codCharge || 0);
+                          const freightFee = Number(quote.freightCharge || (displayRate - codFee));
+                          const isHeavy = quote.minWeightKg && quote.minWeightKg >= 5;
 
                           return (
                             <div
@@ -1412,58 +1970,106 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                 setSelectedQuote(quote);
                                 setCarrierSlug(quote.slug);
                               }}
-                              className={`rounded-xl p-3.5 border transition cursor-pointer flex flex-col justify-between text-left select-none ${
+                              className={`p-3.5 rounded-2xl border transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none relative group ${
                                 isSelected
-                                  ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-500'
-                                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                                  ? 'border-blue-600 bg-blue-50/20 ring-2 ring-blue-500 shadow-md scale-[1.01]'
+                                  : 'border-slate-200/90 bg-white hover:border-blue-300 hover:shadow-xs'
                               }`}
                             >
+                              {/* Top Header: Logo, Name, Gateway, Mode, Weight Slab & Radio */}
                               <div>
                                 <div className="flex items-start justify-between gap-2">
-                                  <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-2.5 min-w-0">
                                     <CarrierLogo 
-                                      slug={quote.slug} 
+                                      slug={quote.baseSlug || quote.slug} 
                                       name={quote.name} 
                                       size="md" 
-                                      className={isSelected ? 'ring-2 ring-blue-500 shadow-md' : 'shadow-2xs'}
+                                      className={`shrink-0 ${isSelected ? 'ring-2 ring-blue-500 shadow-2xs' : 'shadow-2xs'}`}
                                     />
-                                    <div>
-                                      <h4 className="text-xs font-bold text-slate-900 leading-snug">{quote.name}</h4>
-                                      <p className="text-[10px] text-slate-400 font-medium">Surface &amp; Express</p>
+                                    <div className="min-w-0">
+                                      <h4 className="text-sm font-extrabold text-slate-900 truncate leading-snug">
+                                        {quote.courierPartner || quote.name}
+                                      </h4>
+                                      
+                                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                        {isNimbus ? (
+                                          <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.2 rounded-full">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+                                            NimbusPost
+                                          </span>
+                                        ) : (
+                                          <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.2 rounded-full">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                                            Shiprocket
+                                          </span>
+                                        )}
+
+                                        <span className={`inline-flex items-center gap-0.5 text-[9.5px] font-bold px-1.5 py-0.2 rounded-md ${
+                                          isAir ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                        }`}>
+                                          {isAir ? <Plane className="w-2.5 h-2.5" /> : <Truck className="w-2.5 h-2.5" />}
+                                          <span>{isAir ? 'Air' : 'Surface'}</span>
+                                        </span>
+
+                                        <span className={`inline-flex items-center gap-1 text-[9.5px] font-bold px-1.5 py-0.2 rounded-md ${
+                                          isHeavy ? 'bg-orange-100 text-orange-900 border border-orange-200 font-extrabold' : 'bg-slate-100 text-slate-700'
+                                        }`}>
+                                          <Scale className="w-2.5 h-2.5 text-slate-500" />
+                                          <span>{quote.weightSlab || `${parcelWeight || 0.5} K.G`}</span>
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
 
-                                  <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
-                                    isSelected ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white'
+                                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition mt-0.5 ${
+                                    isSelected ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-300 bg-white group-hover:border-slate-400'
                                   }`}>
-                                    {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                                    {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                                   </div>
                                 </div>
 
-                                <div className="flex items-center gap-1.5 mt-2.5">
-                                  <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded">
-                                    <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
-                                    {quote.rating ? quote.rating.toFixed(1) : '4.6'}
-                                  </span>
-                                  {quote.isLowest && (
-                                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
-                                      Lowest Rate
+                                {/* Mid Strip: Full ETA and Rating */}
+                                <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-slate-100">
+                                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+                                    <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                    <span>{quote.eta || '2-3 Days'}</span>
+                                  </div>
+
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-bold text-amber-900 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                      <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
+                                      {quote.rating ? quote.rating.toFixed(1) : '4.7'}
                                     </span>
-                                  )}
+
+                                    {quote.isLowest && (
+                                      <span className="text-[9.5px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded">
+                                        Lowest Rate
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
 
-                              <div className="pt-3 mt-3 border-t border-slate-100 flex items-end justify-between">
+                              {/* Bottom Pricing Container */}
+                              <div className="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
                                 <div>
-                                  <span className="text-[10px] text-slate-400 font-medium block">Rate</span>
-                                  <span className="text-base font-bold font-mono text-slate-900">₹{quote.price}</span>
-                                </div>
-                                <div className="text-right">
-                                  <span className="text-[10px] text-slate-400 font-medium block">Transit</span>
-                                  <span className="text-xs font-medium text-slate-600 flex items-center gap-1">
-                                    <Clock className="w-3 h-3 text-slate-400" />
-                                    {quote.eta}
+                                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">
+                                    {paymentMode === 'cod' ? 'Total COD Rate' : 'Total Rate'}
                                   </span>
+                                  <span className="text-base font-black text-slate-900 font-mono leading-tight">
+                                    ₹{displayRate.toFixed(2)}
+                                  </span>
+                                </div>
+
+                                <div className="text-right text-[10.5px]">
+                                  {paymentMode === 'cod' ? (
+                                    <div className="font-medium text-slate-600 space-y-0.2">
+                                      <div>Freight: <strong className="text-slate-800 font-mono">₹{freightFee.toFixed(2)}</strong></div>
+                                      <div>COD: <strong className="text-emerald-700 font-mono font-bold">₹{codFee.toFixed(2)}</strong></div>
+                                    </div>
+                                  ) : (
+                                    <span className="text-slate-500 font-medium">All taxes incl.</span>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -1474,38 +2080,62 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   </div>
 
                   {/* Modal Footer / Finalization Bar */}
-                  <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
-                    <div>
+                  <div className="p-4 sm:p-5 bg-white border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap shadow-lg">
+                    <div className="flex items-center gap-3">
                       {selectedQuote ? (
-                        <p className="text-xs text-slate-700 font-medium">
-                          Selected: <strong className="text-slate-900 font-bold">{selectedQuote.name}</strong> · <strong className="text-emerald-700 font-mono font-bold">₹{selectedQuote.price}</strong> ({selectedQuote.eta})
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <CarrierLogo 
+                            slug={selectedQuote.baseSlug || selectedQuote.slug} 
+                            name={selectedQuote.name} 
+                            size="sm" 
+                            className="hidden sm:flex shadow-2xs"
+                          />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-500 font-medium">Selected Courier:</span>
+                              <strong className="text-sm font-black text-slate-900">{selectedQuote.courierPartner || selectedQuote.name}</strong>
+                              <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                                (selectedQuote.aggregator || '').toLowerCase().includes('nimbus') || selectedQuote.slug.startsWith('nimbus')
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'bg-indigo-100 text-indigo-800'
+                              }`}>
+                                via {(selectedQuote.aggregatorName || (selectedQuote.slug.startsWith('nimbus') ? 'NimbusPost' : 'Shiprocket'))}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              Final Rate: <strong className="text-emerald-700 font-mono font-black">₹{Number(selectedQuote.price || 0).toFixed(2)}</strong> · Transit: <strong>{selectedQuote.eta}</strong>
+                            </p>
+                          </div>
+                        </div>
                       ) : (
-                        <p className="text-xs text-slate-400">Please select a courier partner above.</p>
+                        <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                          <span>Please select a courier partner from the options above.</span>
+                        </p>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                       <button
                         type="button"
                         onClick={() => setShowCarrierModal(false)}
-                        className="px-3.5 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                        className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
                       >
-                        Back
+                        Cancel
                       </button>
 
                       <button
                         type="button"
                         disabled={loading || !selectedQuote}
                         onClick={() => handleFinalizeWithCourier(selectedQuote)}
-                        className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        className="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                       >
                         {loading ? (
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                         ) : (
                           <>
-                            <span>Confirm &amp; Finalize ({selectedQuote ? `₹${selectedQuote.price}` : ''})</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
+                            <span>Confirm &amp; Finalize {selectedQuote ? `(₹${Number(selectedQuote.price || 0).toFixed(2)})` : ''}</span>
+                            <ArrowRight className="w-4 h-4" />
                           </>
                         )}
                       </button>
