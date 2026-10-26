@@ -4,8 +4,21 @@ import {
   RotateCcw, DollarSign, Package, CheckCircle2, AlertCircle, Building2, ExternalLink, Truck
 } from 'lucide-react';
 
-export default function LegalComplianceView({ initialTab = 'contact' }) {
+export default function LegalComplianceView({ initialTab = 'contact', onTabChange }) {
   const [activeTab, setActiveTab] = useState(initialTab); // 'contact' | 'terms' | 'shipping' | 'refunds' | 'services' | 'privacy'
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
+  const handleSelectTab = (tabId) => {
+    setActiveTab(tabId);
+    if (onTabChange) {
+      onTabChange(tabId);
+    }
+  };
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
@@ -25,7 +38,7 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleSelectTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition cursor-pointer ${
                 isActive 
                   ? 'bg-[#1E56E3] text-white shadow-md shadow-blue-500/20 font-extrabold' 
@@ -49,7 +62,7 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
               </div>
               <div>
                 <h2 className="text-xl font-black text-slate-900">Merchant Contact Information</h2>
-                <p className="text-xs text-slate-500 font-medium">SecureKaro Technologies Private Limited Customer Support & Logistics Desk</p>
+                <p className="text-xs text-slate-500 font-medium">M/s SecureKaro Logistics (Proprietor: Kartick Das) Customer Support & Logistics Desk</p>
               </div>
             </div>
 
@@ -78,19 +91,51 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
                   General Support & Escalations: <span className="font-mono text-slate-700">support@securekaro.in</span>
                 </p>
               </div>
-            </div>
 
-            {/* Registered Address */}
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 space-y-3">
-              <div className="flex items-center gap-2.5 text-slate-900 font-bold text-sm">
-                <MapPin className="w-5 h-5 text-[#1E56E3]" />
-                <span>Registered Corporate & Merchant Address</span>
+              {/* Registered Address matching Trade Licence */}
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 space-y-3 md:col-span-2">
+                <div className="flex items-center gap-2.5 text-slate-900 font-bold text-sm">
+                  <MapPin className="w-5 h-5 text-[#1E56E3]" />
+                  <span>Registered Office & Operating Address</span>
+                </div>
+                <div className="text-xs text-slate-700 font-semibold leading-relaxed space-y-1">
+                  <p className="font-bold text-slate-900 text-sm">M/s SecureKaro Logistics</p>
+                  <p>Proprietor: Kartick Das</p>
+                  <p>Municipality: North Dum Dum, District: North 24 Parganas</p>
+                  <p>Kolkata, West Bengal 700051, India.</p>
+                  <p className="text-[11px] font-mono text-slate-500 font-normal pt-1 border-t border-slate-200">
+                    Certificate of Enlistment (Trade Licence No): <span className="font-bold text-slate-800">0917P453826577951</span>
+                  </p>
+                  <p className="text-[11px] font-mono text-slate-500 font-normal">
+                    State Government Ref ID: <span className="font-bold text-slate-800">220882607200574612</span>
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-slate-700 font-semibold leading-relaxed">
-                SecureKaro Technologies Private Limited<br />
-                4th Floor, Tech Hub Tower, Cyber City, Sector 24,<br />
-                Gurugram, Haryana 122002, India.
-              </p>
+
+              {/* Grievance Redressal Officer (Mandatory for RBI & Cashfree compliance) */}
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 space-y-3 md:col-span-2">
+                <div className="flex items-center gap-2.5 text-slate-900 font-bold text-sm">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                  <span>Nodal & Grievance Redressal Officer (RBI & IT Act Compliance)</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-700 font-medium">
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Officer Name</span>
+                    <span className="font-bold text-slate-900 text-sm">Kartick Das</span>
+                    <span className="block text-slate-500 text-[11px]">Proprietor & Grievance Officer</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Direct Compliance Email</span>
+                    <span className="font-mono font-bold text-[#1E56E3] text-xs">logistic@securekaro.in</span>
+                    <span className="block text-slate-500 text-[11px]">Turnaround: within 24-48 business hours</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Operating Hours</span>
+                    <span className="font-semibold text-slate-800 text-xs">Mon – Sat (9:00 AM – 7:00 PM IST)</span>
+                    <span className="block text-slate-500 text-[11px]">Excluding National Holidays</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -108,7 +153,7 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
             <div>
               <h3 className="text-sm font-bold text-slate-900 mb-1">1. Nature of Platform & Services</h3>
               <p>
-                SecureKaro ("Platform"), operated by SecureKaro Technologies Private Limited, is a <strong>Logistics Aggregator & Shipping Software Platform</strong> that facilitates <strong>B2B Courier Booking, Automated Shipping Label Generation, Multi-Carrier Parcel Tracking, and Delivery Protection</strong>. SecureKaro aggregates licensed courier partners (including Delhivery, Blue Dart, DTDC, and Shadowfax) to provide seamless parcel dispatch, shipment milestone tracking, and COD fraud protection for sellers and buyers.
+                SecureKaro ("Platform"), operated by M/s SecureKaro Logistics (Proprietor: Kartick Das), is a <strong>Logistics Aggregator & Shipping Software Platform</strong> that facilitates <strong>B2B Courier Booking, Automated Shipping Label Generation, Multi-Carrier Parcel Tracking, and Delivery Protection</strong>. SecureKaro aggregates licensed courier partners (including Delhivery, Blue Dart, DTDC, and Shadowfax) to provide seamless parcel dispatch, shipment milestone tracking, and COD fraud protection for sellers and buyers.
               </p>
             </div>
 
@@ -143,7 +188,7 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
             <div>
               <h3 className="text-sm font-bold text-slate-900 mb-1">6. Governing Law & Jurisdiction</h3>
               <p>
-                These terms are governed by the laws of India. Any disputes arising out of the use of SecureKaro shipping software shall be subject to the exclusive jurisdiction of the competent courts in Gurugram / New Delhi.
+                These terms are governed by the laws of India. Any disputes arising out of the use of SecureKaro shipping software shall be subject to the exclusive jurisdiction of the competent courts in Kolkata / North 24 Parganas, West Bengal.
               </p>
             </div>
           </div>
@@ -273,7 +318,7 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
 
           <div className="space-y-4 text-xs text-slate-700 leading-relaxed font-medium">
             <p>
-              SecureKaro Technologies Private Limited respects user privacy and complies with the Information Technology Act, 2000 and SPDI Rules. Contact details, delivery addresses, and payment information collected for shipping bookings are processed exclusively through 256-bit SSL encrypted channels.
+              M/s SecureKaro Logistics (Proprietor: Kartick Das) respects user privacy and complies with the Information Technology Act, 2000 and SPDI Rules. Contact details, delivery addresses, and payment information collected for shipping bookings are processed exclusively through 256-bit SSL encrypted channels.
             </p>
             <p>
               We do not sell, rent, or trade your data to third parties. Customer data is strictly utilized for carrier pickup, parcel delivery fulfillment, real-time shipment tracking, and customer support.

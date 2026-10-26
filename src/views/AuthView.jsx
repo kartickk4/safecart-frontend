@@ -950,11 +950,11 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
           </div>
 
           {/* Cashfree Merchant Compliance Footer Links */}
-          <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] font-bold text-slate-500">
+          <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-x-3.5 gap-y-2 text-[11px] font-bold text-slate-500">
             <button 
               type="button"
               onClick={() => setShowLegalModal('contact')} 
-              className="hover:text-[#1E56E3] hover:underline transition"
+              className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Contact Us
             </button>
@@ -962,15 +962,31 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             <button 
               type="button"
               onClick={() => setShowLegalModal('terms')} 
-              className="hover:text-[#1E56E3] hover:underline transition"
+              className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Terms & Conditions
             </button>
             <span>•</span>
             <button 
               type="button"
+              onClick={() => setShowLegalModal('privacy')} 
+              className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
+            >
+              Privacy Policy
+            </button>
+            <span>•</span>
+            <button 
+              type="button"
+              onClick={() => setShowLegalModal('shipping')} 
+              className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
+            >
+              Shipping & Delivery
+            </button>
+            <span>•</span>
+            <button 
+              type="button"
               onClick={() => setShowLegalModal('refunds')} 
-              className="hover:text-[#1E56E3] hover:underline transition"
+              className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Refunds & Cancellations
             </button>
@@ -978,7 +994,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             <button 
               type="button"
               onClick={() => setShowLegalModal('services')} 
-              className="hover:text-[#1E56E3] hover:underline transition"
+              className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Products & Pricing (INR ₹)
             </button>
@@ -1782,6 +1798,27 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
               >
                 Skip for now &amp; continue to dashboard →
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Merchant Compliance Legal Disclosures Modal */}
+      {showLegalModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] shadow-2xl border border-slate-100 flex flex-col relative overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+              <span className="font-extrabold text-sm text-slate-800">Merchant Compliance &amp; Legal Policies</span>
+              <button
+                type="button"
+                onClick={() => setShowLegalModal(null)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <LegalComplianceView initialTab={showLegalModal} />
             </div>
           </div>
         </div>

@@ -446,8 +446,10 @@ export default function App() {
     );
   }
 
+  const isLegalTab = ['legal', 'contact', 'terms', 'privacy', 'shipping', 'refunds', 'services'].includes(currentTab);
+
   // Allow unauthenticated visitors to view standalone public pages (legal, support, roi-calculator)
-  if (!user && (currentTab === 'legal' || currentTab === 'support' || currentTab === 'roi-calculator')) {
+  if (!user && (isLegalTab || currentTab === 'support' || currentTab === 'roi-calculator')) {
     return (
       <div className="min-h-screen bg-[#F7F9FC] flex flex-col text-slate-800">
         <header className="bg-white border-b border-slate-200/80 px-4 md:px-8 py-3.5 sticky top-0 z-30 shadow-xs flex items-center justify-between">
@@ -455,21 +457,21 @@ export default function App() {
             onClick={() => {
               setCurrentTab('dashboard');
             }}
-            className="flex items-center gap-2.5 text-left group"
+            className="flex items-center gap-2.5 text-left group cursor-pointer"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1E56E3] to-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
               <span className="font-black text-slate-900 text-base tracking-tight block">SecureKaro</span>
-              <span className="text-[10px] text-slate-400 font-semibold block -mt-0.5">Logistics & Shipping Software</span>
+              <span className="text-[10px] text-slate-400 font-semibold block -mt-0.5">Logistics & Shipping Platform</span>
             </div>
           </button>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentTab('roi-calculator')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 currentTab === 'roi-calculator' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -477,16 +479,16 @@ export default function App() {
             </button>
             <button
               onClick={() => setCurrentTab('support')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 currentTab === 'support' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Support
             </button>
             <button
-              onClick={() => setCurrentTab('legal')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                currentTab === 'legal' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
+              onClick={() => setCurrentTab('contact')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                isLegalTab ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Legal & Compliance
@@ -495,7 +497,7 @@ export default function App() {
               onClick={() => {
                 setCurrentTab('dashboard');
               }}
-              className="px-4 py-2 bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition flex items-center gap-1.5"
+              className="px-4 py-2 bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition flex items-center gap-1.5 cursor-pointer"
             >
               Sign In / Register →
             </button>
@@ -503,7 +505,12 @@ export default function App() {
         </header>
 
         <main className="flex-1 pb-16 overflow-y-auto">
-          {currentTab === 'legal' && <LegalComplianceView />}
+          {isLegalTab && (
+            <LegalComplianceView 
+              initialTab={currentTab === 'legal' ? 'contact' : currentTab}
+              onTabChange={(nextTab) => setCurrentTab(nextTab)}
+            />
+          )}
           {currentTab === 'support' && <SupportView />}
           {currentTab === 'roi-calculator' && (
             <ROISavingsCalculatorView
