@@ -77,7 +77,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
               status: ship.status || res.data.status || 'In Transit',
               escrowStage: ship.escrowStage || 4,
               stageLabel: ship.status || 'In Transit',
-              stageDesc: 'Shipment secured and tracked via SecureKaro Escrow.',
+              stageDesc: 'Shipment secured and tracked via SecureKaro Delivery Protection.',
               amount: ship.amount || 0,
               description: ship.description || 'Order Parcel',
               city: ship.city || 'Origin → Destination',
@@ -102,7 +102,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
               {
                 status: ship.status || 'In Transit',
                 location: ship.city || 'Regional Hub',
-                detail: `Parcel status is currently ${ship.status || 'In Transit'}. Funds safely locked in Escrow.`,
+                detail: `Parcel status is currently ${ship.status || 'In Transit'}. Shipment verified and tracked.`,
                 time: new Date()
               }
             ],
@@ -186,7 +186,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
               </span>
             </div>
             <p className="text-[11px] text-slate-500 font-medium hidden sm:block">
-              Zero-Login Parcel & Escrow Verification Portal
+              Zero-Login Parcel & Delivery Verification Portal
             </p>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
         <div className="flex items-center gap-2.5">
           <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>RBI-Compliant Escrow Protection</span>
+            <span>Digital Delivery Verification</span>
           </div>
 
           {onBackToAuth ? (
@@ -233,7 +233,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
                 </span>
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Enter your <span className="font-semibold text-slate-700">Shipment ID (SPL-...)</span> or <span className="font-semibold text-slate-700">AWB Code</span> along with your registered mobile number to securely inspect courier progress and escrow protection.
+                Enter your <span className="font-semibold text-slate-700">Shipment ID (SPL-...)</span> or <span className="font-semibold text-slate-700">AWB Code</span> along with your registered mobile number to securely inspect courier progress and verified delivery status.
               </p>
             </div>
 
@@ -343,7 +343,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
                   </button>
 
                   <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Track your SecureKaro Escrow Parcel: ${window.location.origin}/track/${shipment.shipmentId}`)}`}
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Track your SecureKaro Verified Parcel: ${window.location.origin}/track/${shipment.shipmentId}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-xs"
@@ -399,18 +399,18 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
                 <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 space-y-1">
                   <div className="text-[10px] font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3 text-blue-600" />
-                    <span>Escrow Vault</span>
+                    <span>Delivery Protection</span>
                   </div>
                   <p className="text-xs sm:text-sm font-black text-blue-900">
                     ₹{Number(shipment.amount || 0).toLocaleString('en-IN')}
                   </p>
                   <p className="text-[11px] text-blue-700 font-bold">
-                    Safe in Vault
+                    Protected
                   </p>
                 </div>
               </div>
 
-              {/* ── Escrow Security Promise Banner ─────────────────────────────────── */}
+              {/* ── Delivery Protection Banner ─────────────────────────────────── */}
               <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/5 to-slate-50 border border-blue-200/80 flex items-start gap-3">
                 <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold">
                   <ShieldCheck className="w-5 h-5" />
@@ -418,14 +418,14 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xs font-black text-blue-950 uppercase tracking-wider">
-                      SecureKaro Vault Protection Active
+                      SecureKaro Delivery Protection Active
                     </h2>
                     <span className="text-[10px] font-extrabold bg-blue-600 text-white px-2 py-0.5 rounded-full">
                       Stage {shipment.escrowStage || 4} of 7
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Your payment of <strong className="text-slate-900">₹{Number(shipment.amount || 0).toLocaleString('en-IN')}</strong> is safely locked inside SecureKaro's RBI-regulated Escrow Vault. <span className="font-semibold text-blue-700">The merchant is NOT paid</span> until you receive the package, inspect it, and confirm satisfactory delivery.
+                    Order value of <strong className="text-slate-900">₹{Number(shipment.amount || 0).toLocaleString('en-IN')}</strong> is protected under SecureKaro Delivery Verification. <span className="font-semibold text-blue-700">Digital verification</span> ensures complete shipment confirmation before order sign-off.
                   </p>
                 </div>
               </div>
@@ -453,7 +453,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
                             {isRefundCompleted ? 'Refund Completed ✓' : 'Reverse Logistics Return Tracking'}
                           </span>
                           <span className={`text-[10px] ${isRefundCompleted ? 'text-emerald-800' : 'text-amber-800'}`}>
-                            {isRefundCompleted ? '100% Escrow funds refunded to buyer' : 'Return active on this parcel'}
+                            {isRefundCompleted ? '100% order refund settled to buyer' : 'Return active on this parcel'}
                           </span>
                         </div>
                       </div>
@@ -645,7 +645,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
                           <span className="font-bold text-slate-800">{shipment.description}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Escrow Value:</span>
+                          <span>Order Value:</span>
                           <span className="font-bold text-slate-800">₹{Number(shipment.amount || 0).toLocaleString('en-IN')}</span>
                         </div>
                         <div className="flex justify-between">
@@ -676,7 +676,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
                         </div>
                         <div className="flex justify-between">
                           <span>Dispute Mediation:</span>
-                          <span className="font-bold text-blue-600">SecureKaro Escrow Guarantee</span>
+                          <span className="font-bold text-blue-600">SecureKaro Delivery Guarantee</span>
                         </div>
                       </div>
                     </div>
@@ -692,7 +692,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
                   Are you the recipient of this order?
                 </h2>
                 <p className="text-xs text-slate-500">
-                  When your package arrives, you can sign in to inspect and release escrow funds or initiate a 1-click return if damaged.
+                  When your package arrives, you can sign in to inspect and complete delivery verification or initiate a 1-click return if damaged.
                 </p>
               </div>
 
@@ -737,9 +737,9 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
               <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                 <ShieldCheck className="w-4 h-4" />
               </div>
-              <h2 className="text-xs font-bold text-slate-800">100% Escrow Protection</h2>
+              <h2 className="text-xs font-bold text-slate-800">100% Delivery Protection</h2>
               <p className="text-[11px] text-slate-500 leading-relaxed">
-                Money is safely safeguarded in an RBI-compliant vault. The supplier cannot access your funds until delivery is verified.
+                Shipment is monitored with automated tracking and OTP delivery sign-off to ensure complete order fulfillment.
               </p>
             </div>
 
@@ -770,10 +770,10 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
       <footer className="w-full bg-white border-t border-slate-200/80 py-5 px-4 text-center text-xs text-slate-500 space-y-1">
         <p className="font-semibold text-slate-600">
-          SecureKaro Logistics & Escrow Ecosystem © 2026. All rights reserved.
+          M/s SecureKaro Logistics © 2026. All rights reserved.
         </p>
         <p className="text-[11px] text-slate-400">
-          Compliant with RBI Escrow Directions & Section 65B of the Indian Evidence Act.
+          Compliant with Information Technology Act, 2000 & Section 65B of the Indian Evidence Act.
         </p>
       </footer>
     </div>

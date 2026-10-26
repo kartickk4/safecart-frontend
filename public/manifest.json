@@ -1,7 +1,7 @@
-﻿{
+{
   "short_name": "SecureKaro",
-  "name": "SecureKaro Escrow & Logistics",
-  "description": "Secure-Path Logistics & Escrow Platform for India",
+  "name": "SecureKaro Courier & Logistics",
+  "description": "B2B & B2C Courier Booking & Logistics Platform for India",
   "icons": [
     {
       "src": "favicon.svg",
