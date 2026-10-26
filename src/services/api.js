@@ -1,27 +1,51 @@
 import axios from 'axios';
+import { Capacitor } from '@capacitor/core';
+
+const LIVE_BACKEND_URL = 'https://safecart-backend-1.onrender.com/api/v1';
 
 const getBaseUrl = () => {
+  // 1. Mobile Native App Check (Capacitor Android & iOS)
+  // Inside the APK, origin is https://localhost or capacitor://localhost with no local backend on phone.
+  if (typeof window !== 'undefined') {
+    const isCapacitorNative = 
+      Capacitor.isNativePlatform() || 
+      Boolean(window.Capacitor?.isNativePlatform?.()) ||
+      window.location.protocol === 'capacitor:' ||
+      (window.location.origin === 'https://localhost' && (!window.location.port || window.location.port === ''));
+
+    if (isCapacitorNative) {
+      return LIVE_BACKEND_URL;
+    }
+  }
+
+  // 2. Explicit Environment Variable
   let url = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
   if (url) {
     url = url.trim().replace(/\/+$/, '');
     if (!url.endsWith('/api/v1')) {
       url = `${url}/api/v1`;
     }
+    // Prevent using localhost URL if accessing from production domains
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname !== 'localhost' && hostname !== '127.0.0.1' && url.includes('localhost')) {
+        return LIVE_BACKEND_URL;
+      }
+    }
     return url;
   }
 
+  // 3. Web Domain Detection
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
       if (hostname.includes('onrender.com')) {
-        // Correctly maps safecart-frontend-1.onrender.com -> safecart-backend-1.onrender.com
         const backendHost = hostname.replace('-frontend', '-backend');
         return `${window.location.protocol}//${backendHost}/api/v1`;
       }
       if (hostname.includes('securekaro.in')) {
-        return 'https://safecart-backend-1.onrender.com/api/v1';
+        return LIVE_BACKEND_URL;
       }
-      // On mobile devices, window.location.origin is e.g. http://10.128.121.6:3001.
       return `${window.location.origin}/api/v1`;
     }
   }
@@ -57,21 +81,27 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Only fallback to Render if explicitly running on a Render deployed domain or securekaro.in
+    // If a network error occurs in native mobile or deployed domains, auto-retry on live backend
     if (
-      error.code === 'ERR_NETWORK' && 
-      typeof window !== 'undefined' && 
-      (window.location.hostname.includes('onrender.com') || window.location.hostname.includes('securekaro.in'))
+      (error.code === 'ERR_NETWORK' || !error.response) && 
+      typeof window !== 'undefined'
     ) {
-      const backendHost = window.location.hostname.includes('securekaro.in')
-        ? 'safecart-backend-1.onrender.com'
-        : window.location.hostname.replace('-frontend', '-backend');
-      const renderBackendUrl = `${window.location.protocol}//${backendHost}/api/v1`;
-      console.warn(`Retrying request on backend: ${renderBackendUrl}`);
-      api.defaults.baseURL = renderBackendUrl;
-      const config = error.config;
-      config.baseURL = renderBackendUrl;
-      return axios(config);
+      const isMobileApp = 
+        Capacitor.isNativePlatform() || 
+        Boolean(window.Capacitor?.isNativePlatform?.()) ||
+        window.location.protocol === 'capacitor:' ||
+        (window.location.origin === 'https://localhost' && (!window.location.port || window.location.port === ''));
+
+      const isLiveDomain = 
+        window.location.hostname.includes('onrender.com') || 
+        window.location.hostname.includes('securekaro.in');
+
+      if ((isMobileApp || isLiveDomain) && error.config && error.config.baseURL !== LIVE_BACKEND_URL) {
+        console.warn(`[Capacitor/Web] Network fallback: redirecting request to ${LIVE_BACKEND_URL}`);
+        api.defaults.baseURL = LIVE_BACKEND_URL;
+        const retryConfig = { ...error.config, baseURL: LIVE_BACKEND_URL };
+        return axios(retryConfig);
+      }
     }
     return Promise.reject(error);
   }

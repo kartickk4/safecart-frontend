@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SecureKaro</string>
+    <string name="title_activity_main">SecureKaro</string>
+    <string name="package_name">in.securekaro.app</string>
+    <string name="custom_url_scheme">in.securekaro.app</string>
+</resources>

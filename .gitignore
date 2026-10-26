@@ -52,3 +52,9 @@ desktop.ini
 # Temporary files
 *.tmp
 *.bak
+
+# Android Build Outputs
+.gradle/
+android/app/build/
+android/.gradle/
+
