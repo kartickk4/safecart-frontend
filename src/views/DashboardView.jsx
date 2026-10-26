@@ -381,7 +381,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
   };
 
   return (
-    <div className="px-3 py-3.5 sm:px-4 sm:py-5 md:p-8 space-y-3.5 sm:space-y-5 md:space-y-8 max-w-7xl mx-auto">
+    <div className="px-4 py-5 md:p-8 space-y-5 md:space-y-8 max-w-7xl mx-auto">
       {/* SUPPLIER EXECUTIVE HEADER & CONTROL BAR */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 md:gap-4 pb-2 border-b border-slate-200/80">
         <div>
