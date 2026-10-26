@@ -73,9 +73,9 @@ export default function LegalComplianceView({ initialTab = 'contact' }) {
                   <Mail className="w-5 h-5" />
                   <span>Email Support Desk</span>
                 </div>
-                <p className="text-lg font-extrabold text-slate-900 font-mono">support@securekaro.in</p>
+                <p className="text-lg font-extrabold text-slate-900 font-mono">logistic@securekaro.in</p>
                 <p className="text-xs text-slate-500 font-medium">
-                  Compliance & Merchant Enquiries: <span className="font-mono text-slate-700">compliance@securekaro.in</span>
+                  General Support & Escalations: <span className="font-mono text-slate-700">support@securekaro.in</span>
                 </p>
               </div>
             </div>
