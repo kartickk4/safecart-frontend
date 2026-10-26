@@ -77,7 +77,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
   const paginated = filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   return (
-    <div className="px-4 py-5 md:p-8 max-w-7xl mx-auto space-y-5 md:space-y-8">
+    <div className="px-3 py-3.5 sm:px-4 sm:py-5 md:p-8 max-w-7xl mx-auto space-y-3.5 sm:space-y-5 md:space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div>
@@ -118,7 +118,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
       </div>
 
       {/* Main Container Card */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="bg-white rounded-xl sm:rounded-3xl border border-slate-200/80 shadow-sm p-3.5 sm:p-6 space-y-3 sm:space-y-6">
         {/* Filter Tabs & Search */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           {/* Filter Pills */}

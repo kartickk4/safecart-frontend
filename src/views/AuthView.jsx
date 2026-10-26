@@ -692,45 +692,45 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
       </div>
 
       {/* RIGHT AUTH FORM COLUMN */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-6 sm:p-12 bg-white">
-        <div className="w-full max-w-md space-y-6 sm:space-y-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-3.5 py-3.5 sm:px-6 sm:py-8 lg:p-12 bg-white">
+        <div className="w-full max-w-md space-y-3 sm:space-y-6">
 
           {/* MOBILE BRAND IDENTITY HEADER (SHOWN ONLY ON MOBILE PHONES) */}
-          <div className="lg:hidden pb-4 border-b border-slate-100 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#1E56E3] via-[#1649CC] to-[#0D38A8] text-white flex items-center justify-center shadow-md shadow-blue-600/25">
-                <ShieldCheck className="w-6 h-6" />
+          <div className="lg:hidden pb-2.5 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#1E56E3] via-[#1649CC] to-[#0D38A8] text-white flex items-center justify-center shadow-xs">
+                <ShieldCheck className="w-4 h-4" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h1 className="text-lg font-black tracking-tight text-slate-900">SecureKaro</h1>
-                  <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-50 text-[#1E56E3] border border-blue-200">
+                  <h1 className="text-base font-black tracking-tight text-slate-900 leading-none">SecureKaro</h1>
+                  <span className="text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-50 text-[#1E56E3] border border-blue-200">
                     Logistics
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 font-medium">B2B Courier Booking & Delivery Protection</p>
+                <p className="text-[10px] text-slate-500 font-medium mt-0.5">B2B & B2C Courier Booking & Protection</p>
               </div>
             </div>
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[10px] font-extrabold shadow-2xs">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[9px] font-extrabold shadow-2xs">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
               <span>SSL Secured</span>
             </div>
           </div>
           
           {/* Top Pill Tab Switcher */}
           <div className="flex justify-end">
-            <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1 text-sm font-medium text-slate-600 w-full sm:w-auto">
+            <div className="bg-slate-100 p-0.5 sm:p-1 rounded-xl inline-flex gap-1 text-xs sm:text-sm font-medium text-slate-600 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setIsSignUp(false)}
-                className={`flex-1 sm:flex-initial px-5 py-2 rounded-lg transition-all text-center ${!isSignUp ? 'bg-white text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
+                className={`flex-1 sm:flex-initial px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-lg transition-all text-center ${!isSignUp ? 'bg-white text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
               >
                 Sign In
               </button>
               <button
                 type="button"
                 onClick={() => setIsSignUp(true)}
-                className={`flex-1 sm:flex-initial px-5 py-2 rounded-lg transition-all text-center ${isSignUp ? 'bg-white text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
+                className={`flex-1 sm:flex-initial px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-lg transition-all text-center ${isSignUp ? 'bg-white text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
               >
                 Create Account
               </button>
@@ -739,66 +739,63 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
 
           {/* Heading */}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">
+            <h2 className="text-lg sm:text-2xl font-bold text-slate-900 leading-tight">
               {isSignUp ? 'Create your SecureKaro account' : 'Welcome back'}
             </h2>
-            <p className="text-slate-500 text-sm mt-1">
+            <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
               {isSignUp ? 'Join thousands of businesses streamlining courier shipping & delivery protection.' : 'Sign in to access your SecureKaro shipping dashboard and tracking.'}
             </p>
           </div>
 
           {/* Quick Public Parcel Tracking Banner */}
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200/90 flex items-center justify-between gap-3 shadow-2xs">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center shrink-0 shadow-xs">
-                <Truck className="w-4 h-4" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200/90 flex items-center justify-between gap-2.5 shadow-2xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-lg sm:rounded-xl bg-[#1E56E3] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Truck className="w-3.5 h-3.5" />
               </div>
-              <div>
-                <p className="text-xs font-black text-slate-900">Tracking an incoming parcel?</p>
-                <p className="text-[11px] text-slate-500">Inspect courier milestones & delivery protection with zero login.</p>
+              <div className="min-w-0">
+                <p className="text-[11.5px] sm:text-xs font-black text-slate-900 leading-tight">Tracking an incoming parcel?</p>
+                <p className="text-[10px] sm:text-[11px] text-slate-500 leading-tight truncate">Inspect milestones with zero login.</p>
               </div>
             </div>
             <button
               type="button"
               onClick={onOpenPublicTrack}
-              className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#1E56E3] border border-blue-200 text-xs font-black transition shrink-0 flex items-center gap-1 shadow-2xs cursor-pointer hover:border-blue-300"
+              className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-white hover:bg-slate-50 text-[#1E56E3] border border-blue-200 text-[10.5px] sm:text-xs font-black transition shrink-0 flex items-center gap-1 shadow-2xs cursor-pointer hover:border-blue-300"
             >
               <span>Track Now</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             </button>
           </div>
 
-
-
           {/* Alert Error Message */}
           {error && (
-            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium space-y-2">
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium space-y-1.5">
               <div className="flex items-center gap-2 font-semibold">
                 <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
                 <span>{error}</span>
               </div>
-
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-4">
             {isSignUp && (
               <>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                  <label className="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-0.5 sm:mb-1">Full Name</label>
                   <input
                     type="text"
                     required
                     placeholder="Marcus Rivera"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+                    className="w-full px-3 py-1.5 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
+                  <label className="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-0.5 sm:mb-1">Phone Number</label>
                   <PhoneInput
                     required
                     value={phone}
@@ -809,25 +806,25 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+              <label className="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-0.5 sm:mb-1">Email Address</label>
               <input
                 type="email"
                 required
                 placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+                className="w-full px-3 py-1.5 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
               />
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-slate-700">Password</label>
+              <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                <label className="block text-[11px] sm:text-xs font-semibold text-slate-700">Password</label>
                 {!isSignUp && (
                   <button
                     type="button"
                     onClick={() => { setForgotEmail(email); setShowForgotModal(true); setResetStep(1); }}
-                    className="text-xs text-[#1E56E3] font-bold hover:underline"
+                    className="text-[11px] sm:text-xs text-[#1E56E3] font-bold hover:underline"
                   >
                     Forgot password?
                   </button>
@@ -840,28 +837,28 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition pr-10"
+                  className="w-full px-3 py-1.5 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition pr-9"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
 
             {isSignUp && (
               <div className="pt-0.5">
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-semibold text-slate-700">
+                <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                  <label className="block text-[11px] sm:text-xs font-semibold text-slate-700">
                     Referral / Invite Code <span className="text-slate-400 font-normal">(Optional)</span>
                   </label>
                   {referralCode && (
-                    <span className="text-[10.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      Invite Applied
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-md flex items-center gap-1">
+                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                      Applied
                     </span>
                   )}
                 </div>
@@ -871,44 +868,44 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                     placeholder="e.g. SK-7L7RR"
                     value={referralCode}
                     onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono uppercase text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition pr-9"
+                    className="w-full px-3 py-1.5 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl text-xs sm:text-sm font-mono uppercase text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition pr-8"
                   />
-                  <Tag className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Tag className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               </div>
             )}
 
             {!isSignUp && (
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-0.5">
                 <input
                   type="checkbox"
                   id="remember"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500"
+                  className="w-3.5 h-3.5 rounded text-blue-600 border-slate-300 focus:ring-blue-500"
                 />
-                <label htmlFor="remember" className="text-xs text-slate-600 font-medium">Keep me signed in for 30 days</label>
+                <label htmlFor="remember" className="text-[11px] sm:text-xs text-slate-600 font-medium">Keep me signed in for 30 days</label>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 mt-6"
+              className="w-full py-2.5 sm:py-3 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl shadow-md shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 mt-2.5 sm:mt-5 cursor-pointer"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
-                  <span>{isSignUp ? 'Create Account' : 'Sign In'}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>{isSignUp ? 'Create Free Account' : 'Sign In'}</span>
+                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </>
               )}
             </button>
 
-            <div className="relative flex py-2 items-center">
+            <div className="relative flex py-1 sm:py-2 items-center">
               <div className="flex-grow border-t border-slate-200"></div>
-              <span className="flex-shrink mx-3 text-xs text-slate-400 font-semibold uppercase tracking-wider">or</span>
+              <span className="flex-shrink mx-2 text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider">or</span>
               <div className="flex-grow border-t border-slate-200"></div>
             </div>
 
@@ -916,10 +913,10 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={loading || googleLoading}
-              className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-3 disabled:opacity-50"
+              className="w-full py-2 sm:py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-lg sm:rounded-xl shadow-2xs transition flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer"
             >
               {googleLoading ? (
-                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -932,19 +929,19 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
           </form>
 
           {/* Trust & Regulatory Guarantee Bar */}
-          <div className="pt-2 flex items-center justify-center gap-4 text-[10px] font-semibold text-slate-500 text-center">
+          <div className="pt-1 flex items-center justify-center gap-3 sm:gap-4 text-[9px] sm:text-[10px] font-semibold text-slate-500 text-center">
             <span className="flex items-center gap-1">
-              <Lock className="w-3 h-3 text-slate-400" />
+              <Lock className="w-2.5 h-2.5 text-slate-400" />
               <span>256-Bit SSL</span>
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-emerald-600" />
-              <span>RBI Regulated Trustee</span>
+              <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
+              <span>RBI Regulated</span>
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 text-[#1E56E3]" />
+              <CheckCircle2 className="w-2.5 h-2.5 text-[#1E56E3]" />
               <span>Instant UPI</span>
             </span>
           </div>
