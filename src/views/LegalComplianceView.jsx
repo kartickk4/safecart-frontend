@@ -99,10 +99,10 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
                   <span>Registered Office & Operating Address</span>
                 </div>
                 <div className="text-xs text-slate-700 font-semibold leading-relaxed space-y-1">
-                  <p className="font-bold text-slate-900 text-sm">M/s SecureKaro Logistics</p>
+                  <p className="font-bold text-slate-900 text-sm">M/s SecureKaro (SecureKaro Logistics)</p>
                   <p>Proprietor: Kartick Das</p>
                   <p>Municipality: North Dum Dum, District: North 24 Parganas</p>
-                  <p>Kolkata, West Bengal 700051, India.</p>
+                  <p>Kolkata, West Bengal 700049, India.</p>
                   <p className="text-[11px] font-mono text-slate-500 font-normal pt-1 border-t border-slate-200">
                     Certificate of Enlistment (Trade Licence No): <span className="font-bold text-slate-800">0917P453826577951</span>
                   </p>
