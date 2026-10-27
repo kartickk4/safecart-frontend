@@ -615,11 +615,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
   };
 
   return (
-    <div className="min-h-screen w-full flex glass-mesh-bg relative overflow-hidden">
-      {/* Ambient subtle glow */}
-      <div className="fixed top-10 right-10 w-96 h-96 bg-blue-500/8 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="fixed bottom-10 left-10 w-80 h-80 bg-amber-500/6 rounded-full blur-3xl pointer-events-none"></div>
-
+    <div className="min-h-screen w-full flex bg-[#F7F9FC]">
       {/* LEFT HERO COLUMN - ROYAL BLUE SECUREKARO BRANDING */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#1E56E3] via-[#1649CC] to-[#0D38A8] text-white p-12 flex-col justify-between relative overflow-hidden select-none">
         {/* Background glow elements */}
@@ -696,7 +692,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
       </div>
 
       {/* RIGHT AUTH FORM COLUMN */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-6 sm:p-12 bg-white/70 backdrop-blur-xl border-l border-white/60">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-6 sm:p-12 bg-white">
         <div className="w-full max-w-md space-y-6 sm:space-y-8">
 
           {/* MOBILE BRAND IDENTITY HEADER (SHOWN ONLY ON MOBILE PHONES) */}
@@ -723,18 +719,18 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
           
           {/* Top Pill Tab Switcher */}
           <div className="flex justify-end">
-            <div className="bg-slate-100/80 backdrop-blur-md p-1 rounded-xl inline-flex gap-1 text-sm font-medium text-slate-600 w-full sm:w-auto border border-white/80 shadow-2xs">
+            <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1 text-sm font-medium text-slate-600 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setIsSignUp(false)}
-                className={`flex-1 sm:flex-initial px-5 py-2 rounded-lg transition-all text-center ${!isSignUp ? 'bg-white/95 text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
+                className={`flex-1 sm:flex-initial px-5 py-2 rounded-lg transition-all text-center ${!isSignUp ? 'bg-white text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
               >
                 Sign In
               </button>
               <button
                 type="button"
                 onClick={() => setIsSignUp(true)}
-                className={`flex-1 sm:flex-initial px-5 py-2 rounded-lg transition-all text-center ${isSignUp ? 'bg-white/95 text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
+                className={`flex-1 sm:flex-initial px-5 py-2 rounded-lg transition-all text-center ${isSignUp ? 'bg-white text-slate-900 shadow-sm font-semibold' : 'hover:text-slate-900'}`}
               >
                 Create Account
               </button>

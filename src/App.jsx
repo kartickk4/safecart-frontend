@@ -574,12 +574,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen glass-mesh-bg flex text-slate-800 selection:bg-blue-500 selection:text-white relative overflow-x-hidden">
-      {/* Ambient subtle glass glow spheres */}
-      <div className="fixed top-0 left-1/4 w-96 h-96 bg-blue-500/8 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
-      <div className="fixed top-1/3 right-10 w-80 h-80 bg-amber-500/6 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="fixed bottom-10 left-1/3 w-96 h-96 bg-emerald-500/6 rounded-full blur-3xl pointer-events-none"></div>
-
+    <div className="min-h-screen bg-[#F7F9FC] flex text-slate-800 selection:bg-blue-500 selection:text-white relative">
       {/* Left Sidebar */}
       <Sidebar
         currentTab={currentTab}
@@ -842,7 +837,7 @@ export default function App() {
       )}
 
       {/* FIXED MOBILE BOTTOM NAVIGATION BAR (FOR MOBILE SMARTPHONE SCREENS) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 glass-bottom-nav px-2 py-1.5 pb-safe flex items-center justify-around z-50 select-none">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-2 py-1.5 pb-safe flex items-center justify-around z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] select-none">
         {/* TAB 1: DASHBOARD / ORDERS */}
         <button
           onClick={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')}
