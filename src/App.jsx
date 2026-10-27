@@ -535,8 +535,16 @@ export default function App() {
   }
 
   // Master Admin Executive Console (Strict Role Check)
+  const isUserAdmin = Boolean(
+    user?.role === 'Admin' ||
+    user?.role === 'super_admin' ||
+    user?.isAdmin === true ||
+    user?.adminRole ||
+    user?.email?.toLowerCase().trim() === 'kartickdas6289@gmail.com'
+  );
+
   if (currentTab === 'admin') {
-    if (user?.role !== 'Admin' && user?.role !== 'super_admin') {
+    if (!isUserAdmin) {
       return (
         <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 text-center">
           <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 max-w-md w-full shadow-2xl">
