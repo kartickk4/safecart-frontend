@@ -131,6 +131,7 @@ export const profileAPI = {
   applyReferralCode: (code) => api.post('/profile/apply-referral', { code }),
   sendPhoneOtp: (phone) => api.post('/profile/send-phone-otp', { phone }),
   verifyPhoneOtp: (phone, otp) => api.post('/profile/verify-phone-otp', { phone, otp }),
+  deleteAccount: (reason) => api.delete('/profile/account', { data: { reason } }),
 };
 
 export const shipmentAPI = {

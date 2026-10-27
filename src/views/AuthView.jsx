@@ -929,6 +929,28 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                 </svg>
               )}
             </button>
+
+            {isSignUp && (
+              <p className="text-[11px] text-slate-500 text-center leading-relaxed pt-1">
+                By registering, you consent to our{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowLegalModal('terms')}
+                  className="text-[#1E56E3] font-bold underline hover:text-blue-700 cursor-pointer"
+                >
+                  Terms of Service
+                </button>{' '}
+                and{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowLegalModal('privacy')}
+                  className="text-[#1E56E3] font-bold underline hover:text-blue-700 cursor-pointer"
+                >
+                  Privacy Policy
+                </button>{' '}
+                under the Digital Personal Data Protection Act, 2023 (DPDP Act).
+              </p>
+            )}
           </form>
 
           {/* Trust & Regulatory Guarantee Bar */}

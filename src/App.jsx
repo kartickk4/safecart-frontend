@@ -756,9 +756,12 @@ export default function App() {
             <SupportView />
           )}
 
-          {/* VIEW 11: CASHFREE MERCHANT LEGAL & COMPLIANCE CENTER */}
-          {currentTab === 'legal' && (
-            <LegalComplianceView />
+          {/* VIEW 11: MERCHANT LEGAL & COMPLIANCE CENTER (DPDP Act, Terms, Privacy, Refunds, Shipping) */}
+          {isLegalTab && (
+            <LegalComplianceView 
+              initialTab={currentTab === 'legal' ? 'contact' : currentTab}
+              onTabChange={(nextTab) => setCurrentTab(nextTab)}
+            />
           )}
 
           {/* VIEW 12: RETURN ORDERS & RETURN TRACKING (SUPPLIER & RECEIVER) */}

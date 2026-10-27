@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building, ShieldCheck, Mail, Phone, Lock, Save, CheckCircle2, RefreshCw, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles, Zap, MapPin, Edit3, Navigation, Check, AlertCircle, Gift, Copy, ExternalLink, Users, AlertTriangle, Send } from 'lucide-react';
+import { User, Building, ShieldCheck, Mail, Phone, Lock, Save, CheckCircle2, RefreshCw, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles, Zap, MapPin, Edit3, Navigation, Check, AlertCircle, Gift, Copy, ExternalLink, Users, AlertTriangle, Send, Trash2 } from 'lucide-react';
 
 import { profileAPI, authAPI } from '../services/api';
 
@@ -53,6 +53,27 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
   const [securityDebugOtp, setSecurityDebugOtp] = useState('');
   const [securityTimer, setSecurityTimer] = useState(0);
   const [otpVerified, setOtpVerified] = useState(false);
+
+  // ── DPDP Act 2023 Account Erasure State ──
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      const res = await profileAPI.deleteAccount(deleteReason);
+      alert(res.data?.message || 'Your account and personal data have been erased under the DPDP Act, 2023.');
+      localStorage.removeItem('securekaro_token');
+      localStorage.removeItem('securekaro_user');
+      window.location.href = '/';
+    } catch (err) {
+      setDeleteError(err.response?.data?.error || 'Failed to erase account. Please contact logistic@securekaro.in');
+      setDeleteLoading(false);
+    }
+  };
 
   const isPhoneVerifiedState = Boolean(user?.isPhoneVerified && phone);
 
@@ -913,7 +934,132 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
           {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           <span>Save Profile & Payout Settings</span>
         </button>
+
+        {/* ── DPDP ACT, 2023 DATA PROTECTION & PRIVACY RIGHTS CARD ── */}
+        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-slate-900 text-sm">
+                Digital Personal Data Protection &amp; Privacy Rights
+              </h3>
+              <p className="text-[11px] text-slate-500 font-medium">
+                Compliant with the Digital Personal Data Protection Act, 2023 (DPDP Act) &amp; IT Act, 2000
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600 leading-relaxed font-medium">
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/70 space-y-1">
+              <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Data Fiduciary Details</span>
+              <p className="text-[11.5px]">M/s SecureKaro (SecureKaro Logistics)</p>
+              <p className="text-[11px] text-slate-500">Proprietor: Kartick Das | Kolkata 700049</p>
+            </div>
+
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/70 space-y-1">
+              <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Nodal Grievance Lead</span>
+              <p className="font-mono text-[#1E56E3] font-bold text-[11.5px]">logistic@securekaro.in</p>
+              <p className="text-[11px] text-slate-500">Turnaround: 24–48 business hours</p>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-slate-500">
+            Under Chapter III of the DPDP Act 2023, you have statutory rights to access your data, rectify incomplete information, nominate a proxy, or request permanent erasure of your personal data.
+          </p>
+
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-between flex-wrap gap-3">
+            <span className="text-[11px] font-semibold text-slate-500">
+              Need to permanently delete your account &amp; erase all personal data?
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteError('');
+                setShowDeleteModal(true);
+              }}
+              className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Request Account &amp; Data Erasure</span>
+            </button>
+          </div>
+        </div>
       </form>
+
+      {/* ── DPDP ACT ACCOUNT & DATA ERASURE MODAL ── */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl max-w-md w-full border border-slate-100 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto font-bold shadow-sm">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="font-extrabold text-slate-900 text-lg">
+                Permanently Erase Account &amp; Data
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Under Section 12(3) of the Digital Personal Data Protection Act, 2023, this will permanently anonymize your name, phone, address, and bank details.
+              </p>
+            </div>
+
+            <div className="bg-amber-50 p-3.5 rounded-xl border border-amber-200 text-amber-900 text-xs font-medium space-y-1">
+              <p className="font-bold flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>Prerequisites for Account Deletion:</span>
+              </p>
+              <ul className="list-disc pl-4 text-[11px] space-y-0.5 text-amber-800">
+                <li>No active courier shipments currently in transit.</li>
+                <li>All settled wallet funds must be withdrawn.</li>
+              </ul>
+            </div>
+
+            {deleteError && (
+              <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold text-center border border-rose-200">
+                {deleteError}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Reason for leaving <span className="text-slate-400 font-normal">(Optional)</span>
+              </label>
+              <textarea
+                rows="2"
+                placeholder="Let us know why you are closing your account..."
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              />
+            </div>
+
+            <div className="flex gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleteLoading}
+                onClick={handleDeleteAccount}
+                className="flex-1 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/20 transition flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+              >
+                {deleteLoading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                <span>Erase My Data</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── UNIFIED SECURITY VERIFICATION MODAL ── */}
       {showSecurityModal && (
