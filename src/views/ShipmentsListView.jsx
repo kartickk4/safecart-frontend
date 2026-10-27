@@ -118,16 +118,16 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
       </div>
 
       {/* Main Container Card */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Filter Tabs & Search */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100/80 pb-4">
           {/* Filter Pills */}
-          <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 text-xs font-semibold text-slate-600 overflow-x-auto no-scrollbar">
+          <div className="bg-slate-100/70 backdrop-blur-md p-1 rounded-xl flex items-center gap-1 text-xs font-semibold text-slate-600 overflow-x-auto no-scrollbar border border-white/60">
             {['All', 'Held', 'Released', 'Returns'].map(tab => (
               <button
                 key={tab}
                 onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
-                className={`px-3.5 py-1.5 rounded-lg whitespace-nowrap transition text-xs ${activeTab === tab ? 'bg-white text-[#1E56E3] shadow-xs font-bold' : 'hover:text-slate-900'}`}
+                className={`px-3.5 py-1.5 rounded-lg whitespace-nowrap transition text-xs ${activeTab === tab ? 'bg-white/95 text-[#1E56E3] shadow-xs font-bold' : 'hover:text-slate-900'}`}
               >
                 {tab}
               </button>
@@ -142,7 +142,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
               placeholder="Search by ID, name, route..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+              className="w-full pl-9 pr-4 py-2 glass-input rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none transition"
             />
           </div>
         </div>
@@ -166,7 +166,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
               <div
                 key={item.shipmentId || idx}
                 onClick={() => onSelectShipment(item)}
-                className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs hover:border-blue-400 hover:shadow-md transition active:scale-[0.99] cursor-pointer space-y-2.5"
+                className="p-4 rounded-2xl glass-card hover:border-blue-400 hover:shadow-md transition active:scale-[0.99] cursor-pointer space-y-2.5"
               >
                 {/* Line 1: ID & Escrow Status */}
                 <div className="flex items-center justify-between gap-2">

@@ -427,11 +427,11 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
       {/* 4 PRIMARY EXECUTIVE KPI CARDS (2x2 on Mobile, 4x1 on Desktop) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
         {/* KPI 1: Active Escrow in Pipeline */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-100 transition pointer-events-none"></div>
+        <div className="glass-card p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/70 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">In Escrow</span>
-            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold shrink-0">
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-blue-50/90 text-[#1E56E3] flex items-center justify-center font-bold shrink-0 shadow-2xs">
               <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
@@ -440,7 +440,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
               ₹{analytics.activeEscrowHeld.toLocaleString('en-IN')}
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
-              <span className="text-blue-600 font-bold bg-blue-50 px-1 py-0.2 rounded">
+              <span className="text-blue-600 font-bold bg-blue-50/80 px-1 py-0.2 rounded">
                 {analytics.activeEscrowHeldCount} orders
               </span>
               <span className="hidden sm:inline">in pipeline</span>
@@ -449,11 +449,11 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         </div>
 
         {/* KPI 2: Realized / Payout Revenue */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition group relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-emerald-100 transition pointer-events-none"></div>
+        <div className="glass-card p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl hover:border-emerald-300 transition group relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50/70 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-emerald-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Settled</span>
-            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-emerald-50/90 text-emerald-600 flex items-center justify-center font-bold shrink-0 shadow-2xs">
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
@@ -462,7 +462,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
               ₹{analytics.totalReleasedRevenue.toLocaleString('en-IN')}
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
-              <span className="text-emerald-700 font-bold bg-emerald-50 px-1 py-0.2 rounded">
+              <span className="text-emerald-700 font-bold bg-emerald-50/80 px-1 py-0.2 rounded">
                 {analytics.releasedCount} payouts
               </span>
               <span className="hidden sm:inline">in bank</span>
@@ -471,11 +471,11 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         </div>
 
         {/* KPI 3: Fulfillment Success Rate */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition group relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-indigo-100 transition pointer-events-none"></div>
+        <div className="glass-card p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl hover:border-indigo-300 transition group relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50/70 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-indigo-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Fulfillment</span>
-            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shrink-0">
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-indigo-50/90 text-indigo-600 flex items-center justify-center font-bold shrink-0 shadow-2xs">
               <Target className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
@@ -484,7 +484,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
               {analytics.deliverySuccessRate}%
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
-              <span className="text-indigo-700 font-bold bg-indigo-50 px-1 py-0.2 rounded">
+              <span className="text-indigo-700 font-bold bg-indigo-50/80 px-1 py-0.2 rounded">
                 {analytics.totalOrders} orders
               </span>
               <span className="hidden sm:inline">delivered</span>
@@ -493,11 +493,11 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         </div>
 
         {/* KPI 4: Pending Buyer Confirmations */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition group relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-amber-100 transition pointer-events-none"></div>
+        <div className="glass-card p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl hover:border-amber-300 transition group relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50/70 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-amber-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Sign-Off Due</span>
-            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shrink-0">
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-amber-50/90 text-amber-600 flex items-center justify-center font-bold shrink-0 shadow-2xs">
               <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
@@ -506,7 +506,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
               ₹{analytics.pendingSignoffAmount.toLocaleString('en-IN')}
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
-              <span className="text-amber-700 font-bold bg-amber-50 px-1 py-0.2 rounded">
+              <span className="text-amber-700 font-bold bg-amber-50/80 px-1 py-0.2 rounded">
                 {analytics.pendingSignoffCount} pending
               </span>
               <span className="hidden sm:inline">auto-release</span>
@@ -517,8 +517,8 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
 
       {/* SECONDARY OPERATIONAL EFFICIENCY METRICS (4 Micro Cards) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-blue-600 font-bold shadow-2xs">
+        <div className="p-4 rounded-2xl glass-subtle flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/90 border border-slate-200/80 flex items-center justify-center text-blue-600 font-bold shadow-2xs">
             <Truck className="w-4 h-4" />
           </div>
           <div>
@@ -527,8 +527,8 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-amber-600 font-bold shadow-2xs">
+        <div className="p-4 rounded-2xl glass-subtle flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/90 border border-slate-200/80 flex items-center justify-center text-amber-600 font-bold shadow-2xs">
             <RotateCcw className="w-4 h-4" />
           </div>
           <div>
@@ -537,8 +537,8 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-bold shadow-2xs text-amber-600">
+        <div className="p-4 rounded-2xl glass-subtle flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/90 border border-slate-200/80 flex items-center justify-center font-bold shadow-2xs text-amber-600">
             <Truck className="w-4 h-4" />
           </div>
           <div>
@@ -549,8 +549,8 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-600 font-bold shadow-2xs">
+        <div className="p-4 rounded-2xl glass-subtle flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/90 border border-slate-200/80 flex items-center justify-center text-emerald-600 font-bold shadow-2xs">
             <Percent className="w-4 h-4" />
           </div>
           <div>
@@ -563,7 +563,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
       {/* PERFORMANCE VISUALIZATION DECK (Charts & Distribution) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* MAIN CHART: Escrow & Realized Cash Flow Trend (Span 2) */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-2 glass-card p-6 rounded-3xl flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <div className="flex items-center gap-2">
@@ -616,7 +616,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         </div>
 
         {/* STATUS FUNNEL & ORDER HEALTH (Span 1) */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div className="glass-card p-6 rounded-3xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
               <h3 className="font-extrabold text-slate-900 text-base">Escrow Pipeline Split</h3>

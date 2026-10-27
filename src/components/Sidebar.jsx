@@ -142,10 +142,10 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
   ];
 
   return (
-    <aside className="hidden md:flex w-64 bg-white/95 backdrop-blur-xl border-r border-slate-200/80 flex-col h-screen sticky top-0 z-30 select-none shadow-[2px_0_15px_-3px_rgba(0,0,0,0.03)]">
+    <aside className="hidden md:flex w-64 glass-sidebar flex-col h-screen sticky top-0 z-30 select-none">
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Modern Brand Header */}
-        <div className="p-5 border-b border-slate-100/90">
+        <div className="p-5 border-b border-slate-200/60">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#1E56E3] via-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25 border border-blue-400/20">
               <ShieldCheck className="w-6 h-6" />
@@ -229,8 +229,8 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
       </div>
  
        {/* User Profile Badge at bottom */}
-       <div className="p-3.5 border-t border-slate-100 bg-slate-50/50">
-         <div className="flex items-center justify-between bg-white p-2.5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition">
+       <div className="p-3.5 border-t border-slate-200/60 bg-white/40 backdrop-blur-md">
+         <div className="flex items-center justify-between glass-card p-2.5 rounded-2xl">
            <div className="flex items-center gap-2.5 min-w-0">
              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs shrink-0 relative">
                {userInitials}
