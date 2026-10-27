@@ -533,12 +533,12 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
-                YouPI Gateway Session Active
+                Payment Gateway Session Active
               </span>
               <span className="text-xs font-mono font-bold text-blue-200">₹{orderAmount}</span>
             </div>
             <p className="text-xs text-blue-100/90 leading-relaxed">
-              Complete your payment in the opened YouPI checkout tab. Your funds will automatically lock in escrow once confirmed.
+              Complete your payment in the opened checkout tab. Your parcel delivery booking will be confirmed automatically once payment is received.
             </p>
             <div className="flex flex-col sm:flex-row gap-2 pt-1">
               {youpiCheckoutUrl && (
