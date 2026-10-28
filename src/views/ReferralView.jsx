@@ -56,9 +56,12 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
   }, []);
 
   const referralCode = stats?.referralCode || user?.referralCode || 'SK-GROWTH';
-  const referralLink = (stats?.referralLink && !stats.referralLink.includes('undefined')) 
-    ? stats.referralLink 
-    : `${window.location.origin}/signup?ref=${referralCode}`;
+  const liveOrigin = (typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1'))
+    ? window.location.origin
+    : (stats?.referralLink && !stats.referralLink.includes('localhost') && !stats.referralLink.includes('undefined')
+        ? new URL(stats.referralLink).origin
+        : 'https://securekaro.in');
+  const referralLink = `${liveOrigin}/signup?ref=${referralCode}`;
   const totalReferred = Number(stats?.totalReferred || 0);
   const earnedReferrals = Number(stats?.earnedReferrals || 0);
   const pendingReferrals = Number(stats?.pendingReferrals || Math.max(0, totalReferred - earnedReferrals));
