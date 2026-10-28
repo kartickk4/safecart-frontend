@@ -1277,7 +1277,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              If a merchant friend or supplier invited you, enter their unique invite code (e.g. <span className="font-mono font-bold text-slate-900">SK-7L7RR</span>) to link your accounts. When your first order is safely delivered, they unlock ₹40 Pro Credit!
+              If a merchant friend or supplier invited you, enter their unique invite code (e.g. <span className="font-mono font-bold text-slate-900">SK-7L7RR</span>) to link your accounts. When your first order is safely delivered, they unlock ₹30 Cash Credit!
             </p>
 
             {referralModalCode && !referralError && (

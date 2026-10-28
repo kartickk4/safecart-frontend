@@ -62,7 +62,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
   const totalReferred = Number(stats?.totalReferred || 0);
   const earnedReferrals = Number(stats?.earnedReferrals || 0);
   const pendingReferrals = Number(stats?.pendingReferrals || Math.max(0, totalReferred - earnedReferrals));
-  const totalEarnedCash = earnedReferrals * 40;
+  const totalEarnedCash = earnedReferrals * 30;
   const currentWalletBalance = Number(stats?.walletBalance ?? user?.walletBalance ?? 0);
 
   const handleCopyCode = async () => {
@@ -117,12 +117,12 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
 
   const faqs = [
     {
-      q: 'How does the ₹40 referral reward work?',
-      a: 'Share your referral code or direct link with any merchant, supplier, or buyer. When they sign up and their first shipment is marked as successfully delivered, ₹40 real cash is immediately credited into your SecureKaro Wallet.'
+      q: 'How does the ₹30 referral reward work?',
+      a: 'Share your referral code or direct link with any merchant, supplier, or buyer. When they sign up and their first shipment is marked as successfully delivered, ₹30 real cash is immediately credited into your SecureKaro Wallet.'
     },
     {
       q: 'Can I withdraw my referral earnings to my Bank Account or UPI?',
-      a: 'Yes, absolutely! The ₹40 cash reward is deposited directly to your withdrawable Wallet balance. You can withdraw it instantly to your registered Bank Account or UPI ID via the Wallet section.'
+      a: 'Yes, absolutely! The ₹30 cash reward is deposited directly to your withdrawable Wallet balance. You can withdraw it instantly to your registered Bank Account or UPI ID via the Wallet section.'
     },
     {
       q: 'Can I use my referral reward cash to pay for booking shipments?',
@@ -130,11 +130,11 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
     },
     {
       q: 'Is there any limit to how many merchants I can invite?',
-      a: 'There is zero limit! You can invite as many suppliers, ecommerce merchants, and WhatsApp/Instagram sellers as you want. You earn ₹40 for every single friend who completes their first delivery.'
+      a: 'There is zero limit! You can invite as many suppliers, ecommerce merchants, and WhatsApp/Instagram sellers as you want. You earn ₹30 for every single friend who completes their first delivery.'
     },
     {
       q: 'When do my referred sellers need to complete their first shipment?',
-      a: 'There is no expiration! Once your friend joins using your referral link or code, your ₹40 reward is unlocked the moment their first shipment reaches confirmed delivery.'
+      a: 'There is no expiration! Once your friend joins using your referral link or code, your ₹30 reward is unlocked the moment their first shipment reaches confirmed delivery.'
     }
   ];
 
@@ -160,19 +160,19 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-snug text-slate-900">
               Give Safety,{' '}
               <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-[#1E56E3] bg-clip-text text-transparent">
-                Earn ₹40 Wallet Cash
+                Earn ₹30 Wallet Cash
               </span>
             </h1>
 
             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed max-w-xl font-medium">
-              Invite merchant suppliers & buyers to SecureKaro. When their first shipment is safely delivered, you instantly receive <strong className="text-slate-900 font-bold">₹40 Real Cash</strong> deposited directly into your Wallet balance — withdrawable to your Bank/UPI or usable to pay courier shipping fees.
+              Invite merchant suppliers & buyers to SecureKaro. When their first shipment is safely delivered, you instantly receive <strong className="text-slate-900 font-bold">₹30 Real Cash</strong> deposited directly into your Wallet balance — withdrawable to your Bank/UPI or usable to pay courier shipping fees.
             </p>
 
             {/* Quick benefit tags */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/90 border border-slate-200/90 text-xs font-semibold text-slate-700 shadow-2xs">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>₹40 cash per delivered order</span>
+                <span>₹30 cash per delivered order</span>
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/90 border border-slate-200/90 text-xs font-semibold text-slate-700 shadow-2xs">
                 <ArrowUpRight className="w-3.5 h-3.5 text-blue-600" />
@@ -202,7 +202,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
                 </div>
 
                 <div className="text-right">
-                  <span className="text-xl sm:text-2xl font-black text-slate-900 font-mono">₹40</span>
+                  <span className="text-xl sm:text-2xl font-black text-slate-900 font-mono">₹30</span>
                   <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider">Per Friend</span>
                 </div>
               </div>
@@ -416,9 +416,9 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
             <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-base shadow-md shadow-emerald-500/20">
               3
             </div>
-            <h3 className="text-sm font-extrabold text-slate-900">Instant ₹40 Wallet Cash</h3>
+            <h3 className="text-sm font-extrabold text-slate-900">Instant ₹30 Wallet Cash</h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Upon confirmed delivery at destination, ₹40 is instantly added to your withdrawable Wallet balance.
+              Upon confirmed delivery at destination, ₹30 is instantly added to your withdrawable Wallet balance.
             </p>
             <div className="pt-2 text-[11px] font-bold text-emerald-600 flex items-center gap-1">
               <span>Withdraw to Bank or Pay Shipping</span>
@@ -459,10 +459,10 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
               className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
             />
             <div className="flex justify-between text-[10px] text-slate-400 font-bold">
-              <span>1 (₹40)</span>
-              <span>5 (₹200)</span>
-              <span>15 (₹600)</span>
-              <span>25 (₹1,000)</span>
+              <span>1 (₹30)</span>
+              <span>5 (₹150)</span>
+              <span>15 (₹450)</span>
+              <span>25 (₹750)</span>
             </div>
           </div>
 
@@ -471,13 +471,13 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
             <div className="grid grid-cols-2 gap-4 divide-x divide-slate-200">
               <div>
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Estimated Cash Earned</span>
-                <span className="text-3xl font-black text-emerald-600 font-mono">₹{calculatorCount * 40}</span>
-                <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">₹40 × {calculatorCount} orders</span>
+                <span className="text-3xl font-black text-emerald-600 font-mono">₹{calculatorCount * 30}</span>
+                <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">₹30 × {calculatorCount} orders</span>
               </div>
               <div className="pl-4">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Shipping Freight Offset</span>
                 <span className="text-3xl font-black text-indigo-600 font-mono">
-                  ~{Math.floor((calculatorCount * 40) / 60)} Parcels
+                  ~{Math.floor((calculatorCount * 30) / 60)} Parcels
                 </span>
                 <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
                   Free shipping covers or direct cash
@@ -502,7 +502,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
               <span>YOUR WALLET HUB</span>
             </div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight">Your Referral Wallet Cash</h2>
-            <p className="text-xs text-slate-500">Every ₹40 earned is added directly to your withdrawable balance with 0 lock-in.</p>
+            <p className="text-xs text-slate-500">Every ₹30 earned is added directly to your withdrawable balance with 0 lock-in.</p>
           </div>
 
           {/* Balance Showcase Card */}
@@ -589,9 +589,9 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
               {earnedReferrals < 3 && <span className="text-xs font-bold text-[#1E56E3]">Current Tier</span>}
             </div>
             <h4 className="text-base font-extrabold text-slate-900">Starter Advocate</h4>
-            <p className="text-xs text-slate-500 mt-1">Earn ₹40 cash on every verified merchant delivery.</p>
+            <p className="text-xs text-slate-500 mt-1">Earn ₹30 cash on every verified merchant delivery.</p>
             <div className="mt-4 pt-4 border-t border-slate-200/60 text-xs font-bold text-slate-700">
-              Perk: ₹40 Wallet Cash per order
+              Perk: ₹30 Wallet Cash per order
             </div>
           </div>
 

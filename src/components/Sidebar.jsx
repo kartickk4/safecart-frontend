@@ -97,7 +97,7 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
           color: 'text-amber-500',
           customBadge: (
             <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-xs">
-              ₹40 FREE
+              ₹30 FREE
             </span>
           )
         }
