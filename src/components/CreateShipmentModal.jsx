@@ -310,27 +310,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         setError('Phone verification required before your first shipment. Please verify your mobile number above.');
         return;
       }
-      // Fallback response for offline resilience
-      const mockResult = {
-        _id: `mock-${Date.now()}`,
-        shipmentId: `PSF-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-        receiverName: receiverName || 'Priya Nair',
-        receiverPhone: receiverPhone || '+919876543210',
-        receiverAddress,
-        receiverPincode,
-        description: description || 'Parcel Item',
-        amount: Number(amount) || 3420,
-        city: cityRoute || 'Mumbai → Bengaluru',
-        carrierSlug: selectedQuote.slug,
-        assignedCarrierName: selectedQuote.name,
-        selectedCarrierRate: selectedQuote.price,
-        awbCode: `TC-${selectedQuote.slug}-${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-        status: fundImmediately ? 'Pending Pickup' : 'Awaiting Payment',
-        returnAllowed,
-        shippingLabelUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
-      };
-      onCreated(mockResult);
-      onClose();
+      setError(err.response?.data?.error || err.message || 'Failed to create shipment. Please verify details and try again.');
     } finally {
       setLoading(false);
     }

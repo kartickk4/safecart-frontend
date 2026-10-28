@@ -600,20 +600,6 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
     onAuthSuccess(updatedUser, pendingIsNew);
   };
 
-  const handleQuickDemo = () => {
-    const mockUser = {
-      _id: 'demo-user-123',
-      fullName: 'Marcus Rivera',
-      email: 'testuser@example.com',
-      phone: '+919876543210',
-      role: 'Supplier',
-      activeRole: 'Supplier',
-      escrowBalance: 12450.00
-    };
-    localStorage.setItem('securekaro_token', 'demo_jwt_token_123');
-    onAuthSuccess(mockUser);
-  };
-
   return (
     <div className="min-h-screen w-full flex bg-[#F7F9FC]">
       {/* LEFT HERO COLUMN - ROYAL BLUE SECUREKARO BRANDING */}
