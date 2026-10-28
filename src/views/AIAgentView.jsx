@@ -250,11 +250,11 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
                   </div>
                   <div>
                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">WhatsApp & Phone Desk</div>
-                    <div className="text-xs font-black text-slate-900 font-mono">+91 98765 43210</div>
+                    <div className="text-xs font-black text-slate-900 font-mono">+91 70442 55626</div>
                   </div>
                 </div>
                 <a
-                  href="https://wa.me/919876543210?text=Hi%20SecureKaro%20Support,%20I%20need%20assistance%20with%20my%20shipment"
+                  href="https://wa.me/917044255626?text=Hi%20SecureKaro%20Support,%20I%20need%20assistance%20with%20my%20shipment"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-xs transition active:scale-95 cursor-pointer"
@@ -265,7 +265,7 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
               </div>
 
               <div className="text-[11px] text-slate-500 flex items-center justify-between px-1 pt-1 font-medium">
-                <span>Email: support@securekaro.app</span>
+                <span>Email: support@securekaro.in</span>
                 <span className="text-indigo-600 font-bold">Fast Escalation</span>
               </div>
             </div>

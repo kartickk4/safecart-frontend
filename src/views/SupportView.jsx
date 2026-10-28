@@ -116,7 +116,7 @@ export default function SupportView() {
           </div>
           <div>
             <h3 className="font-extrabold text-slate-900 text-sm">24/7 Email Support</h3>
-            <p className="text-xs text-blue-600 font-bold mt-0.5">support@securekaro.app</p>
+            <p className="text-xs text-blue-600 font-bold mt-0.5">support@securekaro.in</p>
             <p className="text-[11px] text-slate-500 mt-1">Priority ticket responses delivered directly to your inbox.</p>
           </div>
         </div>
@@ -126,9 +126,16 @@ export default function SupportView() {
             <Phone className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-extrabold text-slate-900 text-sm">Toll-Free Hotline</h3>
-            <p className="text-xs text-emerald-700 font-extrabold mt-0.5">1800-123-SAFE (7233)</p>
-            <p className="text-[11px] text-slate-500 mt-1">Mon - Sat: 9:00 AM to 9:00 PM IST hotline support.</p>
+            <h3 className="font-extrabold text-slate-900 text-sm">WhatsApp & Hotline</h3>
+            <a 
+              href="https://wa.me/917044255626?text=Hi%20SecureKaro%20Support" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-xs text-emerald-700 font-extrabold mt-0.5 hover:underline block font-mono"
+            >
+              +91 70442 55626
+            </a>
+            <p className="text-[11px] text-slate-500 mt-1">Official WhatsApp Business & Customer Hotline.</p>
           </div>
         </div>
 
