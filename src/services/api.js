@@ -274,4 +274,21 @@ export const adminAPI = {
   exportDataCSV: (type) => api.get(`/admin/export/${type}?format=csv`, { responseType: 'blob' }),
 };
 
+export const uploadAPI = {
+  uploadFile: (file, folder = 'parcels') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+    return api.post('/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  uploadBase64: (dataUri, folder = 'parcels') => {
+    return api.post('/upload', { dataUri, folder });
+  },
+};
+
 export default api;
+

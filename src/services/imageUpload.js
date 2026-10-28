@@ -1,27 +1,34 @@
 /**
  * imageUpload.js
- * Uploads a File/Blob to ImgBB (free CDN) and returns a permanent public URL.
- * Falls back to a base64 URL (in-memory only) if ImgBB upload fails.
- *
- * ImgBB free API: https://api.imgbb.com/
- * - No account required for testing; use the free API key below.
- * - 32MB file size limit, no expiry by default.
+ * Uploads a File/Blob directly to SecureKaro Backend (backed by Cloudflare R2 object storage).
+ * Returns a permanent, fast CDN URL.
+ * Falls back to an optimized base64 data URL if network/service is temporarily unavailable.
  */
 
-// Free ImgBB API key — set VITE_IMGBB_API_KEY in your .env.local
-// Get yours free at: https://api.imgbb.com/ (requires free account)
-const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || '';
+import { uploadAPI } from './api';
+
+/**
+ * Converts a File or Blob to a base64 Data URL (data:image/...;base64,...)
+ */
+export const fileToDataUrl = (file) => {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve('');
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target?.result || '');
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 /**
  * Converts a File or Blob to a base64 string (without the data: prefix).
  */
-const fileToBase64 = (file) => {
+export const fileToBase64 = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result;
       if (!result) return reject(new Error('FileReader returned empty'));
-      // Remove the "data:image/...;base64," prefix
       const base64 = result.toString().split(',')[1];
       resolve(base64);
     };
@@ -33,7 +40,7 @@ const fileToBase64 = (file) => {
 /**
  * Compresses an image file client-side to ensure fast uploads and manageable payload size.
  */
-const compressImageFile = (file, maxWidth = 1600, quality = 0.85) => {
+export const compressImageFile = (file, maxWidth = 1600, quality = 0.85) => {
   return new Promise((resolve) => {
     if (!file || !file.type || !file.type.startsWith('image/') || file.type.includes('svg')) {
       fileToDataUrl(file).then(resolve).catch(() => resolve(''));
@@ -72,56 +79,34 @@ const compressImageFile = (file, maxWidth = 1600, quality = 0.85) => {
 };
 
 /**
- * Upload an image file to ImgBB and return the permanent URL.
- * Falls back to an optimized base64 data URL on failure (works for display and backend storage).
+ * Upload an image file to SecureKaro Cloudflare R2 and return the permanent URL.
+ * Falls back to an optimized base64 data URL on failure.
  *
  * @param {File} file - The image file to upload
- * @param {string} [name] - Optional name for the image
+ * @param {string} [name] - Optional name / folder context for the image
  * @returns {Promise<{ url: string, isHosted: boolean }>}
  */
 export const uploadImageToHost = async (file, name = 'parcel-photo') => {
-  // No API key configured — fall back to compressed base64 immediately
-  if (!IMGBB_API_KEY) {
-    try {
-      const dataUrl = await compressImageFile(file);
-      return { url: dataUrl, isHosted: false };
-    } catch {
-      return { url: '', isHosted: false };
+  const folder = name.startsWith('defect') ? 'defects' : 'parcels';
+
+  // 1. Primary: Direct upload to SecureKaro Cloudflare R2
+  try {
+    const res = await uploadAPI.uploadFile(file, folder);
+    if (res?.data?.url) {
+      return {
+        url: res.data.url,
+        isHosted: true
+      };
     }
+  } catch (err) {
+    console.warn('[imageUpload] Cloudflare R2 direct upload unavailable, falling back to client compression:', err?.response?.data?.error || err.message);
   }
 
+  // 2. Secondary Fallback: Compressed client-side base64
   try {
-    const base64 = await fileToBase64(file);
-
-    const formData = new FormData();
-    formData.append('key', IMGBB_API_KEY);
-    formData.append('image', base64);
-    formData.append('name', name);
-
-    const response = await fetch('https://api.imgbb.com/1/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`ImgBB returned ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (data.success && data.data?.url) {
-      return { url: data.data.display_url || data.data.url, isHosted: true };
-    }
-
-    throw new Error('ImgBB upload succeeded but no URL in response');
-  } catch (err) {
-    console.warn('[imageUpload] ImgBB upload failed, falling back to base64:', err.message);
-    // Fallback: return base64 data URL (for in-session display only)
-    try {
-      const dataUrl = await fileToDataUrl(file);
-      return { url: dataUrl, isHosted: false };
-    } catch {
-      return { url: '', isHosted: false };
-    }
+    const dataUrl = await compressImageFile(file);
+    return { url: dataUrl, isHosted: false };
+  } catch {
+    return { url: '', isHosted: false };
   }
 };
