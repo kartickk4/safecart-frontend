@@ -277,10 +277,12 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-emerald-950 flex items-center gap-1.5">
-                    <span>🎉 ₹{cashbackInfo?.amount || 5} Instant Cashback Credited!</span>
+                    <span>🎉 ₹{cashbackInfo?.amount || (cashbackInfo?.isFirstOrder ? 50 : 5)} {cashbackInfo?.isFirstOrder || cashbackInfo?.amount >= 50 ? 'Welcome Cashback' : 'Instant Cashback'} Credited!</span>
                   </h4>
                   <p className="text-[10px] text-emerald-800">
-                    Payment link reward added to your SecureKaro Wallet
+                    {cashbackInfo?.isFirstOrder || cashbackInfo?.amount >= 50
+                      ? 'Special new buyer welcome reward added directly to your SecureKaro Wallet'
+                      : 'Payment link reward added to your SecureKaro Wallet'}
                   </p>
                 </div>
               </div>
@@ -338,21 +340,21 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
           </div>
         )}
 
-        {/* Payment Link Cashback Incentive Banner */}
-        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 via-emerald-50 to-blue-50 border border-emerald-200/80 flex items-start gap-3 shadow-xs">
-          <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-600/20 font-black text-sm">
-            ₹5
-          </div>
-          <div className="space-y-0.5 text-xs text-left">
-            <div className="flex items-center gap-1.5 font-black text-slate-900">
-              <span>₹5 Instant Cashback for Paying Online</span>
-              <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.2 rounded-full border border-emerald-300">Active</span>
+          {/* Payment Link & Welcome Cashback Incentive Banner */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-blue-500/10 border border-emerald-300 flex items-start gap-3.5 shadow-xs">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-orange-500/20 font-black text-sm">
+              ₹50
             </div>
-            <p className="text-[11px] text-slate-600 leading-snug">
-              Complete payment now to earn ₹5 in your SecureKaro Wallet + scan parcel QR on delivery to get ₹2 confirmation cashback (₹1 to ₹10 for promotional events)!
-            </p>
+            <div className="space-y-1 text-xs text-left">
+              <div className="flex items-center gap-2 font-black text-slate-900 flex-wrap">
+                <span>🎁 New Buyer Welcome Offer: ₹50 First-Order Cashback</span>
+                <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full border border-emerald-300">New Buyer Special</span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-snug">
+                Pay online now to claim <strong className="text-slate-900 font-bold">₹50 Welcome Cashback</strong> on your 1st order directly in your SecureKaro Wallet! (Regular orders receive ₹5 online payment cashback + ₹2 on QR doorstep confirmation).
+              </p>
+            </div>
           </div>
-        </div>
 
         {/* Order Summary Card */}
         <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2.5 text-xs">
