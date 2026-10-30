@@ -244,27 +244,17 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
     setGoogleProfileLoading(true);
 
     try {
-      // Dispatch SMS OTP code via Firebase or Backend Service
+      // Dispatch SMS OTP code directly via Backend Service (Fast2SMS)
+      window.googleConfirmationResult = null;
       try {
-        setupRecaptcha();
-        const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
-        window.googleConfirmationResult = confirmationResult;
-        setGoogleDebugOtp('');
+        const otpRes = await authAPI.sendOtp({ phone: formattedPhone });
+        if (otpRes.data?.debugCode) {
+          setGoogleDebugOtp(otpRes.data.debugCode);
+        }
         setGoogleOtpCode('');
         setGoogleStep(2);
-      } catch (fbErr) {
-        console.warn('Firebase SMS Dispatch notice, falling back to backend OTP service:', fbErr);
-        window.googleConfirmationResult = null;
-        try {
-          const otpRes = await authAPI.sendOtp({ phone: formattedPhone });
-          if (otpRes.data?.debugCode) {
-            setGoogleDebugOtp(otpRes.data.debugCode);
-          }
-          setGoogleOtpCode('');
-          setGoogleStep(2);
-        } catch (bkErr) {
-          setGoogleProfileErr(bkErr.response?.data?.error || 'Failed to dispatch SMS verification code. Please check phone number.');
-        }
+      } catch (bkErr) {
+        setGoogleProfileErr(bkErr.response?.data?.error || 'Failed to dispatch SMS verification code. Please check phone number.');
       }
     } catch (err) {
       setGoogleProfileErr(err.message || 'Failed to send SMS verification code.');
@@ -462,31 +452,20 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
           setLoading(false);
           return;
         }
-        // Dispatch OTP code and open verification modal
+        // Dispatch OTP code directly via Backend Service (Fast2SMS)
         const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
+        window.confirmationResult = null;
         try {
-          setupRecaptcha();
-          const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
-          window.confirmationResult = confirmationResult;
-          setSignUpDebugOtp('');
+          const otpRes = await authAPI.sendOtp({ phone: formattedPhone, email, role: selectedRole });
+          if (otpRes.data?.debugCode) {
+            setSignUpDebugOtp(otpRes.data.debugCode);
+          }
           setSignUpOtp('');
           setShowSignUpOtpModal(true);
           setLoading(false);
-        } catch (fbErr) {
-          console.warn('Firebase SMS Dispatch notice, using OTP service:', fbErr);
-          window.confirmationResult = null;
-          try {
-            const otpRes = await authAPI.sendOtp({ phone: formattedPhone, email, role: selectedRole });
-            if (otpRes.data?.debugCode) {
-              setSignUpDebugOtp(otpRes.data.debugCode);
-            }
-            setSignUpOtp('');
-            setShowSignUpOtpModal(true);
-            setLoading(false);
-          } catch (bkErr) {
-            setError(bkErr.response?.data?.error || 'Failed to dispatch OTP code. Please check your phone number.');
-            setLoading(false);
-          }
+        } catch (bkErr) {
+          setError(bkErr.response?.data?.error || 'Failed to dispatch OTP code. Please check your phone number.');
+          setLoading(false);
         }
         return;
 
