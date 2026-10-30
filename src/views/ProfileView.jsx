@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building, ShieldCheck, Mail, Phone, Lock, Save, CheckCircle2, RefreshCw, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles, Zap, MapPin, Edit3, Navigation, Check, AlertCircle, Gift, Copy, ExternalLink, Users, AlertTriangle, Send, Trash2 } from 'lucide-react';
+import { User, Building, ShieldCheck, Mail, Phone, Lock, Save, CheckCircle2, RefreshCw, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles, Zap, MapPin, Edit3, Navigation, Check, AlertCircle, Gift, Copy, ExternalLink, Users, AlertTriangle, Send, Trash2, LogOut } from 'lucide-react';
 
 import { profileAPI, authAPI } from '../services/api';
 
-export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateUser }) {
+export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateUser, onSignOut }) {
   const isSupplier = currentRole ? currentRole === 'Supplier' : (user?.role === 'Supplier' || user?.activeRole === 'Supplier');
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -383,12 +383,25 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
 
   return (
     <div className="px-4 py-5 md:p-8 max-w-4xl mx-auto space-y-5 md:space-y-8">
-      <div>
-        <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 flex items-center gap-2">
-          <User className="w-5 h-5 md:w-6 md:h-6 text-[#1E56E3]" />
-          Account & Payout Profile
-        </h1>
-        <p className="text-xs text-slate-500 mt-1">Manage your identity details and bank account for automated order payouts.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+            <User className="w-5 h-5 md:w-6 md:h-6 text-[#1E56E3]" />
+            Account & Payout Profile
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">Manage your identity details and bank account for automated order payouts.</p>
+        </div>
+        {onSignOut && (
+          <button
+            type="button"
+            onClick={onSignOut}
+            className="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200/80 flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-xs"
+            title="Sign Out of SecureKaro"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out</span>
+          </button>
+        )}
       </div>
 
       {msg && (
@@ -986,6 +999,31 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
             </button>
           </div>
         </div>
+
+        {/* ── ACCOUNT SESSION / SIGN OUT CARD ── */}
+        {onSignOut && (
+          <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold shrink-0">
+                <LogOut className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-slate-900 text-sm">Account Session</h4>
+                <p className="text-xs text-slate-500 font-medium">
+                  Signed in as <span className="font-semibold text-slate-700">{user?.fullName || user?.phone || user?.email || 'User'}</span>
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onSignOut}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200/80 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 shadow-xs"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out / Log Out</span>
+            </button>
+          </div>
+        )}
       </form>
 
       {/* ── DPDP ACT ACCOUNT & DATA ERASURE MODAL ── */}

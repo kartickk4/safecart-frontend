@@ -599,6 +599,7 @@ export default function App() {
             onOpenAiAgent={() => setCurrentTab('ai-agent')}
             onOpenAdmin={() => setCurrentTab('admin')}
             onOpenWallet={() => setCurrentTab('wallet')}
+            onSignOut={handleSignOut}
           />
         )}
 
@@ -756,6 +757,7 @@ export default function App() {
               currentRole={isSupplier ? 'Supplier' : 'Receiver'}
               onSwitchRole={handleSwitchRole}
               onUpdateUser={(updated) => setUser(updated)}
+              onSignOut={handleSignOut}
             />
           )}
 

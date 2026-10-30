@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { RefreshCw, Download, Plus, Truck, ShoppingBag, ArrowLeftRight, CheckCircle2, Crown, Sparkles, ShieldCheck, Wallet, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Download, Plus, Truck, ShoppingBag, ArrowLeftRight, CheckCircle2, Crown, Sparkles, ShieldCheck, Wallet, AlertTriangle, LogOut } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
 
-export default function Header({ user, currentRole, onSwitchRole, onRefresh, openNewShipmentModal, onOpenAiAgent, onOpenAdmin, onOpenWallet }) {
+export default function Header({ user, currentRole, onSwitchRole, onRefresh, openNewShipmentModal, onOpenAiAgent, onOpenAdmin, onOpenWallet, onSignOut }) {
   const [exporting, setExporting] = useState(false);
 
   const isSupplier = (currentRole ? currentRole === 'Supplier' : (user?.role === 'Supplier' || user?.activeRole === 'Supplier'));
@@ -133,6 +133,18 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
               title="Admin Console"
             >
               <ShieldCheck className="w-4 h-4 text-rose-500" />
+            </button>
+          )}
+
+          {/* Quick Sign Out on Mobile */}
+          {onSignOut && (
+            <button
+              type="button"
+              onClick={onSignOut}
+              className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/80 text-[10px] font-bold flex items-center justify-center transition active:scale-95 cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
