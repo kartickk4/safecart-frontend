@@ -8,8 +8,23 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
     ? isSupplier 
     : (currentRole ? currentRole === 'Supplier' : (user?.role === 'Supplier' || user?.activeRole === 'Supplier'));
 
-  const [shipments, setShipments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = `securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`;
+  const [shipments, setShipments] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem(`securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`);
+      return cached ? JSON.parse(cached) : [];
+    } catch (_) {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      return !sessionStorage.getItem(`securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`);
+    } catch (_) {
+      return true;
+    }
+  });
+  const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('All'); // 'All' | 'Held' | 'Released' | 'Disputed'
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,21 +59,27 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
     fetchShipments();
   }, [isMerchant]); // re-fetch whenever role changes
 
-  const fetchShipments = async () => {
-    setLoading(true);
+  const fetchShipments = async (silent = false) => {
+    const hasCache = sessionStorage.getItem(cacheKey);
+    if (!hasCache && !silent) {
+      setLoading(true);
+    } else {
+      setIsSyncing(true);
+    }
     try {
       const role = isMerchant ? 'Supplier' : 'Receiver';
       const res = await shipmentAPI.getShipments(role);
       if (Array.isArray(res.data)) {
         setShipments(res.data);
+        sessionStorage.setItem(cacheKey, JSON.stringify(res.data));
       } else {
         setShipments([]);
       }
     } catch (err) {
       console.error('Error fetching shipments:', err);
-      setShipments([]);
     } finally {
       setLoading(false);
+      setIsSyncing(false);
     }
   };
 

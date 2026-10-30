@@ -378,14 +378,18 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
   const handleCancelShipment = async (e) => {
     e.preventDefault();
     setActionLoading(true);
+    // OPTIMISTIC UPDATE: Instantly mark as Cancelled in UI
+    const prevStatus = currentShipment.status;
+    setCurrentShipment(prev => ({ ...prev, status: 'Cancelled' }));
     try {
       await shipmentAPI.cancelShipment(currentShipment.shipmentId, cancelReason);
-      alert('Shipment cancelled successfully. Order funds refunded if applicable.');
       setShowCancelForm(false);
-      onRefresh();
+      if (onRefresh) onRefresh();
       onClose();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to cancel shipment.');
+      // ROLLBACK on failure
+      setCurrentShipment(prev => ({ ...prev, status: prevStatus }));
+      alert(err.response?.data?.error || 'Failed to cancel shipment. Status reverted.');
     } finally {
       setActionLoading(false);
     }
