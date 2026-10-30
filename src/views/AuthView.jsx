@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, Store, Package, X, Sparkles, ChevronRight, MapPin, Truck, AlertCircle, Gift, Tag } from 'lucide-react';
 import { authAPI, profileAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
@@ -64,6 +64,9 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
   const [signUpOtpErr, setSignUpOtpErr] = useState('');
   const [signUpOtpLoading, setSignUpOtpLoading] = useState(false);
   const [signUpDebugOtp, setSignUpDebugOtp] = useState('');
+  const [signUpResendTimer, setSignUpResendTimer] = useState(0);
+  const [signUpResending, setSignUpResending] = useState(false);
+  const [signUpResendMsg, setSignUpResendMsg] = useState('');
 
   // First-Time Google Sign Up Profile completion & SMS OTP modal state
   const [showGoogleFirstTimeModal, setShowGoogleFirstTimeModal] = useState(false);
@@ -74,6 +77,74 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
   const [googleProfileErr, setGoogleProfileErr] = useState('');
   const [googleProfileLoading, setGoogleProfileLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleResendTimer, setGoogleResendTimer] = useState(0);
+  const [googleResending, setGoogleResending] = useState(false);
+  const [googleResendMsg, setGoogleResendMsg] = useState('');
+
+  useEffect(() => {
+    let interval = null;
+    if (signUpResendTimer > 0) {
+      interval = setInterval(() => {
+        setSignUpResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [signUpResendTimer]);
+
+  useEffect(() => {
+    let interval = null;
+    if (googleResendTimer > 0) {
+      interval = setInterval(() => {
+        setGoogleResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [googleResendTimer]);
+
+  const handleResendSignUpOtp = async () => {
+    if (signUpResendTimer > 0 || signUpResending) return;
+    setSignUpResending(true);
+    setSignUpOtpErr('');
+    setSignUpResendMsg('');
+    try {
+      const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
+      const otpRes = await authAPI.sendOtp({ phone: formattedPhone, email, role: selectedRole });
+      if (otpRes.data?.debugCode) {
+        setSignUpDebugOtp(otpRes.data.debugCode);
+      }
+      setSignUpResendTimer(30);
+      setSignUpResendMsg('A new 6-digit verification code has been sent via SMS!');
+    } catch (err) {
+      setSignUpOtpErr(err.response?.data?.error || 'Failed to resend OTP. Please try again.');
+    } finally {
+      setSignUpResending(false);
+    }
+  };
+
+  const handleResendGooglePhoneOtp = async () => {
+    if (googleResendTimer > 0 || googleResending) return;
+    setGoogleResending(true);
+    setGoogleProfileErr('');
+    setGoogleResendMsg('');
+    try {
+      const tenDigit = getValidatedTenDigitPhone(googleProfileData.phone);
+      if (!tenDigit) {
+        setGoogleProfileErr('Phone number must be exactly 10 digits.');
+        return;
+      }
+      const formattedPhone = `+91${tenDigit}`;
+      const otpRes = await authAPI.sendOtp({ phone: formattedPhone });
+      if (otpRes.data?.debugCode) {
+        setGoogleDebugOtp(otpRes.data.debugCode);
+      }
+      setGoogleResendTimer(30);
+      setGoogleResendMsg('A new 6-digit verification code has been sent via SMS!');
+    } catch (bkErr) {
+      setGoogleProfileErr(bkErr.response?.data?.error || 'Failed to resend SMS verification code.');
+    } finally {
+      setGoogleResending(false);
+    }
+  };
 
   const handleSendResetOtp = async (e) => {
     e.preventDefault();
@@ -252,6 +323,8 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
           setGoogleDebugOtp(otpRes.data.debugCode);
         }
         setGoogleOtpCode('');
+        setGoogleResendTimer(30);
+        setGoogleResendMsg('');
         setGoogleStep(2);
       } catch (bkErr) {
         setGoogleProfileErr(bkErr.response?.data?.error || 'Failed to dispatch SMS verification code. Please check phone number.');
@@ -461,6 +534,8 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             setSignUpDebugOtp(otpRes.data.debugCode);
           }
           setSignUpOtp('');
+          setSignUpResendTimer(30);
+          setSignUpResendMsg('');
           setShowSignUpOtpModal(true);
           setLoading(false);
         } catch (bkErr) {
@@ -1179,22 +1254,58 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                 />
               </div>
 
-              <div className="flex gap-3">
+              {/* Resend OTP Bar */}
+              <div className="flex items-center justify-between text-xs text-slate-500 font-medium px-1">
+                <span>
+                  Didn't receive the SMS?{' '}
+                  {signUpResendTimer > 0 && (
+                    <span className="font-mono font-bold text-slate-700">({signUpResendTimer}s)</span>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  disabled={signUpResendTimer > 0 || signUpResending}
+                  onClick={handleResendSignUpOtp}
+                  className={`font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    signUpResendTimer > 0 || signUpResending
+                      ? 'text-slate-300 cursor-not-allowed'
+                      : 'text-[#1E56E3] hover:underline'
+                  }`}
+                >
+                  {signUpResending ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <span>Resend OTP</span>
+                  )}
+                </button>
+              </div>
+
+              {signUpResendMsg && (
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-semibold text-center border border-emerald-200">
+                  {signUpResendMsg}
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-1">
                 <button
                   type="button"
                   onClick={() => {
                     setShowSignUpOtpModal(false);
                     setSignUpOtp('');
                     setSignUpOtpErr('');
+                    setSignUpResendMsg('');
                   }}
-                  className="flex-1 py-3.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2"
+                  className="flex-1 py-3.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   ← Back
                 </button>
                 <button
                   type="submit"
                   disabled={signUpOtpLoading}
-                  className="flex-[2] py-3.5 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2"
+                  className="flex-[2] py-3.5 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {signUpOtpLoading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -1741,18 +1852,53 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                     />
                   </div>
 
-                  <div className="flex gap-2">
+                  {/* Resend Code */}
+                  <div className="flex items-center justify-between text-xs text-slate-500 font-medium px-1">
+                    <span>
+                      Didn't get code?{' '}
+                      {googleResendTimer > 0 && (
+                        <span className="font-mono font-bold text-slate-700">({googleResendTimer}s)</span>
+                      )}
+                    </span>
                     <button
                       type="button"
-                      onClick={() => { setGoogleStep(1); setGoogleProfileErr(''); }}
-                      className="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+                      disabled={googleResendTimer > 0 || googleResending}
+                      onClick={handleResendGooglePhoneOtp}
+                      className={`font-bold transition flex items-center gap-1 cursor-pointer ${
+                        googleResendTimer > 0 || googleResending
+                          ? 'text-slate-300 cursor-not-allowed'
+                          : 'text-[#1E56E3] hover:underline'
+                      }`}
+                    >
+                      {googleResending ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Sending...</span>
+                        </>
+                      ) : (
+                        <span>Resend OTP</span>
+                      )}
+                    </button>
+                  </div>
+
+                  {googleResendMsg && (
+                    <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-semibold text-center border border-emerald-200">
+                      {googleResendMsg}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => { setGoogleStep(1); setGoogleProfileErr(''); setGoogleResendMsg(''); }}
+                      className="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition cursor-pointer"
                     >
                       Back
                     </button>
                     <button
                       type="submit"
                       disabled={googleProfileLoading}
-                      className="flex-1 py-3.5 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 font-bold text-xs"
+                      className="flex-1 py-3.5 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 font-bold text-xs cursor-pointer"
                     >
                       {googleProfileLoading ? (
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
