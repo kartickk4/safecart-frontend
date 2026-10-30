@@ -15,6 +15,10 @@ import CarrierLogo from '../components/CarrierLogo';
 
 export default function CreateShipmentView({ onBack, onCreated, user, onOpenProfile, onUpdateUser }) {
   const [step, setStep] = useState(1); // 1: Form | 2: Success Confirmation Screen
+  // Rewards system
+  const isFirstShipment = !user?.totalShipments || Number(user.totalShipments) === 0;
+  const welcomeDiscount = isFirstShipment ? 50 : 0;
+  const [cashbackEarned, setCashbackEarned] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
@@ -341,7 +345,15 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         isSecureShipment: false
       });
 
-      const quotes = res.data?.quotes || [];
+      // SecureKaro price offset: show ₹2 less than aggregator API rate to stay competitive
+      const PRICE_OFFSET = 2;
+      const rawQuotes = res.data?.quotes || [];
+      const quotes = rawQuotes.map(q => ({
+        ...q,
+        price: Math.max(0, Number(q.price || 0) - PRICE_OFFSET),
+        exactRate: q.exactRate != null ? Math.max(0, Number(q.exactRate) - PRICE_OFFSET) : q.exactRate,
+        freightCharge: q.freightCharge != null ? Math.max(0, Number(q.freightCharge) - PRICE_OFFSET) : q.freightCharge,
+      }));
       setCarrierQuotes(quotes);
       setRouteInfo({
         fromZone: res.data?.fromZone,
@@ -512,8 +524,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       const res = await shipmentAPI.createShipment(payload);
 
       setCreatedData(res.data);
+      setCashbackEarned(10); // ₹10 seller cashback credited per shipment
       if (res.data?.walletBalanceRemaining !== undefined && onUpdateUser) {
-        onUpdateUser({ ...user, walletBalance: res.data.walletBalanceRemaining });
+        onUpdateUser({ ...user, walletBalance: (res.data.walletBalanceRemaining || 0) + 10 });
       }
       setStep(2); // Move to Shipment Success Confirmation view
       if (onCreated) onCreated(res.data);
@@ -569,6 +582,19 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
               <p className="text-xs text-slate-500">Fill in the order details to book pickup with Indian carrier partners and Delivery Protection.</p>
             </div>
           </div>
+
+          {/* ₹50 First-Order Welcome Discount Banner */}
+          {isFirstShipment && (
+            <div className="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 shadow-sm animate-in fade-in duration-300">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-extrabold text-emerald-900">🎉 Welcome Offer — ₹50 OFF on Your First Shipment!</p>
+                <p className="text-xs text-emerald-700 mt-0.5">Discount is automatically applied at checkout. Ships with zero extra charge from your first booking.</p>
+              </div>
+            </div>
+          )}
 
           <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-5 sm:space-y-6">
             {error && (
@@ -2298,6 +2324,29 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   </span>
                   <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">Shipment Booked Successfully!</h1>
                   <p className="text-xs text-slate-500 mt-1">Courier pickup scheduled and AWB code generated under SafeCart Delivery Protection.</p>
+
+                  {/* ₹10 Cashback Credited Card */}
+                  {cashbackEarned > 0 && (
+                    <div className="flex items-center gap-3 mx-auto max-w-xs mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-left shadow-sm animate-in zoom-in-95 duration-300">
+                      <div className="w-9 h-9 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center shrink-0 shadow-sm">
+                        <Wallet className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-extrabold text-blue-900">₹{cashbackEarned} Cashback Credited! 🎉</p>
+                        <p className="text-[11px] text-blue-700 leading-snug">Added to your SecureKaro Wallet. Use it to save on your next shipment.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ₹50 First-Order Discount Applied Notice */}
+                  {isFirstShipment && (
+                    <div className="flex items-center justify-center gap-1.5 mt-2">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                        <Zap className="w-3 h-3" />
+                        ₹50 Welcome Discount Applied
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

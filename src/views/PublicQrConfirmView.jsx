@@ -720,19 +720,15 @@ export default function PublicQrConfirmView({ qrToken }) {
       );
     }
 
-    const cashback = resultData?.cashback;
-    const isLucky = cashback?.isLucky || cashback?.tier === 'lucky';
-    const isBonus = cashback?.isBonus || cashback?.tier === 'marketing_bonus';
-    const hasCashback = cashback && cashback.amount > 0;
-
+    // Buyer cashback removed — cashback is now only for sellers (₹10 per shipment)
     return (
       <ConfirmedWithCashback
         resultData={resultData}
         parcelInfo={parcelInfo}
-        cashback={cashback}
-        hasCashback={hasCashback}
-        isLucky={isLucky}
-        isBonus={isBonus}
+        cashback={null}
+        hasCashback={false}
+        isLucky={false}
+        isBonus={false}
         returnWindowChoice={returnWindowChoice}
       />
     );
