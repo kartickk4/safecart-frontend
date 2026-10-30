@@ -46,7 +46,7 @@ export default function CameraCaptureModal({
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera API is not supported in this browser. Please use gallery upload.');
+        throw new Error('Camera is not supported in this browser. Please use gallery upload.');
       }
 
       const constraints = {

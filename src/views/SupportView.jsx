@@ -21,7 +21,7 @@ const FAQ_DATA = [
     id: 3,
     category: 'Logistics & Tracking',
     question: 'What happens if a courier partner delays pickup or delivery?',
-    answer: 'Our live tracking system continuously polls partner APIs (Delhivery, BlueDart, DTDC). In case of delays beyond 24 hours, automated logistics escalation alerts are sent to the courier hub.'
+    answer: 'Our live tracking system continuously monitors partner courier networks (Delhivery, BlueDart, DTDC). In case of delays beyond 24 hours, automated logistics escalation alerts are sent to the courier hub.'
   },
   {
     id: 4,

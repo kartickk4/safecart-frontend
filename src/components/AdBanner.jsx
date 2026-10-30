@@ -58,7 +58,7 @@ export default function AdBanner() {
           </h3>
 
           <p className="text-xs text-slate-500 font-medium">
-            Save big on express nationwide courier shipments with automated SecureKaro API integration.
+            Save big on express nationwide courier shipments with automated SecureKaro courier integration.
           </p>
         </div>
 

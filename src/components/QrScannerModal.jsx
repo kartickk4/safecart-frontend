@@ -42,7 +42,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }) {
       return {
         supported: false,
         reason: 'no_media_devices',
-        message: 'Camera stream API is not supported in this browser. Please use photo capture.'
+        message: 'Camera stream is not supported in this browser. Please use photo capture.'
       };
     }
 
