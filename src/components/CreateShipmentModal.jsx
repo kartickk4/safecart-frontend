@@ -9,6 +9,9 @@ import CarrierLogo from './CarrierLogo';
 export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData }) {
   // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection
   const [modalStep, setModalStep] = useState(1);
+  // Rewards & Pricing System
+  const isFirstShipment = !user?.totalShipments || Number(user.totalShipments) === 0;
+  const welcomeDiscount = isFirstShipment ? 50 : 0;
 
   // Form Fields
   const [receiverName, setReceiverName] = useState('');
@@ -245,7 +248,15 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         isSecureShipment: isSecure
       });
 
-      const quotes = res.data?.quotes || [];
+      // SecureKaro price offset: show ₹2 less than aggregator API rate to stay competitive
+      const PRICE_OFFSET = 2;
+      const rawQuotes = res.data?.quotes || [];
+      const quotes = rawQuotes.map(q => ({
+        ...q,
+        price: Math.max(0, Number(q.price || 0) - PRICE_OFFSET),
+        exactRate: q.exactRate != null ? Math.max(0, Number(q.exactRate) - PRICE_OFFSET) : q.exactRate,
+        freightCharge: q.freightCharge != null ? Math.max(0, Number(q.freightCharge) - PRICE_OFFSET) : q.freightCharge,
+      }));
       setCarrierQuotes(quotes);
       setRouteInfo({
         fromZone: res.data?.fromZone,
@@ -378,6 +389,21 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       Exact recipient &amp; package details copied! You can edit any field below or proceed directly to courier rates.
                     </p>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* ₹50 First-Order Welcome Discount Banner */}
+            {isFirstShipment && (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 shadow-2xs flex items-center gap-3 animate-in fade-in duration-200">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black shrink-0 text-xs shadow-xs">
+                  ₹50
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-emerald-950 text-xs">🎉 Welcome Offer — ₹50 OFF on Your First Shipment!</h4>
+                  <p className="text-[11px] text-emerald-700/90 font-medium">
+                    Automatically deducted at checkout. You also earn ₹10 seller cashback on booking!
+                  </p>
                 </div>
               </div>
             )}
