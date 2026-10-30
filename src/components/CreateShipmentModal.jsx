@@ -20,7 +20,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   const [amount, setAmount] = useState('');
   const [cityRoute, setCityRoute] = useState('');
   const [fundImmediately, setFundImmediately] = useState(true);
-  const [paymentMode, setPaymentMode] = useState('prepaid'); // 'prepaid' | 'cod'
+  const [paymentMode, setPaymentMode] = useState('cod'); // 'cod' (prepaid temporarily disabled)
   const [returnAllowed, setReturnAllowed] = useState(true);
   const [rtoProtectionEnabled, setRtoProtectionEnabled] = useState(false);
   const [secureShipmentEnabled, setSecureShipmentEnabled] = useState(false);
@@ -552,29 +552,13 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               {/* Payment Mode Selector */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">Payment Mode *</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMode('prepaid')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                      paymentMode === 'prepaid'
-                        ? 'bg-blue-50 border-blue-600 text-blue-700 shadow-xs ring-1 ring-blue-500'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Prepaid (Protected)</span>
-                  </button>
+                <div>
                   <button
                     type="button"
                     onClick={() => setPaymentMode('cod')}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                      paymentMode === 'cod'
-                        ? 'bg-amber-50 border-amber-600 text-amber-800 shadow-xs ring-1 ring-amber-500'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
+                    className="w-full py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-50 border-amber-600 text-amber-800 shadow-xs ring-1 ring-amber-500"
                   >
-                    <Truck className="w-3.5 h-3.5 text-amber-600" />
+                    <Truck className="w-4 h-4 text-amber-600" />
                     <span>Cash on Delivery (COD)</span>
                   </button>
                 </div>
@@ -665,39 +649,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               {/* Mode Selector & Secure Cover Toggle */}
               <div className="flex items-center gap-2 flex-wrap justify-between md:justify-end">
                 <div className="inline-flex items-center p-1 bg-white rounded-xl border border-slate-200 shadow-2xs">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setPaymentMode('prepaid');
-                      await fetchQuotes('prepaid', secureShipmentEnabled);
-                    }}
-                    disabled={fetchingQuotes}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                      paymentMode === 'prepaid'
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                    }`}
-                  >
-                    <CreditCard className="w-3.5 h-3.5" />
-                    <span>Prepaid (Protected)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setPaymentMode('cod');
-                      await fetchQuotes('cod', secureShipmentEnabled);
-                    }}
-                    disabled={fetchingQuotes}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                      paymentMode === 'cod'
-                        ? 'bg-amber-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                    }`}
-                  >
+                  <span className="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-amber-600 text-white shadow-xs">
                     <Banknote className="w-3.5 h-3.5" />
                     <span>Cash on Delivery (COD)</span>
-                  </button>
+                  </span>
                 </div>
 
                 {/* Secure Cover (Default OFF) */}

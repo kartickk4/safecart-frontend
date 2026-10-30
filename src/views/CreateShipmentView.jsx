@@ -142,7 +142,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     return list;
   }, [carrierQuotes, carrierTab, carrierSearch, carrierSort, onlyCloseToWeight, parcelWeight]);
 
-  const [paymentMode, setPaymentMode] = useState('prepaid'); // 'prepaid' | 'cod' | 'paid_offline'
+  const [paymentMode, setPaymentMode] = useState('cod'); // 'cod' | 'paid_offline' (prepaid temporarily disabled)
   const [returnAllowed, setReturnAllowed] = useState(true);
   const isNonEcommerce = user?.platformType !== 'ecommerce';
   const [photoReviewEnabled, setPhotoReviewEnabled] = useState(true);
@@ -1073,40 +1073,13 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {/* Prepaid */}
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setPaymentMode('prepaid');
-                      if (senderPincode && receiverPincode && receiverPincode.length === 6) {
-                        await fetchQuotesForRoute(carrierSlug, 'prepaid');
-                      }
-                    }}
-                    className={`p-3.5 rounded-2xl border-2 text-left transition-all duration-150 ${
-                      paymentMode === 'prepaid'
-                        ? 'border-blue-500 bg-blue-50 shadow-sm shadow-blue-200'
-                        : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-base">💳</span>
-                      {paymentMode === 'prepaid' && (
-                        <span className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
-                          <Check className="w-2.5 h-2.5 text-white" />
-                        </span>
-                      )}
-                    </div>
-                    <p className={`text-xs font-extrabold ${ paymentMode === 'prepaid' ? 'text-blue-700' : 'text-slate-800'}`}>Prepaid Delivery Protection</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">Buyer pays upfront via secure payment link. Courier pickup is auto-booked once payment is secured and settled to sender after delivery sign-off.</p>
-                  </button>
-
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* COD */}
                   <button
                     type="button"
                     onClick={async () => {
                       if ((Number(user?.walletBalance) || 0) < 0) {
-                        alert(`🚫 COD Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab or select Prepaid Delivery Protection.`);
+                        alert(`🚫 COD Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab.`);
                         return;
                       }
                       setPaymentMode('cod');
@@ -1146,7 +1119,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     type="button"
                     onClick={() => {
                       if ((Number(user?.walletBalance) || 0) < 0) {
-                        alert(`🚫 Offline Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab or select Prepaid Delivery Protection.`);
+                        alert(`🚫 Offline Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab.`);
                         return;
                       }
                       setPaymentMode('paid_offline');
