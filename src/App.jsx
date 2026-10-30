@@ -310,7 +310,7 @@ export default function App() {
   };
 
 
-  // Check if visitor is accessing a public escrow payment link (/pay/:id or ?pay=:id)
+  // Check if visitor is accessing a public payment link (/pay/:id or ?pay=:id)
   const getPayShipmentId = () => {
     if (typeof window === 'undefined') return null;
     const path = window.location.pathname;
@@ -723,7 +723,7 @@ export default function App() {
 
 
 
-          {/* VIEW 7: ESCROW WALLET */}
+          {/* VIEW 7: WALLET & PAYOUTS */}
           {currentTab === 'wallet' && (
             <WalletModal
               user={user}

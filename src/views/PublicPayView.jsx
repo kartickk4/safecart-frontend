@@ -197,7 +197,7 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4">
         <div className="w-12 h-12 border-4 border-[#1E56E3] border-t-transparent rounded-full animate-spin"></div>
         <p className="text-xs font-bold text-slate-600 mt-4 uppercase tracking-wider">
-          Connecting to SafeCart Escrow Gateway...
+          Connecting to Secure Payment Gateway...
         </p>
       </div>
     );
@@ -218,13 +218,13 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
           <div className="space-y-1.5">
             <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-              Payment Confirmed & Locked in Escrow
+              Payment Confirmed & Protected Under Verified Delivery
             </span>
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">
               Courier Shipment Auto-Created!
             </h2>
             <p className="text-xs text-slate-600 leading-relaxed max-w-md mx-auto">
-              Your payment of <strong className="text-slate-900">₹{orderAmount}</strong> has been secured in SafeCart Escrow Vault. The platform has automatically booked courier pickup with your chosen partner: <strong className="text-slate-900">{courierName}</strong>.
+              Your payment of <strong className="text-slate-900">₹{orderAmount}</strong> is protected under SecureKaro Delivery Verification. The platform has automatically booked courier pickup with your chosen partner: <strong className="text-slate-900">{courierName}</strong>.
             </p>
           </div>
 
@@ -263,7 +263,7 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
             <div className="flex items-center justify-between">
               <span className="text-slate-500 font-medium">Buyer Protection:</span>
               <span className="font-bold text-emerald-600 flex items-center gap-1">
-                <Lock className="w-3.5 h-3.5" /> Funds Held in Escrow until Delivery
+                <Lock className="w-3.5 h-3.5" /> Funds Protected until Delivery Sign-off
               </span>
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
     );
   }
 
-  // State B: Order details loaded, waiting for buyer payment -> Interactive Escrow Checkout
+  // State B: Order details loaded, waiting for buyer payment -> Interactive Delivery Protection Checkout
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-[#F4F7FC] to-slate-100 flex flex-col items-center justify-center p-4 sm:p-6 select-none">
       <div className="w-full max-w-lg bg-white rounded-3xl shadow-xl border border-slate-200/80 p-6 sm:p-8 space-y-6">
@@ -323,7 +323,7 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#1E56E3] text-[11px] font-black border border-blue-200">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>SafeCart Escrow Protection</span>
+            <span>SecureKaro Delivery Protection</span>
           </div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
             Complete Secure Payment
@@ -526,7 +526,7 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
         {/* Protection Banner */}
         <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] flex items-center gap-2">
           <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Money is securely held in SafeCart Escrow and will NOT be released to seller until you receive the package.</span>
+          <span>Money is safely protected under SecureKaro and will NOT be released to seller until you receive and verify the package.</span>
         </div>
 
         {/* YouPI Gateway Active Banner */}
@@ -575,18 +575,18 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
           {paying ? (
             <>
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              <span>Securing Escrow & Auto-Booking Courier...</span>
+              <span>Securing Order & Auto-Booking Courier...</span>
             </>
           ) : (
             <>
               <Lock className="w-4 h-4" />
-              <span>Pay ₹{orderAmount} with Escrow Protection</span>
+              <span>Pay ₹{orderAmount} with Delivery Protection</span>
             </>
           )}
         </button>
 
         <p className="text-[10px] text-slate-400 text-center">
-          256-bit Bank Grade SSL Encryption • SafeCart Escrow Vault
+          256-bit Bank Grade SSL Encryption • SecureKaro Delivery Vault
         </p>
       </div>
     </div>

@@ -243,7 +243,7 @@ const AgentWidget = ({ onNavigate }) => {
   // Maps display label → exact keyword backend expects
   const QUICK_REPLY_KEYWORDS = {
     'Prepaid (Online Link)':      '1',
-    'Prepaid Escrow':             '1',
+    'Prepaid Order':              '1',
     'Prepaid (Online)':            '1',
     'Cash on Delivery (COD)':      '2',
     'Yes, Enable RTO Protection':  'yes',

@@ -101,7 +101,7 @@ export default function WelcomeAnimationModal({ isOpen, user, isNewUser, onCompl
                 Setting up your safe space...
               </h2>
               <p className="text-xs text-slate-500 font-medium max-w-[260px] mx-auto">
-                Verifying bank-grade escrow encryption & payment protection.
+                Verifying bank-grade 256-bit encryption & delivery protection.
               </p>
             </>
           )}

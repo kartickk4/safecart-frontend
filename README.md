@@ -1,13 +1,13 @@
-﻿# SecureKaro — Secure-Path Logistics & Escrow Platform (Frontend)
+﻿# SecureKaro — Logistics Aggregator & Delivery Verification Platform (Frontend)
 
-SecureKaro is India's leading B2B/B2C secure logistics and RBI-compliant escrow payment platform. Built with React, Vite, and Tailwind CSS.
+SecureKaro is India's leading B2B/B2C logistics aggregator and automated delivery verification platform. Built with React, Vite, and Tailwind CSS.
 
 ## 🚀 Features
 
 - **2FA Mobile SMS & Email OTP**: Sign up and login protection with dynamic 6-digit OTP verification.
-- **6-Stage Escrow Flow**: Automated funds locking, in-transit milestone release, and final delivery sign-off.
+- **6-Stage Delivery Protection Flow**: Automated tracking sync, milestone tracking, and final OTP delivery sign-off.
 - **Live Courier Tracking**: Integrated real-time tracking for Delhivery, Bluedart, FedEx, and Shiprocket.
-- **Integrated Payment Links**: Shareable escrow payment links with instant UPI (GPay/PhonePe/Paytm), NetBanking, and Card checkout.
+- **Integrated Payment Links**: Shareable secure payment links with instant UPI (GPay/PhonePe/Paytm), NetBanking, and Card checkout.
 - **Dispute Claims Center**: Arbitrator claim filing with proof evidence upload for non-delivery or damaged goods.
 - **Responsive Mobile PWA App**: Progressive Web App ready with standalone mobile viewport and fixed mobile navigation bar.
 

@@ -386,9 +386,9 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
       <div>
         <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 flex items-center gap-2">
           <User className="w-5 h-5 md:w-6 md:h-6 text-[#1E56E3]" />
-          Account & Escrow Profile
+          Account & Payout Profile
         </h1>
-        <p className="text-xs text-slate-500 mt-1">Manage your identity details and bank account for automated escrow payouts.</p>
+        <p className="text-xs text-slate-500 mt-1">Manage your identity details and bank account for automated order payouts.</p>
       </div>
 
       {msg && (
@@ -613,7 +613,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                     )}
                   </div>
                   <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
-                    Create escrow shipments, request courier dispatches, manage return requests, and disburse bank payouts.
+                    Create shipping orders, request courier dispatches, manage return requests, and disburse bank payouts.
                   </p>
                 </div>
 
@@ -650,7 +650,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                     )}
                   </div>
                   <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
-                    Track parcel journeys in real-time, inspect parcels before delivery sign-off, enjoy full escrow protection, and raise disputes.
+                    Track parcel journeys in real-time, inspect parcels before delivery sign-off, enjoy verified delivery protection, and raise disputes.
                   </p>
                 </div>
               </div>
@@ -838,7 +838,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="font-bold text-slate-900 text-sm">Escrow Disbursal Bank Account & UPI</h2>
+                  <h2 className="font-bold text-slate-900 text-sm">Payout Disbursal Bank Account & UPI</h2>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">Optional</span>
                 </div>
                 <p className="text-[11px] text-slate-500">Optional for both suppliers & receivers. Adding this auto-fills your withdrawal destination so you don't need to enter UPI or Bank details on every withdrawal.</p>

@@ -1078,7 +1078,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-600 leading-relaxed">
-                        Please inspect your fresh replacement item. By submitting the 6-digit OTP above, you confirm the replacement parcel has arrived in good condition and release the escrow funds to the seller.
+                        Please inspect your fresh replacement item. By submitting the 6-digit OTP above, you confirm the replacement parcel has arrived in good condition and authorize delivery payout to the seller.
                       </p>
                     </div>
                   ) : (

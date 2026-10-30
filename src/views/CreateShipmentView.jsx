@@ -2389,7 +2389,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   </span>
                 ) : (
                   <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    ✅ Payment Secured (Escrow)
+                    ✅ Payment Secured (Verified)
                   </span>
                 )}
               </div>
@@ -2502,7 +2502,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   const receiverFirstName = createdData?.receiverName?.split(' ')[0] || 'Customer';
                   const whatsappMessage = 
                     `Hello ${receiverFirstName}! 📦 Your order for ₹${formattedAmount} (${createdData.description || 'Parcel'}) is registered on SafeCart.\n\n` +
-                    `🔒 Please complete payment via this secure escrow link:\n${buyerPayUrl}\n\n` +
+                    `🔒 Please complete payment via this secure delivery protection link:\n${buyerPayUrl}\n\n` +
                     `🚚 Courier: ${assignedCarrierName}\n` +
                     `Once payment is confirmed, your parcel will be automatically dispatched by the courier partner with live tracking!`;
 

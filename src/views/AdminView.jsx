@@ -313,14 +313,14 @@ export default function AdminView({ user, onBackToApp }) {
     setActionLoading(true);
     try {
       const res = await adminAPI.forceReleaseEscrow(selectedShipment.shipmentId, forceReleaseReason);
-      showToast(res.data?.message || 'Escrow force-released to merchant');
+      showToast(res.data?.message || 'Payment force-released to merchant');
       setIsForceReleaseOpen(false);
       setForceReleaseReason('');
       fetchShipments(shipmentPage);
       if (isShipmentDetailOpen) handleOpenShipmentDetail(selectedShipment);
       if (activeTab === 'overview') loadTabContent();
     } catch (err) {
-      showToast(err.response?.data?.error || 'Failed to force release escrow', 'error');
+      showToast(err.response?.data?.error || 'Failed to force release payment', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -331,14 +331,14 @@ export default function AdminView({ user, onBackToApp }) {
     setActionLoading(true);
     try {
       const res = await adminAPI.forceRefundEscrow(selectedShipment.shipmentId, forceRefundReason);
-      showToast(res.data?.message || 'Escrow force-refunded to buyer');
+      showToast(res.data?.message || 'Payment force-refunded to buyer');
       setIsForceRefundOpen(false);
       setForceRefundReason('');
       fetchShipments(shipmentPage);
       if (isShipmentDetailOpen) handleOpenShipmentDetail(selectedShipment);
       if (activeTab === 'overview') loadTabContent();
     } catch (err) {
-      showToast(err.response?.data?.error || 'Failed to force refund escrow', 'error');
+      showToast(err.response?.data?.error || 'Failed to force refund payment', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -379,15 +379,15 @@ export default function AdminView({ user, onBackToApp }) {
   const handleToggleLock = async (shipment) => {
     const isCurrentlyLocked = shipment.status === 'Locked' || shipment.escrowStage === -5;
     const actionWord = isCurrentlyLocked ? 'unlock' : 'freeze/lock';
-    if (!window.confirm(`Are you sure you want to ${actionWord} escrow for #${shipment.shipmentId}?`)) return;
+    if (!window.confirm(`Are you sure you want to ${actionWord} protection for #${shipment.shipmentId}?`)) return;
     setActionLoading(true);
     try {
       const res = await adminAPI.toggleShipmentLock(shipment.shipmentId, { lock: !isCurrentlyLocked });
-      showToast(res.data?.message || `Escrow ${actionWord}ed`);
+      showToast(res.data?.message || `Protection ${actionWord}ed`);
       fetchShipments(shipmentPage);
       if (isShipmentDetailOpen) handleOpenShipmentDetail(shipment);
     } catch (err) {
-      showToast(err.response?.data?.error || 'Failed to toggle escrow lock', 'error');
+      showToast(err.response?.data?.error || 'Failed to toggle protection lock', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -878,7 +878,7 @@ export default function AdminView({ user, onBackToApp }) {
                     Master Console
                   </span>
                 </div>
-                <p className="text-xs text-slate-500">Escrow Oversight, Dispute Court, Logistics & Operational Controls</p>
+                <p className="text-xs text-slate-500">Order Oversight, Dispute Court, Logistics & Operational Controls</p>
               </div>
             </div>
           </div>
@@ -921,7 +921,7 @@ export default function AdminView({ user, onBackToApp }) {
         <div className="max-w-7xl mx-auto mt-4 flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
           {[
             { id: 'overview', label: 'Overview', icon: Activity },
-            { id: 'shipments', label: 'Shipments & Escrow', icon: Package, badge: analytics?.shipments?.activeEscrows },
+            { id: 'shipments', label: 'Shipments & Protection', icon: Package, badge: analytics?.shipments?.activeEscrows },
             { id: 'returns', label: 'Returns & Reverse', icon: RotateCcw, badge: totalReturns > 0 ? totalReturns : undefined, badgeColor: 'bg-orange-500' },
             { id: 'disputes', label: 'Disputes & Claims', icon: Scale, badge: analytics?.disputes?.openClaimsCount, badgeColor: 'bg-rose-500' },
             { id: 'users', label: 'Users & Merchants', icon: Users, badge: analytics?.users?.total },
@@ -966,7 +966,7 @@ export default function AdminView({ user, onBackToApp }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs relative overflow-hidden">
                 <div className="flex items-center justify-between text-slate-500 mb-2">
-                  <span className="text-xs font-semibold uppercase tracking-wider">Gross Escrow Volume</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider">Gross Volume</span>
                   <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
                     <DollarSign className="w-4 h-4" />
                   </div>
@@ -981,7 +981,7 @@ export default function AdminView({ user, onBackToApp }) {
 
               <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs relative overflow-hidden">
                 <div className="flex items-center justify-between text-slate-500 mb-2">
-                  <span className="text-xs font-semibold uppercase tracking-wider">Escrow in Custody</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider">Protected Funds in Custody</span>
                   <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
                     <Lock className="w-4 h-4" />
                   </div>
@@ -1037,7 +1037,7 @@ export default function AdminView({ user, onBackToApp }) {
                   className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 transition text-left group"
                 >
                   <Lock className="w-5 h-5 text-amber-600 mb-2 group-hover:scale-110 transition" />
-                  <div className="text-xs font-extrabold text-slate-900">Active Escrow</div>
+                  <div className="text-xs font-extrabold text-slate-900">Active Protection</div>
                   <div className="text-[11px] text-slate-500">Inspect held funds</div>
                 </button>
 
@@ -1088,12 +1088,12 @@ export default function AdminView({ user, onBackToApp }) {
               </div>
             </div>
 
-            {/* Recent Live Escrow Orders Feed */}
+            {/* Recent Live Protected Orders Feed */}
             <div className="rounded-3xl bg-white border border-slate-200/80 shadow-xs overflow-hidden backdrop-blur-md">
               <div className="p-5 border-b border-slate-200 flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-extrabold text-slate-900">Recent Protected Orders</h3>
-                  <p className="text-xs text-slate-500">Real-time shipments circulating in SecureKaro escrow network</p>
+                  <p className="text-xs text-slate-500">Real-time shipments circulating in SecureKaro logistics network</p>
                 </div>
                 <button
                   onClick={() => setActiveTab('shipments')}
@@ -1111,7 +1111,7 @@ export default function AdminView({ user, onBackToApp }) {
                       <th className="p-4">Shipment ID</th>
                       <th className="p-4">Merchant / Sender</th>
                       <th className="p-4">Buyer / Receiver</th>
-                      <th className="p-4">Escrow Value</th>
+                      <th className="p-4">Order Value</th>
                       <th className="p-4">Current Status</th>
                       <th className="p-4 text-right">Quick Action</th>
                     </tr>
@@ -1162,7 +1162,7 @@ export default function AdminView({ user, onBackToApp }) {
           </div>
         )}
 
-        {/* TAB 2: SHIPMENTS & ESCROW */}
+        {/* TAB 2: SHIPMENTS & PROTECTION */}
         {activeTab === 'shipments' && (
           <div className="space-y-6 animate-in fade-in duration-300">
             {/* Filter and Search Bar */}
@@ -1193,7 +1193,7 @@ export default function AdminView({ user, onBackToApp }) {
                   className="bg-white border border-slate-200 shadow-xs rounded-2xl px-3 py-2 text-xs text-slate-700 font-semibold focus:outline-none"
                 >
                   <option value="all">All Statuses</option>
-                  <option value="active_escrow">Active Escrow (Protected)</option>
+                  <option value="active_escrow">Active Pipeline (Protected)</option>
                   <option value="Delivered">Delivered</option>
                   <option value="Released">Released (Disbursed)</option>
                   <option value="Locked">Locked (Disputed)</option>
@@ -1232,7 +1232,7 @@ export default function AdminView({ user, onBackToApp }) {
                       <th className="p-4">Sender / Supplier</th>
                       <th className="p-4">Receiver</th>
                       <th className="p-4">Amount</th>
-                      <th className="p-4">Escrow Stage</th>
+                      <th className="p-4">Fulfillment Stage</th>
                       <th className="p-4">Status</th>
                       <th className="p-4 text-right">Action Controls</th>
                     </tr>
@@ -1304,7 +1304,7 @@ export default function AdminView({ user, onBackToApp }) {
                                       ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'
                                       : 'bg-slate-100 text-slate-600 border-slate-200 hover:text-slate-900'
                                   }`}
-                                  title={isLocked ? 'Unlock Escrow' : 'Freeze / Lock Escrow'}
+                                  title={isLocked ? 'Unlock Order' : 'Freeze / Lock Order'}
                                 >
                                   {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                                 </button>
@@ -1316,7 +1316,7 @@ export default function AdminView({ user, onBackToApp }) {
                                     setIsForceReleaseOpen(true);
                                   }}
                                   className="p-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/20"
-                                  title="Force release escrow to supplier"
+                                  title="Force release payment to supplier"
                                 >
                                   <ArrowUpRight className="w-3.5 h-3.5" />
                                 </button>
@@ -1328,7 +1328,7 @@ export default function AdminView({ user, onBackToApp }) {
                                     setIsForceRefundOpen(true);
                                   }}
                                   className="p-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 hover:bg-rose-500/20"
-                                  title="Force refund escrow to buyer"
+                                  title="Force refund payment to buyer"
                                 >
                                   <ArrowDownLeft className="w-3.5 h-3.5" />
                                 </button>
@@ -1578,7 +1578,7 @@ export default function AdminView({ user, onBackToApp }) {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-base font-extrabold text-slate-900">Dispute Claims Court</h2>
-                <p className="text-xs text-slate-500">Impartial administrative arbitration for locked escrow funds</p>
+                <p className="text-xs text-slate-500">Impartial administrative arbitration for locked order funds</p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -1681,7 +1681,7 @@ export default function AdminView({ user, onBackToApp }) {
                 <div className="col-span-2 p-12 text-center text-slate-500 rounded-3xl bg-white border border-slate-200/80 shadow-xs">
                   <CheckCircle className="w-10 h-10 text-emerald-500/40 mx-auto mb-3" />
                   <p className="font-bold text-slate-700">Clean Slate — No Active Disputes</p>
-                  <p className="text-xs text-slate-500 mt-1">All escrow transactions are progressing smoothly without arbitration flags.</p>
+                  <p className="text-xs text-slate-500 mt-1">All orders and transactions are progressing smoothly without arbitration flags.</p>
                 </div>
               )}
             </div>
@@ -1971,7 +1971,7 @@ export default function AdminView({ user, onBackToApp }) {
                     financeSubTab === 'live_escrow' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white'
                   }`}
                 >
-                  Live Escrow Breakdown ({liveEscrow.length})
+                  Live Protection Breakdown ({liveEscrow.length})
                 </button>
                 <button
                   onClick={() => setFinanceSubTab('withdrawals')}
@@ -2059,11 +2059,11 @@ export default function AdminView({ user, onBackToApp }) {
               </div>
             )}
 
-            {/* SubTab 2: Live Escrow Custody Breakdown */}
+            {/* SubTab 2: Live Protection Custody Breakdown */}
             {financeSubTab === 'live_escrow' && (
               <div className="space-y-4">
                 <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 flex items-center justify-between text-xs font-bold">
-                  <span>Total Escrow Funds in Secure Custody:</span>
+                  <span>Total Protected Funds in Secure Custody:</span>
                   <span className="text-lg font-black text-amber-600">{formatCurrency(totalLiveEscrowHeld)}</span>
                 </div>
 
@@ -2077,7 +2077,7 @@ export default function AdminView({ user, onBackToApp }) {
                           <th className="p-4">Buyer</th>
                           <th className="p-4">Amount Held</th>
                           <th className="p-4">Status & Stage</th>
-                          <th className="p-4 text-right">Escrow Action</th>
+                          <th className="p-4 text-right">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100/50">
@@ -2098,7 +2098,7 @@ export default function AdminView({ user, onBackToApp }) {
                                   onClick={() => handleOpenShipmentDetail(s)}
                                   className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px]"
                                 >
-                                  Inspect Escrow
+                                  Inspect Order
                                 </button>
                               </td>
                             </tr>
@@ -2106,7 +2106,7 @@ export default function AdminView({ user, onBackToApp }) {
                         ) : (
                           <tr>
                             <td colSpan="6" className="p-8 text-center text-slate-500">
-                              No active escrow funds in custody.
+                              No active funds in custody.
                             </td>
                           </tr>
                         )}
@@ -2273,7 +2273,7 @@ export default function AdminView({ user, onBackToApp }) {
                       onChange={(e) => setSystemConfig({ ...systemConfig, gatewayFeeRate: e.target.value })}
                       className="w-full bg-white border border-slate-200 rounded-2xl p-3 text-slate-900 focus:outline-none focus:border-blue-500 font-bold"
                     />
-                    <span className="text-[10px] text-slate-500 mt-1 block">Default 0% (Escrow is free for users)</span>
+                    <span className="text-[10px] text-slate-500 mt-1 block">Default 0% (Platform protection is free for users)</span>
                   </div>
 
                   <div>
@@ -2613,7 +2613,7 @@ export default function AdminView({ user, onBackToApp }) {
                   <span>Shipment Master Ledger</span>
                   <span className="font-mono text-blue-600">#{detailedShipment.shipmentId}</span>
                 </h3>
-                <p className="text-xs text-slate-500">Full Escrow, Participant & Tracking Diagnostics</p>
+                <p className="text-xs text-slate-500">Full Order, Participant & Tracking Diagnostics</p>
               </div>
               <button
                 onClick={() => setIsShipmentDetailOpen(false)}
@@ -2651,7 +2651,7 @@ export default function AdminView({ user, onBackToApp }) {
                     : 'bg-slate-100 text-slate-700 border-slate-200'
                 }`}
               >
-                {detailedShipment.status === 'Locked' ? 'Unlock Escrow' : 'Lock Escrow'}
+                {detailedShipment.status === 'Locked' ? 'Unlock Order' : 'Lock Order'}
               </button>
 
               <button
@@ -2688,14 +2688,14 @@ export default function AdminView({ user, onBackToApp }) {
               </button>
             </div>
 
-            {/* Escrow Ledger Grid */}
+            {/* Order Ledger Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="text-slate-500">Escrow Principal</span>
+                <span className="text-slate-500">Order Principal</span>
                 <div className="text-base font-extrabold text-slate-900 mt-1">{formatCurrency(detailedShipment.amount)}</div>
               </div>
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="text-slate-500">Escrow Stage</span>
+                <span className="text-slate-500">Verification Stage</span>
                 <div className="text-base font-extrabold text-blue-600 mt-1">Stage {detailedShipment.escrowStage}</div>
               </div>
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
@@ -2788,7 +2788,7 @@ export default function AdminView({ user, onBackToApp }) {
                 <CheckCircle className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-extrabold text-slate-900">Force Release Escrow</h3>
+                <h3 className="text-base font-extrabold text-slate-900">Force Release Payment</h3>
                 <p className="text-xs text-slate-500">Disburse principal directly to merchant</p>
               </div>
             </div>
@@ -2799,7 +2799,7 @@ export default function AdminView({ user, onBackToApp }) {
                 <span className="font-mono text-slate-900 font-bold">#{selectedShipment.shipmentId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Escrow Principal:</span>
+                <span className="text-slate-500">Order Principal:</span>
                 <span className="font-black text-emerald-600">{formatCurrency(selectedShipment.amount)}</span>
               </div>
             </div>
@@ -3522,7 +3522,7 @@ export default function AdminView({ user, onBackToApp }) {
                 onChange={(e) => setDisputeDecision(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-2xl p-3 text-xs text-slate-900 focus:outline-none"
               >
-                <option value="favor_seller">Favor Merchant (Release Escrow to Seller)</option>
+                <option value="favor_seller">Favor Merchant (Release Funds to Seller)</option>
                 <option value="favor_buyer">Favor Buyer (Full Refund to Buyer)</option>
                 <option value="split">Split Settlement (Partial to both parties)</option>
               </select>

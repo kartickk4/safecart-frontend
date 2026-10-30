@@ -648,7 +648,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                         {isReturnWindowClosed ? (
                           <>
                             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                            <span>Return Window Closed — Escrow Released</span>
+                            <span>Return Window Closed — Payment Released</span>
                           </>
                         ) : (
                           <>
@@ -668,8 +668,8 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
 
                     <p className="text-xs text-slate-600 leading-relaxed">
                       {isReturnWindowClosed
-                        ? 'The return window for this parcel is closed. Escrow funds have been successfully released to the seller.'
-                        : `Your 24-hour buyer inspection window is open until ${new Date(selectedShipmentData?.returnWindowExpiresAt || Date.now()).toLocaleString('en-IN')}. Escrow funds remain safely held. If satisfied with the parcel, you can close the return window early to release funds immediately.`}
+                        ? 'The return window for this parcel is closed. Funds have been successfully released to the seller.'
+                        : `Your 24-hour buyer inspection window is open until ${new Date(selectedShipmentData?.returnWindowExpiresAt || Date.now()).toLocaleString('en-IN')}. Funds remain safely held under delivery protection. If satisfied with the parcel, you can close the return window early to release funds immediately.`}
                     </p>
 
                     {!isReturnWindowClosed && (
@@ -714,7 +714,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
               <form onSubmit={handleConfirm} className="p-6 sm:p-8 space-y-6">
                 <div>
                   <h3 className="text-sm font-extrabold text-slate-900">
-                    Confirm Parcel Delivery & Release Escrow
+                    Confirm Parcel Delivery & Authorize Payout
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Select your return window preference and rate your delivery experience.
@@ -798,7 +798,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-500 mt-1">
-                        Confirm parcel and immediately release escrow funds to the seller's wallet.
+                        Confirm parcel and immediately release funds to the seller's wallet.
                       </p>
                     </div>
                     <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${confirmChoice === 'confirm_and_close' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300'}`}>
@@ -862,8 +862,8 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                   </h3>
                   <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
                     {isRefundCompleted
-                      ? `100% of escrow funds (₹${selectedShipmentData?.amount?.toLocaleString('en-IN')}) have been successfully refunded to your buyer wallet.`
-                      : `You have already applied for a return on this shipment. Escrow funds (₹${selectedShipmentData?.amount?.toLocaleString('en-IN')}) are safely locked while the merchant coordinates your return resolution.`
+                      ? `100% of order funds (₹${selectedShipmentData?.amount?.toLocaleString('en-IN')}) have been successfully refunded to your buyer wallet.`
+                      : `You have already applied for a return on this shipment. Order funds (₹${selectedShipmentData?.amount?.toLocaleString('en-IN')}) are safely locked while the merchant coordinates your return resolution.`
                     }
                   </p>
                 </div>
@@ -929,7 +929,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                     File a Return Application
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Your escrow funds remain safely protected by SecureKaro while your return request is processed.
+                    Your payment remains safely protected by SecureKaro while your return request is processed.
                   </p>
                 </div>
 
@@ -968,7 +968,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                     >
                       <h4 className="text-xs font-bold text-slate-900">Full Refund</h4>
                       <p className="text-[10.5px] text-slate-500 mt-0.5">
-                        Return the item for a 100% escrow principal refund.
+                        Return the item for a 100% order principal refund.
                       </p>
                     </div>
 
@@ -982,7 +982,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                     >
                       <h4 className="text-xs font-bold text-slate-900">Replacement</h4>
                       <p className="text-[10.5px] text-slate-500 mt-0.5">
-                        Seller sends replacement parcel before escrow release.
+                        Seller sends replacement parcel before payout release.
                       </p>
                     </div>
 
@@ -1075,7 +1075,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                           </span>
                         </div>
                         <p className="text-[11.5px] text-slate-600 leading-relaxed">
-                          Your escrow refund will be transferred directly to this payout destination once the return is authorized.
+                          Your refund will be transferred directly to this payout destination once the return is authorized.
                         </p>
 
                         {/* Payout Method Toggle */}

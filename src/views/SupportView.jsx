@@ -7,13 +7,13 @@ import {
 const FAQ_DATA = [
   {
     id: 1,
-    category: 'Escrow & Payouts',
-    question: 'How long are funds held in escrow after shipment delivery?',
-    answer: 'Once a shipment is delivered, funds remain in escrow during the 24-hour inspection window. Upon buyer confirmation or when the timer expires, funds are automatically transferred to your registered payout bank account.'
+    category: 'Payouts & Disbursals',
+    question: 'How long are funds protected after shipment delivery?',
+    answer: 'Once a shipment is delivered, funds remain protected during the 24-hour inspection window. Upon buyer confirmation or when the timer expires, funds are automatically transferred to your registered payout bank account.'
   },
   {
     id: 2,
-    category: 'Escrow & Payouts',
+    category: 'Payouts & Disbursals',
     question: 'How do I update my payout bank account or UPI ID?',
     answer: 'Go to Profile & Bank Payout settings in the sidebar. For security, updating existing bank account details requires a 6-digit OTP verification sent to your registered mobile number.'
   },
@@ -27,19 +27,19 @@ const FAQ_DATA = [
     id: 4,
     category: 'Disputes & Refunds',
     question: 'What is the dispute process if a package arrives damaged?',
-    answer: 'The recipient can click "File Dispute" on the shipment details card before releasing funds. This immediately locks the escrow funds in a neutral stage until our arbitration team reviews the unboxing proof.'
+    answer: 'The recipient can click "File Dispute" on the shipment details card before releasing funds. This immediately protects the funds in a neutral stage until our arbitration team reviews the unboxing proof.'
   },
   {
     id: 5,
-    category: 'Escrow & Payouts',
-    question: 'Is there any interest accrued on held escrow funds?',
-    answer: 'No. SecureKaro escrow accounts hold your funds safely until delivery is confirmed, then release 100% of the principal to the supplier. No interest is accrued or charged.'
+    category: 'Payouts & Disbursals',
+    question: 'Are there any hidden platform charges on delivery payouts?',
+    answer: 'No. SecureKaro holds your order value safely until delivery is confirmed, then releases 100% of the principal to the supplier. No interest or hidden deductions are applied.'
   },
   {
     id: 6,
     category: 'Account & KYC',
-    question: 'Why is Aadhaar or PAN KYC mandatory for escrow transactions?',
-    answer: 'In compliance with Reserve Bank of India (RBI) escrow guidelines, identity verification prevents fraudulent transactions and ensures secure electronic disbursals.'
+    question: 'Why is Aadhaar or PAN KYC required for merchant payouts?',
+    answer: 'In compliance with digital payments and commercial carriage guidelines, identity verification prevents fraudulent transactions and ensures secure electronic disbursals.'
   }
 ];
 
@@ -49,7 +49,7 @@ export default function SupportView() {
   const [expandedFaq, setExpandedFaq] = useState(null);
 
   // Ticket Form state
-  const [ticketCategory, setTicketCategory] = useState('Escrow & Disbursal');
+  const [ticketCategory, setTicketCategory] = useState('Payouts & Disbursal');
   const [ticketPriority, setTicketPriority] = useState('Normal');
   const [ticketSubject, setTicketSubject] = useState('');
   const [ticketMessage, setTicketMessage] = useState('');
@@ -98,7 +98,7 @@ export default function SupportView() {
           <HelpCircle className="w-7 h-7 text-[#1E56E3]" />
           Help & Support Center
         </h1>
-        <p className="text-xs text-slate-500 mt-1">Get 24/7 assistance with escrow transactions, courier tracking, payouts, and dispute resolution.</p>
+        <p className="text-xs text-slate-500 mt-1">Get 24/7 assistance with courier tracking, delivery verification, payouts, and dispute resolution.</p>
       </div>
 
       {toastMsg && (
@@ -146,7 +146,7 @@ export default function SupportView() {
           <div>
             <h3 className="font-extrabold text-slate-900 text-sm">Avg. Response Time</h3>
             <p className="text-xs text-purple-700 font-extrabold mt-0.5">Under 2 Hours</p>
-            <p className="text-[11px] text-slate-500 mt-1">Dedicated escrow specialist assigned to every ticket.</p>
+            <p className="text-[11px] text-slate-500 mt-1">Dedicated logistics specialist assigned to every ticket.</p>
           </div>
         </div>
       </div>
@@ -164,7 +164,7 @@ export default function SupportView() {
 
               {/* Category Filter Pills */}
               <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] font-semibold">
-                {['All', 'Escrow & Payouts', 'Logistics & Tracking', 'Disputes & Refunds'].map(cat => (
+                {['All', 'Payouts & Disbursals', 'Logistics & Tracking', 'Disputes & Refunds'].map(cat => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
@@ -284,7 +284,7 @@ export default function SupportView() {
                 <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2.5" />
                 <p className="text-xs font-semibold text-slate-700">No support tickets yet</p>
                 <p className="text-[11px] text-slate-400 mt-1 max-w-sm mx-auto">
-                  Have an inquiry or need assistance with an escrow transaction? Submit a ticket using the form on the right.
+                  Have an inquiry or need assistance with a shipment? Submit a ticket using the form on the right.
                 </p>
               </div>
             )}
@@ -298,7 +298,7 @@ export default function SupportView() {
               <MessageSquare className="w-4 h-4 text-[#1E56E3]" />
               Create Support Ticket
             </h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">Submit an inquiry directly to our escrow resolution managers.</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">Submit an inquiry directly to our support resolution managers.</p>
           </div>
 
           <form onSubmit={handleCreateTicket} className="space-y-4">
@@ -309,7 +309,7 @@ export default function SupportView() {
                 onChange={(e) => setTicketCategory(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:bg-white"
               >
-                <option value="Escrow & Disbursal">Escrow & Disbursal</option>
+                <option value="Payouts & Disbursal">Payouts & Disbursal</option>
                 <option value="Logistics & Delivery Delay">Logistics & Delivery Delay</option>
                 <option value="Return & Reverse Logistics Assistance">Return & Reverse Logistics Assistance</option>
                 <option value="Account & KYC Setup">Account & KYC Setup</option>

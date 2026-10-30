@@ -88,7 +88,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
     }
   };
 
-  const shareText = `Hey! Start shipping with SecureKaro — India's premier 100% fraud-proof logistics escrow platform. Use my referral code "${referralCode}" to get instant escrow protection & zero setup fee: ${referralLink}`;
+  const shareText = `Hey! Start shipping with SecureKaro — India's premier courier aggregator & delivery protection platform. Use my referral code "${referralCode}" to get instant delivery protection & zero setup fee: ${referralLink}`;
 
   const handleWhatsAppShare = () => {
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -96,7 +96,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
   };
 
   const handleTelegramShare = () => {
-    const url = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(`Sign up on SecureKaro with code ${referralCode} for zero-fraud escrow shipping!`)}`;
+    const url = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(`Sign up on SecureKaro with code ${referralCode} for zero-fraud courier shipping!`)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
@@ -104,8 +104,8 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Join SecureKaro Logistics Escrow',
-          text: `Use my invite code ${referralCode} to ship securely with 0% escrow fraud:`,
+          title: 'Join SecureKaro Courier Platform',
+          text: `Use my invite code ${referralCode} to ship securely with 0% delivery fraud:`,
           url: referralLink,
         });
       } catch (err) {
@@ -378,7 +378,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
             <h2 className="text-xl font-black text-slate-900 tracking-tight">3 Easy Steps to Earn Withdrawable Wallet Cash</h2>
           </div>
           <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
-            100% Automated Backend Escrow Tracking
+            100% Automated Backend Logistics Tracking
           </span>
         </div>
 
@@ -404,9 +404,9 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
             <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-base shadow-md shadow-indigo-500/20">
               2
             </div>
-            <h3 className="text-sm font-extrabold text-slate-900">They Ship with Escrow</h3>
+            <h3 className="text-sm font-extrabold text-slate-900">They Ship an Order</h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Your referred friend creates and dispatches their first parcel shipment with SecureKaro milestone escrow protection.
+              Your referred friend creates and dispatches their first parcel shipment with SecureKaro delivery verification.
             </p>
             <div className="pt-2 text-[11px] font-bold text-indigo-600 flex items-center gap-1">
               <span>Zero risk for both parties</span>

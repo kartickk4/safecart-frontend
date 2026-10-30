@@ -244,7 +244,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
             discountSupplierWalletCredited: ship.discountSupplierWalletCredited ?? prev?.discountSupplierWalletCredited ?? 0,
             partialRefundStatus: ship.partialRefundStatus || prev?.partialRefundStatus || 'None',
             milestones: milestones.length > 0 ? milestones : (prev?.milestones || [
-              { status: ship.status || 'Active', location: ship.city || 'Sorting Hub', detail: 'Shipment active in escrow ledger.', time: new Date() }
+              { status: ship.status || 'Active', location: ship.city || 'Sorting Hub', detail: 'Shipment active in verified ledger.', time: new Date() }
             ])
           }));
 
@@ -459,7 +459,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
         }));
       }
     } catch (err) {
-      const msg = err.response?.data?.error || 'Courier details registered! AWB linked to escrow shipment.';
+      const msg = err.response?.data?.error || 'Courier details registered! AWB linked to order.';
       if (err.response?.data?.error && err.response.data.error.includes('photo')) {
         setPhotoError(err.response.data.error);
       } else {
@@ -619,10 +619,10 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
                 <Navigation className="w-6 h-6 text-[#1E56E3]" />
-                Live Parcel & Escrow Tracking
+                Live Parcel & Delivery Tracking
               </h1>
             </div>
-            <p className="text-xs text-slate-500 mt-1">Real-time escrow money flow and multi-carrier logistics tracking.</p>
+            <p className="text-xs text-slate-500 mt-1">Real-time order protection and multi-carrier logistics tracking.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -701,7 +701,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                   </div>
                   <p className="text-[11px] text-slate-500 mt-0.5">
                     {(trackingResult?.status === 'Returned & Refunded' || trackingResult?.returnStatus === 'Returned & Refunded' || trackingResult?.returnStatus === 'Completed')
-                      ? '100% Escrow amount has been refunded to the buyer wallet.'
+                      ? '100% order amount has been refunded to the buyer wallet.'
                       : `Reverse Courier: ${trackingResult?.returnCarrierName || 'Delhivery Express'} • AWB: ${trackingResult?.returnAwbCode || 'Pending Pickup'}`
                     }
                   </p>
@@ -762,7 +762,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
             </div>
           )}
 
-          {/* MULTI-TAB SWITCHER: ESCROW, CARRIER, GPS, AND RETURN TRACKING */}
+          {/* MULTI-TAB SWITCHER: PROTECTION, CARRIER, GPS, AND RETURN TRACKING */}
           <div className="bg-[#F4F7FF] p-1.5 rounded-2xl border border-blue-100/80 flex flex-col sm:flex-row gap-2">
             <button
               onClick={() => setActiveTab('escrow')}
@@ -773,7 +773,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
               }`}
             >
               <Lock className="w-4 h-4 text-[#1E56E3]" />
-              <span>Transaction Escrow</span>
+              <span>Order Protection</span>
             </button>
 
             <button
@@ -846,7 +846,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Escrow Amount</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Order Amount</span>
                   <span className="text-xl font-extrabold text-[#1E56E3] font-mono">₹{Number(trackingResult?.amount || 0).toLocaleString('en-IN')}</span>
                 </div>
               </div>
@@ -885,7 +885,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                     </div>
                   </div>
 
-                  {/* Stage 3: Buyer Payment & Escrow Lock */}
+                  {/* Stage 3: Buyer Payment & Protection */}
                   {(() => {
                     const isPaymentReceived = Boolean(
                       trackingResult?.receiverPaymentDone || 
@@ -905,7 +905,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                         <div className="flex-1">
                           <div className="flex items-center gap-3 flex-wrap">
                             <h4 className="text-xs font-extrabold text-slate-900">
-                              {isPaymentReceived ? 'Buyer payment confirmed & locked in Escrow' : `Awaiting payment from ${trackingResult.receiverName}`}
+                              {isPaymentReceived ? 'Buyer payment confirmed & protected under Delivery Verification' : `Awaiting payment from ${trackingResult.receiverName}`}
                             </h4>
                             <span className="text-[10px] text-slate-400">
                               {isPaymentReceived && trackingResult.receiverPaidAt 
@@ -915,7 +915,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                           </div>
                           <p className="text-xs text-slate-500 mt-0.5">
                             {isPaymentReceived
-                              ? `₹${Number(trackingResult.amount || 0).toLocaleString('en-IN')} is locked safely in SafeCart Escrow. Courier shipment was automatically booked upon payment.`
+                              ? `₹${Number(trackingResult.amount || 0).toLocaleString('en-IN')} is protected safely under SecureKaro Delivery Protection. Courier shipment was automatically booked upon payment.`
                               : `SafeCart will automatically book the courier pickup and assign the AWB code as soon as ${trackingResult.receiverName} pays.`}
                           </p>
 
@@ -1107,7 +1107,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                                       </span>
                                     </div>
                                     <p className="text-[11px] text-slate-600 mb-3 leading-relaxed">
-                                      Uploading a clear photo of the packaged parcel and product is mandatory for all shipments before courier dispatch to guarantee escrow safety.
+                                      Uploading a clear photo of the packaged parcel and product is mandatory for all shipments before courier dispatch to guarantee delivery verification.
                                     </p>
 
                                     {analyzingPhoto && (
@@ -1483,7 +1483,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                           {!isDelivered
                             ? 'Awaiting delivery and receiver confirmation.'
                             : trackingResult?.discountAccepted === true
-                              ? `${trackingResult?.receiverName || 'Recipient'} confirmed parcel and accepted ₹${trackingResult?.discountOfferedAmount} discount refund. Escrow settlement completed.`
+                              ? `${trackingResult?.receiverName || 'Recipient'} confirmed parcel and accepted ₹${trackingResult?.discountOfferedAmount} discount refund. Settlement completed.`
                               : trackingResult?.discountAccepted === false
                               ? `Discount offer rejected. Full refund of ₹${Number(trackingResult?.amount || 0).toLocaleString('en-IN')} processed.`
                               : Number(trackingResult?.discountOfferedAmount) > 0
@@ -1491,7 +1491,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                               : (trackingResult?.returnStatus === 'Requested' || trackingResult?.status === 'Return Requested')
                               ? `${trackingResult?.receiverName || 'Recipient'} received the parcel and requested a ${trackingResult?.returnType === 'partial_discount' ? 'partial discount refund' : 'return'}.`
                               : isReleased
-                              ? `${trackingResult?.receiverName || 'Recipient'} confirmed parcel condition and approved escrow release.`
+                              ? `${trackingResult?.receiverName || 'Recipient'} confirmed parcel condition and approved payout release.`
                               : `Parcel delivered. ${trackingResult?.receiverName || 'Recipient'} has 24 hours to inspect before auto-release.`
                           }
                         </p>
@@ -1557,7 +1557,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                                 className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
                               >
                                 {releaseLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                                <span>Confirm Parcel & Release Escrow to Seller (Instant Settlement)</span>
+                                <span>Confirm Parcel & Authorize Delivery Payout to Seller (Instant Settlement)</span>
                               </button>
                             </div>
                           )}
@@ -1590,8 +1590,8 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                       </div>
                       <p className={`text-xs mt-0.5 ${isReleased ? 'text-emerald-800 font-semibold' : 'text-slate-400'}`}>
                         {isReleased 
-                          ? `₹${Number(trackingResult?.discountSupplierWalletCredited || (trackingResult?.discountAccepted === true ? Math.max(0, Number(trackingResult?.amount || 0) - Number(trackingResult?.discountOfferedAmount || 0)) : trackingResult?.amount) || 0).toLocaleString('en-IN')} escrow payout completed and transferred to supplier wallet.${trackingResult?.discountAccepted === true ? ` (₹${Number(trackingResult?.discountOfferedAmount || trackingResult?.discountBuyerWalletCredited || 0).toLocaleString('en-IN')} refunded to buyer)` : ''}`
-                          : 'Escrow funds will be released after confirmed delivery.'
+                          ? `₹${Number(trackingResult?.discountSupplierWalletCredited || (trackingResult?.discountAccepted === true ? Math.max(0, Number(trackingResult?.amount || 0) - Number(trackingResult?.discountOfferedAmount || 0)) : trackingResult?.amount) || 0).toLocaleString('en-IN')} order payout completed and transferred to supplier wallet.${trackingResult?.discountAccepted === true ? ` (₹${Number(trackingResult?.discountOfferedAmount || trackingResult?.discountBuyerWalletCredited || 0).toLocaleString('en-IN')} refunded to buyer)` : ''}`
+                          : 'Funds will be disbursed after confirmed delivery.'
                         }
                       </p>
                     </div>
@@ -1622,7 +1622,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                 </div>
 
                 <div className="text-right border-t md:border-t-0 md:border-l border-white/20 pt-3 md:pt-0 md:pl-6">
-                  <span className="text-[10px] font-bold text-blue-200 uppercase tracking-wider block">Escrow Protected Amount</span>
+                  <span className="text-[10px] font-bold text-blue-200 uppercase tracking-wider block">Protected Amount</span>
                   <span className="text-2xl font-black text-white font-mono">₹{Number(trackingResult?.amount || 0).toLocaleString('en-IN')}</span>
                 </div>
               </div>
@@ -1636,7 +1636,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                   <div className="flex flex-col items-center text-center space-y-2">
                     <div className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shadow-md">✓</div>
                     <span className="text-xs font-bold text-slate-900">Booked & Funded</span>
-                    <span className="text-[10px] text-slate-400">Escrow Locked</span>
+                    <span className="text-[10px] text-slate-400">Payment Secured</span>
                   </div>
 
                   <div className="flex flex-col items-center text-center space-y-2">
@@ -1708,8 +1708,8 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                     </div>
                     <p className={`text-xs mt-0.5 ${isRefundCompleted ? 'text-emerald-800' : 'text-amber-800'}`}>
                       {isRefundCompleted
-                        ? `100% of escrow funds (₹${trackingResult.amount?.toLocaleString('en-IN')}) have been successfully refunded to your buyer wallet.`
-                        : `A return request is already active for this shipment. 100% of escrow funds (₹${trackingResult.amount?.toLocaleString('en-IN')}) remain safely frozen under buyer protection.`
+                        ? `100% of order funds (₹${trackingResult.amount?.toLocaleString('en-IN')}) have been successfully refunded to your buyer wallet.`
+                        : `A return request is already active for this shipment. 100% of order funds (₹${trackingResult.amount?.toLocaleString('en-IN')}) remain safely frozen under buyer protection.`
                       }
                     </p>
                   </div>
@@ -1828,7 +1828,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                     >
                       <div className="text-xl mb-2">💰</div>
                       <p className="text-xs font-extrabold text-slate-900">3. Full Refund</p>
-                      <p className="text-[10.5px] text-slate-500 mt-1 leading-snug">Return the product and receive 100% of the escrow amount back to your account.</p>
+                      <p className="text-[10.5px] text-slate-500 mt-1 leading-snug">Return the product and receive 100% of the order amount back to your account.</p>
                       {returnTypeChoice === 'full_refund' && <span className="mt-2 inline-block text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">✓ Selected</span>}
                     </button>
                   </div>
@@ -2023,7 +2023,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
 
                 <div className="sm:text-right">
                   <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
-                    {isRefundCompleted ? '100% Escrow Refunded' : 'Escrow Protected Refund'}
+                    {isRefundCompleted ? '100% Order Refunded' : 'Protected Refund'}
                   </span>
                   <span className="text-2xl font-bold text-emerald-700 font-mono">₹{Number(trackingResult?.amount || 0).toLocaleString('en-IN')}</span>
                   <span className="text-[10px] text-emerald-800 font-semibold block">
@@ -2075,7 +2075,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                     { 
                       step: 4, 
                       label: '4. Refunded', 
-                      desc: 'Escrow to wallet', 
+                      desc: 'Refund to wallet', 
                       active: Boolean(trackingResult?.returnStatus === 'Completed' || trackingResult?.status === 'Returned & Refunded'),
                       color: 'bg-emerald-600'
                     }
@@ -2199,7 +2199,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                     <div>
                       <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Return Type Choice</span>
                       <p className="font-semibold text-slate-800 mt-0.5">
-                        {trackingResult?.returnType === 'partial_discount' ? 'Defect Discount' : 'Full Escrow Refund'}
+                        {trackingResult?.returnType === 'partial_discount' ? 'Defect Discount' : 'Full Order Refund'}
                       </p>
                     </div>
                   </div>
@@ -2546,10 +2546,10 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                       color: 'bg-blue-600'
                     },
                     {
-                      title: 'Delivered & 100% Escrow Principal Refunded',
+                      title: 'Delivered & 100% Order Principal Refunded',
                       desc: trackingResult?.returnStatus === 'Completed' || trackingResult?.status === 'Returned & Refunded'
-                        ? `Parcel received at origin hub. Full escrow principal ₹${trackingResult?.amount} credited to wallet!`
-                        : 'Escrow vault principal will auto-refund upon arrival confirmation.',
+                        ? `Parcel received at origin hub. Full order principal ₹${trackingResult?.amount} credited to wallet!`
+                        : 'Order principal will auto-refund upon arrival confirmation.',
                       time: trackingResult?.returnStatus === 'Completed' ? 'Completed' : 'Pending',
                       active: Boolean(trackingResult?.returnStatus === 'Completed' || trackingResult?.status === 'Returned & Refunded'),
                       color: 'bg-emerald-600'
@@ -2586,7 +2586,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
           <div className="space-y-1.5">
             <h3 className="text-base font-extrabold text-slate-900">No Shipment Tracking Active</h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Enter a valid Shipment ID or courier AWB tracking code above to view live journey milestones, courier telemetry, and escrow protection status.
+              Enter a valid Shipment ID or courier AWB tracking code above to view live journey milestones, courier telemetry, and delivery protection status.
             </p>
           </div>
         </div>

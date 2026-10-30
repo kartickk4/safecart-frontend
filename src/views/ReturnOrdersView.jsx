@@ -254,7 +254,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
   };
 
   const handleRejectReplacement = async (shipmentId) => {
-    if (!window.confirm('Reject replacement request? The buyer will automatically receive a 100% full refund from escrow.')) return;
+    if (!window.confirm('Reject replacement request? The buyer will automatically receive a 100% full refund for the order.')) return;
     setActionLoading(true);
     try {
       await shipmentAPI.rejectReplacement(shipmentId, 'Supplier out of replacement stock');
@@ -285,11 +285,11 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
   };
 
   const handleConfirmReplacementDelivery = async (shipmentId) => {
-    if (!window.confirm(`Confirm receipt of replacement parcel for ${shipmentId}?\n\nThis will safely release the escrow payment to the seller and complete the replacement order.`)) return;
+    if (!window.confirm(`Confirm receipt of replacement parcel for ${shipmentId}?\n\nThis will safely release the order payment to the seller and complete the replacement order.`)) return;
     setActionLoading(true);
     try {
       await shipmentAPI.confirmReplacementDelivery(shipmentId);
-      setAssignSuccessMsg(`🎉 Replacement item confirmed! Escrow funds released to seller and order completed.`);
+      setAssignSuccessMsg(`🎉 Replacement item confirmed! Order funds released to seller and order completed.`);
       setTimeout(() => setAssignSuccessMsg(''), 8000);
       fetchReturnOrders();
     } catch (err) {
@@ -302,14 +302,14 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
   const handleConfirmReceived = async (shipmentId) => {
     const order = returnOrders.find(o => o.shipmentId === shipmentId);
     const revCharge = order?.returnShippingRate || 55;
-    const confirmMsg = `Confirm return package receipt for ${shipmentId}?\n\n• Buyer will receive 100% full escrow refund.\n• Reverse courier shipping fee (₹${revCharge}) will be charged to your seller wallet.`;
+    const confirmMsg = `Confirm return package receipt for ${shipmentId}?\n\n• Buyer will receive 100% full order refund.\n• Reverse courier shipping fee (₹${revCharge}) will be charged to your seller wallet.`;
     if (!window.confirm(confirmMsg)) return;
     setActionLoading(true);
     try {
       const res = await shipmentAPI.confirmReturnReceived(shipmentId);
       const data = res.data?.refundSummary || {};
       const charged = data.reverseShippingChargedToSeller || revCharge;
-      alert(`✅ Return received and settled!\n\n• 100% escrow principal refunded to buyer.\n• Reverse courier fee (₹${charged}) debited from your seller wallet.`);
+      alert(`✅ Return received and settled!\n\n• 100% principal refunded to buyer.\n• Reverse courier fee (₹${charged}) debited from your seller wallet.`);
       fetchReturnOrders();
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to confirm return received.');
@@ -357,8 +357,8 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
             </h1>
             <p className="text-xs text-slate-500 font-normal mt-0.5">
               {isSupplier 
-                ? 'Manage buyer returns, assign reverse couriers, and inspect escrow-protected inventory.'
-                : 'Track return shipments, courier pickups, discount proposals, and escrow refunds.'}
+                ? 'Manage buyer returns, assign reverse couriers, and inspect protected inventory.'
+                : 'Track return shipments, courier pickups, discount proposals, and order refunds.'}
             </p>
           </div>
         </div>
@@ -403,7 +403,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
           </div>
           <div>
             <p className="text-2xl font-bold text-indigo-950 font-mono">{totalReturns}</p>
-            <p className="text-[11px] text-indigo-600/90 font-medium">₹{totalReturnValue.toLocaleString('en-IN')} escrow value</p>
+            <p className="text-[11px] text-indigo-600/90 font-medium">₹{totalReturnValue.toLocaleString('en-IN')} return value</p>
           </div>
         </div>
 
@@ -561,7 +561,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   'border-slate-200/90 border-l-4 border-l-emerald-500'
                 }`}
               >
-                {/* Header: ID, Status Pill, Type, Escrow Value */}
+                {/* Header: ID, Status Pill, Type, Order Value */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <span className="text-sm font-bold text-slate-900 font-mono tracking-tight">
@@ -599,7 +599,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   </div>
 
                   <div className="flex items-center gap-2 sm:text-right">
-                    <span className="text-[11px] text-slate-500 font-medium">Escrow Value:</span>
+                    <span className="text-[11px] text-slate-500 font-medium">Order Value:</span>
                     <span className="text-base font-bold text-emerald-700 font-mono">
                       ₹{order.amount ? order.amount.toLocaleString('en-IN') : '0'}
                     </span>
@@ -833,7 +833,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
 
                           {order.discountAccepted === false && (
                             <span className="text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
-                              Rejected (100% Escrow refund issued)
+                              Rejected (100% Order refund issued)
                             </span>
                           )}
                         </div>
@@ -846,7 +846,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100">
                   <div className="text-[11px] text-emerald-700 flex items-center gap-1.5 font-medium">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>Protected by Escrow Vault</span>
+                    <span>Protected by Delivery Vault</span>
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
@@ -1158,8 +1158,8 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   {
                     title: 'Return Received & Refunded',
                     desc: trackingModalOrder.returnStatus === 'Completed' || trackingModalOrder.status === 'Returned & Refunded'
-                      ? `Parcel received. 100% Escrow (₹${trackingModalOrder.amount}) credited to buyer wallet.`
-                      : 'Escrow auto-refunds upon merchant receipt confirmation.',
+                      ? `Parcel received. 100% Order Amount (₹${trackingModalOrder.amount}) credited to buyer wallet.`
+                      : 'Refunds auto-issue upon merchant receipt confirmation.',
                     active: Boolean(trackingModalOrder.returnStatus === 'Completed' || trackingModalOrder.status === 'Returned & Refunded'),
                     time: trackingModalOrder.returnStatus === 'Completed' ? 'Completed' : 'Pending',
                     color: 'bg-emerald-600'
@@ -1230,8 +1230,8 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
               </div>
               <p className="text-slate-600">
                 {assignMode === 'replacement'
-                  ? 'Dispatch a new parcel to the buyer. Upon receipt confirmation, escrow funds will release to your wallet.'
-                  : assignModalOrder.returnReason || 'Buyer requested return within escrow window.'}
+                  ? 'Dispatch a new parcel to the buyer. Upon receipt confirmation, order funds will release to your wallet.'
+                  : assignModalOrder.returnReason || 'Buyer requested return within verification window.'}
               </p>
             </div>
 
@@ -1449,7 +1449,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
 
               {/* Instructions banner */}
               <div className="p-3 bg-violet-50/70 border border-violet-200/80 rounded-2xl text-[11px] text-violet-900 leading-relaxed">
-                <span className="font-bold">Instructions for Seller:</span> Print this QR label and stick it <strong>inside the replacement box</strong>. When the buyer opens the parcel, they scan this QR to receive a 6-digit SMS OTP, confirming good condition and releasing your escrow payout.
+                <span className="font-bold">Instructions for Seller:</span> Print this QR label and stick it <strong>inside the replacement box</strong>. When the buyer opens the parcel, they scan this QR to receive a 6-digit SMS OTP, confirming good condition and releasing your order payout.
               </div>
 
               {/* Printable Area */}
@@ -1482,7 +1482,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
 
                 <p className="text-[9.5px] text-slate-400 leading-tight">
                   Receiver scans QR upon opening &amp; verifies SMS OTP<br />
-                  Unlocks Escrow Release to Seller • Protected by SecureKaro
+                  Unlocks Payout Release to Seller • Protected by SecureKaro
                 </p>
               </div>
 

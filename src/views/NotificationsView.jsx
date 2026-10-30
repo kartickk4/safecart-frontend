@@ -146,7 +146,7 @@ export default function NotificationsView({ onSelectShipment, onNotificationsCha
 
   const filtered = list.filter(n => {
     if (filter === 'All') return true;
-    if (filter === 'Escrow') return n.type === 'escrow' || n.type === 'payment';
+    if (filter === 'Payments') return n.type === 'escrow' || n.type === 'payment';
     return n.type === filter.toLowerCase();
   });
 
@@ -164,7 +164,7 @@ export default function NotificationsView({ onSelectShipment, onNotificationsCha
             )}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Real-time alerts for escrow movements, carrier milestones, and return tracking updates.
+            Real-time alerts for payment movements, carrier milestones, and return tracking updates.
           </p>
         </div>
 
@@ -202,7 +202,7 @@ export default function NotificationsView({ onSelectShipment, onNotificationsCha
 
           {/* Filter Pills */}
           <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1 text-xs font-semibold text-slate-600">
-            {['All', 'Escrow', 'Shipping', 'Dispute'].map(t => (
+            {['All', 'Payments', 'Shipping', 'Dispute'].map(t => (
               <button
                 key={t}
                 onClick={() => setFilter(t)}
@@ -223,7 +223,7 @@ export default function NotificationsView({ onSelectShipment, onNotificationsCha
             </div>
             <p className="text-sm font-bold text-slate-700">No Notifications Available</p>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              You're all caught up! Real-time alerts for shipments, escrow updates, and return orders will appear here.
+              You're all caught up! Real-time alerts for shipments, order updates, and return orders will appear here.
             </p>
             <button
               onClick={handleRefresh}

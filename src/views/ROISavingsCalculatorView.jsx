@@ -83,7 +83,7 @@ const REAL_BENEFITS = [
     icon: Package,
     iconBg: 'bg-emerald-100',
     iconColor: 'text-emerald-700',
-    summary: 'When buyers pay into SecureKaro escrow before pickup, they actually accept the package. Doorstep rejections drop from ~30% in COD to under 4%.',
+    summary: 'When buyers pay via SecureKaro Delivery Protection before pickup, they actually accept the package. Doorstep rejections drop from ~30% in COD to under 4%.',
     impact: 'Saves ₹120–₹250 courier & box loss per saved order'
   },
   {
@@ -138,7 +138,7 @@ const REAL_BENEFITS = [
     icon: Banknote,
     iconBg: 'bg-emerald-100',
     iconColor: 'text-emerald-700',
-    summary: 'If an escrow parcel is still returned undelivered, SecureKaro credits ₹40 relief to your wallet to reduce courier loss burden.',
+    summary: 'If a protected parcel is still returned undelivered, SecureKaro credits ₹40 relief to your wallet to reduce courier loss burden.',
     impact: 'You never bear the full pain of courier loss alone'
   },
   {
@@ -149,7 +149,7 @@ const REAL_BENEFITS = [
     icon: TrendingUp,
     iconBg: 'bg-teal-100',
     iconColor: 'text-teal-700',
-    summary: 'New buyers are scared to send direct advance UPI to unknown Instagram shops. Escrow builds instant trust so they happily buy.',
+    summary: 'New buyers are scared to send direct advance UPI to unknown Instagram shops. Delivery Verification builds instant trust so they happily buy.',
     impact: 'Converts hesitant chat enquiries into confirmed orders'
   },
   {
@@ -169,7 +169,7 @@ const COMPARISON_ROWS = [
   {
     feature: 'Doorstep Rejection Rate (RTO)',
     without: '25% – 35% of COD parcels returned rejected',
-    withKaro: 'Drops below 4% on escrow orders (buyer already paid)'
+    withKaro: 'Drops below 4% on protected orders (buyer already paid)'
   },
   {
     feature: 'Payment Remittance Speed',
@@ -199,7 +199,7 @@ const COMPARISON_ROWS = [
   {
     feature: 'Buyer Trust on Instagram/WhatsApp',
     without: 'Buyers refuse direct UPI advance payment',
-    withKaro: 'Buyers feel safe with escrow, happily prepay'
+    withKaro: 'Buyers feel safe with delivery protection, happily prepay'
   }
 ];
 
@@ -209,7 +209,7 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
   const [avgOrderValue, setAvgOrderValue] = useState(800);
   const [codPercentage, setCodPercentage] = useState(70);
   const [rtoRate, setRtoRate] = useState(28);
-  const [escrowAdoptionRate, setEscrowAdoptionRate] = useState(60);
+  const [protectionAdoptionRate, setProtectionAdoptionRate] = useState(60);
   const [avgShippingCost, setAvgShippingCost] = useState(110);
   const [returnFraudPerMonth, setReturnFraudPerMonth] = useState(3);
   const [fakePaymentsPerMonth, setFakePaymentsPerMonth] = useState(2000);
@@ -228,9 +228,9 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
     const codOrders = Math.round(monthlyOrders * (codPercentage / 100));
     const directPrepaidOrders = monthlyOrders - codOrders;
 
-    const codConvertedToEscrow = Math.round(codOrders * (escrowAdoptionRate / 100));
-    const remainingCodOrders = codOrders - codConvertedToEscrow;
-    const totalEscrowOrders = directPrepaidOrders + codConvertedToEscrow;
+    const codConvertedToProtected = Math.round(codOrders * (protectionAdoptionRate / 100));
+    const remainingCodOrders = codOrders - codConvertedToProtected;
+    const totalProtectedOrders = directPrepaidOrders + codConvertedToProtected;
 
     // Costs without SecureKaro
     const rtoLossPerOrder = avgOrderValue + (avgShippingCost * 2);
@@ -242,18 +242,18 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
     const totalLossWithout = rtoLossWithout + returnFraudLossWithout + fakePaymentLossWithout + shippingOverpayWithout;
 
     // Costs with SecureKaro
-    const rtoEscrowRate = 0.04;
-    const rtoCountEscrow = Math.round(totalEscrowOrders * rtoEscrowRate);
+    const rtoProtectedRate = 0.04;
+    const rtoCountProtected = Math.round(totalProtectedOrders * rtoProtectedRate);
     const rtoCountRemainingCod = Math.round(remainingCodOrders * (rtoRate / 100));
-    const rtoLossWith = (rtoCountEscrow + rtoCountRemainingCod) * rtoLossPerOrder;
+    const rtoLossWith = (rtoCountProtected + rtoCountRemainingCod) * rtoLossPerOrder;
 
     const returnFraudLossWith = Math.round(returnFraudPerMonth * avgOrderValue * 0.15);
-    const escrowShare = totalEscrowOrders / (monthlyOrders || 1);
-    const fakePaymentLossWith = Math.round(fakePaymentsPerMonth * (1 - escrowShare));
+    const protectionShare = totalProtectedOrders / (monthlyOrders || 1);
+    const fakePaymentLossWith = Math.round(fakePaymentsPerMonth * (1 - protectionShare));
 
     // Fee
     const singleFee = calcFee(avgOrderValue);
-    const platformFee = totalEscrowOrders * singleFee;
+    const platformFee = totalProtectedOrders * singleFee;
 
     const totalSavings = (rtoLossWithout - rtoLossWith) +
       (returnFraudLossWithout - returnFraudLossWith) +
@@ -267,12 +267,12 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
       totalGMV,
       codOrders,
       directPrepaidOrders,
-      totalEscrowOrders,
+      totalProtectedOrders,
       remainingCodOrders,
       singleFee,
       rtoCountWithout,
       rtoLossWithout,
-      rtoCountWith: rtoCountEscrow + rtoCountRemainingCod,
+      rtoCountWith: rtoCountProtected + rtoCountRemainingCod,
       rtoLossWith,
       returnFraudLossWithout,
       returnFraudLossWith,
@@ -284,7 +284,7 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
       netBenefit,
       roi,
     };
-  }, [monthlyOrders, avgOrderValue, codPercentage, rtoRate, escrowAdoptionRate, avgShippingCost, returnFraudPerMonth, fakePaymentsPerMonth]);
+  }, [monthlyOrders, avgOrderValue, codPercentage, rtoRate, protectionAdoptionRate, avgShippingCost, returnFraudPerMonth, fakePaymentsPerMonth]);
 
   const fmt = (n) => `₹${Math.round(n).toLocaleString('en-IN')}`;
   const isPositive = results.netBenefit > 0;
@@ -335,7 +335,7 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
           <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl p-3 text-xs">
             <div className="flex items-center gap-1.5 font-bold text-blue-900 mb-0.5">
               <ShieldCheck className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-              <span>Escrow stops returns</span>
+              <span>Prepaid protection stops returns</span>
             </div>
             <p className="text-[11px] text-blue-800 leading-snug">
               When buyers pay via SecureKaro link first, they almost never reject the package.
@@ -405,9 +405,9 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
               />
 
               <CompactSlider
-                label="Buyers who agree to pay with Escrow"
-                value={escrowAdoptionRate}
-                onChange={setEscrowAdoptionRate}
+                label="Buyers who agree to Prepaid / Delivery Protection"
+                value={protectionAdoptionRate}
+                onChange={setProtectionAdoptionRate}
                 min={10} max={100} step={5}
                 suffix="%"
                 color="emerald"
@@ -488,7 +488,7 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
               </div>
 
               <p className="text-[11px] text-white/85 leading-snug">
-                SecureKaro escrow is completely FREE — 0% platform fee. You keep 100% of your order value minus only courier charges.
+                SecureKaro platform is completely FREE — 0% platform fee. You keep 100% of your order value minus only courier charges.
               </p>
 
               {/* 4 Stat Boxes - Compact & Clean */}
@@ -502,11 +502,11 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
                   <p className="text-base font-black mt-0.5 text-emerald-200">FREE ✔</p>
                 </div>
                 <div className="bg-white/10 rounded-xl p-2.5">
-                  <p className="text-[9px] font-bold text-white/70 uppercase">Escrow Orders</p>
-                  <p className="text-sm font-bold mt-0.5">{results.totalEscrowOrders} of {monthlyOrders}</p>
+                  <p className="text-[9px] font-bold text-white/70 uppercase">Protected Orders</p>
+                  <p className="text-sm font-bold mt-0.5">{results.totalProtectedOrders} of {monthlyOrders}</p>
                 </div>
                 <div className="bg-white/10 rounded-xl p-2.5">
-                  <p className="text-[9px] font-bold text-white/70 uppercase">Escrow Is Free</p>
+                  <p className="text-[9px] font-bold text-white/70 uppercase">Platform Is Free</p>
                   <p className="text-sm font-bold mt-0.5">₹0 per order</p>
                 </div>
               </div>
@@ -578,7 +578,7 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                What sellers actually gain by switching from risky normal COD to verified Escrow shipping.
+                What sellers actually gain by switching from risky normal COD to verified prepaid shipping.
               </p>
             </div>
 
@@ -663,7 +663,7 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
                       Selling on WhatsApp / Normal COD
                     </th>
                     <th className="py-2.5 px-3 w-1/3 text-emerald-700 bg-emerald-50/60">
-                      With SecureKaro Escrow Protection
+                      With SecureKaro Delivery Protection
                     </th>
                   </tr>
                 </thead>
@@ -699,7 +699,7 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
                 Ready to stop losing money on returned parcels?
               </p>
               <p className="text-[11px] text-slate-600">
-                Create your first escrow shipment in 30 seconds. No subscription or setup fee.
+                Create your first protected shipment in 30 seconds. No subscription or setup fee.
               </p>
             </div>
             <button
@@ -716,7 +716,7 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
 
         {/* Small Bottom Disclaimer */}
         <p className="text-[10px] text-slate-400 text-center leading-normal">
-          * Estimates are based on your inputs. SecureKaro Escrow is 100% free with ₹0 platform fee.
+          * Estimates are based on your inputs. SecureKaro platform is 100% free with ₹0 platform fee.
         </p>
 
       </div>

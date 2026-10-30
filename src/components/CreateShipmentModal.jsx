@@ -563,7 +563,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     }`}
                   >
                     <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Prepaid (Escrow)</span>
+                    <span>Prepaid (Protected)</span>
                   </button>
                   <button
                     type="button"
@@ -679,7 +679,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     }`}
                   >
                     <CreditCard className="w-3.5 h-3.5" />
-                    <span>Prepaid (Escrow)</span>
+                    <span>Prepaid (Protected)</span>
                   </button>
 
                   <button

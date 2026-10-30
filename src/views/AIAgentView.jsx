@@ -99,7 +99,7 @@ const CarrierCard = ({ quotes, selectedSlug, onSelect }) => {
                   <div className="text-sm font-black font-mono text-slate-900">
                     ₹{q.price?.toLocaleString("en-IN") || q.price}
                   </div>
-                  <div className="text-[10px] text-slate-400 font-medium">Escrow Included</div>
+                  <div className="text-[10px] text-slate-400 font-medium">Protection Included</div>
                 </div>
                 <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
                   isSelected ? "bg-indigo-600 text-white" : "border-2 border-slate-300"
@@ -177,7 +177,7 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
                     Shipment Booked Successfully
                   </div>
                   <span className="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-                    Escrow Protected
+                    Delivery Protected
                   </span>
                 </div>
                 
@@ -295,8 +295,8 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
 
 const QUICK_REPLIES = {
   0: ["📦 Book Shipment", "🔍 Track Recent Order", "💰 My Wallet", "🔄 Replacement Guide", "🛡️ RTO Rules", "⚡ Defect Discount", "🎁 My Referral Code"],
-  1: ["Cancel Booking", "How does Escrow work?", "Replacement Guide"],
-  7: ["Prepaid Escrow", "Cash on Delivery (COD)"],
+  1: ["Cancel Booking", "How does Delivery Protection work?", "Replacement Guide"],
+  7: ["Prepaid Order", "Cash on Delivery (COD)"],
   8: ["Yes, Enable RTO Protection", "No, Skip RTO"],
   9: ["Yes, Allow Returns", "No, Final Sale"],
   10: ["Confirm Courier", "Change Courier"],
@@ -314,9 +314,11 @@ const QUICK_REPLY_KEYWORDS = {
   '📞 Call Support':            'Call merchant support helpline',
   '🎁 My Referral Code':        'What is my referral code?',
   'Cancel Booking':             'cancel',
-  'How does Escrow work?':      'How does escrow work?',
+  'How does Delivery Protection work?': 'How does delivery protection work?',
   'Check Wallet':               'What is my wallet balance?',
   'Track Recent Order':         'Track my recent order',
+  'Prepaid Order':              '1',
+  'Prepaid Protection':         '1',
   'Prepaid Escrow':             '1',
   'Prepaid (Online)':            '1',
   'Cash on Delivery (COD)':      '2',
@@ -578,7 +580,7 @@ export default function AIAgentView({ onBack }) {
                 </span>
               </div>
               <div className="text-xs text-indigo-100/90 font-medium">
-                Autonomous Escrow Shipping
+                Autonomous Courier Dispatch
               </div>
             </div>
           </div>
@@ -643,14 +645,14 @@ export default function AIAgentView({ onBack }) {
               <CapCard
                 icon={Package}
                 title="Smart Booking"
-                desc="Conversational prompt to create verified escrow parcels"
+                desc="Conversational prompt to create verified courier parcels"
                 gradient="bg-indigo-50"
                 iconColor="text-indigo-600"
               />
               <CapCard
                 icon={Zap}
                 title="Payment Dispatch"
-                desc="Auto-sends WhatsApp & SMS escrow links to buyer"
+                desc="Auto-sends WhatsApp & SMS payment links to buyer"
                 gradient="bg-amber-50"
                 iconColor="text-amber-600"
               />
@@ -663,7 +665,7 @@ export default function AIAgentView({ onBack }) {
               />
               <CapCard
                 icon={Shield}
-                title="Escrow Safety"
+                title="Delivery Protection"
                 desc="100% buyer inspection & safe seller payout window"
                 gradient="bg-purple-50"
                 iconColor="text-purple-600"
@@ -800,7 +802,7 @@ export default function AIAgentView({ onBack }) {
                   },
                   {
                     title: "Wallet & Payouts",
-                    desc: "Check available balance & active escrow",
+                    desc: "Check available balance & active shipments",
                     icon: Zap,
                     action: () => sendMessage("What is my wallet balance?")
                   },

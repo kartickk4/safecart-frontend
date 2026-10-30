@@ -208,7 +208,7 @@ export default function WalletModal({ user, onUpdateUser }) {
   const displayUnwithdrawable = displayPendingConfirmation;
   const displayTotalWallet = displayWithdrawable + displayUnwithdrawable;
 
-  const activeEscrowBalance = shipments
+  const activePipelineBalance = shipments
     .filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit')
     .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
 
@@ -424,12 +424,12 @@ export default function WalletModal({ user, onUpdateUser }) {
       {/* Clean Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-          {isSupplier ? 'Supplier Escrow Wallet' : 'Receiver Escrow Wallet'}
+          {isSupplier ? 'Supplier Wallet & Payouts' : 'Buyer Order Wallet'}
         </h1>
         <p className="text-xs text-slate-500 mt-1">
           {isSupplier 
-            ? 'Track cleared parcel payouts, active escrow balances, and withdraw anytime to your UPI or Bank account!'
-            : 'Track your escrow-protected purchases, monitor active escrow balances, and view your complete order spending history.'
+            ? 'Track cleared parcel payouts, active orders, and withdraw anytime to your UPI or Bank account!'
+            : 'Track your purchases, monitor active order balances, and view your complete order spending history.'
           }
         </p>
       </div>
@@ -512,7 +512,7 @@ export default function WalletModal({ user, onUpdateUser }) {
               <div className="pt-4 border-t border-white/15 mt-4 flex items-center justify-between gap-3 flex-wrap">
                 <span className="text-[11px] text-blue-200 font-semibold flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-blue-300" />
-                  <span>100% Escrow &amp; Bank Protected</span>
+                  <span>100% Protected Delivery &amp; Payouts</span>
                 </span>
 
                 <div className="flex items-center gap-2">
@@ -541,25 +541,25 @@ export default function WalletModal({ user, onUpdateUser }) {
               </div>
             </div>
 
-            {/* Supplier Card 2: Active Escrow */}
+            {/* Supplier Card 2: Active Pipeline */}
             <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Active Escrow</span>
+                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Active Pipeline</span>
                   <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                 </div>
 
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                  ₹{activeEscrowBalance.toLocaleString('en-IN')}
+                  ₹{activePipelineBalance.toLocaleString('en-IN')}
                 </h2>
                 <p className="text-[11px] text-slate-500 mt-1 font-medium">Locked across {shipments.length} active orders</p>
               </div>
 
               <div className="pt-4 border-t border-slate-100 mt-4 flex items-center gap-1.5 text-[11px] text-[#1E56E3] font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                <span>100% Protected Escrow Vault</span>
+                <span>100% Protected Delivery Vault</span>
               </div>
             </div>
 
@@ -589,7 +589,7 @@ export default function WalletModal({ user, onUpdateUser }) {
           </>
         ) : (
           <>
-            {/* Receiver Card 1: Escrow Balance */}
+            {/* Receiver Card 1: Order Balance */}
             <div className="bg-gradient-to-br from-[#1E3A6E] via-[#1A459C] to-[#1E56E3] text-white p-6 rounded-3xl shadow-xl shadow-blue-900/20 border border-blue-400/20 relative overflow-hidden flex flex-col justify-between group hover:shadow-2xl hover:shadow-blue-900/30 transition">
               <div className="absolute top-0 right-0 p-4 opacity-15 group-hover:opacity-25 transition">
                 <ShieldCheck className="w-24 h-24 text-white" />
@@ -599,7 +599,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[11px] font-black text-blue-200 uppercase tracking-wider flex items-center gap-1.5">
                     <Wallet className="w-3.5 h-3.5 text-blue-300" />
-                    <span>Escrow Balance</span>
+                    <span>Order Balance</span>
                   </span>
                   <span className="bg-white/15 text-white border border-white/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
                     Protected
@@ -611,13 +611,13 @@ export default function WalletModal({ user, onUpdateUser }) {
                   <span className="text-xs font-normal text-blue-300">.00</span>
                 </h2>
                 <p className="text-[11px] text-blue-200 mt-1 font-medium">
-                  Your escrow-protected purchase balance
+                  Your delivery-protected purchase balance
                 </p>
               </div>
 
               <div className="pt-5 flex items-center justify-between border-t border-white/15 mt-4">
                 <span className="text-[10px] text-blue-300 font-bold">
-                  SafeCart Escrow Protection
+                  SecureKaro Delivery Protection
                 </span>
                 <div className="flex items-center gap-1 text-[10px] text-blue-200 font-bold">
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -626,23 +626,23 @@ export default function WalletModal({ user, onUpdateUser }) {
               </div>
             </div>
 
-            {/* Receiver Card 2: Active Escrow Funds */}
+            {/* Receiver Card 2: Active Order Funds */}
             <div className="bg-gradient-to-br from-[#1E56E3] to-[#1442B5] text-white p-6 rounded-3xl shadow-lg shadow-blue-500/20 border border-blue-400/30 relative overflow-hidden flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[11px] font-black text-blue-200 uppercase tracking-wider">Active Escrow</span>
+                  <span className="text-[11px] font-black text-blue-200 uppercase tracking-wider">Active Orders</span>
                   <Wallet className="w-4 h-4 text-blue-200" />
                 </div>
 
                 <h2 className="text-3xl font-black text-white tracking-tight">
-                  ₹{activeEscrowBalance.toLocaleString('en-IN')}
+                  ₹{activePipelineBalance.toLocaleString('en-IN')}
                 </h2>
                 <p className="text-[11px] text-blue-100 mt-1 font-medium">Locked in {shipments.length} active orders</p>
               </div>
 
               <div className="pt-4 border-t border-blue-400/30 mt-4 flex items-center gap-1.5 text-[11px] text-blue-100 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-200 shrink-0" />
-                <span>100% Protected Escrow Vault</span>
+                <span>100% Protected Delivery Vault</span>
               </div>
             </div>
 
@@ -666,7 +666,7 @@ export default function WalletModal({ user, onUpdateUser }) {
 
               <div className="pt-4 border-t border-slate-100 mt-4 flex items-center gap-1.5 text-[11px] text-[#1E56E3] font-semibold">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Escrow Released to Seller</span>
+                <span>Payment Released to Seller</span>
               </div>
             </div>
 
@@ -901,7 +901,7 @@ export default function WalletModal({ user, onUpdateUser }) {
         )}
       </div>
 
-      {/* REWARD & ESCROW / WALLET TRANSACTIONS HISTORY */}
+      {/* REWARD & WALLET TRANSACTIONS HISTORY */}
       <div className="bg-white p-3.5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-4 sm:space-y-6">
         {/* Dual Ledger Tab Switcher for All Users */}
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3 overflow-x-auto no-scrollbar">
@@ -940,7 +940,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <p className="text-[11px] sm:text-xs text-slate-500 hidden sm:block">
                   {isSupplier
                     ? 'Real-time record of all top-ups, courier freight deductions, and COD balance settlements.'
-                    : 'Real-time record of all top-ups, refunds, escrow releases, and UPI withdrawals.'}
+                    : 'Real-time record of all top-ups, refunds, order releases, and UPI withdrawals.'}
                 </p>
               </div>
 
@@ -1079,7 +1079,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             )}
           </div>
         ) : (
-          /* 2. REWARD / ESCROW TRANSACTIONS VIEW */
+          /* 2. REWARD / ORDER TRANSACTIONS VIEW */
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
@@ -1088,12 +1088,12 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-base">
-                    {isSupplier ? 'Seller Shipping Cashback Transactions' : 'Escrow & Payout History'}
+                    {isSupplier ? 'Seller Shipping Cashback Transactions' : 'Orders & Payout History'}
                   </h3>
                   <p className="text-xs text-slate-500">
                     {isSupplier 
                       ? 'History of all earned ₹3 – ₹6 seller cashbacks and completed payouts.'
-                      : 'History of all escrow receipts and withdrawals.'}
+                      : 'History of all order receipts and withdrawals.'}
                   </p>
                 </div>
               </div>
@@ -1215,12 +1215,12 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">
-                    {isSupplier ? 'Withdraw Cash Reward' : 'Withdraw Escrow Balance'}
+                    {isSupplier ? 'Withdraw Cash Reward' : 'Withdraw Order Balance'}
                   </h3>
                   <p className="text-xs text-slate-500">
                     {isSupplier 
                       ? 'Transfer your earned cash rewards directly to UPI or Bank.' 
-                      : 'Transfer your escrow balance directly to UPI or Bank.'}
+                      : 'Transfer your order balance directly to UPI or Bank.'}
                   </p>
                 </div>
               </div>
@@ -1253,7 +1253,7 @@ export default function WalletModal({ user, onUpdateUser }) {
               <div className="bg-gradient-to-r from-[#1E3A6E] to-[#1E56E3] text-white p-5 rounded-2xl flex items-center justify-between border border-blue-600/30 shadow-lg shadow-blue-900/20">
                 <div>
                   <span className="text-[10px] uppercase font-bold tracking-wider text-blue-200 block">
-                    {isSupplier ? 'Available Withdrawable Balance' : 'Available Escrow Balance'}
+                    {isSupplier ? 'Available Withdrawable Balance' : 'Available Order Balance'}
                   </span>
                   <span className="text-2xl md:text-3xl font-black text-white font-mono tracking-tight">₹{displayWithdrawable.toLocaleString('en-IN')}</span>
                 </div>

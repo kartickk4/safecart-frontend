@@ -86,8 +86,8 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
           </h1>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
             {isMerchant 
-              ? 'View, track, and manage all your escrow-protected parcel shipments.' 
-              : 'Track your incoming parcels, delivery status, and protected escrow transactions.'}
+              ? 'View, track, and manage all your delivery-protected parcel shipments.' 
+              : 'Track your incoming parcels, delivery status, and protected order transactions.'}
           </p>
         </div>
 
@@ -157,7 +157,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
               </p>
               <p className="text-xs text-slate-400 mt-0.5">
                 {isMerchant 
-                  ? 'Create a shipment to start tracking parcels with escrow protection.' 
+                  ? 'Create a shipment to start tracking parcels with delivery protection.' 
                   : 'Any parcel shipments dispatched to your mobile number will appear here.'}
               </p>
             </div>
@@ -168,12 +168,12 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                 onClick={() => onSelectShipment(item)}
                 className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs hover:border-blue-400 hover:shadow-md transition active:scale-[0.99] cursor-pointer space-y-2.5"
               >
-                {/* Line 1: ID & Escrow Status */}
+                {/* Line 1: ID & Protection Status */}
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-extrabold text-xs text-[#1E56E3] tracking-tight">
                     {item.shipmentId}
                   </span>
-                  <div>{renderEscrowBadge(item.status)}</div>
+                  <div>{renderProtectionBadge(item.status)}</div>
                 </div>
 
                 {/* Line 2: Recipient / Sender Name & Amount */}
@@ -242,8 +242,8 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                 <th className="py-3 px-4">{isMerchant ? 'Recipient' : 'Sender / Merchant'}</th>
                 <th className="py-3 px-4">Shipping Route</th>
                 <th className="py-3 px-4">Carrier</th>
-                <th className="py-3 px-4">Escrow Value</th>
-                <th className="py-3 px-4">Escrow Status</th>
+                <th className="py-3 px-4">Order Value</th>
+                <th className="py-3 px-4">Protection Status</th>
                 <th className="py-3 px-4">Delivery Status</th>
                 <th className="py-3 px-4 text-right">Action</th>
               </tr>
@@ -258,7 +258,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                     </p>
                     <p className="text-xs text-slate-400 mt-0.5">
                       {isMerchant 
-                        ? 'Create a shipment to start tracking parcels with escrow protection.' 
+                        ? 'Create a shipment to start tracking parcels with delivery protection.' 
                         : 'Any parcel shipments dispatched to your mobile number will appear here automatically.'}
                     </p>
                   </td>
@@ -286,7 +286,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                       ₹{item.amount ? Number(item.amount).toLocaleString('en-IN') : '3,420'}
                     </td>
                     <td className="py-3.5 px-4">
-                      {renderEscrowBadge(item.status)}
+                      {renderProtectionBadge(item.status)}
                     </td>
                     <td className="py-3.5 px-4">
                       {renderDeliveryBadge(item.status)}
@@ -370,7 +370,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
   );
 }
 
-function renderEscrowBadge(status) {
+function renderProtectionBadge(status) {
   if (status === 'Awaiting Payment') return <span className="bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Awaiting Payment</span>;
   if (status === 'Released') return <span className="pill-released"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Released</span>;
   if (status === 'Locked') return <span className="pill-disputed"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Disputed</span>;
@@ -378,7 +378,7 @@ function renderEscrowBadge(status) {
   if (status === 'Undelivered') return <span className="bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Refunded to Receiver</span>;
   if (status === 'Return Requested' || status === 'Return In Transit') return <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Return Frozen</span>;
   if (status === 'Returned & Refunded') return <span className="bg-purple-100 text-purple-900 border border-purple-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>Returned & Refunded</span>;
-  return <span className="pill-held"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Held in Escrow</span>;
+  return <span className="pill-held"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Protected</span>;
 }
 
 function renderDeliveryBadge(status) {

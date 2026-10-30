@@ -7,7 +7,7 @@ import { TAB_ROUTES } from '../utils/routes';
 
 export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, onSwitchRole, onSignOut, openNewShipmentModal, notifCount = 0 }) {
   const isSupplier = currentRole ? currentRole === 'Supplier' : (user?.role === 'Supplier' || user?.activeRole === 'Supplier');
-  const roleTitle = isSupplier ? 'Supplier Platform' : 'Buyer Escrow Portal';
+  const roleTitle = isSupplier ? 'Supplier Platform' : 'Buyer Order Portal';
   const isAdmin = user && (
     user.isAdmin === true ||
     user.role === 'Admin' ||
@@ -78,11 +78,11 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
       ]
     },
     {
-      section: 'ESCROW & WALLET',
+      section: 'WALLET & REWARDS',
       items: [
         { 
           id: 'wallet', 
-          label: isSupplier ? 'Escrow & Rewards' : 'Escrow Wallet', 
+          label: isSupplier ? 'Wallet & Payouts' : 'Order Wallet', 
           icon: Wallet, 
           customBadge: isSupplier && (Number(user?.walletBalance) || 0) < 0 ? (
             <span className="bg-rose-100 text-rose-800 text-[9px] font-black px-1.5 py-0.5 rounded-full animate-pulse border border-rose-300">

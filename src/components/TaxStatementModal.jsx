@@ -32,8 +32,8 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
     // Settled vs held
     const releasedList = filteredShipments.filter(s => s.status === 'Released');
     const releasedRevenue = releasedList.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
-    const inEscrowList = filteredShipments.filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit' || s.status === 'Out for Delivery');
-    const inEscrowAmount = inEscrowList.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+    const inPipelineList = filteredShipments.filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit' || s.status === 'Out for Delivery');
+    const inPipelineAmount = inPipelineList.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
 
     // Platform fees
     const totalGatewayFees = filteredShipments.reduce((sum, s) => sum + (Number(s.gatewayFeeDeducted) || 0), 0);
@@ -61,8 +61,8 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
       grossRevenue,
       releasedRevenue,
       releasedCount: releasedList.length,
-      inEscrowAmount,
-      inEscrowCount: inEscrowList.length,
+      inPipelineAmount,
+      inPipelineCount: inPipelineList.length,
       totalGatewayFees,
       estimatedShippingCost,
       netProfit,
@@ -113,7 +113,7 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
         'Gross Sale Value (INR)',
         'Payment Mode',
         'Delivery Status',
-        'Escrow Status',
+        'Protection Status',
         'Carrier Partner',
         'AWB Code',
         'Platform Fee (INR)',
@@ -140,7 +140,7 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
           `"${(s.city || 'Domestic').replace(/"/g, '""')}"`,
           `"${(s.description || 'Goods').replace(/"/g, '""')}"`,
           `"${gross.toFixed(2)}"`,
-          `"${s.paymentMode || 'Escrow'}"`,
+          `"${s.paymentMode || 'Prepaid'}"`,
           `"${s.status || ''}"`,
           `"${s.escrowStage || (s.status === 'Released' ? 'Released' : 'Held')}"`,
           `"${(s.carrierSlug || 'Delhivery').toUpperCase()}"`,
@@ -292,13 +292,13 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
                   <tbody className="divide-y divide-slate-100 font-medium">
                     <tr>
                       <td className="py-3 px-4 font-bold text-slate-800">Gross Sales Value</td>
-                      <td className="py-3 px-4 text-slate-500">Total customer payments escrowed</td>
+                      <td className="py-3 px-4 text-slate-500">Total customer order payments received</td>
                       <td className="py-3 px-4 text-right font-black text-slate-900">₹{stats.grossRevenue.toLocaleString('en-IN')}</td>
                     </tr>
                     <tr className="bg-slate-50/40">
-                      <td className="py-3 px-4 text-slate-700">Less: Active Escrow in Pipeline</td>
-                      <td className="py-3 px-4 text-slate-500">{stats.inEscrowCount} parcels in transit / awaiting buyer OTP</td>
-                      <td className="py-3 px-4 text-right font-semibold text-blue-600">-₹{stats.inEscrowAmount.toLocaleString('en-IN')}</td>
+                      <td className="py-3 px-4 text-slate-700">Less: Active Orders in Transit Pipeline</td>
+                      <td className="py-3 px-4 text-slate-500">{stats.inPipelineCount} parcels in transit / awaiting buyer OTP</td>
+                      <td className="py-3 px-4 text-right font-semibold text-blue-600">-₹{stats.inPipelineAmount.toLocaleString('en-IN')}</td>
                     </tr>
                     <tr>
                       <td className="py-3 px-4 font-bold text-emerald-800">Total Settled Merchant Payouts</td>
@@ -306,7 +306,7 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
                       <td className="py-3 px-4 text-right font-black text-emerald-700">₹{stats.releasedRevenue.toLocaleString('en-IN')}</td>
                     </tr>
                     <tr className="bg-slate-50/40">
-                      <td className="py-3 px-4 text-slate-700">Less: Platform Gateway &amp; Escrow Fees</td>
+                      <td className="py-3 px-4 text-slate-700">Less: Platform Gateway &amp; Logistics Service Fees</td>
                       <td className="py-3 px-4 text-slate-500">Standard platform fee (deducted at release)</td>
                       <td className="py-3 px-4 text-right font-semibold text-rose-600">-₹{stats.totalGatewayFees.toLocaleString('en-IN')}</td>
                     </tr>
@@ -317,7 +317,7 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
                     </tr>
                     <tr className="bg-blue-50/50 font-black text-slate-900 border-t-2 border-slate-200">
                       <td className="py-3 px-4 text-blue-900 text-sm">Net Operating Profit Realized</td>
-                      <td className="py-3 px-4 text-slate-500">Net take-home after all logistics &amp; escrow fees</td>
+                      <td className="py-3 px-4 text-slate-500">Net take-home after all logistics &amp; service fees</td>
                       <td className="py-3 px-4 text-right text-sm text-blue-900 font-extrabold">₹{stats.netProfit.toLocaleString('en-IN')}</td>
                     </tr>
                   </tbody>
@@ -352,7 +352,7 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
                     <CheckCircle className="w-5 h-5 text-emerald-600" />
                     <span>Audit Ready</span>
                   </p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Fully synchronized with escrow timestamps</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Fully synchronized with dispatch &amp; delivery timestamps</p>
                 </div>
               </div>
 
@@ -363,7 +363,7 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
                   <span>GST &amp; Income Tax Filing Guidance for E-Commerce Merchants</span>
                 </div>
                 <p className="text-slate-600 leading-relaxed">
-                  Under Indian GST law, all transactions conducted via SecureKaro are escrow-backed with unique shipment IDs, receiver states, and timestamped delivery confirmations. You can provide this CSV statement directly to your Chartered Accountant (CA) for monthly <strong>GSTR-1</strong> and <strong>GSTR-3B</strong> returns.
+                  Under Indian GST law, all transactions conducted via SecureKaro are verified with unique shipment IDs, receiver states, and timestamped delivery confirmations. You can provide this CSV statement directly to your Chartered Accountant (CA) for monthly <strong>GSTR-1</strong> and <strong>GSTR-3B</strong> returns.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   <div className="p-3 rounded-xl bg-white border border-slate-200">

@@ -56,7 +56,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
   });
   const [isBackgroundSyncing, setIsBackgroundSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterEscrow, setFilterEscrow] = useState('All');
+  const [filterProtection, setFilterProtection] = useState('All');
   const [chartTimeframe, setChartTimeframe] = useState('30d');
   const [currentPage, setCurrentPage] = useState(1);
   const [isTaxModalOpen, setIsTaxModalOpen] = useState(false);
@@ -137,10 +137,10 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
     const totalGrossRevenue = shipments.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
     
     // Escrow States
-    const activeEscrowHeldList = shipments.filter(s => 
+    const activePipelineHeldList = shipments.filter(s => 
       s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit' || s.status === 'Out for Delivery'
     );
-    const activeEscrowHeld = activeEscrowHeldList.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+    const activePipelineHeld = activePipelineHeldList.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
 
     const releasedShipments = shipments.filter(s => s.status === 'Released');
     const totalReleasedRevenue = releasedShipments.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
@@ -226,8 +226,8 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
     return {
       totalOrders,
       totalGrossRevenue,
-      activeEscrowHeld,
-      activeEscrowHeldCount: activeEscrowHeldList.length,
+      activePipelineHeld,
+      activePipelineHeldCount: activePipelineHeldList.length,
       totalReleasedRevenue,
       releasedCount: releasedShipments.length,
       pendingSignoffAmount,
@@ -251,14 +251,14 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
                             (item.receiverName || '').toLowerCase().includes(query) ||
                             (item.carrierSlug || '').toLowerCase().includes(query) ||
                             (item.city || '').toLowerCase().includes(query);
-      const matchesEscrow = filterEscrow === 'All' || 
-                            (filterEscrow === 'Held' && (item.status === 'Awaiting Payment' || item.status === 'Pending Pickup' || item.status === 'In Transit' || item.status === 'Out for Delivery')) ||
-                            (filterEscrow === 'Released' && item.status === 'Released') ||
-                            (filterEscrow === 'Delivered' && item.status === 'Delivered') ||
-                            (filterEscrow === 'Returns' && ((item.returnStatus && item.returnStatus !== 'None') || item.status?.includes('Return') || item.returnAwbCode));
+      const matchesEscrow = filterProtection === 'All' || 
+                            (filterProtection === 'Held' && (item.status === 'Awaiting Payment' || item.status === 'Pending Pickup' || item.status === 'In Transit' || item.status === 'Out for Delivery')) ||
+                            (filterProtection === 'Released' && item.status === 'Released') ||
+                            (filterProtection === 'Delivered' && item.status === 'Delivered') ||
+                            (filterProtection === 'Returns' && ((item.returnStatus && item.returnStatus !== 'None') || item.status?.includes('Return') || item.returnAwbCode));
       return matchesSearch && matchesEscrow;
     });
-  }, [shipments, searchTerm, filterEscrow]);
+  }, [shipments, searchTerm, filterProtection]);
 
   // Pagination
   const totalPages = Math.ceil(filteredShipments.length / rowsPerPage) || 1;
@@ -279,7 +279,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           : ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Last 7d', 'Today'];
 
     // Real dynamic scale proportional to actual data
-    const baseHeld = analytics.activeEscrowHeld > 0 ? analytics.activeEscrowHeld : 120000;
+    const baseHeld = analytics.activePipelineHeld > 0 ? analytics.activePipelineHeld : 120000;
     const baseReleased = analytics.totalReleasedRevenue > 0 ? analytics.totalReleasedRevenue : 65000;
 
     const heldPoints = labels.map((_, i) => Math.round(baseHeld * (0.7 + (i * 0.06))));
@@ -289,7 +289,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
       labels,
       datasets: [
         {
-          label: 'Active Escrow (₹ Held)',
+          label: 'Active Pipeline (₹ Held)',
           data: heldPoints,
           borderColor: '#1E56E3',
           backgroundColor: 'rgba(30, 86, 227, 0.08)',
@@ -394,10 +394,10 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
             </span>
           </div>
           <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight mt-1 flex items-center gap-2">
-            Business Performance & Escrow Analytics
+            Business Performance & Logistics Analytics
           </h1>
           <p className="text-xs text-slate-500 font-medium">
-            Monitor real-time cash flow, delivery fulfillment efficiency, escrow velocity, and customer dispute health.
+            Monitor real-time cash flow, delivery fulfillment efficiency, order velocity, and customer dispute health.
           </p>
         </div>
 
@@ -426,22 +426,22 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
 
       {/* 4 PRIMARY EXECUTIVE KPI CARDS (2x2 on Mobile, 4x1 on Desktop) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
-        {/* KPI 1: Active Escrow in Pipeline */}
+        {/* KPI 1: Active Pipeline */}
         <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
-            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">In Escrow</span>
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">In Pipeline</span>
             <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold shrink-0">
               <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div className="relative">
             <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight truncate">
-              ₹{analytics.activeEscrowHeld.toLocaleString('en-IN')}
+              ₹{analytics.activePipelineHeld.toLocaleString('en-IN')}
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
               <span className="text-blue-600 font-bold bg-blue-50 px-1 py-0.2 rounded">
-                {analytics.activeEscrowHeldCount} orders
+                {analytics.activePipelineHeldCount} orders
               </span>
               <span className="hidden sm:inline">in pipeline</span>
             </div>
@@ -562,18 +562,18 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
 
       {/* PERFORMANCE VISUALIZATION DECK (Charts & Distribution) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* MAIN CHART: Escrow & Realized Cash Flow Trend (Span 2) */}
+        {/* MAIN CHART: Order & Realized Cash Flow Trend (Span 2) */}
         <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-slate-900 text-base">Escrow Velocity & Cash Flow</h3>
+                <h3 className="font-extrabold text-slate-900 text-base">Order Velocity & Cash Flow</h3>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold border border-emerald-200">
                   +18.4% MoM
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Tracks held escrow volumes versus cash released to your registered merchant account.
+                Tracks protected order volumes versus cash released to your registered merchant account.
               </p>
             </div>
 
@@ -619,7 +619,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-extrabold text-slate-900 text-base">Escrow Pipeline Split</h3>
+              <h3 className="font-extrabold text-slate-900 text-base">Shipment Pipeline Split</h3>
               <span className="text-xs font-bold text-slate-400">{analytics.totalOrders} total</span>
             </div>
             <p className="text-xs text-slate-500 mb-4">Current order breakdown by stage</p>
@@ -718,7 +718,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
                       <span className="font-bold text-blue-600">{c.inTransit}</span>
                     </div>
                     <div className="flex justify-between font-medium">
-                      <span>Escrow Value Handled:</span>
+                      <span>Order Value Handled:</span>
                       <span className="font-extrabold text-slate-900">₹{c.revenue.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between font-medium">
@@ -765,8 +765,8 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
             {/* Table Header & Controls */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div>
-                <h3 className="font-extrabold text-slate-900 text-base">Escrow Shipment Manifest</h3>
-                <p className="text-xs text-slate-500">{filteredShipments.length} matching escrow orders</p>
+                <h3 className="font-extrabold text-slate-900 text-base">Shipment Manifest</h3>
+                <p className="text-xs text-slate-500">{filteredShipments.length} matching orders</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -787,15 +787,15 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
 
                 {/* Filter */}
                 <select
-                  value={filterEscrow}
+                  value={filterProtection}
                   onChange={(e) => {
-                    setFilterEscrow(e.target.value);
+                    setFilterProtection(e.target.value);
                     setCurrentPage(1);
                   }}
                   className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                 >
-                  <option value="All">All Escrow States</option>
-                  <option value="Held">In Escrow Pipeline</option>
+                  <option value="All">All Protection States</option>
+                  <option value="Held">In Pipeline</option>
                   <option value="Delivered">Delivered (Pending Sign-off)</option>
                   <option value="Released">Released / Settled</option>
                   <option value="Returns">Returns &amp; Reverse Tracking</option>
@@ -816,7 +816,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
                       <span className="font-extrabold text-xs text-[#1E56E3]">
                         {item.shipmentId}
                       </span>
-                      <div>{renderEscrowPill(item.status)}</div>
+                      <div>{renderProtectionPill(item.status)}</div>
                     </div>
 
                     <div className="flex items-center justify-between gap-2">
@@ -852,7 +852,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
                     <th className="py-2.5 px-3">Buyer / Recipient</th>
                     <th className="py-2.5 px-3">Route</th>
                     <th className="py-2.5 px-3">Carrier</th>
-                    <th className="py-2.5 px-3">Escrow Value</th>
+                    <th className="py-2.5 px-3">Order Value</th>
                     <th className="py-2.5 px-3">Status</th>
                     <th className="py-2.5 px-3 text-right">Inspect</th>
                   </tr>
@@ -881,7 +881,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
                           ₹{item.amount ? Number(item.amount).toLocaleString('en-IN') : '0'}
                         </td>
                         <td className="py-3 px-3">
-                          {renderEscrowPill(item.status)}
+                          {renderProtectionPill(item.status)}
                         </td>
                         <td className="py-3 px-3 text-right">
                           <button className="p-1.5 rounded-lg text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition">
@@ -931,7 +931,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-extrabold text-slate-900 text-base">Escrow Audit Log</h3>
+              <h3 className="font-extrabold text-slate-900 text-base">Delivery Audit Log</h3>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
             <p className="text-xs text-slate-500 mb-4">Immutable transaction stream</p>
@@ -966,10 +966,10 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
             <div className="p-3 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 text-slate-700">
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="w-4 h-4 text-blue-600" />
-                <span className="text-[11px] font-extrabold text-blue-900">Escrow Guarantee Active</span>
+                <span className="text-[11px] font-extrabold text-blue-900">Delivery Guarantee Active</span>
               </div>
               <p className="text-[10px] text-slate-500 leading-relaxed">
-                All payouts are backed by scheduled escrow releases upon delivery OTP verification.
+                All payouts are backed by verified delivery OTP sign-off.
               </p>
             </div>
           </div>
@@ -987,7 +987,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
 }
 
 // Helper badge renderers
-function renderEscrowPill(status) {
+function renderProtectionPill(status) {
   switch (status) {
     case 'Released':
       return (

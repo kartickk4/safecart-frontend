@@ -393,7 +393,7 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                   <span className="font-bold text-slate-900 block text-xs">Merchant Settlement</span>
-                  <span className="text-[11px] text-slate-500">Disbursing verified escrow proceeds and wallet balances via automated banking transfers.</span>
+                  <span className="text-[11px] text-slate-500">Disbursing verified shipping order proceeds and wallet balances via automated banking transfers.</span>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                   <span className="font-bold text-slate-900 block text-xs">Statutory Legal &amp; Tax Compliance</span>

@@ -86,12 +86,12 @@ export default function PhotoReviewResponseView({ shipmentId, action }) {
           </div>
           <div className="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-5 text-left space-y-3">
             <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wide">
-              <ShieldCheck className="w-4 h-4" /> Standard Escrow Protection
+              <ShieldCheck className="w-4 h-4" /> Standard Delivery Protection
             </div>
             <ul className="space-y-2 text-sm text-slate-300">
               <li className="flex items-start gap-2"><span className="text-emerald-400 font-bold mt-0.5">1.</span>Seller must upload a verified photo of packed items before handover.</li>
               <li className="flex items-start gap-2"><span className="text-emerald-400 font-bold mt-0.5">2.</span>Courier partner collects the parcel and advances tracking to In Transit.</li>
-              <li className="flex items-start gap-2"><span className="text-emerald-400 font-bold mt-0.5">3.</span>Your payment remains 100% safe in RBI-regulated escrow until delivery is confirmed.</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 font-bold mt-0.5">3.</span>Your payment remains 100% safe under verified delivery protection until delivery is confirmed.</li>
             </ul>
           </div>
           {shipment?.shipmentId && (
@@ -132,7 +132,7 @@ export default function PhotoReviewResponseView({ shipmentId, action }) {
           <div>
             <h1 className="text-2xl font-black text-white mb-2">📸 Parcel Photo Verification Active</h1>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Parcel photo verification is <strong className="text-emerald-400">mandatory for all shipments</strong> at no extra cost. Your shipment is safely progressing under full escrow protection.
+              Parcel photo verification is <strong className="text-emerald-400">mandatory for all shipments</strong> at no extra cost. Your shipment is safely progressing under full delivery protection.
             </p>
           </div>
           <div className="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-5 text-left space-y-3">
@@ -140,7 +140,7 @@ export default function PhotoReviewResponseView({ shipmentId, action }) {
               <ShieldCheck className="w-4 h-4" /> Next Steps
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              The seller will upload clear parcel proof before courier dispatch. You can track this shipment anytime via the tracking ID or view your escrow status.
+              The seller will upload clear parcel proof before courier dispatch. You can track this shipment anytime via the tracking ID or view your protection status.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 pt-1">

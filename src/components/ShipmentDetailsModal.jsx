@@ -305,7 +305,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       const res = await shipmentAPI.confirmDelivery(currentShipment.shipmentId, choice);
       setShowConfirmChoiceModal(false);
       if (choice === 'confirm_and_close' || choice === 'immediate') {
-        alert('Parcel confirmed and return window closed! Escrow funds released to supplier.');
+        alert('Parcel confirmed and return window closed! Order funds released to supplier.');
       } else {
         setReturnWindowMessage('The return window will close after 24 hours');
         alert('Parcel confirmed successfully! The return window will close after 24 hours.');
@@ -320,7 +320,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
   };
 
   const handleCloseReturnRequest = async () => {
-    if (!window.confirm('Are you sure you want to close/withdraw your return request? Escrow protection will remain active.')) return;
+    if (!window.confirm('Are you sure you want to close/withdraw your return request? Order protection will remain active.')) return;
     setActionLoading(true);
     try {
       await shipmentAPI.closeReturnRequest(currentShipment.shipmentId);
@@ -335,11 +335,11 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
   };
 
   const handleCloseReturnWindow = async () => {
-    if (!window.confirm('Close your 24-hour return window now and release escrow funds to the supplier?')) return;
+    if (!window.confirm('Close your 24-hour return window now and release order funds to the supplier?')) return;
     setActionLoading(true);
     try {
       await shipmentAPI.closeReturnWindow(currentShipment.shipmentId);
-      alert('Return window closed early! Escrow funds released to supplier.');
+      alert('Return window closed early! Order funds released to supplier.');
       onRefresh();
       fetchFullDetails();
     } catch (err) {
@@ -367,7 +367,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
     if (currentShipment?.deliveryConfirmed || currentShipment?.status === 'Released') {
       const isClosed = currentShipment.returnWindowClosed || currentShipment.status === 'Released' || currentShipment.returnWindowChoice === 'ImmediateClose';
       const windowMsg = isClosed
-        ? 'Return window is closed and escrow funds have been released.'
+        ? 'Return window is closed and order funds have been released.'
         : '24-hour return window is currently active.';
       alert(`Parcel already confirmed! ${windowMsg}`);
       return;
@@ -380,7 +380,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
     setActionLoading(true);
     try {
       await shipmentAPI.cancelShipment(currentShipment.shipmentId, cancelReason);
-      alert('Shipment cancelled successfully. Escrow funds refunded if applicable.');
+      alert('Shipment cancelled successfully. Order funds refunded if applicable.');
       setShowCancelForm(false);
       onRefresh();
       onClose();
@@ -715,8 +715,8 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
     const isReplacement = currentShipment.returnType === 'replacement';
     const revCharge = currentShipment.returnShippingRate || 55;
     const confirmMsg = isReplacement
-      ? 'Confirm that the returned defective package has arrived at your warehouse? The replacement is complete and your escrow payment will be released to you.'
-      : `Confirm that the returned package has arrived at your warehouse?\n\n• Receiver will be refunded 100% of their escrow deposit.\n• Reverse courier shipping fee (₹${revCharge}) will be charged to your seller wallet.`;
+      ? 'Confirm that the returned defective package has arrived at your warehouse? The replacement is complete and your order payment will be released to you.'
+      : `Confirm that the returned package has arrived at your warehouse?\n\n• Receiver will be refunded 100% of their order payment.\n• Reverse courier shipping fee (₹${revCharge}) will be charged to your seller wallet.`;
     if (!window.confirm(confirmMsg)) return;
     setActionLoading(true);
     try {
@@ -724,7 +724,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       const data = res.data?.refundSummary || {};
       const charged = data.reverseShippingChargedToSeller || revCharge;
       alert(isReplacement
-        ? 'Return delivery confirmed! Replacement cycle is complete and escrow payment has been released to your account.'
+        ? 'Return delivery confirmed! Replacement cycle is complete and order payment has been released to your account.'
         : `✅ Return confirmed and settled!\n\n• Buyer refunded 100% principal.\n• Reverse shipping fee (₹${charged}) debited from your seller wallet.`);
       onRefresh();
       fetchFullDetails();
@@ -751,7 +751,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
   };
 
   const handleConfirmReplacementDelivery = async () => {
-    if (!window.confirm('Confirm that you have received the replacement product in good condition? This will conclude the replacement and release escrow funds to the seller.')) return;
+    if (!window.confirm('Confirm that you have received the replacement product in good condition? This will conclude the replacement and release order funds to the seller.')) return;
     setActionLoading(true);
     try {
       const res = await shipmentAPI.confirmReplacementDelivery(currentShipment.shipmentId);
@@ -918,10 +918,10 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
             {/* Overview Summary Cards */}
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Escrow Value</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Order Value</span>
                 <span className="text-xl font-extrabold text-slate-900">₹{currentShipment.amount ? currentShipment.amount.toLocaleString('en-IN') : '0'}</span>
                 <span className="block text-[10px] text-emerald-600 font-bold mt-1">
-                  100% Escrow Protected • 0% Fee
+                  100% Delivery Protected • 0% Fee
                 </span>
               </div>
 
@@ -989,14 +989,14 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               </a>
             </div>
 
-            {/* ── COURIER CHARGES & ESCROW SETTLEMENT STATEMENT (For Sellers) ── */}
+            {/* ── COURIER CHARGES & SETTLEMENT STATEMENT (For Sellers) ── */}
             {isSupplier && (() => {
               const grossAmt = Number(currentShipment.amount) || 0;
               const courierFee = Number(currentShipment.courierDeliveryCharge) || Number(currentShipment.pickupRate) || (currentShipment.carrierSlug ? 55 : 0);
               const isCod = currentShipment.paymentMode === 'cod';
               const codFee = isCod ? (Number(currentShipment.codHandlingCharge) || 30) : 0;
               const isOffline = currentShipment.paymentMode === 'paid_offline';
-              const serviceFee = 0; // Platform fee removed — escrow is free
+              const serviceFee = 0; // Platform fee removed — service is free
               const calculatedNet = Math.max(0, parseFloat((grossAmt - (isOffline ? 0 : courierFee) - codFee).toFixed(2)));
               const netPayout = (currentShipment.netSellerPayout > 0 && currentShipment.netSellerPayout <= grossAmt)
                 ? currentShipment.netSellerPayout
@@ -1021,7 +1021,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                         ? 'bg-slate-100 text-slate-700 border-slate-200' 
                         : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     }`}>
-                      {isCod ? 'COD' : isOffline ? 'Offline' : 'Prepaid Escrow'}
+                      {isCod ? 'COD' : isOffline ? 'Offline' : 'Prepaid (Protected)'}
                     </span>
                   </div>
 
@@ -1046,7 +1046,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                     )}
                     <div className="flex justify-between items-center text-emerald-700 bg-emerald-50/60 -mx-3 px-3 py-1 rounded-lg">
                       <span className="flex items-center gap-1.5 font-semibold">
-                        <span>SecureKaro Escrow Fee</span>
+                        <span>SecureKaro Service Fee</span>
                       </span>
                       <span className="font-mono font-black text-emerald-700">FREE ✓</span>
                     </div>
@@ -1069,7 +1069,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   <div className="flex items-center justify-between pt-0.5 text-[11px]">
                     <span className="text-slate-500 flex items-center gap-1.5 text-[10.5px]">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>100% RBI Escrow Protected</span>
+                      <span>100% Delivery Protected</span>
                     </span>
                     <span className={`font-extrabold flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border ${
                       currentShipment.status === 'Released' || currentShipment.status === 'Completed'
@@ -1285,7 +1285,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                                   </span>
                                 </div>
                                 <p className="text-[11px] mt-1 text-slate-600 leading-relaxed">
-                                  ⚠️ Uploading a clear product/parcel photo is mandatory for all shipments before courier dispatch to guarantee escrow safety.
+                                  ⚠️ Uploading a clear product/parcel photo is mandatory for all shipments before courier dispatch to guarantee delivery verification.
                                 </p>
                               </div>
                             </div>
@@ -1703,7 +1703,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                           </p>
                         </div>
                         <p className="text-[9.5px] text-slate-400 text-center leading-relaxed">
-                          Receiver scans QR &amp; verifies mobile number at securekaro.app/qr-confirm<br />No login required • Protected by SecureKaro Escrow
+                          Receiver scans QR &amp; verifies mobile number at securekaro.app/qr-confirm<br />No login required • Protected by SecureKaro
                         </p>
                       </div>
 
@@ -1819,7 +1819,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
 
 
-            {/* ── ESCROW PAYMENT STATUS: Active payment link only while Awaiting Payment; replaced with confirmation badge once paid ── */}
+            {/* ── PAYMENT STATUS: Active payment link only while Awaiting Payment; replaced with confirmation badge once paid ── */}
             {(() => {
               const isAwaitingPayment = currentShipment.status === 'Awaiting Payment' && (!currentShipment.escrowStage || currentShipment.escrowStage === 1);
               const formattedAmt = currentShipment.amount ? Number(currentShipment.amount).toLocaleString('en-IN') : '0';
@@ -1833,13 +1833,13 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-black text-slate-900">Escrow Payment Deposited</span>
+                          <span className="text-xs font-black text-slate-900">Order Payment Secured</span>
                           <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
                             ₹{formattedAmt} Secured
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-600 mt-0.5">
-                          Buyer has completed the escrow payment. Funds are locked safely in vault protection and will disburse upon verified delivery.
+                          Buyer has completed the order payment. Funds are protected safely in delivery vault and will disburse upon verified delivery.
                         </p>
                       </div>
                     </div>
@@ -1849,7 +1849,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
               const rName = currentShipment.receiverName ? currentShipment.receiverName.split(' ')[0] : 'Customer';
               const payLinkUrl = `${window.location.origin}/pay/${currentShipment.shipmentId || 'SPL-5396-U'}`;
-              const waMsg = `Hello ${rName}! Your order for ₹${formattedAmt} is secured by SecureKaro Escrow. Your money stays protected in the vault until delivery. Tap to inspect and deposit safely: ${payLinkUrl}`;
+              const waMsg = `Hello ${rName}! Your order for ₹${formattedAmt} is protected by SecureKaro Delivery Verification. Your money stays protected in the vault until delivery. Tap to view and pay safely: ${payLinkUrl}`;
               const rawPh = (currentShipment.receiverPhone || '').replace(/\D/g, '');
               const cleanPh = rawPh.length === 10 ? `91${rawPh}` : rawPh;
               const waUrl = cleanPh 
@@ -1861,7 +1861,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-[#1E56E3] font-extrabold text-xs">
                       <Link2 className="w-4 h-4" />
-                      <span>Integrated Escrow Payment Link</span>
+                      <span>Integrated Order Payment Link</span>
                     </div>
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
                       UPI &amp; NetBanking Active
@@ -1869,7 +1869,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   </div>
 
                   <p className="text-[11px] text-slate-600">
-                    Send this escrow link to {currentShipment.receiverName || 'the buyer'} to collect ₹{formattedAmt} directly into vault protection.
+                    Send this payment link to {currentShipment.receiverName || 'the buyer'} to collect ₹{formattedAmt} directly into vault protection.
                   </p>
 
                   <div className="flex items-center gap-2">
@@ -1985,7 +1985,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 ) : (
                   <div className="space-y-3">
                     <p className="text-[11px] text-slate-600">
-                      Parcel photo upload is mandatory for all shipments before courier dispatch to guarantee escrow safety.
+                      Parcel photo upload is mandatory for all shipments before courier dispatch to guarantee delivery verification.
                       <strong className="block text-indigo-900 mt-1">
                         ⚡ The In-Box QR Code and courier dispatch will be generated and unlocked immediately once you upload the parcel photo.
                       </strong>
@@ -2209,7 +2209,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                             {supplierDiscountInput && Number(supplierDiscountInput) > 0 && Number(supplierDiscountInput) < Number(currentShipment.amount) && (
                               <div className="p-3 bg-white/90 rounded-xl border border-amber-200 text-[11px] space-y-1">
                                 <div className="flex justify-between font-bold text-slate-700">
-                                  <span>Buyer gets refunded from escrow:</span>
+                                  <span>Buyer gets refunded for order:</span>
                                   <span className="text-amber-700">₹{Number(supplierDiscountInput)}</span>
                                 </div>
                                 <div className="flex justify-between font-bold text-emerald-700">
@@ -2569,7 +2569,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                       { step: 1, label: '1. Requested', desc: 'Return initiated', active: true },
                       { step: 2, label: '2. Assigned', desc: 'Courier AWB set', active: Boolean(currentShipment.returnAwbCode || currentShipment.returnCarrierSlug || currentShipment.returnStatus === 'In Return Transit' || currentShipment.returnStatus === 'Completed') },
                       { step: 3, label: '3. In Transit', desc: 'Reverse pickup', active: Boolean(currentShipment.returnStatus === 'In Return Transit' || currentShipment.returnStatus === 'Completed' || currentShipment.status === 'Returned & Refunded') },
-                      { step: 4, label: '4. Refunded', desc: '100% Escrow back', active: Boolean(currentShipment.returnStatus === 'Completed' || currentShipment.status === 'Returned & Refunded') }
+                      { step: 4, label: '4. Refunded', desc: '100% Order back', active: Boolean(currentShipment.returnStatus === 'Completed' || currentShipment.status === 'Returned & Refunded') }
                     ]).map((s) => (
                       <div key={s.step} className="flex flex-col items-center text-center">
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition ${
@@ -2817,7 +2817,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                           <div>
                             <div className="text-xs font-bold text-blue-900">Replacement Parcel In Transit to Buyer</div>
                             <div className="text-[11px] text-blue-700">
-                              Tracking: <span className="font-mono font-bold">{currentShipment.replacementAwbCode}</span> via {currentShipment.replacementCarrierName} • Escrow unlocks when buyer scans QR &amp; verifies SMS OTP.
+                              Tracking: <span className="font-mono font-bold">{currentShipment.replacementAwbCode}</span> via {currentShipment.replacementCarrierName} • Payout unlocks when buyer scans QR &amp; verifies SMS OTP.
                             </div>
                           </div>
                         </div>
@@ -2839,7 +2839,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                               </div>
 
                               <p className="text-[11px] text-slate-600 leading-relaxed">
-                                Stick this QR label <strong>inside the replacement box</strong>. When the buyer opens the parcel, they scan this QR to receive a 6-digit SMS OTP, confirming good condition and releasing your escrow payout.
+                                Stick this QR label <strong>inside the replacement box</strong>. When the buyer opens the parcel, they scan this QR to receive a 6-digit SMS OTP, confirming good condition and releasing your order payout.
                               </p>
 
                               <div className="flex flex-col items-center gap-3 p-4 border-2 border-dashed border-violet-300 rounded-2xl bg-white text-center">
@@ -2897,7 +2897,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                         <div>
                           <div className="text-xs font-bold text-emerald-900">Replacement Confirmed &amp; Complete!</div>
                           <div className="text-[11px] text-emerald-700">
-                            Buyer verified parcel via In-Box QR &amp; SMS OTP. Escrow payout has been disbursed to your supplier wallet.
+                            Buyer verified parcel via In-Box QR &amp; SMS OTP. Order payout has been disbursed to your supplier wallet.
                           </div>
                         </div>
                       </div>
@@ -2970,14 +2970,14 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                       className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <CreditCard className="w-4 h-4" />
-                      <span>Pay ₹{Number(currentShipment.amount || 0).toLocaleString('en-IN')} Into Escrow Vault</span>
+                      <span>Pay ₹{Number(currentShipment.amount || 0).toLocaleString('en-IN')} With Delivery Protection</span>
                     </button>
                   ) : currentShipment.status === 'Pending Pickup' ? (
                     <div className="flex-1 py-2.5 px-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2.5">
                       <Box className="w-4 h-4 text-amber-600 shrink-0" />
                       <div>
                         <div className="text-xs font-bold text-slate-800">Status: Awaiting Carrier Pickup</div>
-                        <div className="text-[10.5px] text-slate-500">Your escrow payment is locked. Seller is preparing parcel for pickup.</div>
+                        <div className="text-[10.5px] text-slate-500">Your order payment is protected. Seller is preparing parcel for pickup.</div>
                       </div>
                     </div>
                   ) : currentShipment.status === 'Released' ? (
@@ -2991,8 +2991,8 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                         </div>
                         <div className="text-[10.5px] text-slate-500">
                           {currentShipment.returnType === 'replacement'
-                            ? 'Replacement item received and escrow successfully released to seller.'
-                            : 'Order successfully completed under SecureKaro Escrow.'}
+                            ? 'Replacement item received and payout successfully released to seller.'
+                            : 'Order successfully completed under SecureKaro.'}
                         </div>
                       </div>
                     </div>
@@ -3007,8 +3007,8 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                         </div>
                         <div className="text-[10.5px] text-emerald-700">
                           {currentShipment.returnType === 'replacement'
-                            ? 'You confirmed receipt of the replacement item. Escrow payment was safely released to seller.'
-                            : `100% Escrow amount (₹${Number(currentShipment.amount || 0).toLocaleString('en-IN')}) has been refunded to your wallet.`}
+                            ? 'You confirmed receipt of the replacement item. Payment was safely released to seller.'
+                            : `100% order amount (₹${Number(currentShipment.amount || 0).toLocaleString('en-IN')}) has been refunded to your wallet.`}
                         </div>
                       </div>
                     </div>
@@ -3019,7 +3019,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                         <div className="text-xs font-bold text-emerald-900">Parcel Already Confirmed ✓</div>
                         <div className="text-[10.5px] text-emerald-700">
                           {currentShipment.returnWindowClosed || currentShipment.status === 'Released'
-                            ? 'Return window closed & escrow released to supplier.'
+                            ? 'Return window closed & payout released to supplier.'
                             : '24-hour return window is currently active.'}
                         </div>
                       </div>
@@ -3056,7 +3056,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                       <>
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                         <div>
-                          <div className="text-xs font-bold text-emerald-900">Escrow Funds Released</div>
+                          <div className="text-xs font-bold text-emerald-900">Order Payout Released</div>
                           <div className="text-[10.5px] text-slate-500">Payment has been credited to your supplier wallet.</div>
                         </div>
                       </>
@@ -3071,8 +3071,8 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                           </div>
                           <div className="text-[10.5px] text-slate-500">
                             {currentShipment.returnType === 'replacement'
-                              ? 'Buyer confirmed receipt of the replacement item. Escrow payment credited to your wallet.'
-                              : 'Parcel returned and escrow funds refunded to receiver.'}
+                              ? 'Buyer confirmed receipt of the replacement item. Order payout credited to your wallet.'
+                              : 'Parcel returned and funds refunded to receiver.'}
                           </div>
                         </div>
                       </>
@@ -3082,7 +3082,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                         <div>
                           <div className="text-xs font-bold text-slate-800">Replacement Parcel in Transit</div>
                           <div className="text-[10.5px] text-slate-500">
-                            Tracking: {currentShipment.replacementAwbCode} via {currentShipment.replacementCarrierName}. Escrow releases once buyer confirms delivery.
+                            Tracking: {currentShipment.replacementAwbCode} via {currentShipment.replacementCarrierName}. Payout releases once buyer confirms delivery.
                           </div>
                         </div>
                       </>
@@ -3100,9 +3100,9 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                       <>
                         <CreditCard className="w-4 h-4 text-indigo-600 shrink-0" />
                         <div>
-                          <div className="text-xs font-bold text-slate-800">Status: Awaiting Escrow Payment</div>
+                          <div className="text-xs font-bold text-slate-800">Status: Awaiting Order Payment</div>
                           <div className="text-[10.5px] text-slate-500">
-                            Waiting for {currentShipment.receiverName || 'buyer'} to complete payment via escrow link.
+                            Waiting for {currentShipment.receiverName || 'buyer'} to complete payment via payment link.
                           </div>
                         </div>
                       </>
@@ -3112,7 +3112,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                         <div>
                           <div className="text-xs font-bold text-slate-800">Status: Pending Carrier Pickup</div>
                           <div className="text-[10.5px] text-slate-500">
-                            Escrow payment secured. Auto-scheduled carrier pickup pending.
+                            Order payment secured. Auto-scheduled carrier pickup pending.
                           </div>
                         </div>
                       </>
@@ -3279,7 +3279,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                       <span>3. Full Refund</span>
                     </div>
                     <p className="text-[10px] text-slate-500 leading-tight">
-                      Ship back via reverse courier. Full 100% escrow principal refunded.
+                      Ship back via reverse courier. Full 100% order principal refunded.
                     </p>
                   </button>
                 </div>
@@ -3383,7 +3383,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-600">
-                          Escrow funds will be transferred directly to this account once your return is approved.
+                          Order funds will be transferred directly to this account once your return is approved.
                         </p>
 
                         {/* Payout method toggle */}
@@ -3530,7 +3530,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
                 <div className="p-3 bg-white rounded-xl border border-amber-200 text-xs space-y-1">
                   <p className="text-slate-600">
-                    If marked undelivered, escrow principal (₹{currentShipment.amount?.toLocaleString() || '3,420'}) will be refunded to the receiver.
+                    If marked undelivered, order principal (₹{currentShipment.amount?.toLocaleString() || '3,420'}) will be refunded to the receiver.
                   </p>
                   {currentShipment.rtoProtectionEnabled ? (
                     <div className="mt-2 pt-2 border-t border-amber-100 space-y-1.5">
@@ -3584,7 +3584,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               <form onSubmit={handleCancelShipment} className="pt-4 border-t border-slate-100 space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                 <h4 className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
                   <XCircle className="w-4 h-4 text-rose-600" />
-                  Cancel Shipment & Refund Escrow
+                  Cancel Shipment & Refund Order
                 </h4>
 
                 <div>
@@ -3661,7 +3661,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>
-                  Parcel already confirmed! Delivery for this parcel was already confirmed. {currentShipment.returnWindowClosed || currentShipment.status === 'Released' ? 'Return window is closed and escrow funds released.' : '24-hour return window is currently active.'}
+                  Parcel already confirmed! Delivery for this parcel was already confirmed. {currentShipment.returnWindowClosed || currentShipment.status === 'Released' ? 'Return window is closed and order payout released.' : '24-hour return window is currently active.'}
                 </span>
               </div>
             ) : (
@@ -3688,7 +3688,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                       <span>confirm and close the Return window</span>
                     </h4>
                     <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                      Confirm delivery and close the return window immediately. Escrow funds will be released to the supplier right away.
+                      Confirm delivery and close the return window immediately. Order funds will be released to the supplier right away.
                     </p>
                   </div>
                   <span className="shrink-0 p-1 rounded-lg bg-slate-100 text-slate-400 group-hover:bg-emerald-500 group-hover:text-white transition">
@@ -3781,7 +3781,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 <span className="text-amber-800 font-semibold">{currentShipment.returnReason || 'Defective / Damaged product'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-bold text-amber-900">Escrow Value:</span>
+                <span className="font-bold text-amber-900">Order Value:</span>
                 <span className="text-amber-900 font-mono font-bold">₹{currentShipment.amount?.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between">
