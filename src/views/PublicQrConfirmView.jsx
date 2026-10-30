@@ -968,7 +968,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                   {sendingOtp ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Verifying & Sending SMS OTP...</span>
+                      <span>Sending OTP to WhatsApp...</span>
                     </>
                   ) : (
                     <>
@@ -994,7 +994,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                     <span>Change phone ({phoneInput})</span>
                   </button>
                   <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                    SMS Sent
+                    OTP Sent via WhatsApp
                   </span>
                 </div>
 
@@ -1031,7 +1031,7 @@ export default function PublicQrConfirmView({ qrToken }) {
                       onClick={handleResendOtp}
                       className="text-[11px] font-bold text-[#1E56E3] hover:underline disabled:text-slate-400 disabled:no-underline"
                     >
-                      {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : 'Resend SMS OTP'}
+                      {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend OTP via WhatsApp'}
                     </button>
                   </div>
                   <div className="relative">
