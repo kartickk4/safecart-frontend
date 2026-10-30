@@ -135,7 +135,12 @@ export const profileAPI = {
 };
 
 export const shipmentAPI = {
-  getShipments: (role) => api.get('/shipments', { params: role ? { role } : {} }),
+  getShipments: (roleOrParams) => {
+    if (typeof roleOrParams === 'object' && roleOrParams !== null) {
+      return api.get('/shipments', { params: roleOrParams });
+    }
+    return api.get('/shipments', { params: roleOrParams ? { role: roleOrParams } : {} });
+  },
   getShipmentById: (id) => api.get(`/shipments/${id}`),
   getTrackingByAwb: (awb) => api.get(`/tracking/${awb}`),
   getPublicTracking: (trackingId, phone) => api.post('/tracking/public', { trackingId, phone }),
