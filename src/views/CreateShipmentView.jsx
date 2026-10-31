@@ -1857,17 +1857,28 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                           <div className="font-extrabold text-slate-900 truncate">
                                             {quote.courierPartner || quote.name}
                                           </div>
-                                          {quote.isLowest && (
-                                            <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                                              Lowest Rate
-                                            </span>
-                                          )}
+                                          <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                            {quote.savingsBadge ? (
+                                              <span className="text-[9px] font-black text-rose-800 bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded inline-block">
+                                                ⚡ {quote.savingsBadge}
+                                              </span>
+                                            ) : quote.isLowest ? (
+                                              <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded inline-block">
+                                                Lowest Rate
+                                              </span>
+                                            ) : null}
+                                          </div>
                                         </div>
                                       </div>
                                     </td>
 
                                     <td className="py-2.5 px-3 whitespace-nowrap">
-                                      {isNimbus ? (
+                                      {quote.isDirectDelhivery ? (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                                          Delhivery Direct
+                                        </span>
+                                      ) : isNimbus ? (
                                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
                                           <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
                                           NimbusPost
@@ -1991,7 +2002,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                       </h4>
                                       
                                       <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                                        {isNimbus ? (
+                                        {quote.isDirectDelhivery ? (
+                                          <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.2 rounded-full">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                                            Delhivery Direct
+                                          </span>
+                                        ) : isNimbus ? (
                                           <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.2 rounded-full">
                                             <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
                                             NimbusPost
@@ -2040,11 +2056,15 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                       {quote.rating ? quote.rating.toFixed(1) : '4.7'}
                                     </span>
 
-                                    {quote.isLowest && (
+                                    {quote.savingsBadge ? (
+                                      <span className="text-[9.5px] font-black text-rose-800 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded">
+                                        ⚡ {quote.savingsBadge}
+                                      </span>
+                                    ) : quote.isLowest ? (
                                       <span className="text-[9.5px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded">
                                         Lowest Rate
                                       </span>
-                                    )}
+                                    ) : null}
                                   </div>
                                 </div>
                               </div>

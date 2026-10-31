@@ -159,3 +159,4 @@ This document establishes the authoritative design guidelines, visual tokens, la
 - [x] Interactive buttons provide visible keyboard focus rings (`focus-visible:ring-2`).
 - [x] Forms support explicit auto-complete and clear validation errors.
 - [x] Mobile views are tested across 320px, 375px, 390px, and 414px viewports with zero horizontal overflow.
+
