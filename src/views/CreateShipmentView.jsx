@@ -1878,6 +1878,11 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                           <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
                                           Delhivery Direct
                                         </span>
+                                      ) : quote.isDirectShadowfax ? (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                                          Shadowfax Direct
+                                        </span>
                                       ) : isNimbus ? (
                                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
                                           <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
@@ -2006,6 +2011,11 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                           <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.2 rounded-full">
                                             <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
                                             Delhivery Direct
+                                          </span>
+                                        ) : quote.isDirectShadowfax ? (
+                                          <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.2 rounded-full">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                                            Shadowfax Direct
                                           </span>
                                         ) : isNimbus ? (
                                           <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.2 rounded-full">
