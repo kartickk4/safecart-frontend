@@ -513,7 +513,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         photoReviewEnabled: true,
         rtoProtectionEnabled: paymentMode === 'prepaid' ? Boolean(rtoProtectionEnabled) : false,
         deliveryCharge: targetDeliveryCharge,
-        codCharge: codQuote.codCharge
+        freightCharge: selectedQuote?.freightCharge !== undefined ? selectedQuote.freightCharge : (paymentMode === 'cod' ? Math.max(0, targetDeliveryCharge - (codQuote.codCharge || 0)) : targetDeliveryCharge),
+        codCharge: codQuote.codCharge,
+        totalCharge: selectedQuote?.exactRate || targetDeliveryCharge
       };
 
       if (overrideParams?.paidUpfront || overrideParams?.txnId) {
