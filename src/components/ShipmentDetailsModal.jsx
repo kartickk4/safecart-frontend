@@ -717,9 +717,11 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
   const handleConfirmReturnReceived = async () => {
     const isReplacement = currentShipment.returnType === 'replacement';
-    const revCharge = currentShipment.returnShippingRate || 55;
-    const confirmMsg = isReplacement
-      ? 'Confirm that the returned defective package has arrived at your warehouse? The replacement is complete and your order payment will be released to you.'
+    const revCharge = currentShipment.returnShippingRate || 0;
+    const confirmMsg = isReplacement && !currentShipment.replacementItemDispatched
+      ? 'Confirm that the returned defective package has arrived at your warehouse? Once confirmed, you can dispatch the new replacement parcel to the buyer (no photo required, no return QR generated).'
+      : isReplacement
+      ? 'Confirm that the returned package has arrived at your warehouse? The replacement is complete and your order payment will be released to you.'
       : `Confirm that the returned package has arrived at your warehouse?\n\n• Receiver will be refunded 100% of their order payment.\n• Reverse courier shipping fee (₹${revCharge}) will be charged to your seller wallet.`;
     if (!window.confirm(confirmMsg)) return;
     setActionLoading(true);
@@ -727,9 +729,13 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       const res = await shipmentAPI.confirmReturnReceived(currentShipment.shipmentId);
       const data = res.data?.refundSummary || {};
       const charged = data.reverseShippingChargedToSeller || revCharge;
-      alert(isReplacement
-        ? 'Return delivery confirmed! Replacement cycle is complete and order payment has been released to your account.'
-        : `✅ Return confirmed and settled!\n\n• Buyer refunded 100% principal.\n• Reverse shipping fee (₹${charged}) debited from your seller wallet.`);
+      if (res.data?.readyForReplacementDispatch) {
+        alert('✅ Old item confirmed received at warehouse! Please dispatch the replacement parcel to the buyer now (no photo required, no return QR code generated).');
+      } else {
+        alert(isReplacement
+          ? 'Return delivery confirmed! Replacement cycle is complete and order payment has been released to your account.'
+          : `✅ Return confirmed and settled!\n\n• Buyer refunded 100% principal.\n• Reverse shipping fee (₹${charged}) debited from your seller wallet.`);
+      }
       onRefresh();
       fetchFullDetails();
     } catch (err) {
@@ -2798,22 +2804,52 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 {currentShipment.returnType === 'replacement' ? (
                   isSupplier ? (
                     !currentShipment.replacementItemDispatched ? (
-                      <div className="space-y-2">
-                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
-                          <Zap className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 fill-current" />
-                          <div className="text-[11.5px] text-amber-900 leading-relaxed">
-                            <span className="font-bold">⚡ Fast-Track Dispatch on Pickup Scan (Recommended):</span> Reverse courier has scanned or is picking up the defective item from the buyer. Dispatch the replacement parcel now to reduce customer waiting time from 10 days to 3 days. A fresh In-Box QR label will be generated for the replacement parcel.
+                      currentShipment.oldItemReceivedBySupplier ? (
+                        <div className="space-y-2">
+                          <div className="p-3.5 bg-teal-50 border border-teal-200 rounded-xl flex items-start gap-2.5">
+                            <CheckCircle2 className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
+                            <div className="text-[11.5px] text-teal-950 leading-relaxed">
+                              <span className="font-bold">Old Item Received at Warehouse:</span> The returned defective parcel has arrived at your warehouse. Please dispatch the new replacement parcel to the buyer now.
+                              <span className="block text-teal-800 font-semibold mt-0.5">✓ No product photo required · No return QR code generated.</span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={handleDispatchReplacement}
+                            disabled={actionLoading}
+                            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                          >
+                            <Package className="w-4 h-4" />
+                            <span>📦 Book &amp; Dispatch Replacement Forward Parcel</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2.5">
+                          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
+                            <Zap className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 fill-current" />
+                            <div className="text-[11.5px] text-amber-900 leading-relaxed">
+                              <span className="font-bold">Replacement in Progress:</span> Reverse pickup from buyer has been scheduled. Once the old item arrives at your warehouse, mark it received to dispatch the replacement forward shipment (no photo or QR required).
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <button
+                              onClick={handleConfirmReturnReceived}
+                              disabled={actionLoading}
+                              className="w-full py-2.5 px-3 bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                              <span>Mark Old Item Received</span>
+                            </button>
+                            <button
+                              onClick={handleDispatchReplacement}
+                              disabled={actionLoading}
+                              className="w-full py-2.5 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <Zap className="w-4 h-4 fill-current" />
+                              <span>⚡ Fast-Track Dispatch</span>
+                            </button>
                           </div>
                         </div>
-                        <button
-                          onClick={handleDispatchReplacement}
-                          disabled={actionLoading}
-                          className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                          <Zap className="w-4 h-4 fill-current" />
-                          <span>⚡ Fast-Track Dispatch Replacement (Pickup Scanned)</span>
-                        </button>
-                      </div>
+                      )
                     ) : !currentShipment.replacementDelivered && currentShipment.returnStatus !== 'Completed' ? (
                       <div className="space-y-3">
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2.5">

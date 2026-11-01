@@ -56,6 +56,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [carrierSlug, setCarrierSlug] = useState('auto'); // 'auto' = pick cheapest by pincode zone
   const [showCarrierModal, setShowCarrierModal] = useState(false);
   const [carrierQuotes, setCarrierQuotes] = useState([]);
+  const [smartRecommendation, setSmartRecommendation] = useState(null);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [fetchingQuotes, setFetchingQuotes] = useState(false);
   const [carrierQuotesError, setCarrierQuotesError] = useState('');
@@ -347,7 +348,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
       // Backend already applies the exact platform ₹5 discount from the wallet charge
       const quotes = res.data?.quotes || [];
+      const smartRec = res.data?.smartRecommendation || null;
       setCarrierQuotes(quotes);
+      setSmartRecommendation(smartRec);
       setRouteInfo({
         fromZone: res.data?.fromZone,
         toZone: res.data?.toZone
@@ -356,6 +359,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       let chosen = null;
       if (preferredSlug && preferredSlug !== 'auto') {
         chosen = quotes.find(q => q.slug === preferredSlug);
+      }
+      if (!chosen && smartRec?.carrier) {
+        chosen = quotes.find(q => q.slug === smartRec.carrier || q.baseSlug === smartRec.carrier);
       }
       if (!chosen && selectedQuote) {
         chosen = quotes.find(q => q.slug === selectedQuote.slug);
@@ -1518,6 +1524,22 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       </div>
                     </div>
 
+                    {/* Smart Routing Engine Recommendation Banner */}
+                    {smartRecommendation && (
+                      <div className="mt-4 p-3.5 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-50 border border-blue-200 rounded-2xl flex items-start gap-3">
+                        <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                        <div className="text-xs">
+                          <div className="font-extrabold text-blue-950 flex items-center gap-2">
+                            <span>SecureKaro Smart Routing Engine</span>
+                            <span className="text-[10px] bg-blue-600 text-white font-bold px-2 py-0.2 rounded-full">
+                              Recommended Partner
+                            </span>
+                          </div>
+                          <p className="text-blue-800 mt-0.5 leading-relaxed">{smartRecommendation.reason}</p>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Interactive Aggregator Tabs & Filter Controls */}
                     {!fetchingQuotes && !carrierQuotesError && carrierQuotes.length > 0 && (
                       <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
@@ -1853,7 +1875,14 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                             {quote.courierPartner || quote.name}
                                           </div>
                                           <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                                            {quote.savingsBadge ? (
+                                            {quote.badges && quote.badges.length > 0 ? (
+                                              quote.badges.map((b, bIdx) => (
+                                                <span key={bIdx} className="text-[9px] font-bold text-blue-900 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded inline-flex items-center gap-0.5">
+                                                  <span>{b.icon}</span>
+                                                  <span>{b.label}</span>
+                                                </span>
+                                              ))
+                                            ) : quote.savingsBadge ? (
                                               <span className="text-[9px] font-black text-rose-800 bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded inline-block">
                                                 ⚡ {quote.savingsBadge}
                                               </span>
@@ -2061,7 +2090,14 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                       {quote.rating ? quote.rating.toFixed(1) : '4.7'}
                                     </span>
 
-                                    {quote.savingsBadge ? (
+                                    {quote.badges && quote.badges.length > 0 ? (
+                                      quote.badges.map((b, bIdx) => (
+                                        <span key={bIdx} className="text-[9px] font-bold text-blue-900 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5">
+                                          <span>{b.icon}</span>
+                                          <span>{b.label}</span>
+                                        </span>
+                                      ))
+                                    ) : quote.savingsBadge ? (
                                       <span className="text-[9.5px] font-black text-rose-800 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded">
                                         ⚡ {quote.savingsBadge}
                                       </span>

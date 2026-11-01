@@ -4,7 +4,7 @@ import {
   Search, Filter, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, 
   ArrowUpRight, ArrowDownRight, Eye, Truck, RotateCcw, Zap, Target,
   DollarSign, Activity, Calendar, Download, RefreshCw, ChevronDown, Check,
-  Percent, ShieldAlert, Sparkles, Gift, ArrowRight, FileSpreadsheet
+  Percent, ShieldAlert, Sparkles, Gift, ArrowRight, FileSpreadsheet, X
 } from 'lucide-react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import TaxStatementModal from '../components/TaxStatementModal';
@@ -60,7 +60,23 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
   const [chartTimeframe, setChartTimeframe] = useState('30d');
   const [currentPage, setCurrentPage] = useState(1);
   const [isTaxModalOpen, setIsTaxModalOpen] = useState(false);
-  const [activeAnalysisTab, setActiveAnalysisTab] = useState('revenue'); // 'revenue' | 'operations' | 'carriers' | 'cohort'
+  const [activeAnalysisTab, setActiveAnalysisTab] = useState('revenue');
+
+  const [dismissActionPopup, setDismissActionPopup] = useState(() => {
+    try {
+      return sessionStorage.getItem('dismiss_return_action_popup') === 'true';
+    } catch (_) { return false; }
+  });
+
+  const pendingActionOrders = useMemo(() => {
+    return shipments.filter(s => {
+      if (s.returnStatus === 'Requested' || s.status === 'Return Requested') return true;
+      if (s.returnType === 'replacement' && s.oldItemReceivedBySupplier && !s.replacementItemDispatched) return true;
+      if (s.returnStatus === 'Approved' && !s.returnAwbCode && !s.replacementPickupAwbCode) return true;
+      if (s.returnType === 'replacement' && s.replacementApproved && !s.replacementPickupAwbCode && !s.returnAwbCode) return true;
+      return false;
+    });
+  }, [shipments]); // 'revenue' | 'operations' | 'carriers' | 'cohort'
   const [gatewayStatus, setGatewayStatus] = useState(() => {
     try {
       const cached = sessionStorage.getItem('securekaro_dashboard_gateway');
@@ -423,6 +439,137 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           </button>
         </div>
       </div>
+
+      {/* PENDING RETURN / REFUND / REPLACEMENT ACTION BANNER & POPUP */}
+      {pendingActionOrders.length > 0 && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 flex items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-xs sm:text-sm font-extrabold text-amber-950 flex items-center gap-2">
+                <span>Action Required: {pendingActionOrders.length} Pending Return / Replacement Order{pendingActionOrders.length > 1 ? 's' : ''}</span>
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+              </h4>
+              <p className="text-[11px] text-amber-800 truncate">
+                Buyers are awaiting your approval or replacement dispatch. Click to take immediate action.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setDismissActionPopup(false)}
+            className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition shrink-0 cursor-pointer shadow-xs"
+          >
+            Review Orders
+          </button>
+        </div>
+      )}
+
+      {/* MODAL POPUP FOR PENDING RETURN ACTIONS */}
+      {pendingActionOrders.length > 0 && !dismissActionPopup && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-amber-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">
+                    Pending Return Actions ({pendingActionOrders.length})
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Buyer refund or replacement orders waiting for your action.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setDismissActionPopup(true);
+                  try { sessionStorage.setItem('dismiss_return_action_popup', 'true'); } catch(_) {}
+                }}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+              {pendingActionOrders.map((order) => {
+                let badgeText = 'Return Requested';
+                let badgeColor = 'bg-rose-100 text-rose-800 border-rose-200';
+                let actionPrompt = 'Review Request & Approve';
+                if (order.returnType === 'replacement') {
+                  if (order.oldItemReceivedBySupplier && !order.replacementItemDispatched) {
+                    badgeText = 'Old Item Received';
+                    badgeColor = 'bg-teal-100 text-teal-800 border-teal-200';
+                    actionPrompt = 'Dispatch Replacement Parcel Now (No photo required)';
+                  } else if (order.replacementApproved) {
+                    badgeText = 'Replacement Approved';
+                    badgeColor = 'bg-amber-100 text-amber-800 border-amber-200';
+                    actionPrompt = 'Book Reverse Pickup (Shadowfax ₹0 RTO)';
+                  } else {
+                    badgeText = 'Replacement Requested';
+                    badgeColor = 'bg-blue-100 text-blue-800 border-blue-200';
+                    actionPrompt = 'Review Replacement Request';
+                  }
+                } else if (order.returnType === 'partial_discount') {
+                  badgeText = 'Partial Refund / Discount';
+                  badgeColor = 'bg-purple-100 text-purple-800 border-purple-200';
+                  actionPrompt = 'Review Defect & Make Offer';
+                } else {
+                  badgeText = 'Full Refund Requested';
+                  badgeColor = 'bg-rose-100 text-rose-800 border-rose-200';
+                  actionPrompt = 'Approve Return & Reverse Pickup';
+                }
+
+                return (
+                  <div
+                    key={order._id || order.shipmentId}
+                    onClick={() => {
+                      setDismissActionPopup(true);
+                      onSelectShipment(order);
+                    }}
+                    className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 hover:border-blue-300 transition cursor-pointer flex items-center justify-between gap-3 group"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-xs text-slate-900">{order.shipmentId}</span>
+                        <span className={'text-[10px] font-bold px-2 py-0.5 rounded-full border ' + badgeColor}>
+                          {badgeText}
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-600 truncate mt-0.5">
+                        {order.description} · <strong className="text-slate-900 font-mono">₹{order.amount}</strong>
+                      </div>
+                      <div className="text-[11px] text-blue-600 font-medium mt-1 group-hover:underline flex items-center gap-1">
+                        <span>{actionPrompt}</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <span className="text-[11px] text-slate-400">
+                Smart routing applies automatically to reverse & replacement shipments.
+              </span>
+              <button
+                onClick={() => {
+                  setDismissActionPopup(true);
+                  try { sessionStorage.setItem('dismiss_return_action_popup', 'true'); } catch(_) {}
+                }}
+                className="text-xs text-slate-500 hover:text-slate-800 font-semibold px-3 py-1.5 cursor-pointer"
+              >
+                Review Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 4 PRIMARY EXECUTIVE KPI CARDS (2x2 on Mobile, 4x1 on Desktop) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
