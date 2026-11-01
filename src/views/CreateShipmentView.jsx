@@ -345,15 +345,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         isSecureShipment: false
       });
 
-      // SecureKaro price offset: show ₹2 less than aggregator API rate to stay competitive
-      const PRICE_OFFSET = 2;
-      const rawQuotes = res.data?.quotes || [];
-      const quotes = rawQuotes.map(q => ({
-        ...q,
-        price: Math.max(0, Number(q.price || 0) - PRICE_OFFSET),
-        exactRate: q.exactRate != null ? Math.max(0, Number(q.exactRate) - PRICE_OFFSET) : q.exactRate,
-        freightCharge: q.freightCharge != null ? Math.max(0, Number(q.freightCharge) - PRICE_OFFSET) : q.freightCharge,
-      }));
+      // Quotes already contain the official ₹5 platform discount applied by backend engine
+      const quotes = res.data?.quotes || [];
       setCarrierQuotes(quotes);
       setRouteInfo({
         fromZone: res.data?.fromZone,
