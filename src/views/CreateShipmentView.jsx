@@ -1882,10 +1882,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                                   <span>{b.label}</span>
                                                 </span>
                                               ))
-                                            ) : quote.savingsBadge ? (
-                                              <span className="text-[9px] font-black text-rose-800 bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded inline-block">
-                                                ⚡ {quote.savingsBadge}
-                                              </span>
+                                            
                                             ) : quote.isLowest ? (
                                               <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded inline-block">
                                                 Lowest Rate
@@ -2097,10 +2094,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                           <span>{b.label}</span>
                                         </span>
                                       ))
-                                    ) : quote.savingsBadge ? (
-                                      <span className="text-[9.5px] font-black text-rose-800 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded">
-                                        ⚡ {quote.savingsBadge}
-                                      </span>
+                                    
                                     ) : quote.isLowest ? (
                                       <span className="text-[9.5px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded">
                                         Lowest Rate
