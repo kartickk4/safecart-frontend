@@ -27,6 +27,7 @@ import WalletModal from './components/WalletModal';
 import RoleSelectionModal from './components/RoleSelectionModal';
 import WelcomeAnimationModal from './components/WelcomeAnimationModal';
 import AgentWidget from './components/AgentWidget';
+import SplashScreen from './components/SplashScreen';
 import AdBanner from './components/AdBanner';
 import { profileAPI, authAPI, notificationAPI } from './services/api';
 import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell, ShieldCheck, Wallet, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles } from 'lucide-react';
@@ -48,6 +49,21 @@ export default function App() {
     const token = typeof window !== 'undefined' ? localStorage.getItem('securekaro_token') : null;
     const cached = typeof window !== 'undefined' ? localStorage.getItem('securekaro_user') : null;
     return Boolean(token && !cached);
+  });
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname;
+    // Don't show splash for direct utility deep-links (public photo review, public qr confirmation, direct pay)
+    if (path.startsWith('/photo-review') || path.startsWith('/qr-confirm') || path.startsWith('/pay/')) {
+      return false;
+    }
+    // Check if splash was already shown during this browser session
+    try {
+      const seen = sessionStorage.getItem('securekaro_splash_seen');
+      return !seen;
+    } catch (_) {
+      return true;
+    }
   });
   const [slowServerWarning, setSlowServerWarning] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -398,37 +414,26 @@ export default function App() {
     );
   }
 
-  if (loading) {
+  // Render animated native splash screen on app boot / session resolution
+  if (showSplash || loading) {
     return (
-      <div className="min-h-screen bg-[#F7F9FC] flex flex-col items-center justify-center p-6 text-center select-none">
-        <div className="w-12 h-12 border-4 border-[#1E56E3] border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-xs font-black text-slate-700 tracking-wide uppercase">
-          Loading SecureKaro Platform...
-        </p>
-
-        {slowServerWarning && (
-          <div className="mt-5 max-w-sm w-full p-4 rounded-2xl bg-white border border-amber-200/90 shadow-md text-left space-y-2 animate-in fade-in duration-300">
-            <div className="flex items-center gap-2 text-amber-800 font-extrabold text-xs">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-              <span>Connecting to Cloud Server...</span>
-            </div>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              The free-tier backend sleeps after 15 minutes of inactivity and takes ~20–30s to boot up. Please hold on.
-            </p>
-            <div className="pt-2 flex items-center justify-between border-t border-slate-100">
-              <button
-                onClick={() => {
-                  setLoading(false);
-                  setUser(null);
-                }}
-                className="text-xs font-bold text-[#1E56E3] hover:underline cursor-pointer"
-              >
-                Go to Sign In / Public Tracking →
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <SplashScreen
+        isSlowServer={slowServerWarning}
+        onComplete={() => {
+          setShowSplash(false);
+          try {
+            sessionStorage.setItem('securekaro_splash_seen', 'true');
+          } catch (_) {}
+        }}
+        onSkip={() => {
+          setShowSplash(false);
+          setLoading(false);
+          setUser(null);
+          try {
+            sessionStorage.setItem('securekaro_splash_seen', 'true');
+          } catch (_) {}
+        }}
+      />
     );
   }
 
@@ -839,15 +844,17 @@ export default function App() {
       )}
 
       {/* FIXED MOBILE BOTTOM NAVIGATION BAR (FOR MOBILE SMARTPHONE SCREENS) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-2 py-1.5 pb-safe flex items-center justify-around z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] select-none">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/70 px-3 py-1.5 pb-safe flex items-center justify-around z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none">
         {/* TAB 1: DASHBOARD / ORDERS */}
         <button
           onClick={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-bold transition active:scale-95 ${
-            (currentTab === 'dashboard' || currentTab === 'shipments-list') ? 'text-[#1E56E3]' : 'text-slate-500 hover:text-slate-900'
+          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-all press-spring ${
+            (currentTab === 'dashboard' || currentTab === 'shipments-list')
+              ? 'text-[#1E56E3] bg-blue-50/80 font-extrabold'
+              : 'text-slate-500 hover:text-slate-900'
           }`}
         >
-          <LayoutDashboard className="w-5 h-5" />
+          <LayoutDashboard className="w-5 h-5 stroke-[2.2]" />
           <span>{isSupplier ? 'Dashboard' : 'Orders'}</span>
         </button>
 
@@ -855,62 +862,70 @@ export default function App() {
         {isSupplier ? (
           <button
             onClick={() => setCurrentTab('ai-agent')}
-            className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-bold transition active:scale-95 ${
-              currentTab === 'ai-agent' ? 'text-purple-600 font-extrabold' : 'text-slate-500 hover:text-slate-900'
+            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-all press-spring ${
+              currentTab === 'ai-agent'
+                ? 'text-purple-600 bg-purple-50/80 font-extrabold'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            <Sparkles className="w-5 h-5 text-purple-600" />
+            <Sparkles className="w-5 h-5 text-purple-600 stroke-[2.2]" />
             <span>AI Agent</span>
           </button>
         ) : (
           <button
             onClick={() => setCurrentTab('track')}
-            className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-bold transition active:scale-95 ${
-              currentTab === 'track' ? 'text-[#1E56E3] font-extrabold' : 'text-slate-500 hover:text-slate-900'
+            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-all press-spring ${
+              currentTab === 'track'
+                ? 'text-[#1E56E3] bg-blue-50/80 font-extrabold'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            <Navigation className="w-5 h-5" />
+            <Navigation className="w-5 h-5 stroke-[2.2]" />
             <span>Tracking</span>
           </button>
         )}
 
-        {/* TAB 3: CENTER ACTION (SHIP FOR SELLER, SIGN-OFF FOR BUYER) */}
+        {/* TAB 3: CENTER ACTION (56px floating circle) */}
         {isSupplier ? (
           <button
             onClick={() => setCurrentTab('create-shipment')}
-            className="flex flex-col items-center justify-center -mt-5 w-12 h-12 bg-gradient-to-tr from-[#1443BC] to-[#2563EB] text-white rounded-2xl shadow-lg shadow-blue-600/35 active:scale-95 transition border-2 border-white"
+            className="flex flex-col items-center justify-center -mt-6 w-14 h-14 bg-gradient-to-tr from-[#0D38A8] via-[#1E56E3] to-[#3B82F6] text-white rounded-full shadow-lg shadow-blue-600/35 active:scale-95 transition-transform border-[3px] border-white press-spring"
             title="Book Courier Shipment"
           >
             <PlusCircle className="w-6 h-6 stroke-[2.5]" />
-            <span className="text-[9px] font-black tracking-tight leading-none mt-0.5">Ship</span>
+            <span className="text-[8.5px] font-black tracking-tight leading-none mt-0.5 uppercase">Ship</span>
           </button>
         ) : (
           <button
             onClick={() => setCurrentTab('delivery-confirm')}
-            className="flex flex-col items-center justify-center -mt-5 w-12 h-12 bg-gradient-to-tr from-emerald-600 to-teal-600 text-white rounded-2xl shadow-lg shadow-emerald-600/35 active:scale-95 transition border-2 border-white"
+            className="flex flex-col items-center justify-center -mt-6 w-14 h-14 bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-500 text-white rounded-full shadow-lg shadow-emerald-600/35 active:scale-95 transition-transform border-[3px] border-white press-spring"
             title="Inspect & Sign Off Delivery"
           >
             <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
-            <span className="text-[9px] font-black tracking-tight leading-none mt-0.5">Sign</span>
+            <span className="text-[8.5px] font-black tracking-tight leading-none mt-0.5 uppercase">Sign</span>
           </button>
         )}
 
         {/* TAB 4: WALLET */}
         <button
           onClick={() => setCurrentTab('wallet')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-bold transition active:scale-95 ${
-            currentTab === 'wallet' ? 'text-[#1E56E3] font-extrabold' : 'text-slate-500 hover:text-slate-900'
+          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-all press-spring ${
+            currentTab === 'wallet'
+              ? 'text-[#1E56E3] bg-blue-50/80 font-extrabold'
+              : 'text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Wallet className="w-5 h-5" />
+          <Wallet className="w-5 h-5 stroke-[2.2]" />
           <span>Wallet</span>
         </button>
 
         {/* TAB 5: PROFILE */}
         <button
           onClick={() => setCurrentTab('profile')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-bold transition active:scale-95 ${
-            currentTab === 'profile' ? 'text-[#1E56E3] font-extrabold' : 'text-slate-500 hover:text-slate-900'
+          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-all press-spring ${
+            currentTab === 'profile'
+              ? 'text-[#1E56E3] bg-blue-50/80 font-extrabold'
+              : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           <User className="w-5 h-5" />

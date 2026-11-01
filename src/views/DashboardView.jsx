@@ -22,6 +22,7 @@ import {
   Filler
 } from 'chart.js';
 import { shipmentAPI, notificationAPI } from '../services/api';
+import { MetricCardSkeleton, ShipmentRowSkeleton } from '../components/SkeletonLoader';
 
 ChartJS.register(
   CategoryScale,
@@ -395,6 +396,26 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
       }
     }
   };
+
+  if (loading && shipments.length === 0) {
+    return (
+      <div className="px-4 py-5 md:p-8 space-y-6 max-w-7xl mx-auto">
+        <div className="h-8 w-60 skeleton-shimmer rounded-xl"></div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <MetricCardSkeleton />
+          <MetricCardSkeleton />
+          <MetricCardSkeleton />
+          <MetricCardSkeleton />
+        </div>
+        <div className="h-48 skeleton-shimmer rounded-3xl"></div>
+        <div className="space-y-3">
+          <ShipmentRowSkeleton />
+          <ShipmentRowSkeleton />
+          <ShipmentRowSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-5 md:p-8 space-y-5 md:space-y-8 max-w-7xl mx-auto">
