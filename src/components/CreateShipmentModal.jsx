@@ -248,7 +248,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         isSecureShipment: isSecure
       });
 
-      // Quotes already contain the official ₹5 platform discount applied by backend engine
+      // Backend already applies the exact platform ₹5 discount from the wallet charge
       const quotes = res.data?.quotes || [];
       setCarrierQuotes(quotes);
       setRouteInfo({
