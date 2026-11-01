@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Wallet, 
   ShieldCheck, 
@@ -1204,9 +1205,15 @@ export default function WalletModal({ user, onUpdateUser }) {
       </div>
 
       {/* WITHDRAW CASH REWARD / YIELD MODAL */}
-      {showWithdrawModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] flex flex-col border border-slate-100 shadow-2xl animate-in zoom-in-95 duration-200 relative my-auto overflow-hidden">
+      {showWithdrawModal && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 select-none animate-in fade-in duration-200"
+          onClick={() => setShowWithdrawModal(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col border border-slate-100 shadow-2xl animate-in zoom-in-95 duration-200 relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="p-5 md:p-6 pb-4 border-b border-slate-100 relative shrink-0 flex items-start justify-between gap-3 bg-white">
               <div className="flex items-center gap-3">
@@ -1448,13 +1455,20 @@ export default function WalletModal({ user, onUpdateUser }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* OTP SECURITY VERIFICATION MODAL */}
-      {showOtpModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white p-6 sm:p-8 rounded-3xl max-w-md w-full max-h-[92vh] overflow-y-auto border border-slate-100 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200 my-auto">
+      {showOtpModal && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[110] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 select-none animate-in fade-in duration-200"
+          onClick={() => setShowOtpModal(false)}
+        >
+          <div 
+            className="bg-white p-6 sm:p-8 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-slate-100 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center mx-auto font-bold shadow-sm">
               <Lock className="w-6 h-6" />
             </div>
@@ -1570,7 +1584,8 @@ export default function WalletModal({ user, onUpdateUser }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Seller Wallet Recharge Modal */}
