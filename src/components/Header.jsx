@@ -80,9 +80,11 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
       {/* ── MOBILE HEADER (< lg) ── */}
       <div className="flex lg:hidden items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#1E56E3] to-[#0D38A8] text-white flex items-center justify-center shrink-0 shadow-xs">
-            <ShieldCheck className="w-4 h-4" />
-          </div>
+          <img 
+            src="/logo.jpg" 
+            alt="SecureKaro" 
+            className="w-8 h-8 rounded-xl object-cover shrink-0 shadow-xs border border-slate-200/80 bg-white" 
+          />
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-sm text-slate-900 whitespace-nowrap">

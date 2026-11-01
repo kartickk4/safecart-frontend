@@ -147,9 +147,11 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
         {/* Modern Brand Header */}
         <div className="p-5 border-b border-slate-100/90">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#1E56E3] via-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25 border border-blue-400/20">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
+            <img 
+              src="/logo.jpg" 
+              alt="SecureKaro" 
+              className="w-10 h-10 rounded-2xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white" 
+            />
             <div>
               <div className="flex items-center gap-1.5">
                 <h1 className="font-black text-slate-900 text-base tracking-tight">SecureKaro</h1>

@@ -464,9 +464,11 @@ export default function App() {
             }}
             className="flex items-center gap-2.5 text-left group cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1E56E3] to-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
+            <img 
+              src="/logo.jpg" 
+              alt="SecureKaro" 
+              className="w-9 h-9 rounded-xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white" 
+            />
             <div>
               <span className="font-black text-slate-900 text-base tracking-tight block">SecureKaro</span>
               <span className="text-[10px] text-slate-400 font-semibold block -mt-0.5">Logistics & Shipping Platform</span>

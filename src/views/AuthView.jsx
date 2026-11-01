@@ -665,9 +665,11 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
         {/* Brand Header */}
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg">
-              <ShieldCheck className="w-6 h-6 text-white" />
-            </div>
+            <img 
+              src="/logo.jpg" 
+              alt="SecureKaro" 
+              className="w-10 h-10 rounded-xl object-cover shadow-lg border border-white/40 bg-white" 
+            />
             <div>
               <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 SecureKaro
@@ -738,9 +740,11 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
           {/* MOBILE BRAND IDENTITY HEADER (SHOWN ONLY ON MOBILE PHONES) */}
           <div className="lg:hidden pb-4 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#1E56E3] via-[#1649CC] to-[#0D38A8] text-white flex items-center justify-center shadow-md shadow-blue-600/25">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
+              <img 
+                src="/logo.jpg" 
+                alt="SecureKaro" 
+                className="w-10 h-10 rounded-2xl object-cover shadow-md shadow-blue-600/15 border border-slate-200/80 bg-white" 
+              />
               <div>
                 <div className="flex items-center gap-1.5">
                   <h1 className="text-lg font-black tracking-tight text-slate-900">SecureKaro</h1>

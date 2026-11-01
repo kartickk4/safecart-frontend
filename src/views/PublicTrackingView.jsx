@@ -175,9 +175,11 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
       {/* ── Top Header ────────────────────────────────────────────────────────── */}
       <header className="w-full bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 font-black text-lg">
-            S
-          </div>
+          <img 
+            src="/logo.jpg" 
+            alt="SecureKaro" 
+            className="w-9 h-9 rounded-xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white" 
+          />
           <div>
             <div className="flex items-center gap-2">
               <span className="font-black text-slate-900 tracking-tight text-base sm:text-lg">SecureKaro</span>

@@ -868,9 +868,11 @@ export default function AdminView({ user, onBackToApp }) {
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/25">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
+              <img 
+                src="/logo.jpg" 
+                alt="SecureKaro" 
+                className="w-10 h-10 rounded-2xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white" 
+              />
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-base font-extrabold tracking-tight text-slate-900">SecureKaro Admin Terminal</h1>

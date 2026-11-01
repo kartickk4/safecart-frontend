@@ -321,6 +321,11 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
         
         {/* Header */}
         <div className="text-center space-y-2">
+          <img 
+            src="/logo.jpg" 
+            alt="SecureKaro" 
+            className="w-12 h-12 rounded-2xl mx-auto object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white" 
+          />
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#1E56E3] text-[11px] font-black border border-blue-200">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>SecureKaro Delivery Protection</span>

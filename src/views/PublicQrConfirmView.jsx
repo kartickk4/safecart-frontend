@@ -837,9 +837,11 @@ export default function PublicQrConfirmView({ qrToken }) {
       {/* Brand Header */}
       <header className="max-w-xl mx-auto w-full flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center font-black text-lg shadow-md shadow-blue-500/20">
-            SK
-          </div>
+          <img 
+            src="/logo.jpg" 
+            alt="SecureKaro" 
+            className="w-10 h-10 rounded-xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white" 
+          />
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-black text-slate-900 text-base tracking-tight">SecureKaro</span>

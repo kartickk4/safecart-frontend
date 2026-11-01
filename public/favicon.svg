@@ -1,16 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  <defs>
-    <linearGradient id="shieldGrad" x1="50" y1="50" x2="450" y2="450" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#2563EB"/>
-      <stop offset="100%" stop-color="#1D4ED8"/>
-    </linearGradient>
-  </defs>
-  <!-- Background Rounded Rect -->
-  <rect width="512" height="512" rx="128" fill="#FFFFFF"/>
-  <!-- Shield Outline -->
-  <path d="M256 60C340 100 420 100 420 100V250C420 360 330 435 256 460C182 435 92 360 92 250V100C92 100 172 100 256 60Z" 
-        stroke="url(#shieldGrad)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <!-- Inner Checkmark in Shield -->
-  <path d="M195 245L235 305L340 175" 
-        stroke="url(#shieldGrad)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Rounded White Canvas -->
+  <rect width="512" height="512" rx="100" fill="#FFFFFF"/>
+  
+  <!-- Outer Blue Shield -->
+  <path d="M256 36 C344 76 438 88 454 94 C464 97 470 106 470 116 C470 248 376 394 256 468 C136 394 42 248 42 116 C42 106 48 97 58 94 C74 88 168 76 256 36 Z" 
+        fill="#0056D2"/>
+  
+  <!-- Inner White Shield Cutout -->
+  <path d="M256 82 C332 116 404 124 416 128 C418 234 348 350 256 414 C164 350 94 234 96 128 C108 124 180 116 256 82 Z" 
+        fill="#FFFFFF"/>
+
+  <!-- 3D Cardboard Parcel Box -->
+  <!-- Top Face -->
+  <polygon points="256,140 376,206 256,272 136,206" fill="#ECC499"/>
+  <!-- Top Tape -->
+  <polygon points="214,163 256,140 298,163 256,186" fill="#B87F4C"/>
+  <polygon points="214,163 256,186 256,272 214,249" fill="#B87F4C"/>
+
+  <!-- Left Face -->
+  <polygon points="136,206 256,272 256,396 136,330" fill="#D39E69"/>
+  <!-- Left Tape -->
+  <polygon points="184,232 214,249 214,373 184,356" fill="#A46C38"/>
+
+  <!-- Right Face -->
+  <polygon points="256,272 376,206 376,330 256,396" fill="#E2B17F"/>
 </svg>
