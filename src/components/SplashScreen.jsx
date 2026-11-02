@@ -236,7 +236,7 @@ export default function SplashScreen({ onComplete, isSlowServer = false, onSkip 
         )}
 
         <div className="mt-6 text-[10px] font-semibold text-slate-400 tracking-wider uppercase">
-          SafeCart Escrow & Logistics Protocol
+          SecureKaro Logistics Aggregator & Shipping Protocol
         </div>
       </div>
     </div>

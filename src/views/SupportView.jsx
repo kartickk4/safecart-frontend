@@ -7,39 +7,39 @@ import {
 const FAQ_DATA = [
   {
     id: 1,
-    category: 'Payouts & Disbursals',
-    question: 'How long are funds protected after shipment delivery?',
-    answer: 'Once a shipment is delivered, funds remain protected during the 24-hour inspection window. Upon buyer confirmation or when the timer expires, funds are automatically transferred to your registered payout bank account.'
+    category: 'Billing & Wallet',
+    question: 'How do courier shipping rates and wallet recharges work?',
+    answer: 'SecureKaro provides deeply discounted freight rates from India\'s leading carriers (Delhivery, Shadowfax, Shiprocket, NimbusPost). Sellers recharge their prepaid wallet or pay per shipment to generate shipping labels and book pickups instantly.'
   },
   {
     id: 2,
-    category: 'Payouts & Disbursals',
-    question: 'How do I update my payout bank account or UPI ID?',
-    answer: 'Go to Profile & Bank Payout settings in the sidebar. For security, updating existing bank account details requires a 6-digit OTP verification sent to your registered mobile number.'
+    category: 'Payouts & COD',
+    question: 'How does COD (Cash on Delivery) collection and remittance work?',
+    answer: 'For COD shipments, our carrier partners collect cash from the consignee at doorstep delivery. Once delivered, the collected COD amount is reconciled and remitted directly to your registered bank account as per the standard courier remittance cycle (T+2 to T+4 business days).'
   },
   {
     id: 3,
     category: 'Logistics & Tracking',
     question: 'What happens if a courier partner delays pickup or delivery?',
-    answer: 'Our live tracking system continuously monitors partner courier networks (Delhivery, BlueDart, DTDC). In case of delays beyond 24 hours, automated logistics escalation alerts are sent to the courier hub.'
+    answer: 'Our live tracking system continuously monitors partner courier networks (Delhivery, Shadowfax, DTDC, Blue Dart). In case of delays, automated NDR (Non-Delivery Report) and logistics escalation alerts are triggered to expedite doorstep delivery.'
   },
   {
     id: 4,
     category: 'Disputes & Refunds',
-    question: 'What is the dispute process if a package arrives damaged?',
-    answer: 'The recipient can click "File Dispute" on the shipment details card before releasing funds. This immediately protects the funds in a neutral stage until our arbitration team reviews the unboxing proof.'
+    question: 'What is the policy for shipment cancellations and refunds?',
+    answer: 'You can cancel any shipment booking prior to physical courier pickup for an instant 100% full refund credited back to your wallet. Unutilized wallet recharges can also be withdrawn or refunded to your original payment method within 5–7 business days.'
   },
   {
     id: 5,
-    category: 'Payouts & Disbursals',
-    question: 'Are there any hidden platform charges on delivery payouts?',
-    answer: 'No. SecureKaro holds your order value safely until delivery is confirmed, then releases 100% of the principal to the supplier. No interest or hidden deductions are applied.'
+    category: 'Logistics & Tracking',
+    question: 'What should I do if a shipment is marked RTO (Return to Origin)?',
+    answer: 'If the consignee is unavailable or rejects the parcel after 3 delivery attempts, the courier initiates RTO. You can track the reverse journey in real-time in the Return Orders section until the parcel is safely returned to your pickup warehouse.'
   },
   {
     id: 6,
-    category: 'Account & KYC',
-    question: 'Why is Aadhaar or PAN KYC required for merchant payouts?',
-    answer: 'In compliance with digital payments and commercial carriage guidelines, identity verification prevents fraudulent transactions and ensures secure electronic disbursals.'
+    category: 'Account & Compliance',
+    question: 'Why is merchant business verification required for shipping?',
+    answer: 'In compliance with Indian commercial carriage laws, GST, and carrier partner mandates, merchant verification ensures valid pickup manifests, accurate e-Way bills, and legitimate commercial freight carriage.'
   }
 ];
 
@@ -164,7 +164,7 @@ export default function SupportView() {
 
               {/* Category Filter Pills */}
               <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] font-semibold">
-                {['All', 'Payouts & Disbursals', 'Logistics & Tracking', 'Disputes & Refunds'].map(cat => (
+                {['All', 'Billing & Wallet', 'Payouts & COD', 'Logistics & Tracking', 'Disputes & Refunds', 'Account & Compliance'].map(cat => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}

@@ -73,7 +73,8 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
                   <Phone className="w-5 h-5" />
                   <span>Customer Support Helpline</span>
                 </div>
-                <p className="text-2xl font-black text-slate-900">+91 1800-723-3227</p>
+                <p className="text-2xl font-black text-slate-900">+91 70442 55626</p>
+                <p className="text-xs text-slate-600 font-semibold">Toll-Free: +91 1800-723-3227</p>
                 <p className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
                   <Clock className="w-4 h-4 text-slate-400" />
                   <span>Operating Hours: Mon – Sat (9:00 AM to 7:00 PM IST)</span>

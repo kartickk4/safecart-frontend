@@ -1015,55 +1015,55 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             </span>
           </div>
 
-          {/* Cashfree Merchant Compliance Footer Links */}
+          {/* Cashfree Merchant Compliance Active Policy Links */}
           <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-x-3.5 gap-y-2 text-[11px] font-bold text-slate-500">
-            <button 
-              type="button"
-              onClick={() => setShowLegalModal('contact')} 
+            <a 
+              href="/contact" 
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('contact'); }} 
               className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Contact Us
-            </button>
+            </a>
             <span>•</span>
-            <button 
-              type="button"
-              onClick={() => setShowLegalModal('terms')} 
+            <a 
+              href="/terms" 
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('terms'); }} 
               className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Terms & Conditions
-            </button>
+            </a>
             <span>•</span>
-            <button 
-              type="button"
-              onClick={() => setShowLegalModal('privacy')} 
+            <a 
+              href="/privacy" 
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('privacy'); }} 
               className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Privacy Policy
-            </button>
+            </a>
             <span>•</span>
-            <button 
-              type="button"
-              onClick={() => setShowLegalModal('shipping')} 
+            <a 
+              href="/shipping" 
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('shipping'); }} 
               className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Shipping & Delivery
-            </button>
+            </a>
             <span>•</span>
-            <button 
-              type="button"
-              onClick={() => setShowLegalModal('refunds')} 
+            <a 
+              href="/refund" 
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('refunds'); }} 
               className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Refunds & Cancellations
-            </button>
+            </a>
             <span>•</span>
-            <button 
-              type="button"
-              onClick={() => setShowLegalModal('services')} 
+            <a 
+              href="/pricing" 
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('services'); }} 
               className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Products & Pricing (INR ₹)
-            </button>
+            </a>
           </div>
         </div>
       </div>

@@ -1,1 +1,23 @@
-/google67c24fdfadc89c93  /google67c24fdfadc89c93.html  200
+# Static Policy Page Directives for Payment Gateway & Crawler Instant Resolution
+/contact                 /contact.html                200
+/contact-us              /contact.html                200
+/terms                   /terms.html                  200
+/terms-and-conditions    /terms.html                  200
+/terms-conditions        /terms.html                  200
+/privacy                 /privacy.html                200
+/privacy-policy          /privacy.html                200
+/refund                  /refund.html                 200
+/refunds                 /refund.html                 200
+/refund-policy           /refund.html                 200
+/cancellation            /refund.html                 200
+/cancellation-policy     /refund.html                 200
+/cancellation-and-refund /refund.html                 200
+/shipping                /shipping.html               200
+/shipping-policy         /shipping.html               200
+/shipping-and-delivery   /shipping.html               200
+
+# Google Search Console Verification
+/google67c24fdfadc89c93  /google67c24fdfadc89c93.html 200
+
+# Single Page Application (SPA) catch-all fallback
+/*                       /index.html                  200
