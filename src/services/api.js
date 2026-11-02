@@ -109,27 +109,81 @@ api.interceptors.response.use(
 
 
 
-// ── IN-FLIGHT GET REQUEST DEDUPLICATION (Performance Toolkit Item 03/31) ──
+// ── SWR (STALE-WHILE-REVALIDATE) CLIENT CACHE + IN-FLIGHT DEDUPLICATION ──
+const getResponseCache = new Map();
 const inFlightGetRequests = new Map();
 const rawGet = api.get.bind(api);
+
+const SWR_FRESH_MS = 30000;  // 30s: instant return from cache, no network wait
+const SWR_STALE_MS = 180000; // 3 mins: instant return from cache, silent background refresh
+
+export const clearApiCache = (urlFilter = '') => {
+  if (!urlFilter) {
+    getResponseCache.clear();
+  } else {
+    for (const key of getResponseCache.keys()) {
+      if (key.includes(urlFilter)) getResponseCache.delete(key);
+    }
+  }
+};
+
+// Automatic cache invalidation on mutations (POST, PUT, DELETE, PATCH)
+['post', 'put', 'delete', 'patch'].forEach((method) => {
+  const rawMethod = api[method].bind(api);
+  api[method] = async function(...args) {
+    const res = await rawMethod(...args);
+    // Clear GET cache when data is modified so UI reflects updates immediately
+    getResponseCache.clear();
+    return res;
+  };
+});
+
 api.get = function(url, config) {
-  if (config && config.noDeduplicate) {
+  if (config && (config.noCache || config.noDeduplicate)) {
     return rawGet(url, config);
   }
-  const token = typeof window !== 'undefined' ? (localStorage.getItem('securekaro_token') || '').slice(-12) : '';
-  const paramKey = config && config.params ? JSON.stringify(config.params) : '';
-  const dedupeKey = url + '::' + paramKey + '::' + token;
 
-  if (inFlightGetRequests.has(dedupeKey)) {
-    return inFlightGetRequests.get(dedupeKey);
+  const token = typeof window !== 'undefined' ? (localStorage.getItem('securekaro_token') || '').slice(-16) : '';
+  const paramKey = config && config.params ? JSON.stringify(config.params) : '';
+  const cacheKey = `${url}::${paramKey}::${token}`;
+  const now = Date.now();
+
+  const cached = getResponseCache.get(cacheKey);
+
+  // 1. If fresh in memory cache, return immediately (0ms delay!)
+  if (cached && (now - cached.timestamp < SWR_FRESH_MS)) {
+    return Promise.resolve(cached.response);
   }
 
-  const promise = rawGet(url, config).finally(() => {
-    inFlightGetRequests.delete(dedupeKey);
-  });
+  // 2. If identical request is already in-flight, return the shared promise or stale data
+  if (inFlightGetRequests.has(cacheKey)) {
+    if (cached && (now - cached.timestamp < SWR_STALE_MS)) {
+      return Promise.resolve(cached.response);
+    }
+    return inFlightGetRequests.get(cacheKey);
+  }
 
-  inFlightGetRequests.set(dedupeKey, promise);
-  return promise;
+  // 3. Initiate fetch and populate cache
+  const fetchPromise = rawGet(url, config)
+    .then((res) => {
+      getResponseCache.set(cacheKey, {
+        response: res,
+        timestamp: Date.now()
+      });
+      return res;
+    })
+    .finally(() => {
+      inFlightGetRequests.delete(cacheKey);
+    });
+
+  inFlightGetRequests.set(cacheKey, fetchPromise);
+
+  // Stale-While-Revalidate: Return stale cached data instantly while background network fetch updates the cache
+  if (cached && (now - cached.timestamp < SWR_STALE_MS)) {
+    return Promise.resolve(cached.response);
+  }
+
+  return fetchPromise;
 };
 
 export const authAPI = {

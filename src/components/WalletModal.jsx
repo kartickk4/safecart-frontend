@@ -30,6 +30,24 @@ import {
 import { profileAPI, authAPI, shipmentAPI, rewardAPI, walletAPI } from '../services/api';
 import RechargeModal from './RechargeModal';
 
+
+const getStoredWalletSnapshot = () => {
+  try {
+    const raw = typeof window !== 'undefined' ? sessionStorage.getItem('securekaro_wallet_snapshot') : null;
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const saveStoredWalletSnapshot = (partial) => {
+  try {
+    if (typeof window === 'undefined') return;
+    const current = getStoredWalletSnapshot() || {};
+    sessionStorage.setItem('securekaro_wallet_snapshot', JSON.stringify({ ...current, ...partial }));
+  } catch (e) {}
+};
+
 export default function WalletModal({ user, onUpdateUser }) {
   const isSupplier = user?.role === 'Supplier' || user?.activeRole === 'Supplier';
   const isReceiver = !isSupplier;
@@ -38,7 +56,7 @@ export default function WalletModal({ user, onUpdateUser }) {
   const [walletTransactions, setWalletTransactions] = useState([]);
   const [activeLedgerTab, setActiveLedgerTab] = useState('WALLET'); // 'WALLET' | 'REWARDS'
 
-  const [shipments, setShipments] = useState([]);
+  const [shipments, setShipments] = useState(() => (getStoredWalletSnapshot()?.shipments ?? []));
   const [bankDetails, setBankDetails] = useState({
     accountHolderName: user?.bankDetails?.accountHolderName || user?.fullName || '',
     accountNumber: user?.bankDetails?.accountNumber || '',
