@@ -80,8 +80,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
       {/* ── MOBILE HEADER (< lg) ── */}
       <div className="flex lg:hidden items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 shrink-0">
-          <img 
-            src="/logo.jpg" 
+          <img loading="lazy" src="/logo.jpg" 
             alt="SecureKaro" 
             className="w-8 h-8 rounded-xl object-cover shrink-0 shadow-xs border border-slate-200/80 bg-white" 
           />

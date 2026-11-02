@@ -147,8 +147,7 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
         {/* Modern Brand Header */}
         <div className="p-5 border-b border-slate-100/90">
           <div className="flex items-center gap-3">
-            <img 
-              src="/logo.jpg" 
+            <img loading="lazy" src="/logo.jpg" 
               alt="SecureKaro" 
               className="w-10 h-10 rounded-2xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white" 
             />

@@ -108,6 +108,30 @@ api.interceptors.response.use(
 );
 
 
+
+// ── IN-FLIGHT GET REQUEST DEDUPLICATION (Performance Toolkit Item 03/31) ──
+const inFlightGetRequests = new Map();
+const rawGet = api.get.bind(api);
+api.get = function(url, config) {
+  if (config && config.noDeduplicate) {
+    return rawGet(url, config);
+  }
+  const token = typeof window !== 'undefined' ? (localStorage.getItem('securekaro_token') || '').slice(-12) : '';
+  const paramKey = config && config.params ? JSON.stringify(config.params) : '';
+  const dedupeKey = url + '::' + paramKey + '::' + token;
+
+  if (inFlightGetRequests.has(dedupeKey)) {
+    return inFlightGetRequests.get(dedupeKey);
+  }
+
+  const promise = rawGet(url, config).finally(() => {
+    inFlightGetRequests.delete(dedupeKey);
+  });
+
+  inFlightGetRequests.set(dedupeKey, promise);
+  return promise;
+};
+
 export const authAPI = {
   login: (credentials, role) => api.post('/auth/login', typeof credentials === 'object' ? { ...credentials, role: credentials.role || role || 'Receiver' } : { email: credentials, password: role, role }),
   signup: (userData) => api.post('/auth/signup', userData),

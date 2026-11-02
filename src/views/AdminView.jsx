@@ -868,8 +868,7 @@ export default function AdminView({ user, onBackToApp }) {
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-3">
-              <img 
-                src="/logo.jpg" 
+              <img loading="lazy" src="/logo.jpg" 
                 alt="SecureKaro" 
                 className="w-10 h-10 rounded-2xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white" 
               />
@@ -1649,7 +1648,7 @@ export default function AdminView({ user, onBackToApp }) {
                             onClick={() => setPreviewImage(img)}
                             className="relative w-12 h-12 rounded-xl overflow-hidden border border-slate-200 hover:border-blue-500"
                           >
-                            <img src={img} alt="Evidence" className="w-full h-full object-cover" />
+                            <img loading="lazy" src={img} alt="Evidence" className="w-full h-full object-cover" />
                           </button>
                         ))}
                       </div>
@@ -2763,7 +2762,7 @@ export default function AdminView({ user, onBackToApp }) {
                   <div>
                     <span className="text-[10px] text-slate-500 block mb-1">Parcel Photo</span>
                     <button onClick={() => setPreviewImage(detailedShipment.parcelPhotoUrl)}>
-                      <img src={detailedShipment.parcelPhotoUrl} alt="Parcel" className="w-16 h-16 rounded-xl object-cover border border-slate-200" />
+                      <img loading="lazy" src={detailedShipment.parcelPhotoUrl} alt="Parcel" className="w-16 h-16 rounded-xl object-cover border border-slate-200" />
                     </button>
                   </div>
                 )}
@@ -2771,7 +2770,7 @@ export default function AdminView({ user, onBackToApp }) {
                   <div>
                     <span className="text-[10px] text-slate-500 block mb-1">Return Defect Photo</span>
                     <button onClick={() => setPreviewImage(detailedShipment.defectPhotoUrl)}>
-                      <img src={detailedShipment.defectPhotoUrl} alt="Defect" className="w-16 h-16 rounded-xl object-cover border border-slate-200" />
+                      <img loading="lazy" src={detailedShipment.defectPhotoUrl} alt="Defect" className="w-16 h-16 rounded-xl object-cover border border-slate-200" />
                     </button>
                   </div>
                 )}
@@ -3630,7 +3629,7 @@ export default function AdminView({ user, onBackToApp }) {
       {previewImage && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setPreviewImage(null)}>
           <div className="max-w-2xl max-h-[85vh] relative" onClick={(e) => e.stopPropagation()}>
-            <img src={previewImage} alt="Preview" className="w-full h-full object-contain rounded-2xl border border-slate-200" />
+            <img loading="lazy" src={previewImage} alt="Preview" className="w-full h-full object-contain rounded-2xl border border-slate-200" />
             <button
               onClick={() => setPreviewImage(null)}
               className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black"

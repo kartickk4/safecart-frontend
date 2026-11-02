@@ -724,7 +724,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                           className="w-16 h-16 rounded-xl overflow-hidden border border-teal-200 bg-white cursor-pointer relative group shadow-2xs"
                           title="Click to view full photo"
                         >
-                          <img src={order.defectPhotoUrl} alt="Defect Evidence" className="w-full h-full object-cover group-hover:scale-105 transition" />
+                          <img loading="lazy" src={order.defectPhotoUrl} alt="Defect Evidence" className="w-full h-full object-cover group-hover:scale-105 transition" />
                           <div className="absolute inset-0 bg-teal-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white">
                             <ZoomIn className="w-4 h-4" />
                           </div>
@@ -1412,8 +1412,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
 
             {/* Viewport */}
             <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-black/60 min-h-[300px]">
-              <img
-                src={previewPhotoModal.url}
+              <img loading="lazy" src={previewPhotoModal.url}
                 alt={previewPhotoModal.title || 'Full Evidence View'}
                 className="max-h-[78vh] max-w-full object-contain rounded-xl shadow-2xl"
               />

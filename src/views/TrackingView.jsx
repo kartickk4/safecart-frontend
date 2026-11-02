@@ -1120,7 +1120,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                                     {parcelPhoto && isPhotoClear ? (
                                       <div className="rounded-2xl overflow-hidden border border-emerald-300 bg-emerald-50/50 p-3 space-y-2.5">
                                         <div className="relative rounded-xl overflow-hidden max-h-48 border border-slate-200 bg-white">
-                                          <img src={parcelPhoto} alt="Parcel Preview" className="w-full h-44 object-cover" />
+                                          <img loading="lazy" src={parcelPhoto} alt="Parcel Preview" className="w-full h-44 object-cover" />
                                           <div className="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow flex items-center gap-1">
                                             <CheckCircle2 className="w-3 h-3" />
                                             <span>CLEAR & APPROVED</span>
@@ -1906,7 +1906,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                         </span>
                       )}
                     </div>
-                    {defectPhoto && <img src={defectPhoto} alt="Defect" className="w-24 h-24 object-cover rounded-xl border border-amber-200 mt-1" />}
+                    {defectPhoto && <img loading="lazy" src={defectPhoto} alt="Defect" className="w-24 h-24 object-cover rounded-xl border border-amber-200 mt-1" />}
                     <textarea
                       value={defectDescription}
                       onChange={e => setDefectDescription(e.target.value)}
@@ -2237,8 +2237,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                       onClick={() => setPreviewPhotoModal({ isOpen: true, url: trackingResult.defectPhotoUrl, title: `Defect Photo Evidence — ${trackingResult.shipmentId}` })}
                       className="rounded-xl overflow-hidden border border-teal-200 bg-white group relative cursor-pointer max-w-xs h-36 shadow-2xs"
                     >
-                      <img 
-                        src={trackingResult.defectPhotoUrl} 
+                      <img loading="lazy" src={trackingResult.defectPhotoUrl} 
                         alt="Defect proof" 
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-200" 
                       />
@@ -2637,8 +2636,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
 
             {/* Viewport */}
             <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-black/60 min-h-[300px]">
-              <img
-                src={previewPhotoModal.url}
+              <img loading="lazy" src={previewPhotoModal.url}
                 alt={previewPhotoModal.title || 'Full Evidence View'}
                 className="max-h-[78vh] max-w-full object-contain rounded-xl shadow-2xl"
               />
