@@ -1807,12 +1807,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                     </td>
 
                                     <td className="py-2.5 px-3 whitespace-nowrap">
-                                      {quote.isDirectDelhivery ? (
+                                      {quote.isDirectDelhivery || quote.aggregator === 'delhivery_direct' ? (
                                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
                                           <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
                                           Delhivery Direct
                                         </span>
-                                      ) : quote.isDirectShadowfax ? (
+                                      ) : quote.isDirectShadowfax || quote.aggregator === 'shadowfax_direct' ? (
                                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
                                           <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
                                           Shadowfax Direct
@@ -1909,7 +1909,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                           const isAir = (quote.mode || '').toLowerCase().includes('air') || (quote.name || '').toLowerCase().includes('air');
                           const displayRate = Number(quote.price || 0);
                           const codFee = Number(quote.codCharge || 0);
-                          const freightFee = Number(quote.freightCharge || (displayRate - codFee));
+                          const freightFee = Number(quote.freightCharge !== undefined && (Number(quote.freightCharge) + codFee === displayRate) ? quote.freightCharge : Math.max(0, displayRate - codFee));
                           const isHeavy = quote.minWeightKg && quote.minWeightKg >= 5;
 
                           return (

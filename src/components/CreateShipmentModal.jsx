@@ -995,7 +995,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                         const codFee = Number(quote.codCharge || 0);
                         const secureFee = Number(quote.secureShipmentCharge || (secureShipmentEnabled ? 54 : 0));
                         const waFee = Number(quote.whatsappCharge || 5.00);
-                        const freightFee = Number(quote.freightCharge || (displayRate - codFee - secureFee - waFee));
+                        const freightFee = Number(quote.freightCharge !== undefined && (Number(quote.freightCharge) + codFee === displayRate) ? quote.freightCharge : Math.max(0, displayRate - codFee));
                         const isNimbus = quote.aggregator === 'nimbuspost' || (quote.slug && quote.slug.startsWith('nimbus'));
                         const isAir = (quote.mode || '').toLowerCase().includes('air') || (quote.name || '').toLowerCase().includes('air');
                         const isHeavy = quote.minWeightKg && quote.minWeightKg >= 5;
@@ -1041,7 +1041,17 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                             </td>
 
                             <td className="py-2.5 px-3 whitespace-nowrap">
-                              {isNimbus ? (
+                              {quote.isDirectDelhivery || quote.aggregator === 'delhivery_direct' ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                                  Delhivery Direct
+                                </span>
+                              ) : quote.isDirectShadowfax || quote.aggregator === 'shadowfax_direct' ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                                  Shadowfax Direct
+                                </span>
+                              ) : isNimbus ? (
                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
                                   <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
                                   NimbusPost
@@ -1132,7 +1142,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   const codFee = Number(quote.codCharge || 0);
                   const secureFee = Number(quote.secureShipmentCharge || (secureShipmentEnabled ? 54 : 0));
                   const waFee = Number(quote.whatsappCharge || 5.00);
-                  const freightFee = Number(quote.freightCharge || (displayRate - codFee - secureFee - waFee));
+                  const freightFee = Number(quote.freightCharge !== undefined && (Number(quote.freightCharge) + codFee === displayRate) ? quote.freightCharge : Math.max(0, displayRate - codFee));
                   const isNimbus = quote.aggregator === 'nimbuspost' || (quote.slug && quote.slug.startsWith('nimbus'));
                   const isAir = (quote.mode || '').toLowerCase().includes('air') || (quote.name || '').toLowerCase().includes('air');
                   const isHeavy = quote.minWeightKg && quote.minWeightKg >= 5;
