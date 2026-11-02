@@ -327,9 +327,11 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
-      <div className={`bg-white rounded-3xl ${modalStep === 2 ? 'w-[96vw] max-w-7xl max-h-[94vh]' : 'w-full max-w-xl max-h-[94vh]'} p-4 sm:p-6 shadow-2xl relative border border-slate-100 flex flex-col overflow-hidden transition-all duration-200 animate-in zoom-in-95`}>
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[120] bg-slate-900/80 backdrop-blur-md flex items-center justify-center sm:p-4 overflow-hidden animate-in fade-in duration-200">
+      <div className={`bg-white rounded-3xl ${modalStep === 2 ? 'w-full sm:w-[96vw] max-w-7xl h-[100dvh] sm:h-auto sm:max-h-[94vh] rounded-none sm:rounded-3xl' : 'w-full max-w-xl max-h-[94vh] rounded-3xl'} p-4 sm:p-6 shadow-2xl relative border border-slate-100 flex flex-col overflow-hidden transition-all duration-200 animate-in zoom-in-95`}>
         <button
           onClick={onClose}
           className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition z-10"
@@ -703,21 +705,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               </div>
             </div>
 
-            {/* Smart Routing Recommendation Banner */}
-            {smartRecommendation && !fetchingQuotes && (
-              <div className="p-3 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-50 border border-blue-200 rounded-2xl flex items-start gap-2.5">
-                <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-                <div className="text-xs">
-                  <div className="font-extrabold text-blue-950 flex items-center gap-2">
-                    <span>SecureKaro Smart Routing Engine</span>
-                    <span className="text-[10px] bg-blue-600 text-white font-bold px-2 py-0.2 rounded-full">
-                      Recommended
-                    </span>
-                  </div>
-                  <p className="text-blue-800 mt-0.5 leading-relaxed">{smartRecommendation.reason}</p>
-                </div>
-              </div>
-            )}
+            {/* Smart Routing Recommendation Banner removed */}
 
             {/* Filter Tabs & Search Bar */}
             {!fetchingQuotes && carrierQuotes.length > 0 && (
@@ -1267,7 +1255,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
             )}
 
             {/* Bottom Actions */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+            <div className="pt-3 pb-[max(12px,env(safe-area-inset-bottom))] border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
               <button
                 type="button"
                 onClick={() => setModalStep(1)}
@@ -1296,6 +1284,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

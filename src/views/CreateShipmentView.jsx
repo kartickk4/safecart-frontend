@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   ShieldCheck, CheckCircle2, ArrowRight, Download, Copy, Printer, Package, 
   Truck, ArrowLeft, Building, AlertTriangle, ExternalLink, Link as LinkIcon, 
@@ -1375,9 +1376,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
             </form>
 
             {/* Courier Rates & Customer Ratings Comparison Modal */}
-            {showCarrierModal && (
-              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
-                <div className="bg-white rounded-3xl w-[96vw] max-w-7xl shadow-2xl border border-slate-200 flex flex-col max-h-[94vh] overflow-hidden">
+            {showCarrierModal && typeof document !== 'undefined' && createPortal(
+              <div className="fixed inset-0 z-[120] bg-slate-900/80 backdrop-blur-md flex items-center justify-center sm:p-4 overflow-hidden animate-in fade-in duration-200">
+                <div className="bg-white rounded-none sm:rounded-3xl w-full sm:w-[96vw] max-w-7xl h-[100dvh] sm:h-auto sm:max-h-[94vh] shadow-2xl border-0 sm:border border-slate-200 flex flex-col overflow-hidden">
                   
                   {/* Modal Header */}
                   <div className="p-4 sm:p-6 bg-gradient-to-b from-slate-50/90 to-white border-b border-slate-100">
@@ -1395,9 +1396,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                             Hybrid Rate Engine
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500">
-                          Comparing live discounted rates across <strong>Shiprocket</strong> and <strong>NimbusPost</strong> for destination pincode <strong className="text-slate-900 font-mono">{receiverPincode}</strong>
-                        </p>
+                        <p className="text-xs text-slate-500">Destination: <strong className="text-slate-900 font-mono">{receiverPincode}</strong> • Weight: <strong className="text-slate-900 font-mono">{activeBillableWeight} kg</strong> • <strong className={paymentMode === 'cod' ? 'text-amber-700' : 'text-emerald-700'}>{paymentMode === 'cod' ? 'Cash on Delivery (COD)' : 'Prepaid Delivery'}</strong></p>
                       </div>
 
                       <button
@@ -1437,21 +1436,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       </div>
                     </div>
 
-                    {/* Smart Routing Engine Recommendation Banner */}
-                    {smartRecommendation && (
-                      <div className="mt-4 p-3.5 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-50 border border-blue-200 rounded-2xl flex items-start gap-3">
-                        <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-                        <div className="text-xs">
-                          <div className="font-extrabold text-blue-950 flex items-center gap-2">
-                            <span>SecureKaro Smart Routing Engine</span>
-                            <span className="text-[10px] bg-blue-600 text-white font-bold px-2 py-0.2 rounded-full">
-                              Recommended Partner
-                            </span>
-                          </div>
-                          <p className="text-blue-800 mt-0.5 leading-relaxed">{smartRecommendation.reason}</p>
-                        </div>
-                      </div>
-                    )}
+                    {/* Smart Routing Engine recommendation banner removed */}
 
                     {/* Interactive Aggregator Tabs & Filter Controls */}
                     {!fetchingQuotes && !carrierQuotesError && carrierQuotes.length > 0 && (
@@ -2047,7 +2032,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   </div>
 
                   {/* Modal Footer / Finalization Bar */}
-                  <div className="p-4 sm:p-5 bg-white border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap shadow-lg">
+                  <div className="p-3 sm:p-4 bg-white border-t border-slate-200 flex items-center justify-between gap-3 flex-wrap shadow-lg shrink-0 z-20 pb-[max(14px,env(safe-area-inset-bottom))]">
                     <div className="flex items-center gap-3">
                       {selectedQuote ? (
                         <div className="flex items-center gap-3">
@@ -2061,13 +2046,23 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-slate-500 font-medium">Selected Courier:</span>
                               <strong className="text-sm font-black text-slate-900">{selectedQuote.courierPartner || selectedQuote.name}</strong>
-                              <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                                (selectedQuote.aggregator || '').toLowerCase().includes('nimbus') || selectedQuote.slug.startsWith('nimbus')
-                                  ? 'bg-purple-100 text-purple-800'
-                                  : 'bg-indigo-100 text-indigo-800'
-                              }`}>
-                                via {(selectedQuote.aggregatorName || (selectedQuote.slug.startsWith('nimbus') ? 'NimbusPost' : 'Shiprocket'))}
-                              </span>
+                              {selectedQuote.isDirectShadowfax || selectedQuote.aggregator === 'shadowfax_direct' ? (
+                                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                                  via Shadowfax Direct
+                                </span>
+                              ) : selectedQuote.isDirectDelhivery || selectedQuote.aggregator === 'delhivery_direct' ? (
+                                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
+                                  via Delhivery Direct
+                                </span>
+                              ) : (selectedQuote.aggregator || '').toLowerCase().includes('nimbus') || selectedQuote.slug.startsWith('nimbus') ? (
+                                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                                  via NimbusPost
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                  via Shiprocket
+                                </span>
+                              )}
                             </div>
                             <p className="text-xs text-slate-500 mt-0.5">
                               Final Rate: <strong className="text-emerald-700 font-mono font-black">₹{Number(selectedQuote.price || 0).toFixed(2)}</strong> · Transit: <strong>{selectedQuote.eta}</strong>
@@ -2109,7 +2104,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
 
             {/* COD Upfront Payment Modal */}
