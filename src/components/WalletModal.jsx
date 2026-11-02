@@ -31,20 +31,27 @@ import { profileAPI, authAPI, shipmentAPI, rewardAPI, walletAPI } from '../servi
 import RechargeModal from './RechargeModal';
 
 
-const getStoredWalletSnapshot = () => {
+const getSnapshotKey = (u) => {
+  const r = (u?.role === 'Supplier' || u?.activeRole === 'Supplier') ? 'Supplier' : 'Receiver';
+  const uid = u?._id || u?.id || 'default';
+  return `securekaro_wallet_snapshot_${r}_${uid}`;
+};
+
+const getStoredWalletSnapshot = (u) => {
   try {
-    const raw = typeof window !== 'undefined' ? sessionStorage.getItem('securekaro_wallet_snapshot') : null;
+    if (typeof window === 'undefined') return null;
+    const raw = sessionStorage.getItem(getSnapshotKey(u));
     return raw ? JSON.parse(raw) : null;
   } catch (e) {
     return null;
   }
 };
 
-const saveStoredWalletSnapshot = (partial) => {
+const saveStoredWalletSnapshot = (u, partial) => {
   try {
     if (typeof window === 'undefined') return;
-    const current = getStoredWalletSnapshot() || {};
-    sessionStorage.setItem('securekaro_wallet_snapshot', JSON.stringify({ ...current, ...partial }));
+    const current = getStoredWalletSnapshot(u) || {};
+    sessionStorage.setItem(getSnapshotKey(u), JSON.stringify({ ...current, ...partial }));
   } catch (e) {}
 };
 
@@ -56,7 +63,7 @@ export default function WalletModal({ user, onUpdateUser }) {
   const [walletTransactions, setWalletTransactions] = useState([]);
   const [activeLedgerTab, setActiveLedgerTab] = useState('WALLET'); // 'WALLET' | 'REWARDS'
 
-  const [shipments, setShipments] = useState(() => (getStoredWalletSnapshot()?.shipments ?? []));
+  const [shipments, setShipments] = useState(() => (getStoredWalletSnapshot(user)?.shipments ?? []));
   const [bankDetails, setBankDetails] = useState({
     accountHolderName: user?.bankDetails?.accountHolderName || user?.fullName || '',
     accountNumber: user?.bankDetails?.accountNumber || '',
@@ -216,16 +223,17 @@ export default function WalletModal({ user, onUpdateUser }) {
     });
 
   const supplierDirectWallet = Math.max(0, Number(user?.walletBalance) || 0);
-  const displayPendingConfirmation = pendingConfirmationBalance > 0 
-    ? pendingConfirmationBalance 
-    : activePipelineItems.reduce((sum, item) => sum + item.totalAmount, 0);
 
-  const displayWithdrawable = withdrawableBalance !== undefined 
-    ? withdrawableBalance 
-    : (isSupplier ? ((cashbackBalance || 0) + supplierDirectWallet) : ((user?.walletBalance || 0) + (cashbackBalance || 0)));
+  // Authoritative balance from backend (no rogue client-side guesswork)
+  const displayPendingConfirmation = Number(pendingConfirmationBalance) || 0;
+  const displayWithdrawable = withdrawableBalance !== undefined && withdrawableBalance !== null
+    ? Number(withdrawableBalance)
+    : (isSupplier ? ((Number(cashbackBalance) || 0) + supplierDirectWallet) : (Number(user?.walletBalance) || 0));
 
   const displayUnwithdrawable = displayPendingConfirmation;
-  const displayTotalWallet = displayWithdrawable + displayUnwithdrawable;
+  const displayTotalWallet = totalWalletBalance > 0
+    ? Number(totalWalletBalance)
+    : (displayWithdrawable + displayUnwithdrawable);
 
   const activePipelineBalance = shipments
     .filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit')

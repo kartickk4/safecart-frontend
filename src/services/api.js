@@ -197,7 +197,7 @@ export const authAPI = {
   resetPassword: (email, code, newPassword, role) => api.post('/auth/reset-password', typeof email === 'object' ? { ...email, role: email.role || role || 'Receiver' } : { email, code, newPassword, role: role || 'Receiver' }),
   googleLogin: (data) => api.post('/auth/google', data),
   googleAuth: (data) => api.post('/auth/google', data),
-  switchRole: (targetRole) => api.post('/auth/switch-role', { targetRole }),
+  switchRole: (targetRole) => { clearApiCache(); return api.post('/auth/switch-role', { targetRole }); },
 };
 
 

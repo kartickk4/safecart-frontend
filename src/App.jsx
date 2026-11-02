@@ -259,13 +259,27 @@ export default function App() {
       return;
     }
 
-    // 1. Optimistic Local State Update
+    // 1. Optimistic Local State Update with Role-Isolated Profile Memory
     localStorage.setItem('securekaro_active_role', nextRole);
-    setUser(prev => ({
-      ...prev,
-      role: nextRole,
-      activeRole: nextRole
-    }));
+    
+    // Save current role profile
+    try {
+      const curRole = isSupplier ? 'Supplier' : 'Receiver';
+      sessionStorage.setItem('securekaro_role_user_' + curRole, JSON.stringify(user));
+    } catch (_) {}
+
+    // Load next role profile if previously stored, or reset role-specific balance to avoid displaying other role's balance
+    const nextCachedRaw = typeof window !== 'undefined' ? sessionStorage.getItem('securekaro_role_user_' + nextRole) : null;
+    if (nextCachedRaw) {
+      try {
+        const nextUser = JSON.parse(nextCachedRaw);
+        setUser(nextUser);
+      } catch (_) {
+        setUser(prev => ({ ...prev, role: nextRole, activeRole: nextRole, walletBalance: undefined, cashbackBalance: undefined }));
+      }
+    } else {
+      setUser(prev => ({ ...prev, role: nextRole, activeRole: nextRole, walletBalance: undefined, cashbackBalance: undefined }));
+    }
 
     // 2. Adjust Tab to matching portal
     if (nextRole === 'Supplier') {
@@ -298,11 +312,14 @@ export default function App() {
         localStorage.setItem('securekaro_token', res.data.accessToken);
       }
       if (res.data?.user) {
-        setUser(prev => ({
-          ...prev,
+        const syncedUser = {
           ...res.data.user,
           activeRole: nextRole
-        }));
+        };
+        setUser(syncedUser);
+        try {
+          sessionStorage.setItem('securekaro_role_user_' + nextRole, JSON.stringify(syncedUser));
+        } catch (_) {}
       }
     } catch (err) {
       console.warn('Backend role switch notice (using local activeRole):', err.message);
