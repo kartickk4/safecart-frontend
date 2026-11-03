@@ -29,7 +29,7 @@ import WelcomeAnimationModal from './components/WelcomeAnimationModal';
 import AgentWidget from './components/AgentWidget';
 import SplashScreen from './components/SplashScreen';
 import AdBanner from './components/AdBanner';
-import { profileAPI, authAPI, notificationAPI } from './services/api';
+import { profileAPI, authAPI, notificationAPI, clearApiCache } from './services/api';
 import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell, ShieldCheck, Wallet, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles } from 'lucide-react';
 
 import { TAB_ROUTES, ROUTE_TABS, TAB_TITLES, getTabFromLocation } from './utils/routes';
@@ -157,6 +157,7 @@ export default function App() {
   const [isPublicTrackingActive, setIsPublicTrackingActive] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
+  const [isRoleSwitching, setIsRoleSwitching] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -259,29 +260,12 @@ export default function App() {
       return;
     }
 
-    // 1. Optimistic Local State Update with Role-Isolated Profile Memory
-    localStorage.setItem('securekaro_active_role', nextRole);
-    
-    // Save current role profile
-    try {
-      const curRole = isSupplier ? 'Supplier' : 'Receiver';
-      sessionStorage.setItem('securekaro_role_user_' + curRole, JSON.stringify(user));
-    } catch (_) {}
+    setIsRoleSwitching(true);
 
-    // Load next role profile if previously stored, or reset role-specific balance to avoid displaying other role's balance
-    const nextCachedRaw = typeof window !== 'undefined' ? sessionStorage.getItem('securekaro_role_user_' + nextRole) : null;
-    if (nextCachedRaw) {
-      try {
-        const nextUser = JSON.parse(nextCachedRaw);
-        setUser(nextUser);
-      } catch (_) {
-        setUser(prev => ({ ...prev, role: nextRole, activeRole: nextRole, walletBalance: undefined, cashbackBalance: undefined }));
-      }
-    } else {
-      setUser(prev => ({ ...prev, role: nextRole, activeRole: nextRole, walletBalance: undefined, cashbackBalance: undefined }));
-    }
+    // 1. Immediately invalidate API cache so old role data cannot be returned
+    clearApiCache();
 
-    // 2. Adjust Tab to matching portal
+    // 2. Adjust Tab to matching portal immediately
     if (nextRole === 'Supplier') {
       if (currentTab === 'delivery-confirm' || currentTab === 'return-tracking') {
         setCurrentTab('dashboard');
@@ -305,12 +289,15 @@ export default function App() {
       setRoleNotification(null);
     }, 3800);
 
-    // 4. Synchronize with Backend
+    // 4. Synchronize with Backend FIRST before switching user state
     try {
       const res = await authAPI.switchRole(nextRole);
       if (res.data?.accessToken) {
         localStorage.setItem('securekaro_token', res.data.accessToken);
       }
+      localStorage.setItem('securekaro_active_role', nextRole);
+      clearApiCache();
+
       if (res.data?.user) {
         const syncedUser = {
           ...res.data.user,
@@ -320,12 +307,30 @@ export default function App() {
         try {
           sessionStorage.setItem('securekaro_role_user_' + nextRole, JSON.stringify(syncedUser));
         } catch (_) {}
+      } else {
+        setUser(prev => ({
+          ...prev,
+          role: nextRole,
+          activeRole: nextRole,
+          walletBalance: undefined,
+          cashbackBalance: undefined
+        }));
       }
     } catch (err) {
       console.warn('Backend role switch notice (using local activeRole):', err.message);
       try {
         await profileAPI.updateProfile({ role: nextRole });
       } catch (_) {}
+      localStorage.setItem('securekaro_active_role', nextRole);
+      setUser(prev => ({
+        ...prev,
+        role: nextRole,
+        activeRole: nextRole,
+        walletBalance: undefined,
+        cashbackBalance: undefined
+      }));
+    } finally {
+      setIsRoleSwitching(false);
     }
   };
 
@@ -633,6 +638,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] flex text-slate-800 selection:bg-blue-500 selection:text-white relative">
+      {/* Sleek Top Loading Progress Bar */}
+      {isRoleSwitching && (
+        <div className="fixed top-0 left-0 right-0 h-1 z-[200] overflow-hidden bg-blue-100/50 pointer-events-none">
+          <div className="h-full bg-gradient-to-r from-[#1E56E3] via-blue-400 to-[#1E56E3] w-1/2 animate-top-progress"></div>
+        </div>
+      )}
       {/* Left Sidebar */}
       <Sidebar
         currentTab={currentTab}
@@ -675,6 +686,7 @@ export default function App() {
           </div>
         ) : (
         <main className="flex-1 pb-28 md:pb-12 overflow-y-auto">
+          <div key={`${currentTab}_${isSupplier ? 'Supplier' : 'Receiver'}`} className="view-enter min-h-full">
           {/* VIEW 1: DASHBOARD */}
           {currentTab === 'dashboard' && (
             <DashboardView
@@ -785,6 +797,7 @@ export default function App() {
           {/* VIEW 7: WALLET & PAYOUTS */}
           {currentTab === 'wallet' && (
             <WalletModal
+              key={`${user?._id || 'user'}_${isSupplier ? 'Supplier' : 'Receiver'}`}
               user={user}
               onUpdateUser={(updated) => setUser(updated)}
             />
@@ -840,7 +853,7 @@ export default function App() {
               onSelectShipment={(shipment) => setSelectedShipment(shipment)}
             />
           )}
-
+          </div>
         </main>
         )}
       </div>

@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { profileAPI, authAPI, shipmentAPI, rewardAPI, walletAPI } from '../services/api';
 import RechargeModal from './RechargeModal';
+import { ShipmentRowSkeleton } from './SkeletonLoader';
 
 
 const getSnapshotKey = (u) => {
@@ -59,11 +60,12 @@ export default function WalletModal({ user, onUpdateUser }) {
   const isSupplier = user?.role === 'Supplier' || user?.activeRole === 'Supplier';
   const isReceiver = !isSupplier;
 
+  const [isWalletLoading, setIsWalletLoading] = useState(true);
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [walletTransactions, setWalletTransactions] = useState([]);
   const [activeLedgerTab, setActiveLedgerTab] = useState('WALLET'); // 'WALLET' | 'REWARDS'
 
-  const [shipments, setShipments] = useState(() => (getStoredWalletSnapshot(user)?.shipments ?? []));
+  const [shipments, setShipments] = useState([]);
   const [bankDetails, setBankDetails] = useState({
     accountHolderName: user?.bankDetails?.accountHolderName || user?.fullName || '',
     accountNumber: user?.bankDetails?.accountNumber || '',
@@ -76,10 +78,10 @@ export default function WalletModal({ user, onUpdateUser }) {
   const [copiedField, setCopiedField] = useState(null);
 
   // Cash Reward & Supplier 24h Confirmation Window State
-  const [cashbackBalance, setCashbackBalance] = useState(user?.cashbackBalance || 0);
-  const [withdrawableBalance, setWithdrawableBalance] = useState(user?.cashbackBalance || 0);
+  const [cashbackBalance, setCashbackBalance] = useState(0);
+  const [withdrawableBalance, setWithdrawableBalance] = useState(null);
   const [pendingConfirmationBalance, setPendingConfirmationBalance] = useState(0);
-  const [totalWalletBalance, setTotalWalletBalance] = useState(user?.cashbackBalance || 0);
+  const [totalWalletBalance, setTotalWalletBalance] = useState(null);
   const [confirmationPipeline, setConfirmationPipeline] = useState([]);
   const [rewardHistory, setRewardHistory] = useState([]);
   const [historyFilter, setHistoryFilter] = useState('ALL'); // 'ALL' | 'EARNED' | 'WITHDRAWN'
@@ -115,13 +117,30 @@ export default function WalletModal({ user, onUpdateUser }) {
   const [timer, setTimer] = useState(30);
 
   useEffect(() => {
-    fetchShipments();
-    fetchRewardWallet();
-    fetchWalletTransactions();
-    if (isSupplier) {
-      fetchGatewayQuota();
-    }
-  }, [user, isSupplier]);
+    let isSubscribed = true;
+    setIsWalletLoading(true);
+
+    const loadAllWalletData = async () => {
+      try {
+        await Promise.allSettled([
+          fetchShipments(),
+          fetchRewardWallet(),
+          fetchWalletTransactions(),
+          isSupplier ? fetchGatewayQuota() : Promise.resolve()
+        ]);
+      } finally {
+        if (isSubscribed) {
+          setIsWalletLoading(false);
+        }
+      }
+    };
+
+    loadAllWalletData();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [user?._id, user?.role, isSupplier]);
 
   const fetchWalletTransactions = async () => {
     try {
@@ -194,33 +213,8 @@ export default function WalletModal({ user, onUpdateUser }) {
     } catch (e) {}
   };
 
-  // Active 24h Confirmation Window Pipeline items (combining backend results with active shipments)
-  const activePipelineItems = confirmationPipeline.length > 0 ? confirmationPipeline : shipments
-    .filter(s => {
-      const hasTracking = s.trackingSubmitted || (s.awbCode && s.awbCode.trim() !== '');
-      const hasPaid = s.receiverPaymentDone || s.escrowStage >= 2 || (s.status !== 'Awaiting Payment' && s.status !== 'Cancelled');
-      const isNotClosed = !s.confirmationWindowClosed && s.status !== 'Released';
-      return isSupplier && hasTracking && hasPaid && isNotClosed;
-    })
-    .map(s => {
-      const baseDate = s.trackingSubmittedAt || s.receiverPaidAt || s.createdAt || new Date();
-      const expiresAt = s.confirmationWindowExpiresAt || new Date(new Date(baseDate).getTime() + 24 * 60 * 60 * 1000);
-      const remainingMs = Math.max(0, new Date(expiresAt).getTime() - Date.now());
-      const cbAmt = s.supplierCashbackPaid > 0 ? s.supplierCashbackPaid : 4;
-      return {
-        shipmentId: s.shipmentId,
-        parcelAmount: s.amount || 0,
-        cashbackAmount: cbAmt,
-        cashbackRate: '₹3 – ₹6',
-        totalAmount: (s.amount || 0) + cbAmt,
-        awbCode: s.awbCode,
-        carrierSlug: s.carrierSlug || 'delhivery',
-        status: s.status,
-        confirmationWindowExpiresAt: expiresAt,
-        timeRemainingMs: remainingMs,
-        hoursRemaining: Math.ceil(remainingMs / (1000 * 60 * 60))
-      };
-    });
+  // Authoritative 24h Confirmation Window Pipeline items directly from backend
+  const activePipelineItems = confirmationPipeline || [];
 
   const supplierDirectWallet = Math.max(0, Number(user?.walletBalance) || 0);
 
@@ -231,7 +225,7 @@ export default function WalletModal({ user, onUpdateUser }) {
     : (isSupplier ? ((Number(cashbackBalance) || 0) + supplierDirectWallet) : (Number(user?.walletBalance) || 0));
 
   const displayUnwithdrawable = displayPendingConfirmation;
-  const displayTotalWallet = totalWalletBalance > 0
+  const displayTotalWallet = totalWalletBalance !== undefined && totalWalletBalance !== null
     ? Number(totalWalletBalance)
     : (displayWithdrawable + displayUnwithdrawable);
 
@@ -490,10 +484,14 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
 
                 <div className="mb-4">
-                  <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-baseline gap-1 font-mono">
-                    <span>₹{displayTotalWallet.toLocaleString('en-IN')}</span>
-                    <span className="text-sm font-normal text-blue-200">.00</span>
-                  </h2>
+                  {isWalletLoading ? (
+                    <div className="h-9 w-44 bg-white/20 rounded-xl skeleton-shimmer my-1"></div>
+                  ) : (
+                    <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-baseline gap-1 font-mono">
+                      <span>₹{displayTotalWallet.toLocaleString('en-IN')}</span>
+                      <span className="text-sm font-normal text-blue-200">.00</span>
+                    </h2>
+                  )}
                   <p className="text-xs text-blue-200 mt-1 font-medium">
                     Total balance across cleared payouts and ongoing pipeline
                   </p>
@@ -509,9 +507,13 @@ export default function WalletModal({ user, onUpdateUser }) {
                         <span>Withdrawable Amount</span>
                       </span>
                     </div>
-                    <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
-                      ₹{displayWithdrawable.toLocaleString('en-IN')}
-                    </div>
+                    {isWalletLoading ? (
+                      <div className="h-7 w-28 bg-white/20 rounded-lg skeleton-shimmer my-1"></div>
+                    ) : (
+                      <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
+                        ₹{displayWithdrawable.toLocaleString('en-IN')}
+                      </div>
+                    )}
                     <p className="text-[10px] text-blue-200/90 leading-tight">
                       Available now for instant UPI or Bank (IMPS) withdrawal
                     </p>
@@ -525,9 +527,13 @@ export default function WalletModal({ user, onUpdateUser }) {
                         <span>Unwithdrawable Amount</span>
                       </span>
                     </div>
-                    <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
-                      ₹{displayUnwithdrawable.toLocaleString('en-IN')}
-                    </div>
+                    {isWalletLoading ? (
+                      <div className="h-7 w-28 bg-white/20 rounded-lg skeleton-shimmer my-1"></div>
+                    ) : (
+                      <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
+                        ₹{displayUnwithdrawable.toLocaleString('en-IN')}
+                      </div>
+                    )}
                     <p className="text-[10px] text-blue-200/90 leading-tight">
                       Held in 24h buyer verification window ({activePipelineItems.length} in pipeline)
                     </p>
@@ -578,9 +584,13 @@ export default function WalletModal({ user, onUpdateUser }) {
                   </div>
                 </div>
 
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                  ₹{activePipelineBalance.toLocaleString('en-IN')}
-                </h2>
+                {isWalletLoading ? (
+                  <div className="h-8 w-32 bg-slate-200 rounded-lg skeleton-shimmer my-1"></div>
+                ) : (
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                    ₹{activePipelineBalance.toLocaleString('en-IN')}
+                  </h2>
+                )}
                 <p className="text-[11px] text-slate-500 mt-1 font-medium">Locked across {shipments.length} active orders</p>
               </div>
 
@@ -600,9 +610,13 @@ export default function WalletModal({ user, onUpdateUser }) {
                   </div>
                 </div>
 
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                  ₹{totalReleasedPayouts.toLocaleString('en-IN')}
-                </h2>
+                {isWalletLoading ? (
+                  <div className="h-8 w-32 bg-slate-200 rounded-lg skeleton-shimmer my-1"></div>
+                ) : (
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                    ₹{totalReleasedPayouts.toLocaleString('en-IN')}
+                  </h2>
+                )}
                 <p className="text-[11px] text-slate-500 mt-1 font-medium">
                   {shipments.filter(s => s.status === 'Released').length} payouts cleared to bank
                 </p>
@@ -633,10 +647,14 @@ export default function WalletModal({ user, onUpdateUser }) {
                   </span>
                 </div>
 
-                <h2 className="text-3xl font-black text-white tracking-tight flex items-baseline gap-1">
-                  <span>₹{(user?.walletBalance || 0).toLocaleString('en-IN')}</span>
-                  <span className="text-xs font-normal text-blue-300">.00</span>
-                </h2>
+                {isWalletLoading ? (
+                  <div className="h-9 w-36 bg-white/20 rounded-xl skeleton-shimmer my-1"></div>
+                ) : (
+                  <h2 className="text-3xl font-black text-white tracking-tight flex items-baseline gap-1">
+                    <span>₹{(Number(user?.walletBalance) || 0).toLocaleString('en-IN')}</span>
+                    <span className="text-xs font-normal text-blue-300">.00</span>
+                  </h2>
+                )}
                 <p className="text-[11px] text-blue-200 mt-1 font-medium">
                   Your delivery-protected purchase balance
                 </p>
@@ -661,9 +679,13 @@ export default function WalletModal({ user, onUpdateUser }) {
                   <Wallet className="w-4 h-4 text-blue-200" />
                 </div>
 
-                <h2 className="text-3xl font-black text-white tracking-tight">
-                  ₹{activePipelineBalance.toLocaleString('en-IN')}
-                </h2>
+                {isWalletLoading ? (
+                  <div className="h-8 w-28 bg-white/20 rounded-lg skeleton-shimmer my-1"></div>
+                ) : (
+                  <h2 className="text-3xl font-black text-white tracking-tight">
+                    ₹{activePipelineBalance.toLocaleString('en-IN')}
+                  </h2>
+                )}
                 <p className="text-[11px] text-blue-100 mt-1 font-medium">Locked in {shipments.length} active orders</p>
               </div>
 
@@ -683,9 +705,13 @@ export default function WalletModal({ user, onUpdateUser }) {
                   </div>
                 </div>
 
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                  ₹{totalReleasedPayouts.toLocaleString('en-IN')}
-                </h2>
+                {isWalletLoading ? (
+                  <div className="h-8 w-32 bg-slate-200 rounded-lg skeleton-shimmer my-1"></div>
+                ) : (
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                    ₹{totalReleasedPayouts.toLocaleString('en-IN')}
+                  </h2>
+                )}
                 <p className="text-[11px] text-slate-500 mt-1 font-medium">
                   {shipments.filter(s => s.status === 'Released').length} completed order{shipments.filter(s => s.status === 'Released').length === 1 ? '' : 's'}
                 </p>
@@ -707,9 +733,13 @@ export default function WalletModal({ user, onUpdateUser }) {
                   </div>
                 </div>
 
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                  ₹{pendingReleaseAmount.toLocaleString('en-IN')}
-                </h2>
+                {isWalletLoading ? (
+                  <div className="h-8 w-28 bg-slate-200 rounded-lg skeleton-shimmer my-1"></div>
+                ) : (
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                    ₹{pendingReleaseAmount.toLocaleString('en-IN')}
+                  </h2>
+                )}
                 <p className="text-[11px] text-slate-500 mt-1 font-medium">
                   {shipments.filter(s => s.status === 'Delivered' || s.status === 'Out for Delivery').length} awaiting delivery sign-off
                 </p>
@@ -1014,7 +1044,13 @@ export default function WalletModal({ user, onUpdateUser }) {
               </div>
             </div>
 
-            {filteredWalletTransactions.length === 0 ? (
+            {isWalletLoading ? (
+              <div className="space-y-3 py-2">
+                <ShipmentRowSkeleton />
+                <ShipmentRowSkeleton />
+                <ShipmentRowSkeleton />
+              </div>
+            ) : filteredWalletTransactions.length === 0 ? (
               <div className="py-12 text-center space-y-3 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                 <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center mx-auto">
                   <Wallet className="w-6 h-6" />
@@ -1154,7 +1190,13 @@ export default function WalletModal({ user, onUpdateUser }) {
               </div>
             </div>
 
-            {filteredHistory.length === 0 ? (
+            {isWalletLoading ? (
+              <div className="space-y-3 py-2">
+                <ShipmentRowSkeleton />
+                <ShipmentRowSkeleton />
+                <ShipmentRowSkeleton />
+              </div>
+            ) : filteredHistory.length === 0 ? (
               <div className="py-12 text-center space-y-3 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
                   <Gift className="w-6 h-6" />
