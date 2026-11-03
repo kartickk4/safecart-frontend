@@ -1,31 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import AuthView from './views/AuthView';
 import DashboardView from './views/DashboardView';
 import ShipmentsListView from './views/ShipmentsListView';
-import CreateShipmentView from './views/CreateShipmentView';
-import TrackingView from './views/TrackingView';
-import DeliveryConfirmView from './views/DeliveryConfirmView';
-import NotificationsView from './views/NotificationsView';
-import ProfileView from './views/ProfileView';
-import SupportView from './views/SupportView';
-import LegalComplianceView from './views/LegalComplianceView';
-import ReturnOrdersView from './views/ReturnOrdersView';
-import PublicPayView from './views/PublicPayView';
-import PublicTrackingView from './views/PublicTrackingView';
-import AIAgentView from './views/AIAgentView';
-import PhotoReviewResponseView from './views/PhotoReviewResponseView';
-import ReferralView from './views/ReferralView';
-import PublicQrConfirmView from './views/PublicQrConfirmView';
-import AdminView from './views/AdminView';
-import ROISavingsCalculatorView from './views/ROISavingsCalculatorView';
+
+// ⚡ PERFORMANCE: Heavy views lazy-loaded on demand (<350KB initial bundle)
+const CreateShipmentView = lazy(() => import('./views/CreateShipmentView'));
+const TrackingView = lazy(() => import('./views/TrackingView'));
+const DeliveryConfirmView = lazy(() => import('./views/DeliveryConfirmView'));
+const NotificationsView = lazy(() => import('./views/NotificationsView'));
+const ProfileView = lazy(() => import('./views/ProfileView'));
+const SupportView = lazy(() => import('./views/SupportView'));
+const LegalComplianceView = lazy(() => import('./views/LegalComplianceView'));
+const ReturnOrdersView = lazy(() => import('./views/ReturnOrdersView'));
+const PublicPayView = lazy(() => import('./views/PublicPayView'));
+const PublicTrackingView = lazy(() => import('./views/PublicTrackingView'));
+const AIAgentView = lazy(() => import('./views/AIAgentView'));
+const PhotoReviewResponseView = lazy(() => import('./views/PhotoReviewResponseView'));
+const ReferralView = lazy(() => import('./views/ReferralView'));
+const PublicQrConfirmView = lazy(() => import('./views/PublicQrConfirmView'));
+const AdminView = lazy(() => import('./views/AdminView'));
+const ROISavingsCalculatorView = lazy(() => import('./views/ROISavingsCalculatorView'));
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import CreateShipmentModal from './components/CreateShipmentModal';
-import ShipmentDetailsModal from './components/ShipmentDetailsModal';
-import WalletModal from './components/WalletModal';
-import RoleSelectionModal from './components/RoleSelectionModal';
-import WelcomeAnimationModal from './components/WelcomeAnimationModal';
+
+// Modals code-split on demand
+const CreateShipmentModal = lazy(() => import('./components/CreateShipmentModal'));
+const ShipmentDetailsModal = lazy(() => import('./components/ShipmentDetailsModal'));
+const WalletModal = lazy(() => import('./components/WalletModal'));
+const RoleSelectionModal = lazy(() => import('./components/RoleSelectionModal'));
+const WelcomeAnimationModal = lazy(() => import('./components/WelcomeAnimationModal'));
+
+// Sleek minimal fallback loading spinner
+const ViewLoadingFallback = () => (
+  <div className="flex-1 flex flex-col items-center justify-center p-12 min-h-[350px] animate-fade-in select-none">
+    <div className="w-9 h-9 border-[3px] border-blue-100 border-t-[#1E56E3] rounded-full animate-spin shadow-xs" />
+    <span className="text-xs font-bold text-slate-500 tracking-wide mt-3">Loading SecureKaro...</span>
+  </div>
+);
 import AgentWidget from './components/AgentWidget';
 import SplashScreen from './components/SplashScreen';
 import AdBanner from './components/AdBanner';
@@ -516,27 +528,35 @@ export default function App() {
   // Render public photo review response page (no login needed)
   if (photoReviewParams) {
     return (
-      <PhotoReviewResponseView
-        shipmentId={photoReviewParams.shipmentId}
-        action={photoReviewParams.action}
-      />
+      <Suspense fallback={<ViewLoadingFallback />}>
+        <PhotoReviewResponseView
+          shipmentId={photoReviewParams.shipmentId}
+          action={photoReviewParams.action}
+        />
+      </Suspense>
     );
   }
 
   // Render public QR delivery confirmation page (no login needed) — receiver scans QR from inside parcel
   if (qrConfirmToken) {
-    return <PublicQrConfirmView qrToken={qrConfirmToken} />;
+    return (
+      <Suspense fallback={<ViewLoadingFallback />}>
+        <PublicQrConfirmView qrToken={qrConfirmToken} />
+      </Suspense>
+    );
   }
 
   // Render public payment checkout directly with zero login barriers
   if (publicPayShipmentId) {
     return (
-      <PublicPayView
-        shipmentId={publicPayShipmentId}
-        onPaymentComplete={(paidShipment) => {
-          console.log('Public payment successfully processed for:', paidShipment?.shipmentId);
-        }}
-      />
+      <Suspense fallback={<ViewLoadingFallback />}>
+        <PublicPayView
+          shipmentId={publicPayShipmentId}
+          onPaymentComplete={(paidShipment) => {
+            console.log('Public payment successfully processed for:', paidShipment?.shipmentId);
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -566,14 +586,16 @@ export default function App() {
   // Allow unauthenticated visitors to track parcels publicly with zero login barriers
   if (!user && (publicTrackParams || isPublicTrackingActive || currentTab === 'track')) {
     return (
-      <PublicTrackingView
-        initialTrackingId={publicTrackParams?.trackingId || ''}
-        initialPhone={publicTrackParams?.phone || ''}
-        onBackToAuth={() => {
-          setIsPublicTrackingActive(false);
-          setCurrentTab('dashboard');
-        }}
-      />
+      <Suspense fallback={<ViewLoadingFallback />}>
+        <PublicTrackingView
+          initialTrackingId={publicTrackParams?.trackingId || ''}
+          initialPhone={publicTrackParams?.phone || ''}
+          onBackToAuth={() => {
+            setIsPublicTrackingActive(false);
+            setCurrentTab('dashboard');
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -638,20 +660,22 @@ export default function App() {
         </header>
 
         <main className="flex-1 pb-16 overflow-y-auto">
-          {isLegalTab && (
-            <LegalComplianceView 
-              initialTab={currentTab === 'legal' ? 'contact' : currentTab}
-              onTabChange={(nextTab) => setCurrentTab(nextTab)}
-            />
-          )}
-          {currentTab === 'support' && <SupportView />}
-          {currentTab === 'roi-calculator' && (
-            <ROISavingsCalculatorView
-              onNavigateCreateShipment={() => {
-                setCurrentTab('dashboard');
-              }}
-            />
-          )}
+          <Suspense fallback={<ViewLoadingFallback />}>
+            {isLegalTab && (
+              <LegalComplianceView 
+                initialTab={currentTab === 'legal' ? 'contact' : currentTab}
+                onTabChange={(nextTab) => setCurrentTab(nextTab)}
+              />
+            )}
+            {currentTab === 'support' && <SupportView />}
+            {currentTab === 'roi-calculator' && (
+              <ROISavingsCalculatorView
+                onNavigateCreateShipment={() => {
+                  setCurrentTab('dashboard');
+                }}
+              />
+            )}
+          </Suspense>
         </main>
 
         <footer className="bg-white border-t border-slate-200 py-8 px-4 md:px-8 text-xs text-slate-500">
@@ -944,49 +968,53 @@ export default function App() {
         )}
       </div>
 
-      {/* Global Modals & Drawers */}
-      <CreateShipmentModal
-        user={user}
-        isOpen={isCreateModalOpen}
-        initialData={repeatShipmentData}
-        onClose={() => {
-          setIsCreateModalOpen(false);
-          setRepeatShipmentData(null);
-        }}
-        onCreated={(newShipment) => {
-          setRepeatShipmentData(null);
-          setSelectedShipment(newShipment);
-          window.location.reload();
-        }}
-      />
+      {/* Global Modals & Drawers (Lazy loaded with Suspense) */}
+      <Suspense fallback={null}>
+        {isCreateModalOpen && (
+          <CreateShipmentModal
+            user={user}
+            isOpen={isCreateModalOpen}
+            initialData={repeatShipmentData}
+            onClose={() => {
+              setIsCreateModalOpen(false);
+              setRepeatShipmentData(null);
+            }}
+            onCreated={(newShipment) => {
+              setRepeatShipmentData(null);
+              setSelectedShipment(newShipment);
+              window.location.reload();
+            }}
+          />
+        )}
 
-      {selectedShipment && (
-        <ShipmentDetailsModal
-          shipment={selectedShipment}
-          isOpen={Boolean(selectedShipment)}
-          onClose={() => setSelectedShipment(null)}
-          onRefresh={() => window.location.reload()}
-          user={user}
-          onRepeatShipment={(sourceShipment) => {
-            const ship = sourceShipment || selectedShipment;
-            setSelectedShipment(null);
-            setRepeatShipmentData({
-              receiverName: ship?.receiverName || '',
-              receiverPhone: ship?.receiverPhone || '',
-              receiverAddress: ship?.receiverAddress || '',
-              receiverPincode: ship?.receiverPincode || '',
-              parcelWeight: ship?.parcelWeight ? String(ship?.parcelWeight) : '0.5',
-              description: ship?.description || '',
-              amount: ship?.amount ? String(ship?.amount) : '',
-              cityRoute: ship?.city || '',
-              returnAllowed: ship?.returnAllowed !== false,
-              rtoProtectionEnabled: Boolean(ship?.rtoProtectionEnabled),
-              repeatSourceId: ship?.shipmentId || ''
-            });
-            setIsCreateModalOpen(true);
-          }}
-        />
-      )}
+        {selectedShipment && (
+          <ShipmentDetailsModal
+            shipment={selectedShipment}
+            isOpen={Boolean(selectedShipment)}
+            onClose={() => setSelectedShipment(null)}
+            onRefresh={() => window.location.reload()}
+            user={user}
+            onRepeatShipment={(sourceShipment) => {
+              const ship = sourceShipment || selectedShipment;
+              setSelectedShipment(null);
+              setRepeatShipmentData({
+                receiverName: ship?.receiverName || '',
+                receiverPhone: ship?.receiverPhone || '',
+                receiverAddress: ship?.receiverAddress || '',
+                receiverPincode: ship?.receiverPincode || '',
+                parcelWeight: ship?.parcelWeight ? String(ship?.parcelWeight) : '0.5',
+                description: ship?.description || '',
+                amount: ship?.amount ? String(ship?.amount) : '',
+                cityRoute: ship?.city || '',
+                returnAllowed: ship?.returnAllowed !== false,
+                rtoProtectionEnabled: Boolean(ship?.rtoProtectionEnabled),
+                repeatSourceId: ship?.shipmentId || ''
+              });
+              setIsCreateModalOpen(true);
+            }}
+          />
+        )}
+      </Suspense>
 
       {/* FLOATING AI AGENT WIDGET (Available for suppliers on desktop when not in full-screen ai-agent view and no modal/drawer is active) */}
       {isSupplier && currentTab !== 'ai-agent' && !selectedShipment && !isCreateModalOpen && (
@@ -1078,24 +1106,28 @@ export default function App() {
         </div>
       )}
 
-      {/* WELCOME / SIGN-UP ANIMATION OVERLAY */}
-      <WelcomeAnimationModal
-        isOpen={showWelcomeModal}
-        user={user}
-        isNewUser={isNewUser}
-        onComplete={handleWelcomeComplete}
-      />
+      {/* WELCOME / ONBOARDING MODALS (Lazy loaded with Suspense) */}
+      <Suspense fallback={null}>
+        {showWelcomeModal && (
+          <WelcomeAnimationModal
+            isOpen={showWelcomeModal}
+            user={user}
+            isNewUser={isNewUser}
+            onComplete={handleWelcomeComplete}
+          />
+        )}
 
-
-      {/* FIRST TIME GOOGLE ONBOARDING ROLE SELECTION MODAL */}
-      <RoleSelectionModal
-        isOpen={isRoleModalOpen}
-        user={user}
-        onComplete={(updatedUser) => {
-          setUser(updatedUser);
-          setIsRoleModalOpen(false);
-        }}
-      />
+        {isRoleModalOpen && (
+          <RoleSelectionModal
+            isOpen={isRoleModalOpen}
+            user={user}
+            onComplete={(updatedUser) => {
+              setUser(updatedUser);
+              setIsRoleModalOpen(false);
+            }}
+          />
+        )}
+      </Suspense>
 
       {/* AI AGENT — now a full-screen view, no floating widget */}
     </div>

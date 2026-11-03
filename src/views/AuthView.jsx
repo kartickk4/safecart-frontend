@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, Store, Package, X, Sparkles, ChevronRight, MapPin, Truck, AlertCircle, Gift, Tag } from 'lucide-react';
 import { authAPI, profileAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
-import LegalComplianceView from './LegalComplianceView';
+const LegalComplianceView = React.lazy(() => import('./LegalComplianceView'));
 import { auth, RecaptchaVerifier, signInWithPhoneNumber, googleProvider, signInWithPopup } from '../firebase';
 
 
@@ -1731,7 +1731,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             >
               <X className="w-5 h-5" />
             </button>
-            <LegalComplianceView initialTab={showLegalModal} />
+            <React.Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading terms...</div>}><LegalComplianceView initialTab={showLegalModal} /></React.Suspense>
           </div>
         </div>
       )}
@@ -1954,7 +1954,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
-              <LegalComplianceView initialTab={showLegalModal} />
+              <React.Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading terms...</div>}><LegalComplianceView initialTab={showLegalModal} /></React.Suspense>
             </div>
           </div>
         </div>
