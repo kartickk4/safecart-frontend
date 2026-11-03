@@ -40,20 +40,23 @@ ChartJS.register(
 export default function DashboardView({ onSelectShipment, openNewShipmentModal, onNavigateRefer }) {
   const [shipments, setShipments] = useState(() => {
     try {
-      const cached = sessionStorage.getItem('securekaro_dashboard_shipments');
+      const role = localStorage.getItem('securekaro_active_role') || 'Supplier';
+      const cached = localStorage.getItem('securekaro_dashboard_shipments_' + role) || sessionStorage.getItem('securekaro_dashboard_shipments');
       return cached ? JSON.parse(cached) : [];
     } catch (_) { return []; }
   });
   const [activities, setActivities] = useState(() => {
     try {
-      const cached = sessionStorage.getItem('securekaro_dashboard_activities');
+      const cached = localStorage.getItem('securekaro_dashboard_activities') || sessionStorage.getItem('securekaro_dashboard_activities');
       return cached ? JSON.parse(cached) : [];
     } catch (_) { return []; }
   });
   const [loading, setLoading] = useState(() => {
     try {
-      return !sessionStorage.getItem('securekaro_dashboard_shipments');
-    } catch (_) { return true; }
+      const role = localStorage.getItem('securekaro_active_role') || 'Supplier';
+      const hasCache = localStorage.getItem('securekaro_dashboard_shipments_' + role) || sessionStorage.getItem('securekaro_dashboard_shipments');
+      return !hasCache;
+    } catch (_) { return false; }
   });
   const [isBackgroundSyncing, setIsBackgroundSyncing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -80,7 +83,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
   }, [shipments]); // 'revenue' | 'operations' | 'carriers' | 'cohort'
   const [gatewayStatus, setGatewayStatus] = useState(() => {
     try {
-      const cached = sessionStorage.getItem('securekaro_dashboard_gateway');
+      const cached = localStorage.getItem('securekaro_dashboard_gateway') || sessionStorage.getItem('securekaro_dashboard_gateway');
       return cached ? JSON.parse(cached) : {
         currentMonthVolume: 0,
         threshold: 2000000,
@@ -107,7 +110,8 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
   }, []);
 
   const fetchData = async () => {
-    const hasCache = sessionStorage.getItem('securekaro_dashboard_shipments');
+    const role = localStorage.getItem('securekaro_active_role') || 'Supplier';
+    const hasCache = localStorage.getItem('securekaro_dashboard_shipments_' + role) || sessionStorage.getItem('securekaro_dashboard_shipments');
     if (!hasCache) {
       setLoading(true);
     } else {
@@ -125,16 +129,25 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
       if (shipRes.status === 'fulfilled' && Array.isArray(shipRes.value.data)) {
         setShipments(shipRes.value.data);
         sessionStorage.setItem('securekaro_dashboard_shipments', JSON.stringify(shipRes.value.data));
+        try {
+          localStorage.setItem('securekaro_dashboard_shipments_' + role, JSON.stringify(shipRes.value.data));
+        } catch (_) {}
       }
 
       if (notifRes.status === 'fulfilled' && Array.isArray(notifRes.value.data)) {
         setActivities(notifRes.value.data);
         sessionStorage.setItem('securekaro_dashboard_activities', JSON.stringify(notifRes.value.data));
+        try {
+          localStorage.setItem('securekaro_dashboard_activities', JSON.stringify(notifRes.value.data));
+        } catch (_) {}
       }
 
       if (quotaRes.status === 'fulfilled' && quotaRes.value?.data) {
         setGatewayStatus(quotaRes.value.data);
         sessionStorage.setItem('securekaro_dashboard_gateway', JSON.stringify(quotaRes.value.data));
+        try {
+          localStorage.setItem('securekaro_dashboard_gateway', JSON.stringify(quotaRes.value.data));
+        } catch (_) {}
       }
     } catch (err) {
       console.warn('Dashboard fetch error:', err);

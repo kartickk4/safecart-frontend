@@ -11,7 +11,8 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
   const cacheKey = `securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`;
   const [shipments, setShipments] = useState(() => {
     try {
-      const cached = sessionStorage.getItem(`securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`);
+      const key = `securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`;
+      const cached = localStorage.getItem(key) || sessionStorage.getItem(key);
       return cached ? JSON.parse(cached) : [];
     } catch (_) {
       return [];
@@ -19,9 +20,11 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
   });
   const [loading, setLoading] = useState(() => {
     try {
-      return !sessionStorage.getItem(`securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`);
+      const key = `securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`;
+      const hasCache = localStorage.getItem(key) || sessionStorage.getItem(key);
+      return !hasCache;
     } catch (_) {
-      return true;
+      return false;
     }
   });
   const [isSyncing, setIsSyncing] = useState(false);
@@ -60,7 +63,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
   }, [isMerchant]); // re-fetch whenever role changes
 
   const fetchShipments = async (silent = false) => {
-    const hasCache = sessionStorage.getItem(cacheKey);
+    const hasCache = localStorage.getItem(cacheKey) || sessionStorage.getItem(cacheKey);
     if (!hasCache && !silent) {
       setLoading(true);
     } else {
@@ -72,6 +75,9 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
       if (Array.isArray(res.data)) {
         setShipments(res.data);
         sessionStorage.setItem(cacheKey, JSON.stringify(res.data));
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(res.data));
+        } catch (_) {}
       } else {
         setShipments([]);
       }

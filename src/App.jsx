@@ -72,10 +72,15 @@ export default function App() {
     }
     // Check if splash was already shown during this browser session
     try {
+      // If user profile is already cached in localStorage, start dashboard immediately without artificial delay
+      const hasCachedSession = Boolean(localStorage.getItem('securekaro_token') && localStorage.getItem('securekaro_user'));
+      if (hasCachedSession) {
+        return false;
+      }
       const seen = sessionStorage.getItem('securekaro_splash_seen');
       return !seen;
     } catch (_) {
-      return true;
+      return false;
     }
   });
   const [slowServerWarning, setSlowServerWarning] = useState(false);
@@ -197,13 +202,28 @@ export default function App() {
     try {
       const isSupp = (activeUser?.role === 'Supplier' || activeUser?.activeRole === 'Supplier');
       // Fire wallet balance, ledger transactions, and shipments in background without blocking main UI
-      const [walletRes, rewardRes] = await Promise.allSettled([
+      const [walletRes, rewardRes, txRes, shipRes, quotaRes] = await Promise.allSettled([
         walletAPI.getBalance(),
         rewardAPI.getRewardWallet(),
         walletAPI.getTransactions({ limit: 50 }),
-        shipmentAPI.getShipments(),
+        shipmentAPI.getShipments(isSupp ? 'Supplier' : 'Receiver'),
         isSupp ? shipmentAPI.getGatewayFeeStatus() : Promise.resolve()
       ]);
+
+      if (shipRes.status === 'fulfilled' && Array.isArray(shipRes.value?.data)) {
+        try {
+          const roleKey = isSupp ? 'Supplier' : 'Receiver';
+          localStorage.setItem('securekaro_dashboard_shipments_' + roleKey, JSON.stringify(shipRes.value.data));
+          sessionStorage.setItem('securekaro_dashboard_shipments', JSON.stringify(shipRes.value.data));
+        } catch (_) {}
+      }
+
+      if (quotaRes.status === 'fulfilled' && quotaRes.value?.data) {
+        try {
+          localStorage.setItem('securekaro_dashboard_gateway', JSON.stringify(quotaRes.value.data));
+          sessionStorage.setItem('securekaro_dashboard_gateway', JSON.stringify(quotaRes.value.data));
+        } catch (_) {}
+      }
 
       let updatedBalances = {};
       if (rewardRes.status === 'fulfilled' && rewardRes.value?.data) {

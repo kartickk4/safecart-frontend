@@ -16,19 +16,19 @@ export default function SplashScreen({ onComplete, isSlowServer = false, onSkip 
   const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
-    // Stage sequence
-    const t1 = setTimeout(() => setStage(1), 300);
-    const t2 = setTimeout(() => setStage(2), 1200);
+    // Stage sequence (crisp ~550ms native feel)
+    const t1 = setTimeout(() => setStage(1), 150);
+    const t2 = setTimeout(() => setStage(2), 350);
 
-    // If server is not stuck/slow, automatically finish after ~2.2s
+    // Automatically transition out smoothly without keeping user waiting
     let tExit;
     if (!isSlowServer) {
       tExit = setTimeout(() => {
         setIsExiting(true);
         setTimeout(() => {
           if (onComplete) onComplete();
-        }, 400); // 400ms CSS transition
-      }, 2200);
+        }, 250); // 250ms CSS transition
+      }, 550);
     }
 
     return () => {
