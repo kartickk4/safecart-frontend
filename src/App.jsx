@@ -29,7 +29,7 @@ import WelcomeAnimationModal from './components/WelcomeAnimationModal';
 import AgentWidget from './components/AgentWidget';
 import SplashScreen from './components/SplashScreen';
 import AdBanner from './components/AdBanner';
-import { profileAPI, authAPI, notificationAPI, clearApiCache } from './services/api';
+import { profileAPI, authAPI, notificationAPI, clearApiCache, rewardAPI, walletAPI, shipmentAPI } from './services/api';
 import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell, ShieldCheck, Wallet, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles } from 'lucide-react';
 
 import { TAB_ROUTES, ROUTE_TABS, TAB_TITLES, getTabFromLocation } from './utils/routes';
@@ -191,6 +191,52 @@ export default function App() {
     }
   }, [user, currentTab, isSupplier]);
 
+  // Automatically prefetch wallet balance in background on load / login
+  const prefetchWalletInBackground = async (activeUser) => {
+    if (!localStorage.getItem('securekaro_token')) return;
+    try {
+      const isSupp = (activeUser?.role === 'Supplier' || activeUser?.activeRole === 'Supplier');
+      // Fire wallet balance, ledger transactions, and shipments in background without blocking main UI
+      const [walletRes, rewardRes] = await Promise.allSettled([
+        walletAPI.getBalance(),
+        rewardAPI.getRewardWallet(),
+        walletAPI.getTransactions({ limit: 50 }),
+        shipmentAPI.getShipments(),
+        isSupp ? shipmentAPI.getGatewayFeeStatus() : Promise.resolve()
+      ]);
+
+      let updatedBalances = {};
+      if (rewardRes.status === 'fulfilled' && rewardRes.value?.data) {
+        const rData = rewardRes.value.data;
+        if (rData.totalWalletBalance !== undefined) updatedBalances.totalWalletBalance = rData.totalWalletBalance;
+        if (rData.withdrawableBalance !== undefined) updatedBalances.withdrawableBalance = rData.withdrawableBalance;
+        if (rData.pendingConfirmationBalance !== undefined) updatedBalances.pendingConfirmationBalance = rData.pendingConfirmationBalance;
+        if (rData.cashbackBalance !== undefined) updatedBalances.cashbackBalance = rData.cashbackBalance;
+        if (rData.walletBalance !== undefined) updatedBalances.walletBalance = rData.walletBalance;
+      }
+
+      if (walletRes.status === 'fulfilled' && walletRes.value?.data) {
+        const wData = walletRes.value.data;
+        if (wData.walletBalance !== undefined && updatedBalances.walletBalance === undefined) {
+          updatedBalances.walletBalance = wData.walletBalance;
+        }
+      }
+
+      if (Object.keys(updatedBalances).length > 0) {
+        setUser(prev => {
+          if (!prev) return prev;
+          const merged = { ...prev, ...updatedBalances };
+          try {
+            localStorage.setItem('securekaro_user', JSON.stringify(merged));
+          } catch (_) {}
+          return merged;
+        });
+      }
+    } catch (err) {
+      console.warn('Background wallet prefetch notice:', err);
+    }
+  };
+
   const checkAuth = async () => {
     const token = localStorage.getItem('securekaro_token');
     if (!token) {
@@ -214,6 +260,7 @@ export default function App() {
       }
       setUser(loadedUser);
       localStorage.setItem('securekaro_user', JSON.stringify(loadedUser));
+      prefetchWalletInBackground(loadedUser);
     } catch (err) {
       console.warn('Backend profile API check notice:', err.message);
       // Only clear credentials if explicitly rejected as 401/403 Unauthorized
@@ -248,8 +295,12 @@ export default function App() {
         };
         setUser(fullUser);
         localStorage.setItem('securekaro_user', JSON.stringify(fullUser));
+        prefetchWalletInBackground(fullUser);
+      } else {
+        prefetchWalletInBackground(userData);
       }
     } catch (e) {
+      prefetchWalletInBackground(userData);
       console.warn('Profile sync on auth success notice:', e);
     }
   };
@@ -307,6 +358,7 @@ export default function App() {
         try {
           sessionStorage.setItem('securekaro_role_user_' + nextRole, JSON.stringify(syncedUser));
         } catch (_) {}
+        prefetchWalletInBackground(syncedUser);
       } else {
         setUser(prev => ({
           ...prev,

@@ -60,7 +60,11 @@ export default function WalletModal({ user, onUpdateUser }) {
   const isSupplier = user?.role === 'Supplier' || user?.activeRole === 'Supplier';
   const isReceiver = !isSupplier;
 
-  const [isWalletLoading, setIsWalletLoading] = useState(true);
+  const hasPrefetchedBalance = isSupplier
+    ? (user?.totalWalletBalance !== undefined && user?.totalWalletBalance !== null)
+    : (user?.walletBalance !== undefined && user?.walletBalance !== null);
+
+  const [isWalletLoading, setIsWalletLoading] = useState(!hasPrefetchedBalance);
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [walletTransactions, setWalletTransactions] = useState([]);
   const [activeLedgerTab, setActiveLedgerTab] = useState('WALLET'); // 'WALLET' | 'REWARDS'
@@ -78,10 +82,10 @@ export default function WalletModal({ user, onUpdateUser }) {
   const [copiedField, setCopiedField] = useState(null);
 
   // Cash Reward & Supplier 24h Confirmation Window State
-  const [cashbackBalance, setCashbackBalance] = useState(0);
-  const [withdrawableBalance, setWithdrawableBalance] = useState(null);
-  const [pendingConfirmationBalance, setPendingConfirmationBalance] = useState(0);
-  const [totalWalletBalance, setTotalWalletBalance] = useState(null);
+  const [cashbackBalance, setCashbackBalance] = useState(user?.cashbackBalance || 0);
+  const [withdrawableBalance, setWithdrawableBalance] = useState(user?.withdrawableBalance !== undefined ? user.withdrawableBalance : (user?.cashbackBalance || null));
+  const [pendingConfirmationBalance, setPendingConfirmationBalance] = useState(user?.pendingConfirmationBalance || 0);
+  const [totalWalletBalance, setTotalWalletBalance] = useState(user?.totalWalletBalance !== undefined ? user.totalWalletBalance : null);
   const [confirmationPipeline, setConfirmationPipeline] = useState([]);
   const [rewardHistory, setRewardHistory] = useState([]);
   const [historyFilter, setHistoryFilter] = useState('ALL'); // 'ALL' | 'EARNED' | 'WITHDRAWN'
