@@ -9,7 +9,8 @@ import {
   Wallet,
   Sparkles,
   RotateCcw,
-  Gift
+  Gift,
+  ChevronUp
 } from 'lucide-react';
 import BottomNavEditSheet, { getOptionDefinition, getOptionLabel } from './BottomNavEditSheet';
 import BottomNavGuide from './BottomNavGuide';
@@ -59,6 +60,7 @@ export default function BottomNav({
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editSlotIndex, setEditSlotIndex] = useState(0);
+  const [isEditModeDirect, setIsEditModeDirect] = useState(false);
 
   // Guide visibility state
   const guideStorageKey = `securekaro_nav_guide_seen_${user?._id || 'guest'}`;
@@ -80,15 +82,51 @@ export default function BottomNav({
 
   const handleOpenEditFromGuide = () => {
     handleDismissGuide();
+    setIsEditModeDirect(true);
     setEditSlotIndex(0);
     setIsEditOpen(true);
   };
 
-  // ⚡ LONG-PRESS & INSTANT TAP ENGINE
+  // ⚡ SWIPE-UP GESTURE ENGINE (Swiping anywhere on the bottom bar opens the menu)
+  const touchStartY = useRef(0);
+  const touchStartX = useRef(0);
+  const touchDeltaY = useRef(0);
+  const touchDeltaX = useRef(0);
+  const isSwipingUp = useRef(false);
+
+  const handleBarTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchStartX.current = e.touches[0].clientX;
+    touchDeltaY.current = 0;
+    touchDeltaX.current = 0;
+    isSwipingUp.current = false;
+  };
+
+  const handleBarTouchMove = (e) => {
+    touchDeltaY.current = e.touches[0].clientY - touchStartY.current;
+    touchDeltaX.current = e.touches[0].clientX - touchStartX.current;
+    // Upward swipe threshold: more than 20px upward and predominantly vertical
+    if (touchDeltaY.current < -20 && Math.abs(touchDeltaY.current) > Math.abs(touchDeltaX.current)) {
+      isSwipingUp.current = true;
+    }
+  };
+
+  const handleBarTouchEnd = () => {
+    if (isSwipingUp.current && touchDeltaY.current < -24) {
+      handleDismissGuide();
+      setIsEditModeDirect(false); // Opens in Navigation mode (ready for single click)
+      setEditSlotIndex(0);
+      setIsEditOpen(true);
+      isSwipingUp.current = false;
+      return;
+    }
+    isSwipingUp.current = false;
+  };
+
+  // ⚡ LONG-PRESS ON BOTTOM BAR SLOTS (Opens direct modify mode for that slot)
   const [pressedSlotIndex, setPressedSlotIndex] = useState(null);
   const longPressTimer = useRef(null);
   const isLongPressTriggered = useRef(false);
-  const touchStartPos = useRef({ x: 0, y: 0 });
 
   const startLongPress = useCallback((slotIndex) => {
     isLongPressTriggered.current = false;
@@ -104,9 +142,10 @@ export default function BottomNav({
         }
       } catch (_) {}
       handleDismissGuide();
+      setIsEditModeDirect(true); // Direct to modify mode!
       setEditSlotIndex(slotIndex);
       setIsEditOpen(true);
-    }, 500);
+    }, 450);
   }, []);
 
   const cancelLongPress = useCallback(() => {
@@ -118,8 +157,10 @@ export default function BottomNav({
   }, []);
 
   const handleSlotClick = (tabKey, e) => {
-    if (isLongPressTriggered.current) {
+    // If user was swiping up or long-pressing, ignore normal click
+    if (isLongPressTriggered.current || isSwipingUp.current) {
       isLongPressTriggered.current = false;
+      isSwipingUp.current = false;
       e?.preventDefault();
       return;
     }
@@ -156,17 +197,7 @@ export default function BottomNav({
       <button
         key={`${tabKey}_${slotIndex}`}
         onClick={(e) => handleSlotClick(tabKey, e)}
-        onTouchStart={(e) => {
-          touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-          startLongPress(slotIndex);
-        }}
-        onTouchMove={(e) => {
-          const moveX = Math.abs(e.touches[0].clientX - touchStartPos.current.x);
-          const moveY = Math.abs(e.touches[0].clientY - touchStartPos.current.y);
-          if (moveX > 10 || moveY > 10) {
-            cancelLongPress();
-          }
-        }}
+        onTouchStart={() => startLongPress(slotIndex)}
         onTouchEnd={cancelLongPress}
         onTouchCancel={cancelLongPress}
         onMouseDown={() => startLongPress(slotIndex)}
@@ -182,7 +213,7 @@ export default function BottomNav({
                 : 'text-[#1E56E3] bg-blue-50/90 font-extrabold shadow-2xs'
               : 'text-slate-500 hover:text-slate-900 active:scale-95'
         }`}
-        title={`Tap to open ${label} • Long press to customize`}
+        title={`Tap: open ${label} • Swipe up: all features • Long press: customize`}
       >
         <div className="relative flex items-center justify-center w-6 h-6">
           <Icon className={`w-5 h-5 ${isAiAgent && isActive ? 'text-purple-600 stroke-[2.2]' : 'stroke-[2.2]'}`} />
@@ -208,8 +239,26 @@ export default function BottomNav({
         onDismiss={handleDismissGuide}
       />
 
-      {/* FIXED MOBILE BOTTOM NAVIGATION BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 px-2 pt-1 pb-2 pb-safe z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none">
+      {/* FIXED MOBILE BOTTOM NAVIGATION BAR (SWIPE UP TO EXPAND ALL FEATURES) */}
+      <div 
+        onTouchStart={handleBarTouchStart}
+        onTouchMove={handleBarTouchMove}
+        onTouchEnd={handleBarTouchEnd}
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 px-2 pt-1 pb-2 pb-safe z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none flex flex-col"
+      >
+        {/* Subtle Top Swipe Handle Pill */}
+        <div 
+          onClick={() => {
+            handleDismissGuide();
+            setIsEditModeDirect(false);
+            setIsEditOpen(true);
+          }}
+          className="w-full flex justify-center py-0.5 cursor-pointer group"
+          title="Swipe up or tap to view all features"
+        >
+          <div className="w-9 h-1 bg-slate-300 rounded-full group-hover:bg-[#1E56E3] transition-colors" />
+        </div>
+
         {/* 5-Column Symmetrical Grid */}
         <div className="grid grid-cols-5 items-center w-full max-w-md mx-auto">
           {/* SLOT 1 (Left 1) */}
@@ -222,12 +271,12 @@ export default function BottomNav({
             {renderTab(slots[1], 1)}
           </div>
 
-          {/* SLOT 3: CENTER ACTION (Centered 54px floating circle, always pinned & fixed) */}
+          {/* SLOT 3: CENTER ACTION (Centered 52px floating circle, always pinned & fixed) */}
           <div className="flex items-center justify-center w-full">
             {isSupplier ? (
               <button
                 onClick={() => setCurrentTab('create-shipment')}
-                className="flex flex-col items-center justify-center -mt-6 w-[52px] h-[52px] bg-gradient-to-tr from-[#0D38A8] via-[#1E56E3] to-[#3B82F6] text-white rounded-full shadow-lg shadow-blue-600/35 active:scale-95 transition-transform border-[3px] border-white cursor-pointer"
+                className="flex flex-col items-center justify-center -mt-5 w-[52px] h-[52px] bg-gradient-to-tr from-[#0D38A8] via-[#1E56E3] to-[#3B82F6] text-white rounded-full shadow-lg shadow-blue-600/35 active:scale-95 transition-transform border-[3px] border-white cursor-pointer"
                 title="Book Courier Shipment"
               >
                 <PlusCircle className="w-5 h-5 stroke-[2.5]" />
@@ -236,7 +285,7 @@ export default function BottomNav({
             ) : (
               <button
                 onClick={() => setCurrentTab('delivery-confirm')}
-                className="flex flex-col items-center justify-center -mt-6 w-[52px] h-[52px] bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-500 text-white rounded-full shadow-lg shadow-emerald-600/35 active:scale-95 transition-transform border-[3px] border-white cursor-pointer"
+                className="flex flex-col items-center justify-center -mt-5 w-[52px] h-[52px] bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-500 text-white rounded-full shadow-lg shadow-emerald-600/35 active:scale-95 transition-transform border-[3px] border-white cursor-pointer"
                 title="Inspect & Sign Off Delivery"
               >
                 <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
@@ -257,7 +306,7 @@ export default function BottomNav({
         </div>
       </div>
 
-      {/* EDIT SHEET (SLIDES UP ON LONG-PRESS OR GUIDE) */}
+      {/* EXTENDED MENU & CUSTOMIZER SHEET (SLIDES UP ON SWIPE-UP, LONG-PRESS, OR GUIDE) */}
       <BottomNavEditSheet
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
@@ -267,6 +316,11 @@ export default function BottomNav({
         notifCount={notifCount}
         defaultSlots={defaultSlots}
         initialSlotIndex={editSlotIndex}
+        initialIsEditMode={isEditModeDirect}
+        onNavigateTab={(tabKey) => {
+          setIsEditOpen(false);
+          setCurrentTab(tabKey);
+        }}
       />
     </>
   );
