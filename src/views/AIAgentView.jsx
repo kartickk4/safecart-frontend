@@ -703,7 +703,7 @@ export default function AIAgentView({ onBack }) {
                 <span className="truncate">SecureKaro AI Agent</span>
                 <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/60 shrink-0">
                   <Sparkles size={11} className="text-indigo-600" />
-                  Neural Solver v2.5
+                  Google Gemini 3.5 Flash
                 </span>
               </div>
               <div className="text-[10px] sm:text-xs text-slate-500 font-medium flex items-center gap-1.5 truncate">
@@ -962,7 +962,7 @@ export default function AIAgentView({ onBack }) {
                   ? "AI reasoning..." 
                   : isListening 
                     ? "Listening to voice..." 
-                    : "Ask AI Agent: book shipment, track order, check wallet..."
+                    : "Paste WhatsApp customer order, ask in English/Hindi, or track package..."
               }
               disabled={isLoading}
               className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none py-2"
