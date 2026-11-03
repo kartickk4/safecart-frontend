@@ -123,10 +123,11 @@ export default function BottomNavEditSheet({
   onSaveSlots,
   isSupplier,
   notifCount = 0,
-  defaultSlots = []
+  defaultSlots = [],
+  initialSlotIndex = 0
 }) {
   const [activeSlots, setActiveSlots] = useState([...currentSlots]);
-  const [selectedSlotIndex, setSelectedSlotIndex] = useState(0);
+  const [selectedSlotIndex, setSelectedSlotIndex] = useState(initialSlotIndex || 0);
 
   const sheetRef = useRef(null);
   const touchStartY = useRef(0);
@@ -135,9 +136,9 @@ export default function BottomNavEditSheet({
   useEffect(() => {
     if (isOpen) {
       setActiveSlots([...currentSlots]);
-      setSelectedSlotIndex(0);
+      setSelectedSlotIndex(initialSlotIndex || 0);
     }
-  }, [isOpen, currentSlots]);
+  }, [isOpen, currentSlots, initialSlotIndex]);
 
   if (!isOpen) return null;
 
@@ -155,6 +156,16 @@ export default function BottomNavEditSheet({
     if (touchDeltaY.current > 50) {
       handleDone();
     }
+  };
+
+    const handleMoveSlot = (fromIndex, toIndex) => {
+    if (toIndex < 0 || toIndex >= 4 || fromIndex === toIndex) return;
+    const nextSlots = [...activeSlots];
+    const temp = nextSlots[fromIndex];
+    nextSlots[fromIndex] = nextSlots[toIndex];
+    nextSlots[toIndex] = temp;
+    setActiveSlots(nextSlots);
+    setSelectedSlotIndex(toIndex);
   };
 
   const handleSelectOption = (opt) => {
@@ -365,13 +376,44 @@ export default function BottomNavEditSheet({
               })()}
             </div>
 
-            <div className="bg-blue-50/70 border border-blue-100 rounded-xl px-2.5 py-1.5 flex items-center justify-between text-[11px] text-[#1E56E3] font-semibold">
-              <span>
-                Replacing <span className="font-black">Slot {selectedSlotIndex + 1} ({getOptionLabel(activeSlots[selectedSlotIndex], isSupplier)})</span>
-              </span>
-              <span className="text-[10px] text-blue-600 font-bold">
-                Tap any option below ↓
-              </span>
+            <div className="bg-blue-50/80 border border-blue-200/80 rounded-xl p-2 flex flex-col gap-1.5 text-[11px] text-[#1E56E3]">
+              <div className="flex items-center justify-between">
+                <span>
+                  Modifying <span className="font-black text-slate-900">Slot {selectedSlotIndex + 1} ({getOptionLabel(activeSlots[selectedSlotIndex], isSupplier)})</span>
+                </span>
+                <span className="text-[10px] text-blue-600 font-bold">
+                  Tap option below to swap ↓
+                </span>
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-blue-100/80">
+                <span className="text-[10px] text-slate-500 font-medium">Reorder position:</span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={selectedSlotIndex === 0}
+                    onClick={() => handleMoveSlot(selectedSlotIndex, selectedSlotIndex - 1)}
+                    className={`px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition ${
+                      selectedSlotIndex === 0
+                        ? 'opacity-40 cursor-not-allowed border-slate-200 text-slate-400 bg-white'
+                        : 'bg-white hover:bg-blue-100 text-[#1E56E3] border-blue-200 active:scale-95 shadow-2xs'
+                    }`}
+                  >
+                    ← Move Left
+                  </button>
+                  <button
+                    type="button"
+                    disabled={selectedSlotIndex === 3}
+                    onClick={() => handleMoveSlot(selectedSlotIndex, selectedSlotIndex + 1)}
+                    className={`px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition ${
+                      selectedSlotIndex === 3
+                        ? 'opacity-40 cursor-not-allowed border-slate-200 text-slate-400 bg-white'
+                        : 'bg-white hover:bg-blue-100 text-[#1E56E3] border-blue-200 active:scale-95 shadow-2xs'
+                    }`}
+                  >
+                    Move Right →
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 

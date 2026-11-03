@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   LayoutDashboard,
   Navigation,
@@ -9,8 +9,7 @@ import {
   Wallet,
   Sparkles,
   RotateCcw,
-  Gift,
-  ChevronUp
+  Gift
 } from 'lucide-react';
 import BottomNavEditSheet, { getOptionDefinition, getOptionLabel } from './BottomNavEditSheet';
 import BottomNavGuide from './BottomNavGuide';
@@ -59,13 +58,13 @@ export default function BottomNav({
   }, [user?._id, isSupplier]);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editSlotIndex, setEditSlotIndex] = useState(0);
 
   // Guide visibility state
   const guideStorageKey = `securekaro_nav_guide_seen_${user?._id || 'guest'}`;
   const [showGuide, setShowGuide] = useState(() => {
     try {
       const seen = localStorage.getItem(guideStorageKey);
-      // Show if not seen yet
       return !seen;
     } catch (_) {
       return false;
@@ -81,27 +80,70 @@ export default function BottomNav({
 
   const handleOpenEditFromGuide = () => {
     handleDismissGuide();
+    setEditSlotIndex(0);
     setIsEditOpen(true);
   };
 
-  // Touch gesture handling for Swipe-Up on bottom bar
+  // "?"? LONG-PRESS & INSTANT TAP ENGINE "?"?
+  const [pressedSlotIndex, setPressedSlotIndex] = useState(null);
+  const longPressTimer = useRef(null);
+  const isLongPressTriggered = useRef(false);
+  const touchStartPos = useRef({ x: 0, y: 0 });
+
+  const startLongPress = useCallback((slotIndex) => {
+    isLongPressTriggered.current = false;
+    setPressedSlotIndex(slotIndex);
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+
+    longPressTimer.current = setTimeout(() => {
+      isLongPressTriggered.current = true;
+      setPressedSlotIndex(null);
+      try {
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([35, 45]);
+        }
+      } catch (_) {}
+      handleDismissGuide();
+      setEditSlotIndex(slotIndex);
+      setIsEditOpen(true);
+    }, 500);
+  }, []);
+
+  const cancelLongPress = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    setPressedSlotIndex(null);
+  }, []);
+
+  const handleSlotClick = (tabKey, e) => {
+    if (isLongPressTriggered.current) {
+      isLongPressTriggered.current = false;
+      e?.preventDefault();
+      return;
+    }
+    cancelLongPress();
+    setCurrentTab(tabKey);
+  };
+
+  // Swipe-up gesture strictly on the top pill handle (not the whole bar)
   const touchStartY = useRef(0);
   const touchDeltaY = useRef(0);
 
-  const handleTouchStart = (e) => {
+  const handleHandleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY;
     touchDeltaY.current = 0;
   };
 
-  const handleTouchMove = (e) => {
-    const currentY = e.touches[0].clientY;
-    touchDeltaY.current = currentY - touchStartY.current;
+  const handleHandleTouchMove = (e) => {
+    touchDeltaY.current = e.touches[0].clientY - touchStartY.current;
   };
 
-  const handleTouchEnd = () => {
-    // If swipe UP by more than 30px, open edit sheet
-    if (touchDeltaY.current < -30) {
+  const handleHandleTouchEnd = () => {
+    if (touchDeltaY.current < -25) {
       handleDismissGuide();
+      setEditSlotIndex(0);
       setIsEditOpen(true);
     }
   };
@@ -113,8 +155,8 @@ export default function BottomNav({
     } catch (_) {}
   };
 
-  // Helper to render one slot tab
-  const renderTab = (tabKey) => {
+  // Helper to render one slot tab with long-press & tap
+  const renderTab = (tabKey, slotIndex) => {
     const opt = getOptionDefinition(tabKey, isSupplier);
     const Icon = opt?.icon || LayoutDashboard;
     const label = getOptionLabel(tabKey, isSupplier);
@@ -129,18 +171,39 @@ export default function BottomNav({
 
     const isAiAgent = tabKey === 'ai-agent';
     const isNotifications = tabKey === 'notifications';
+    const isPressed = pressedSlotIndex === slotIndex;
 
     return (
       <button
-        key={tabKey}
-        onClick={() => setCurrentTab(tabKey)}
-        className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-bold transition-all press-spring relative ${
-          isActive
-            ? isAiAgent
-              ? 'text-purple-600 bg-purple-50/80 font-extrabold'
-              : 'text-[#1E56E3] bg-blue-50/80 font-extrabold'
-            : 'text-slate-500 hover:text-slate-900'
+        key={`${tabKey}_${slotIndex}`}
+        onClick={(e) => handleSlotClick(tabKey, e)}
+        onTouchStart={(e) => {
+          touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          startLongPress(slotIndex);
+        }}
+        onTouchMove={(e) => {
+          const moveX = Math.abs(e.touches[0].clientX - touchStartPos.current.x);
+          const moveY = Math.abs(e.touches[0].clientY - touchStartPos.current.y);
+          if (moveX > 10 || moveY > 10) {
+            cancelLongPress();
+          }
+        }}
+        onTouchEnd={cancelLongPress}
+        onTouchCancel={cancelLongPress}
+        onMouseDown={() => startLongPress(slotIndex)}
+        onMouseUp={cancelLongPress}
+        onMouseLeave={cancelLongPress}
+        onContextMenu={(e) => e.preventDefault()}
+        className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-bold transition-all relative select-none cursor-pointer ${
+          isPressed
+            ? 'scale-90 bg-indigo-100/90 ring-2 ring-indigo-400 text-indigo-700 duration-150'
+            : isActive
+              ? isAiAgent
+                ? 'text-purple-600 bg-purple-50/80 font-extrabold active:scale-95'
+                : 'text-[#1E56E3] bg-blue-50/80 font-extrabold active:scale-95'
+              : 'text-slate-500 hover:text-slate-900 active:scale-95'
         }`}
+        title={`Tap to open ${label} • Long press to customize position`}
       >
         <div className="relative">
           <Icon className={`w-5 h-5 ${isAiAgent && isActive ? 'text-purple-600 stroke-[2.2]' : 'stroke-[2.2]'}`} />
@@ -165,19 +228,19 @@ export default function BottomNav({
       />
 
       {/* FIXED MOBILE BOTTOM NAVIGATION BAR */}
-      <div
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/70 px-3 pt-1 pb-1.5 pb-safe flex flex-col z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none"
-      >
-        {/* Subtle Top Drag Handle Pill (Tap or swipe up to edit) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/70 px-3 pt-1 pb-1.5 pb-safe flex flex-col z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none">
+        
+        {/* Top Drag Handle Pill (Tap or swipe up to edit) */}
         <div
+          onTouchStart={handleHandleTouchStart}
+          onTouchMove={handleHandleTouchMove}
+          onTouchEnd={handleHandleTouchEnd}
           onClick={() => {
             handleDismissGuide();
+            setEditSlotIndex(0);
             setIsEditOpen(true);
           }}
-          className="w-full flex justify-center py-0.5 cursor-pointer group"
+          className="w-full flex justify-center py-1 cursor-pointer group"
           title="Swipe up or tap to customize menu"
         >
           <div className="w-9 h-1 bg-slate-300 rounded-full group-hover:bg-[#1E56E3] group-active:bg-[#1E56E3] transition-colors" />
@@ -186,16 +249,16 @@ export default function BottomNav({
         {/* 5-Slot Bottom Navigation Items */}
         <div className="flex items-center justify-around w-full">
           {/* SLOT 1 (Left 1) */}
-          {renderTab(slots[0])}
+          {renderTab(slots[0], 0)}
 
           {/* SLOT 2 (Left 2) */}
-          {renderTab(slots[1])}
+          {renderTab(slots[1], 1)}
 
           {/* SLOT 3: CENTER ACTION (56px floating circle, always pinned & fixed) */}
           {isSupplier ? (
             <button
               onClick={() => setCurrentTab('create-shipment')}
-              className="flex flex-col items-center justify-center -mt-6 w-14 h-14 bg-gradient-to-tr from-[#0D38A8] via-[#1E56E3] to-[#3B82F6] text-white rounded-full shadow-lg shadow-blue-600/35 active:scale-95 transition-transform border-[3px] border-white press-spring"
+              className="flex flex-col items-center justify-center -mt-6 w-14 h-14 bg-gradient-to-tr from-[#0D38A8] via-[#1E56E3] to-[#3B82F6] text-white rounded-full shadow-lg shadow-blue-600/35 active:scale-95 transition-transform border-[3px] border-white cursor-pointer"
               title="Book Courier Shipment"
             >
               <PlusCircle className="w-6 h-6 stroke-[2.5]" />
@@ -204,7 +267,7 @@ export default function BottomNav({
           ) : (
             <button
               onClick={() => setCurrentTab('delivery-confirm')}
-              className="flex flex-col items-center justify-center -mt-6 w-14 h-14 bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-500 text-white rounded-full shadow-lg shadow-emerald-600/35 active:scale-95 transition-transform border-[3px] border-white press-spring"
+              className="flex flex-col items-center justify-center -mt-6 w-14 h-14 bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-500 text-white rounded-full shadow-lg shadow-emerald-600/35 active:scale-95 transition-transform border-[3px] border-white cursor-pointer"
               title="Inspect & Sign Off Delivery"
             >
               <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
@@ -213,14 +276,14 @@ export default function BottomNav({
           )}
 
           {/* SLOT 4 (Right 1) */}
-          {renderTab(slots[2])}
+          {renderTab(slots[2], 2)}
 
           {/* SLOT 5 (Right 2) */}
-          {renderTab(slots[3])}
+          {renderTab(slots[3], 3)}
         </div>
       </div>
 
-      {/* EDIT SHEET (SLIDES UP ON SWIPE-UP OR TAP ON HANDLE) */}
+      {/* EDIT SHEET (SLIDES UP ON LONG-PRESS, HANDLE TAP, OR GUIDE) */}
       <BottomNavEditSheet
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
@@ -229,8 +292,8 @@ export default function BottomNav({
         isSupplier={isSupplier}
         notifCount={notifCount}
         defaultSlots={defaultSlots}
+        initialSlotIndex={editSlotIndex}
       />
     </>
   );
 }
-

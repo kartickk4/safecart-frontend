@@ -40,10 +40,10 @@ export default function BottomNavGuide({
               </span>
             </div>
             <h4 className="text-xs font-black text-white">
-              Swipe up the bottom bar to customize
+              Long press any tab to customize or swap
             </h4>
             <p className="text-[10.5px] text-slate-300 mt-0.5 leading-snug">
-              Swap any tab with <span className="text-white font-bold">Tracking, Return, Notifications</span> or <span className="text-white font-bold">Refer & Earn</span> anytime!
+              Hold any button to rearrange, or swap with <span className="text-white font-bold">Tracking, Return, Notifications</span> or <span className="text-white font-bold">Refer & Earn</span> anytime!
             </p>
 
             <div className="flex items-center gap-2 mt-2.5">
