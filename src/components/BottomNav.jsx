@@ -84,7 +84,7 @@ export default function BottomNav({
     setIsEditOpen(true);
   };
 
-  // "?"? LONG-PRESS & INSTANT TAP ENGINE "?"?
+  // ⚡ LONG-PRESS & INSTANT TAP ENGINE
   const [pressedSlotIndex, setPressedSlotIndex] = useState(null);
   const longPressTimer = useRef(null);
   const isLongPressTriggered = useRef(false);
@@ -127,27 +127,6 @@ export default function BottomNav({
     setCurrentTab(tabKey);
   };
 
-  // Swipe-up gesture strictly on the top pill handle (not the whole bar)
-  const touchStartY = useRef(0);
-  const touchDeltaY = useRef(0);
-
-  const handleHandleTouchStart = (e) => {
-    touchStartY.current = e.touches[0].clientY;
-    touchDeltaY.current = 0;
-  };
-
-  const handleHandleTouchMove = (e) => {
-    touchDeltaY.current = e.touches[0].clientY - touchStartY.current;
-  };
-
-  const handleHandleTouchEnd = () => {
-    if (touchDeltaY.current < -25) {
-      handleDismissGuide();
-      setEditSlotIndex(0);
-      setIsEditOpen(true);
-    }
-  };
-
   const handleSaveSlots = (newSlots) => {
     setSlots(newSlots);
     try {
@@ -155,7 +134,7 @@ export default function BottomNav({
     } catch (_) {}
   };
 
-  // Helper to render one slot tab with long-press & tap
+  // Helper to render one slot tab with perfect baseline and width alignment
   const renderTab = (tabKey, slotIndex) => {
     const opt = getOptionDefinition(tabKey, isSupplier);
     const Icon = opt?.icon || LayoutDashboard;
@@ -194,26 +173,28 @@ export default function BottomNav({
         onMouseUp={cancelLongPress}
         onMouseLeave={cancelLongPress}
         onContextMenu={(e) => e.preventDefault()}
-        className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-bold transition-all relative select-none cursor-pointer ${
+        className={`w-full max-w-[64px] h-[52px] flex flex-col items-center justify-center gap-0.5 rounded-2xl transition-all relative select-none cursor-pointer ${
           isPressed
-            ? 'scale-90 bg-indigo-100/90 ring-2 ring-indigo-400 text-indigo-700 duration-150'
+            ? 'scale-90 bg-indigo-100/90 ring-2 ring-indigo-400 text-indigo-700'
             : isActive
               ? isAiAgent
-                ? 'text-purple-600 bg-purple-50/80 font-extrabold active:scale-95'
-                : 'text-[#1E56E3] bg-blue-50/80 font-extrabold active:scale-95'
+                ? 'text-purple-600 bg-purple-50/90 font-extrabold shadow-2xs'
+                : 'text-[#1E56E3] bg-blue-50/90 font-extrabold shadow-2xs'
               : 'text-slate-500 hover:text-slate-900 active:scale-95'
         }`}
-        title={`Tap to open ${label} • Long press to customize position`}
+        title={`Tap to open ${label} • Long press to customize`}
       >
-        <div className="relative">
+        <div className="relative flex items-center justify-center w-6 h-6">
           <Icon className={`w-5 h-5 ${isAiAgent && isActive ? 'text-purple-600 stroke-[2.2]' : 'stroke-[2.2]'}`} />
           {isNotifications && notifCount > 0 && (
-            <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center ring-1 ring-white">
+            <span className="absolute -top-1 -right-2 min-w-[15px] h-[15px] px-1 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center ring-1.5 ring-white shadow-2xs leading-none">
               {notifCount > 9 ? '9+' : notifCount}
             </span>
           )}
         </div>
-        <span className="truncate max-w-[58px] text-center">{label}</span>
+        <span className="w-full text-[9.5px] font-bold leading-tight truncate text-center px-0.5">
+          {label}
+        </span>
       </button>
     );
   };
@@ -228,62 +209,55 @@ export default function BottomNav({
       />
 
       {/* FIXED MOBILE BOTTOM NAVIGATION BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/70 px-3 pt-1 pb-1.5 pb-safe flex flex-col z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none">
-        
-        {/* Top Drag Handle Pill (Tap or swipe up to edit) */}
-        <div
-          onTouchStart={handleHandleTouchStart}
-          onTouchMove={handleHandleTouchMove}
-          onTouchEnd={handleHandleTouchEnd}
-          onClick={() => {
-            handleDismissGuide();
-            setEditSlotIndex(0);
-            setIsEditOpen(true);
-          }}
-          className="w-full flex justify-center py-1 cursor-pointer group"
-          title="Swipe up or tap to customize menu"
-        >
-          <div className="w-9 h-1 bg-slate-300 rounded-full group-hover:bg-[#1E56E3] group-active:bg-[#1E56E3] transition-colors" />
-        </div>
-
-        {/* 5-Slot Bottom Navigation Items */}
-        <div className="flex items-center justify-around w-full">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 px-2 pt-1 pb-2 pb-safe z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none">
+        {/* 5-Column Symmetrical Grid */}
+        <div className="grid grid-cols-5 items-center w-full max-w-md mx-auto">
           {/* SLOT 1 (Left 1) */}
-          {renderTab(slots[0], 0)}
+          <div className="flex items-center justify-center w-full">
+            {renderTab(slots[0], 0)}
+          </div>
 
           {/* SLOT 2 (Left 2) */}
-          {renderTab(slots[1], 1)}
+          <div className="flex items-center justify-center w-full">
+            {renderTab(slots[1], 1)}
+          </div>
 
-          {/* SLOT 3: CENTER ACTION (56px floating circle, always pinned & fixed) */}
-          {isSupplier ? (
-            <button
-              onClick={() => setCurrentTab('create-shipment')}
-              className="flex flex-col items-center justify-center -mt-6 w-14 h-14 bg-gradient-to-tr from-[#0D38A8] via-[#1E56E3] to-[#3B82F6] text-white rounded-full shadow-lg shadow-blue-600/35 active:scale-95 transition-transform border-[3px] border-white cursor-pointer"
-              title="Book Courier Shipment"
-            >
-              <PlusCircle className="w-6 h-6 stroke-[2.5]" />
-              <span className="text-[8.5px] font-black tracking-tight leading-none mt-0.5 uppercase">Ship</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => setCurrentTab('delivery-confirm')}
-              className="flex flex-col items-center justify-center -mt-6 w-14 h-14 bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-500 text-white rounded-full shadow-lg shadow-emerald-600/35 active:scale-95 transition-transform border-[3px] border-white cursor-pointer"
-              title="Inspect & Sign Off Delivery"
-            >
-              <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
-              <span className="text-[8.5px] font-black tracking-tight leading-none mt-0.5 uppercase">Sign</span>
-            </button>
-          )}
+          {/* SLOT 3: CENTER ACTION (Centered 54px floating circle, always pinned & fixed) */}
+          <div className="flex items-center justify-center w-full">
+            {isSupplier ? (
+              <button
+                onClick={() => setCurrentTab('create-shipment')}
+                className="flex flex-col items-center justify-center -mt-6 w-[52px] h-[52px] bg-gradient-to-tr from-[#0D38A8] via-[#1E56E3] to-[#3B82F6] text-white rounded-full shadow-lg shadow-blue-600/35 active:scale-95 transition-transform border-[3px] border-white cursor-pointer"
+                title="Book Courier Shipment"
+              >
+                <PlusCircle className="w-5 h-5 stroke-[2.5]" />
+                <span className="text-[8px] font-black tracking-tight leading-none mt-0.5 uppercase">Ship</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setCurrentTab('delivery-confirm')}
+                className="flex flex-col items-center justify-center -mt-6 w-[52px] h-[52px] bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-500 text-white rounded-full shadow-lg shadow-emerald-600/35 active:scale-95 transition-transform border-[3px] border-white cursor-pointer"
+                title="Inspect & Sign Off Delivery"
+              >
+                <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+                <span className="text-[8px] font-black tracking-tight leading-none mt-0.5 uppercase">Sign</span>
+              </button>
+            )}
+          </div>
 
           {/* SLOT 4 (Right 1) */}
-          {renderTab(slots[2], 2)}
+          <div className="flex items-center justify-center w-full">
+            {renderTab(slots[2], 2)}
+          </div>
 
           {/* SLOT 5 (Right 2) */}
-          {renderTab(slots[3], 3)}
+          <div className="flex items-center justify-center w-full">
+            {renderTab(slots[3], 3)}
+          </div>
         </div>
       </div>
 
-      {/* EDIT SHEET (SLIDES UP ON LONG-PRESS, HANDLE TAP, OR GUIDE) */}
+      {/* EDIT SHEET (SLIDES UP ON LONG-PRESS OR GUIDE) */}
       <BottomNavEditSheet
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
