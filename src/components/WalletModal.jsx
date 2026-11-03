@@ -120,10 +120,27 @@ export default function WalletModal({ user, onUpdateUser }) {
   const [otpDebug, setOtpDebug] = useState('');
   const [timer, setTimer] = useState(30);
 
+  // Track previous role so we know when a role switch happens
+  const prevRoleRef = React.useRef(isSupplier ? 'Supplier' : 'Receiver');
+
   useEffect(() => {
     let isSubscribed = true;
-    // background sync - numbers stay visible
-    // setIsWalletLoading(true);
+    const currentRole = isSupplier ? 'Supplier' : 'Receiver';
+    const didRoleChange = prevRoleRef.current !== currentRole;
+    prevRoleRef.current = currentRole;
+
+    // On role switch: immediately reset all balance state to what the user
+    // prop already carries (the cached role snapshot). This eliminates the
+    // 1-2s flash of stale previous-role balances.
+    if (didRoleChange && user) {
+      setCashbackBalance(user.cashbackBalance !== undefined ? Number(user.cashbackBalance) : 0);
+      setWithdrawableBalance(user.withdrawableBalance !== undefined ? Number(user.withdrawableBalance) : null);
+      setPendingConfirmationBalance(user.pendingConfirmationBalance !== undefined ? Number(user.pendingConfirmationBalance) : 0);
+      setTotalWalletBalance(user.totalWalletBalance !== undefined ? Number(user.totalWalletBalance) : null);
+      setShipments([]);
+      setWalletTransactions([]);
+      setConfirmationPipeline([]);
+    }
 
     const loadAllWalletData = async () => {
       try {
@@ -174,8 +191,20 @@ export default function WalletModal({ user, onUpdateUser }) {
         bankName: user?.bankDetails?.bankName || 'HDFC Bank',
         upiId: user?.bankDetails?.upiId || ''
       });
+      // Sync all balance fields from user prop — this fires when the background
+      // switchRole response arrives with the definitive synced user, making
+      // numbers update instantly without waiting for fetchRewardWallet().
       if (user.cashbackBalance !== undefined) {
-        setCashbackBalance(user.cashbackBalance);
+        setCashbackBalance(Number(user.cashbackBalance));
+      }
+      if (user.withdrawableBalance !== undefined) {
+        setWithdrawableBalance(Number(user.withdrawableBalance));
+      }
+      if (user.pendingConfirmationBalance !== undefined) {
+        setPendingConfirmationBalance(Number(user.pendingConfirmationBalance));
+      }
+      if (user.totalWalletBalance !== undefined) {
+        setTotalWalletBalance(Number(user.totalWalletBalance));
       }
       if (user.bankDetails?.upiId) {
         setWithdrawUpiId(user.bankDetails.upiId);
