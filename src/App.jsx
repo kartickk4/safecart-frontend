@@ -71,16 +71,14 @@ export default function App() {
       return false;
     }
     // Check if splash was already shown during this browser session
+    // Splash screen always greets the user on first session open:
+    // - Before Login page if logged out
+    // - Before Dashboard if logged in
     try {
-      // If user profile is already cached in localStorage, start dashboard immediately without artificial delay
-      const hasCachedSession = Boolean(localStorage.getItem('securekaro_token') && localStorage.getItem('securekaro_user'));
-      if (hasCachedSession) {
-        return false;
-      }
       const seen = sessionStorage.getItem('securekaro_splash_seen');
       return !seen;
     } catch (_) {
-      return false;
+      return true;
     }
   });
   const [slowServerWarning, setSlowServerWarning] = useState(false);
