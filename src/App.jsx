@@ -789,6 +789,8 @@ export default function App() {
           </div>
         )}
 
+        {/* SUSPENSE FOR ALL ROUTE VIEWS */}
+        <Suspense fallback={<ViewLoadingFallback />}>
         {/* AI AGENT: Full-screen, no padding, no extra scroll */}
         {currentTab === 'ai-agent' ? (
           <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
@@ -966,6 +968,7 @@ export default function App() {
           </div>
         </main>
         )}
+        </Suspense>
       </div>
 
       {/* Global Modals & Drawers (Lazy loaded with Suspense) */}
