@@ -1015,6 +1015,23 @@ export default function AIAgentView({ onBack }) {
             <span className="font-semibold text-slate-500">Quick:</span>
             <button
               type="button"
+              onClick={() => sendMessage("Rajesh Kumar, 9876543210, House 42 Green Park Extension, New Delhi 110016, 1 Denim Jacket, COD Rs 1800, 900g")}
+              className="font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50/80 px-2 py-0.5 rounded-md cursor-pointer"
+            >
+              ⚡ 1-Click WhatsApp Order
+            </button>
+            <span>•</span>
+            <button
+              type="button"
+              onClick={() => sendMessage("Bhai mera wallet balance kitna hai?")}
+              className="hover:text-indigo-600 hover:underline cursor-pointer"
+            >
+              "Mera balance?"
+            </button>
+            <span>•</span>
+            
+            <button
+              type="button"
               onClick={() => sendMessage("Book a new shipment")}
               className="hover:text-indigo-600 hover:underline cursor-pointer"
             >
