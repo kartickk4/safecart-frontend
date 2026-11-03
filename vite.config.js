@@ -15,20 +15,6 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1200,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('firebase')) return 'firebase-vendor';
-            if (id.includes('chart.js') || id.includes('react-chartjs-2')) return 'charts-vendor';
-            if (id.includes('xlsx')) return 'xlsx-vendor';
-            if (id.includes('leaflet')) return 'leaflet-vendor';
-            if (id.includes('lucide-react')) return 'icons-vendor';
-            return 'vendor';
-          }
-        },
-      },
-    },
+    chunkSizeWarningLimit: 2000,
   },
 });

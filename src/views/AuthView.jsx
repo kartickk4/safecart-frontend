@@ -465,8 +465,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
 
         // Update the auto-created user with the real name, email, and password
         try {
-          const { profileAPI: pAPI } = await import('../services/api.js');
-          await pAPI.updateProfile({ fullName, email });
+          await profileAPI.updateProfile({ fullName, email });
         } catch (profileErr) {
           console.warn('Profile update after OTP signup:', profileErr.message);
         }
