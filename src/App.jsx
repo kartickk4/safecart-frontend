@@ -29,6 +29,7 @@ import WelcomeAnimationModal from './components/WelcomeAnimationModal';
 import AgentWidget from './components/AgentWidget';
 import SplashScreen from './components/SplashScreen';
 import AdBanner from './components/AdBanner';
+import BottomNav from './components/BottomNav';
 import { profileAPI, authAPI, notificationAPI, clearApiCache, rewardAPI, walletAPI, shipmentAPI } from './services/api';
 import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell, ShieldCheck, Wallet, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles } from 'lucide-react';
 
@@ -994,95 +995,15 @@ export default function App() {
         </div>
       )}
 
-      {/* FIXED MOBILE BOTTOM NAVIGATION BAR (FOR MOBILE SMARTPHONE SCREENS) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/70 px-3 py-1.5 pb-safe flex items-center justify-around z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none">
-        {/* TAB 1: DASHBOARD / ORDERS */}
-        <button
-          onClick={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-all press-spring ${
-            (currentTab === 'dashboard' || currentTab === 'shipments-list')
-              ? 'text-[#1E56E3] bg-blue-50/80 font-extrabold'
-              : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          <LayoutDashboard className="w-5 h-5 stroke-[2.2]" />
-          <span>{isSupplier ? 'Dashboard' : 'Orders'}</span>
-        </button>
-
-        {/* TAB 2: AI AGENT (SUPPLIER) OR LIVE TRACKING (RECEIVER) */}
-        {isSupplier ? (
-          <button
-            onClick={() => setCurrentTab('ai-agent')}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-all press-spring ${
-              currentTab === 'ai-agent'
-                ? 'text-purple-600 bg-purple-50/80 font-extrabold'
-                : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Sparkles className="w-5 h-5 text-purple-600 stroke-[2.2]" />
-            <span>AI Agent</span>
-          </button>
-        ) : (
-          <button
-            onClick={() => setCurrentTab('track')}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-all press-spring ${
-              currentTab === 'track'
-                ? 'text-[#1E56E3] bg-blue-50/80 font-extrabold'
-                : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <Navigation className="w-5 h-5 stroke-[2.2]" />
-            <span>Tracking</span>
-          </button>
-        )}
-
-        {/* TAB 3: CENTER ACTION (56px floating circle) */}
-        {isSupplier ? (
-          <button
-            onClick={() => setCurrentTab('create-shipment')}
-            className="flex flex-col items-center justify-center -mt-6 w-14 h-14 bg-gradient-to-tr from-[#0D38A8] via-[#1E56E3] to-[#3B82F6] text-white rounded-full shadow-lg shadow-blue-600/35 active:scale-95 transition-transform border-[3px] border-white press-spring"
-            title="Book Courier Shipment"
-          >
-            <PlusCircle className="w-6 h-6 stroke-[2.5]" />
-            <span className="text-[8.5px] font-black tracking-tight leading-none mt-0.5 uppercase">Ship</span>
-          </button>
-        ) : (
-          <button
-            onClick={() => setCurrentTab('delivery-confirm')}
-            className="flex flex-col items-center justify-center -mt-6 w-14 h-14 bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-500 text-white rounded-full shadow-lg shadow-emerald-600/35 active:scale-95 transition-transform border-[3px] border-white press-spring"
-            title="Inspect & Sign Off Delivery"
-          >
-            <CheckCircle2 className="w-6 h-6 stroke-[2.5]" />
-            <span className="text-[8.5px] font-black tracking-tight leading-none mt-0.5 uppercase">Sign</span>
-          </button>
-        )}
-
-        {/* TAB 4: WALLET */}
-        <button
-          onClick={() => setCurrentTab('wallet')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-all press-spring ${
-            currentTab === 'wallet'
-              ? 'text-[#1E56E3] bg-blue-50/80 font-extrabold'
-              : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          <Wallet className="w-5 h-5 stroke-[2.2]" />
-          <span>Wallet</span>
-        </button>
-
-        {/* TAB 5: PROFILE */}
-        <button
-          onClick={() => setCurrentTab('profile')}
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-[10px] font-bold transition-all press-spring ${
-            currentTab === 'profile'
-              ? 'text-[#1E56E3] bg-blue-50/80 font-extrabold'
-              : 'text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          <User className="w-5 h-5" />
-          <span>Profile</span>
-        </button>
-      </div>
+      {/* FIXED MOBILE BOTTOM NAVIGATION BAR (SWIPE-UP EDITABLE WITH CUSTOM SLOTS & ONBOARDING GUIDE) */}
+      <BottomNav
+        currentTab={currentTab}
+        setCurrentTab={setCurrentTab}
+        isSupplier={isSupplier}
+        user={user}
+        notifCount={notifCount}
+        isNewUser={isNewUser}
+      />
 
       {/* ROLE SWITCH & PRO TOAST NOTIFICATION (Small, Minimal, Light Slate Theme) */}
       {roleNotification && (
