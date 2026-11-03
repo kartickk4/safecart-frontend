@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { 
+import {
+  Camera, 
   Bot, Send, RotateCcw, Upload, X, Zap, Package, Truck, 
   CheckCircle2, Sparkles, FileSpreadsheet, Shield, ArrowRight,
   AlertCircle, RefreshCw, Mic, MicOff, Volume2, VolumeX, Radio,
@@ -142,6 +143,12 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
       )}
 
       <div className={`max-w-[82%] sm:max-w-[75%] flex flex-col gap-1.5 ${isAgent ? "items-start" : "items-end"}`}>
+        {/* Render Attached Image Preview */}
+        {msg.imagePreview && (
+          <div className="rounded-2xl overflow-hidden border border-slate-200/90 shadow-xs max-w-[240px] bg-white p-1">
+            <img src={msg.imagePreview} alt="Order attachment" className="w-full max-h-48 object-cover rounded-xl" />
+          </div>
+        )}
         <div
           className={`p-4 text-[13.5px] leading-relaxed transition-all shadow-xs ${
             isAgent
@@ -369,6 +376,70 @@ export default function AIAgentView({ onBack }) {
   const [initialized, setInitialized] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const [selectedImage, setSelectedImage] = useState(null); // { base64, mimeType, previewUrl, name }
+  const selectedImageRef = useRef(null);
+
+  useEffect(() => {
+    selectedImageRef.current = selectedImage;
+  }, [selectedImage]);
+
+  // Client-side image resize and compression (max 1200px, 85% quality JPEG)
+  const processImageFile = useCallback((file) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const MAX_DIM = 1200;
+        let width = img.width;
+        let height = img.height;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setSelectedImage({
+          base64: compressedDataUrl,
+          mimeType: 'image/jpeg',
+          previewUrl: compressedDataUrl,
+          name: file.name || 'Order_Screenshot.jpg'
+        });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  // Clipboard Paste Support (Ctrl+V / Cmd+V for WhatsApp Web & Screenshot clips)
+  useEffect(() => {
+    const handlePaste = (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            processImageFile(file);
+            e.preventDefault();
+            break;
+          }
+        }
+      }
+    };
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [processImageFile]);
 
   const handleVoiceFinal = useCallback((finalText) => {
     if (finalText) {
@@ -411,7 +482,7 @@ export default function AIAgentView({ onBack }) {
   const getToken = () => localStorage.getItem("securekaro_token") || localStorage.getItem("skToken") || localStorage.getItem("token") || "";
 
   const sendMessage = useCallback(async (userText = "", isInit = false) => {
-    if (!userText.trim() && !isInit) return;
+    if (!userText.trim() && !isInit && !selectedImageRef.current) return;
     if (isLoading) return;
 
     const token = getToken();
@@ -428,8 +499,21 @@ export default function AIAgentView({ onBack }) {
       return;
     }
 
-    if (userText.trim()) {
-      setMessages(prev => [...prev, { role: "user", content: userText.trim(), timestamp: new Date() }]);
+    const activeImage = selectedImageRef.current;
+    if (activeImage) {
+      setSelectedImage(null);
+    }
+
+    if (userText.trim() || activeImage) {
+      setMessages(prev => [
+        ...prev, 
+        { 
+          role: "user", 
+          content: userText.trim() || "📸 Scanned Order Screenshot", 
+          imagePreview: activeImage?.previewUrl,
+          timestamp: new Date() 
+        }
+      ]);
     }
     setInput("");
     setIsLoading(true);
@@ -438,7 +522,7 @@ export default function AIAgentView({ onBack }) {
       const res = await fetch(`${API_BASE}/api/v1/agent/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ message: userText.trim(), sessionId: sessionId || undefined })
+        body: JSON.stringify({ message: userText.trim(), sessionId: sessionId || undefined, imageBase64: activeImage?.base64, imageMimeType: activeImage?.mimeType })
       });
 
       if (!res.ok) {
@@ -943,6 +1027,32 @@ export default function AIAgentView({ onBack }) {
             </div>
           )}
 
+          {/* Selected Screenshot / Photo OCR Preview */}
+          {selectedImage && (
+            <div className="max-w-4xl mx-auto mb-2 flex items-center gap-3 p-2.5 bg-gradient-to-r from-indigo-50/95 to-blue-50/90 border border-indigo-200/90 rounded-2xl shadow-xs animate-fade-in">
+              <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-indigo-200 shrink-0 bg-white shadow-xs">
+                <img src={selectedImage.previewUrl} alt="Order preview" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                  <Sparkles size={13} className="text-indigo-600 shrink-0" />
+                  <span className="truncate">Order Screenshot Attached</span>
+                </div>
+                <div className="text-[11px] text-indigo-600/90 truncate">
+                  Ready to scan with Gemini Vision • Press Send or type note
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedImage(null)}
+                className="w-8 h-8 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 flex items-center justify-center transition cursor-pointer"
+                title="Remove image"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          )}
+
           {/* Main Floating Input Enclosure */}
           <div className="relative max-w-4xl mx-auto flex items-center gap-2 bg-slate-50 focus-within:bg-white border border-slate-300 focus-within:border-indigo-600 focus-within:ring-3 focus-within:ring-indigo-500/15 rounded-2xl p-1.5 pl-4 transition-all duration-200 shadow-xs">
             
@@ -985,6 +1095,34 @@ export default function AIAgentView({ onBack }) {
               {isListening ? <MicOff size={16} /> : <Mic size={16} />}
             </button>
 
+            {/* Hidden file input for camera / image selection */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  processImageFile(e.target.files[0]);
+                  e.target.value = '';
+                }
+              }}
+            />
+
+            {/* Scan Order Screenshot / Photo OCR Button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              title="Upload order photo or screenshot (Ctrl+V paste supported)"
+              className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                selectedImage
+                  ? "bg-indigo-600 text-white border-indigo-700 shadow-xs ring-2 ring-indigo-200"
+                  : "bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 border-slate-200"
+              }`}
+            >
+              <Camera size={16} />
+            </button>
+
             {/* Bulk Upload Icon Button */}
             <button
               type="button"
@@ -999,9 +1137,9 @@ export default function AIAgentView({ onBack }) {
             <button
               type="button"
               onClick={() => sendMessage(input)}
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || (!input.trim() && !selectedImage)}
               className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
-                input.trim() && !isLoading
+                (input.trim() || selectedImage) && !isLoading
                   ? "bg-gradient-to-r from-[#1E56E3] to-[#4F46E5] text-white shadow-md shadow-indigo-500/25 active:scale-95"
                   : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-60"
               }`}
@@ -1019,6 +1157,15 @@ export default function AIAgentView({ onBack }) {
               className="font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50/80 px-2 py-0.5 rounded-md cursor-pointer"
             >
               ⚡ 1-Click WhatsApp Order
+            </button>
+            <span>•</span>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50/80 px-2 py-0.5 rounded-md cursor-pointer flex items-center gap-1"
+            >
+              <Camera size={12} />
+              📸 Scan Photo / Chit
             </button>
             <span>•</span>
             <button
