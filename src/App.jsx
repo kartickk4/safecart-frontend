@@ -157,7 +157,7 @@ export default function App() {
   const [isPublicTrackingActive, setIsPublicTrackingActive] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
-  const [isRoleSwitching, setIsRoleSwitching] = useState(false);
+
 
   useEffect(() => {
     checkAuth();
@@ -305,18 +305,29 @@ export default function App() {
     }
   };
 
-  const handleSwitchRole = async (targetRole) => {
+  const handleSwitchRole = (targetRole) => {
     const nextRole = targetRole === 'Supplier' ? 'Supplier' : 'Receiver';
-    if ((isSupplier && nextRole === 'Supplier') || (!isSupplier && nextRole === 'Receiver')) {
+    const currentRole = isSupplier ? 'Supplier' : 'Receiver';
+    if (currentRole === nextRole) {
       return;
     }
 
-    setIsRoleSwitching(true);
+    // 1. Cache current role user and token so switching back is instant
+    try {
+      if (user) {
+        sessionStorage.setItem('securekaro_role_user_' + currentRole, JSON.stringify(user));
+      }
+      const curToken = localStorage.getItem('securekaro_token');
+      if (curToken) {
+        sessionStorage.setItem('securekaro_role_token_' + currentRole, curToken);
+      }
+    } catch (_) {}
 
-    // 1. Immediately invalidate API cache so old role data cannot be returned
+    // 2. Clear API cache and update active role
     clearApiCache();
+    localStorage.setItem('securekaro_active_role', nextRole);
 
-    // 2. Adjust Tab to matching portal immediately
+    // 3. Switch Tab to matching portal immediately
     if (nextRole === 'Supplier') {
       if (currentTab === 'delivery-confirm' || currentTab === 'return-tracking') {
         setCurrentTab('dashboard');
@@ -327,7 +338,7 @@ export default function App() {
       }
     }
 
-    // 3. Show smooth visual notification toast
+    // 4. Show smooth visual notification toast
     setRoleNotification({
       role: nextRole,
       title: nextRole === 'Supplier' ? 'Switched to Supplier Mode' : 'Switched to Receiver Mode',
@@ -340,50 +351,59 @@ export default function App() {
       setRoleNotification(null);
     }, 3800);
 
-    // 4. Synchronize with Backend FIRST before switching user state
+    // 5. Restore target role immediately from cache (0ms delay, no wrong numbers)
+    let cachedUser = null;
     try {
-      const res = await authAPI.switchRole(nextRole);
-      if (res.data?.accessToken) {
-        localStorage.setItem('securekaro_token', res.data.accessToken);
+      const cachedToken = sessionStorage.getItem('securekaro_role_token_' + nextRole);
+      if (cachedToken) {
+        localStorage.setItem('securekaro_token', cachedToken);
       }
-      localStorage.setItem('securekaro_active_role', nextRole);
-      clearApiCache();
+      const rawUser = sessionStorage.getItem('securekaro_role_user_' + nextRole);
+      if (rawUser) {
+        cachedUser = JSON.parse(rawUser);
+      }
+    } catch (_) {}
 
-      if (res.data?.user) {
-        const syncedUser = {
-          ...res.data.user,
-          activeRole: nextRole
-        };
-        setUser(syncedUser);
-        try {
-          sessionStorage.setItem('securekaro_role_user_' + nextRole, JSON.stringify(syncedUser));
-        } catch (_) {}
-        prefetchWalletInBackground(syncedUser);
-      } else {
-        setUser(prev => ({
-          ...prev,
-          role: nextRole,
-          activeRole: nextRole,
-          walletBalance: undefined,
-          cashbackBalance: undefined
-        }));
-      }
-    } catch (err) {
-      console.warn('Backend role switch notice (using local activeRole):', err.message);
-      try {
-        await profileAPI.updateProfile({ role: nextRole });
-      } catch (_) {}
-      localStorage.setItem('securekaro_active_role', nextRole);
+    if (cachedUser) {
+      setUser({ ...cachedUser, role: nextRole, activeRole: nextRole });
+    } else {
+      // If first time switching, clean reset balances for the target role
       setUser(prev => ({
         ...prev,
         role: nextRole,
         activeRole: nextRole,
-        walletBalance: undefined,
-        cashbackBalance: undefined
+        walletBalance: 0,
+        cashbackBalance: 0,
+        totalWalletBalance: 0,
+        withdrawableBalance: 0,
+        pendingConfirmationBalance: 0
       }));
-    } finally {
-      setIsRoleSwitching(false);
     }
+
+    // 6. Sync with backend in background without blocking UI
+    authAPI.switchRole(nextRole)
+      .then(res => {
+        if (res.data?.accessToken) {
+          localStorage.setItem('securekaro_token', res.data.accessToken);
+          try {
+            sessionStorage.setItem('securekaro_role_token_' + nextRole, res.data.accessToken);
+          } catch (_) {}
+        }
+        if (res.data?.user) {
+          const syncedUser = {
+            ...res.data.user,
+            activeRole: nextRole
+          };
+          setUser(syncedUser);
+          try {
+            sessionStorage.setItem('securekaro_role_user_' + nextRole, JSON.stringify(syncedUser));
+          } catch (_) {}
+          prefetchWalletInBackground(syncedUser);
+        }
+      })
+      .catch(err => {
+        console.warn('Background role switch notice:', err?.message || err);
+      });
   };
 
   const handleWelcomeComplete = () => {
@@ -690,12 +710,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] flex text-slate-800 selection:bg-blue-500 selection:text-white relative">
-      {/* Sleek Top Loading Progress Bar */}
-      {isRoleSwitching && (
-        <div className="fixed top-0 left-0 right-0 h-1 z-[200] overflow-hidden bg-blue-100/50 pointer-events-none">
-          <div className="h-full bg-gradient-to-r from-[#1E56E3] via-blue-400 to-[#1E56E3] w-1/2 animate-top-progress"></div>
-        </div>
-      )}
+      
       {/* Left Sidebar */}
       <Sidebar
         currentTab={currentTab}

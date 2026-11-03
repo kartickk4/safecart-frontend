@@ -391,17 +391,6 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
           </h1>
           <p className="text-xs text-slate-500 mt-1">Manage your identity details and bank account for automated order payouts.</p>
         </div>
-        {onSignOut && (
-          <button
-            type="button"
-            onClick={onSignOut}
-            className="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200/80 flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-xs"
-            title="Sign Out of SecureKaro"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Sign Out</span>
-          </button>
-        )}
       </div>
 
       {msg && (
