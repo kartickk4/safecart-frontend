@@ -319,7 +319,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
       labels,
       datasets: [
         {
-          label: 'Active Pipeline (₹ Held)',
+          label: 'Money in Escrow (In Delivery)',
           data: heldPoints,
           borderColor: '#1E56E3',
           backgroundColor: 'rgba(30, 86, 227, 0.08)',
@@ -330,7 +330,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           pointHoverRadius: 6,
         },
         {
-          label: 'Realized Revenue (₹ Payout)',
+          label: 'Money Paid to Bank (Completed)',
           data: releasedPoints,
           borderColor: '#10B981',
           backgroundColor: 'rgba(16, 185, 129, 0.08)',
@@ -607,11 +607,11 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
 
       {/* 4 PRIMARY EXECUTIVE KPI CARDS (2x2 on Mobile, 4x1 on Desktop) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
-        {/* KPI 1: Active Pipeline */}
+        {/* KPI 1: Active In-Transit Orders */}
         <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
-            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">In Pipeline</span>
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Money in Escrow</span>
             <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold shrink-0">
               <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
@@ -624,7 +624,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
               <span className="text-blue-600 font-bold bg-blue-50 px-1 py-0.2 rounded">
                 {analytics.activePipelineHeldCount} orders
               </span>
-              <span className="hidden sm:inline">in pipeline</span>
+              <span className="hidden sm:inline">in delivery</span>
             </div>
           </div>
         </div>
@@ -633,7 +633,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition group relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-emerald-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
-            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Settled</span>
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Paid to Bank</span>
             <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
@@ -646,7 +646,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
               <span className="text-emerald-700 font-bold bg-emerald-50 px-1 py-0.2 rounded">
                 {analytics.releasedCount} payouts
               </span>
-              <span className="hidden sm:inline">in bank</span>
+              <span className="hidden sm:inline">received in bank</span>
             </div>
           </div>
         </div>
@@ -748,13 +748,13 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-slate-900 text-base">Order Velocity & Cash Flow</h3>
+                <h3 className="font-extrabold text-slate-900 text-base">Sales &amp; Bank Payouts</h3>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold border border-emerald-200">
-                  +18.4% MoM
+                  +18.4% This Month
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Tracks protected order volumes versus cash released to your registered merchant account.
+                See your total sales orders vs money safely transferred to your bank account.
               </p>
             </div>
 
@@ -782,15 +782,15 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
 
           <div className="grid grid-cols-3 gap-2 pt-4 mt-2 border-t border-slate-100 text-center">
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">Gross Volume</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Total Sales</p>
               <p className="text-xs font-extrabold text-slate-800 mt-0.5">₹{(analytics.totalGrossRevenue || 0).toLocaleString('en-IN')}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">Returns Value</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Returns (RTO)</p>
               <p className="text-xs font-extrabold text-amber-700 mt-0.5">₹{(analytics.returnAmount || 0).toLocaleString('en-IN')}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">Projected 30D</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Estimated 30 Days</p>
               <p className="text-xs font-extrabold text-[#1E56E3] mt-0.5">₹{((analytics.totalGrossRevenue || 0) * 1.2).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</p>
             </div>
           </div>
@@ -800,10 +800,10 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-extrabold text-slate-900 text-base">Shipment Pipeline Split</h3>
+              <h3 className="font-extrabold text-slate-900 text-base">Orders Status Breakdown</h3>
               <span className="text-xs font-bold text-slate-400">{analytics.totalOrders} total</span>
             </div>
-            <p className="text-xs text-slate-500 mb-4">Current order breakdown by stage</p>
+            <p className="text-xs text-slate-500 mb-4">Current stage of all your booked parcels</p>
 
             <div className="h-56 relative flex items-center justify-center">
               <Doughnut data={statusDoughnutData} options={statusDoughnutOptions} />
@@ -819,19 +819,19 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           <div className="pt-3 border-t border-slate-100">
             <div className="flex items-center justify-between text-xs font-semibold py-1">
               <span className="text-slate-500 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Released
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Paid to Bank
               </span>
               <span className="font-black text-slate-900">{analytics.releasedCount}</span>
             </div>
             <div className="flex items-center justify-between text-xs font-semibold py-1">
               <span className="text-slate-500 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-600"></span> In Transit
+                <span className="w-2 h-2 rounded-full bg-blue-600"></span> On The Way
               </span>
               <span className="font-black text-slate-900">{analytics.statusCounts.inTransit}</span>
             </div>
             <div className="flex items-center justify-between text-xs font-semibold py-1">
               <span className="text-slate-500 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-500"></span> Pending Sign-Off
+                <span className="w-2 h-2 rounded-full bg-amber-500"></span> Delivered (Awaiting OTP)
               </span>
               <span className="font-black text-slate-900">{analytics.pendingSignoffCount}</span>
             </div>

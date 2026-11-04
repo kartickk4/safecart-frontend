@@ -596,11 +596,11 @@ export default function WalletModal({ user, onUpdateUser }) {
               </div>
             </div>
 
-            {/* Supplier Card 2: Active Pipeline */}
+            {/* Supplier Card 2: Money In Escrow */}
             <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Active Pipeline</span>
+                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Money In Escrow</span>
                   <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
@@ -609,7 +609,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">
                     ₹{activePipelineBalance.toLocaleString('en-IN')}
                   </h2>
-                <p className="text-[11px] text-slate-500 mt-1 font-medium">Locked across {shipments.length} active orders</p>
+                <p className="text-[11px] text-slate-500 mt-1 font-medium">Safe in escrow across {shipments.length} in-delivery orders</p>
               </div>
 
               <div className="pt-4 border-t border-slate-100 mt-4 flex items-center gap-1.5 text-[11px] text-[#1E56E3] font-semibold">
