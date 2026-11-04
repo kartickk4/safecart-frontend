@@ -1389,15 +1389,24 @@ export default function AIAgentView({ onBack }) {
         </div>
       )}
 
-      {/* Bulk Upload Modal */}
+      {/* ── BULK UPLOAD MODAL BACKDROP ── */}
       {showBulk && (
-        <BulkUploadPanel
-          onClose={() => setShowBulk(false)}
-          onSuccess={() => {
-            setShowBulk(false);
-            sendMessage("Check status of my bulk orders");
+        <div 
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowBulk(false);
           }}
-        />
+        >
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col relative border border-slate-200">
+            <BulkUploadPanel
+              onClose={() => setShowBulk(false)}
+              onSuccess={() => {
+                setShowBulk(false);
+                sendMessage("Check status of my bulk orders");
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
