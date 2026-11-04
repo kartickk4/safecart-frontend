@@ -230,7 +230,40 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
 
                 <div className="text-[11px] text-emerald-700 font-semibold mt-2 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Payment link dispatched to buyer via WhatsApp & SMS.
+                  Courier pickup auto-scheduled • Verification active.
+                </div>
+
+                {/* ── INLINE 4x6 SHIPPING LABEL & 1-CLICK ACTIONS ── */}
+                <div className="mt-3 pt-2.5 border-t border-emerald-200/70 flex flex-wrap items-center gap-2">
+                  <a
+                    href={`https://securekaro.in/api/v1/shipments/${msg.shipmentId}/label`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 min-w-[130px] flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+                  >
+                    <Printer size={13} />
+                    <span>Print 4x6 Label</span>
+                  </a>
+                  <a
+                    href={`https://securekaro.in/api/v1/shipments/${msg.shipmentId}/label?format=pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1 px-2.5 py-2 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold rounded-xl transition cursor-pointer"
+                    title="Download 4x6 PDF"
+                  >
+                    <span>PDF</span>
+                    <ArrowUpRight size={12} />
+                  </a>
+                  <a
+                    href={`https://securekaro.in/track?id=${msg.shipmentId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1 px-2.5 py-2 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold rounded-xl transition cursor-pointer"
+                    title="View live journey"
+                  >
+                    <Truck size={12} />
+                    <span>Track</span>
+                  </a>
                 </div>
               </div>
             </div>
