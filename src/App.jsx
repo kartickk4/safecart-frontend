@@ -801,7 +801,7 @@ export default function App() {
             <AIAgentView onBack={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')} />
           </div>
         ) : (
-        <main className="flex-1 pb-28 md:pb-12 overflow-y-auto">
+        <main className="flex-1 pb-28 md:pb-12 overflow-y-auto overflow-x-hidden w-full min-w-0">
           <div key={`${currentTab}_${isSupplier ? 'Supplier' : 'Receiver'}`} className="view-enter min-h-full">
           {/* VIEW 1: DASHBOARD */}
           {currentTab === 'dashboard' && (
