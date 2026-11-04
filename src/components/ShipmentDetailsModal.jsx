@@ -246,10 +246,10 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       return;
     }
 
-    // Photo is mandatory for all shipments before dispatch
+    // Photo on weighing scale is mandatory for all shipments before dispatch
     const photoRequired = true;
     if (photoRequired && !dispatchPhotoUrl.trim()) {
-      setDispatchErr('⚠️ A clear parcel/product photo is mandatory for all shipments before dispatch. Upload a photo using the camera or paste an image URL above.');
+      setDispatchErr('⚠️ A photo of the parcel resting on a weighing scale is mandatory for every shipment before dispatch. Please capture or upload a scale photo.');
       return;
     }
 
@@ -1289,13 +1289,13 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                               </div>
                               <div>
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="text-xs font-black text-slate-900">Upload Product / Parcel Photo</p>
+                                  <p className="text-xs font-black text-slate-900">Upload Parcel Photo on Weighing Scale</p>
                                   <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
                                     * MANDATORY (All Shipments)
                                   </span>
                                 </div>
                                 <p className="text-[11px] mt-1 text-slate-600 leading-relaxed">
-                                  ⚠️ Uploading a clear product/parcel photo is mandatory for all shipments before courier dispatch to guarantee delivery verification.
+                                  ⚠️ Uploading a clear photo of the packed parcel on a weighing scale is mandatory for every shipment before courier dispatch to guarantee weight shield and zero-penalty protection.
                                 </p>
                               </div>
                             </div>
@@ -1305,7 +1305,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                             <input
                               type="url"
                               required={isPhotoMandatory}
-                              placeholder={isPhotoMandatory ? '⚠️ REQUIRED: Paste product/parcel photo URL here...' : 'Optional: Paste product/parcel photo URL (e.g. https://...)'}
+                              placeholder={isPhotoMandatory ? '⚠️ REQUIRED: Paste parcel scale photo URL here...' : 'Optional: Paste photo URL (e.g. https://...)'}
                               value={dispatchPhotoUrl}
                               onChange={(e) => setDispatchPhotoUrl(e.target.value)}
                               className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-xs font-mono focus:ring-2 ${

@@ -16,8 +16,28 @@ import CarrierLogo from '../components/CarrierLogo';
 
 export default function CreateShipmentView({ onBack, onCreated, user, onOpenProfile, onUpdateUser }) {
   const [step, setStep] = useState(1); // 1: Form | 2: Success Confirmation Screen
-  // Rewards system
-  const isFirstShipment = !user?.totalShipments || Number(user.totalShipments) === 0;
+  // Rewards system: Hide welcome offer if user has completed at least 1 order
+  const [userShipmentsCount, setUserShipmentsCount] = useState(() => {
+    return Number(user?.totalShipments || user?.shipmentsCount || 0);
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    shipmentAPI.getShipments({ limit: 1 })
+      .then(res => {
+        if (!isMounted) return;
+        const total = res.data?.total !== undefined 
+          ? Number(res.data.total) 
+          : (Array.isArray(res.data?.shipments) ? res.data.shipments.length : (Array.isArray(res.data) ? res.data.length : 0));
+        if (total > 0) {
+          setUserShipmentsCount(total);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
+  const isFirstShipment = userShipmentsCount === 0 && (!user?.totalShipments || Number(user.totalShipments) === 0) && (!user?.shipmentsCount || Number(user.shipmentsCount) === 0);
   const welcomeDiscount = isFirstShipment ? 50 : 0;
   const [cashbackEarned, setCashbackEarned] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -511,7 +531,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         isPrepaid: paymentMode === 'prepaid' || paymentMode === 'paid_offline',
         returnAllowed,
         photoReviewEnabled: true,
-        rtoProtectionEnabled: paymentMode === 'prepaid' ? Boolean(rtoProtectionEnabled) : false,
+        rtoProtectionEnabled: Boolean(rtoProtectionEnabled),
         deliveryCharge: targetDeliveryCharge,
         freightCharge: selectedQuote?.freightCharge !== undefined ? selectedQuote.freightCharge : (paymentMode === 'cod' ? Math.max(0, targetDeliveryCharge - (codQuote.codCharge || 0)) : targetDeliveryCharge),
         codCharge: codQuote.codCharge,
@@ -529,6 +549,10 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       setCashbackEarned(10); // ₹10 seller cashback credited per shipment
       if (res.data?.walletBalanceRemaining !== undefined && onUpdateUser) {
         onUpdateUser({ ...user, walletBalance: (res.data.walletBalanceRemaining || 0) + 10 });
+      }
+      setUserShipmentsCount(prev => prev + 1);
+      if (onUpdateUser) {
+        onUpdateUser({ totalShipments: (user?.totalShipments || 0) + 1, shipmentsCount: (user?.shipmentsCount || 0) + 1 });
       }
       setStep(2); // Move to Shipment Success Confirmation view
       if (onCreated) onCreated(res.data);
@@ -1086,7 +1110,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                           COD &amp; Offline Shipping Suspended — Negative Balance (-₹{Math.abs(Number(user?.walletBalance)).toFixed(2)})
                         </p>
                         <p className="text-[11px] text-rose-700 mt-0.5 leading-relaxed">
-                          Your seller wallet balance is negative due to previous courier dues. Clear your dues now to instantly unlock <strong>Cash on Delivery (COD)</strong> and <strong>Paid Offline</strong> bookings.
+                          Your seller wallet balance is negative due to previous courier dues. Clear your dues now to instantly unlock <strong>Cash on Delivery (COD)</strong> and <strong>Prepaid</strong> bookings.
                         </p>
                       </div>
                     </div>
@@ -1111,7 +1135,6 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         return;
                       }
                       setPaymentMode('cod');
-                      setRtoProtectionEnabled(false);
                       if (senderPincode && receiverPincode && receiverPincode.length === 6) {
                         await fetchQuotesForRoute(carrierSlug, 'cod');
                       }
@@ -1142,40 +1165,39 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     )}
                   </button>
 
-                  {/* Payment Already Paid */}
+                  {/* Prepaid (formerly Paid Offline) */}
                   <button
                     type="button"
                     onClick={() => {
                       if ((Number(user?.walletBalance) || 0) < 0) {
-                        alert(`🚫 Offline Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab.`);
+                        alert(`🚫 Prepaid Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab.`);
                         return;
                       }
                       setPaymentMode('paid_offline');
-                      setRtoProtectionEnabled(false);
                     }}
                     className={`p-3.5 rounded-2xl border-2 text-left transition-all duration-150 ${
                       (Number(user?.walletBalance) || 0) < 0
                         ? 'border-slate-200 bg-slate-100/80 opacity-60 cursor-not-allowed'
-                        : paymentMode === 'paid_offline'
+                        : paymentMode === 'paid_offline' || paymentMode === 'prepaid'
                         ? 'border-emerald-500 bg-emerald-50 shadow-sm shadow-emerald-200'
                         : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-base">✅</span>
-                      {paymentMode === 'paid_offline' && (
+                      {(paymentMode === 'paid_offline' || paymentMode === 'prepaid') && (
                         <span className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
                           <Check className="w-2.5 h-2.5 text-white" />
                         </span>
                       )}
                     </div>
-                    <p className={`text-xs font-extrabold ${ paymentMode === 'paid_offline' ? 'text-emerald-700' : 'text-slate-800'}`}>Paid Offline</p>
+                    <p className={`text-xs font-extrabold ${ paymentMode === 'paid_offline' || paymentMode === 'prepaid' ? 'text-emerald-700' : 'text-slate-800'}`}>Prepaid</p>
                     {(Number(user?.walletBalance) || 0) < 0 ? (
                       <span className="inline-block mt-1 text-[9px] font-bold text-rose-700 bg-rose-100 border border-rose-200 px-1.5 py-0.5 rounded-full">
                         Suspended (Negative Balance)
                       </span>
                     ) : (
-                      <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">Payment received via UPI / bank transfer. Immediate label booking.</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">Payment received upfront via UPI / online / bank transfer. Immediate label booking.</p>
                     )}
                   </button>
                 </div>
@@ -1185,7 +1207,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 space-y-1">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="text-xs font-black text-emerald-950">Prepaid Delivery Protection Selected (Zero Doorstep RTO)</span>
+                      <span className="text-xs font-black text-emerald-950">Prepaid Delivery Protection Selected</span>
                       <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-200 text-emerald-800">FREE ✓</span>
                     </div>
                     <p className="text-[11px] text-emerald-800 leading-relaxed pl-6">
@@ -1196,7 +1218,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 {paymentMode === 'paid_offline' && (
                   <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-                    <p className="text-[11px] text-emerald-700">Payment confirmed offline. Carrier label will be generated immediately upon booking.</p>
+                    <p className="text-[11px] text-emerald-700">Prepaid payment confirmed. Carrier label will be generated immediately upon booking.</p>
                   </div>
                 )}
               </div>
@@ -1230,51 +1252,40 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 </label>
               </div>
 
-              {/* Smart RTO & Undelivered Protection (Default: OFF) */}
+              {/* Smart RTO & Undelivered Protection (Available for all shipments: COD & Prepaid) */}
               <div className={`rounded-2xl border overflow-hidden transition-all ${
-                paymentMode !== 'prepaid'
-                  ? 'bg-slate-50 border-slate-200 opacity-80'
-                  : 'bg-emerald-50/70 border-emerald-200/90'
+                rtoProtectionEnabled
+                  ? 'bg-emerald-50/70 border-emerald-200/90'
+                  : 'bg-slate-50 border-slate-200'
               }`}>
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold shrink-0 ${
-                      paymentMode !== 'prepaid'
-                        ? 'bg-slate-200 text-slate-500'
-                        : 'bg-emerald-100 text-emerald-700'
+                      rtoProtectionEnabled
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-slate-200 text-slate-500'
                     }`}>
                       <ShieldCheck className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-xs font-bold text-slate-900">RTO &amp; Undelivered Protection</p>
-                        {paymentMode !== 'prepaid' ? (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                            Unavailable for {paymentMode === 'cod' ? 'COD' : 'Offline'} (Prepaid Protection Only)
-                          </span>
-                        ) : (
-                          <>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${rtoProtectionEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}>
-                              {rtoProtectionEnabled ? 'Protection Active' : 'Disabled'}
-                            </span>
-                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                              ₹40 Seller Compensation
-                            </span>
-                          </>
-                        )}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${rtoProtectionEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}>
+                          {rtoProtectionEnabled ? 'Protection Active' : 'Disabled'}
+                        </span>
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          ₹40 Seller Relief (Max 1x/week)
+                        </span>
                       </div>
                       <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                        {paymentMode !== 'prepaid'
-                          ? 'Smart RTO Protection is exclusive to Prepaid orders where payment is secured upfront. For COD and Offline shipments, carrier standard RTO terms apply.'
-                          : 'SecureKaro compensates seller ₹40 per rejected parcel — buyers get 2 free rejections/week. From 3rd rejection, buyer pays ₹40 (₹30 to seller, ₹10 to SecureKaro).'}
+                        Available for all shipments (COD &amp; Prepaid). SecureKaro compensates seller ₹40 relief if parcel returns undelivered (limit 1 claim per week per seller). Buyers get 2 free rejections/week; from 3rd rejection, buyer pays ₹40 (₹30 to seller, ₹10 to SecureKaro).
                       </p>
                     </div>
                   </div>
-                  <label className={`relative inline-flex items-center shrink-0 ml-4 ${paymentMode !== 'prepaid' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
+                  <label className="relative inline-flex items-center shrink-0 ml-4 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={paymentMode === 'prepaid' && rtoProtectionEnabled}
-                      disabled={paymentMode !== 'prepaid'}
+                      checked={rtoProtectionEnabled}
                       onChange={(e) => setRtoProtectionEnabled(e.target.checked)}
                       className="sr-only peer"
                     />
@@ -1283,26 +1294,26 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 </div>
 
                 {/* Conditions panel — only shown when Protection is ON */}
-                {paymentMode === 'prepaid' && rtoProtectionEnabled && (
+                {rtoProtectionEnabled && (
                   <div className="border-t border-emerald-200 bg-white px-4 py-3.5 space-y-2.5">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-emerald-800">Fair-Play Rules (When Protection is ON)</p>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-emerald-800">Fair-Play &amp; Relief Rules (When Protection is Active)</p>
                     <div className="space-y-2">
                       <div className="flex items-start gap-2">
                         <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">1</span>
                         <p className="text-[11px] text-slate-700 leading-relaxed">
-                          <strong>Buyer's 1st or 2nd rejection in a week:</strong> Buyer gets <strong className="text-emerald-700">100% full refund</strong>. SecureKaro credits seller <strong className="text-emerald-700">+₹40</strong> compensation automatically.
+                          <strong>₹40 Weekly Seller Relief:</strong> If parcel returns undelivered (RTO), SecureKaro credits seller <strong className="text-emerald-700">+₹40</strong> compensation once per rolling 7-day week to offset shipping &amp; packaging costs.
                         </p>
                       </div>
                       <div className="flex items-start gap-2">
                         <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">2</span>
                         <p className="text-[11px] text-slate-700 leading-relaxed">
-                          <strong>Buyer's 3rd+ rejection in a week:</strong> Buyer is charged <strong className="text-amber-700">₹40 fair-play fee</strong> — ₹30 goes to seller's wallet, ₹10 to SecureKaro.
+                          <strong>Buyer Fair-Play:</strong> Buyers get up to 2 free rejections/week. On their 3rd+ rejection, buyer is charged a <strong className="text-amber-700">₹40 fair-play fee</strong> — ₹30 goes to your seller wallet, ₹10 to SecureKaro.
                         </p>
                       </div>
                       <div className="flex items-start gap-2">
                         <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">✓</span>
                         <p className="text-[11px] text-slate-700 leading-relaxed">
-                          <strong>No seller penalty, ever.</strong> Sellers are never charged under this protection. Only chronic buyer abuse triggers fair-play fees.
+                          <strong>Zero Seller Penalty:</strong> Sellers are never penalized or charged fair-play fees under this protection.
                         </p>
                       </div>
                     </div>
@@ -1310,29 +1321,23 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 )}
               </div>
 
-              {/* Mandatory Parcel Photo Verification for all shipments */}
+              {/* Mandatory Parcel Photo on Weighing Scale for all shipments */}
               <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/90 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold shrink-0">
-                    <Camera className="w-4 h-4" />
+                    <Scale className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-xs font-bold text-slate-900">Mandatory Parcel Photo Before Dispatch</p>
+                      <p className="text-xs font-bold text-slate-900">Mandatory Parcel Photo on Weighing Scale</p>
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300">
                         Mandatory for All Shipments
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                      Photo proof of packed parcel & contents is mandatory for all shipments before courier dispatch, ensuring maximum delivery trust and protection for both parties.
+                      Photo of packed parcel resting on a weighing scale showing weight &amp; dimensions is mandatory for every shipment before courier dispatch to guarantee weight shield and zero-penalty dispute protection.
                     </p>
                   </div>
-                </div>
-                <div className="shrink-0 ml-4">
-                  <span className="text-xs font-black text-indigo-700 bg-white border border-indigo-200 px-3 py-1.5 rounded-xl shadow-2xs inline-flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Included (₹0)</span>
-                  </span>
                 </div>
               </div>
 

@@ -9,8 +9,29 @@ import CarrierLogo from './CarrierLogo';
 export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData }) {
   // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection
   const [modalStep, setModalStep] = useState(1);
-  // Rewards & Pricing System
-  const isFirstShipment = !user?.totalShipments || Number(user.totalShipments) === 0;
+  // Rewards & Pricing System: Hide welcome offer if user has completed at least 1 order
+  const [modalShipmentsCount, setModalShipmentsCount] = useState(() => {
+    return Number(user?.totalShipments || user?.shipmentsCount || 0);
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let isMounted = true;
+    shipmentAPI.getShipments({ limit: 1 })
+      .then(res => {
+        if (!isMounted) return;
+        const total = res.data?.total !== undefined 
+          ? Number(res.data.total) 
+          : (Array.isArray(res.data?.shipments) ? res.data.shipments.length : (Array.isArray(res.data) ? res.data.length : 0));
+        if (total > 0) {
+          setModalShipmentsCount(total);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, [isOpen]);
+
+  const isFirstShipment = modalShipmentsCount === 0 && (!user?.totalShipments || Number(user.totalShipments) === 0) && (!user?.shipmentsCount || Number(user.shipmentsCount) === 0);
   const welcomeDiscount = isFirstShipment ? 50 : 0;
 
   // Form Fields
