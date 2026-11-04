@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Camera, 
-  Bot, Send, RotateCcw, Upload, X, Zap, Package, Truck, 
+  Camera, Bot, Send, RotateCcw, Upload, X, Zap, Package, Truck, 
   CheckCircle2, Sparkles, FileSpreadsheet, Shield, ArrowRight,
   AlertCircle, RefreshCw, Mic, MicOff, Volume2, VolumeX, Radio,
   Copy, Check, ExternalLink, ArrowUpRight, Clock, HelpCircle, ChevronRight,
-  Phone, PhoneCall, MessageCircle, Headphones
+  Phone, PhoneCall, MessageCircle, Settings, Sliders, ChevronDown, Play,
+  Info
 } from "lucide-react";
 import BulkUploadPanel from "../components/BulkUploadPanel";
 import { useVoiceAgent } from "../utils/useVoiceAgent";
@@ -26,7 +26,6 @@ const escapeHtml = (str) => {
 
 const formatMessage = (text) => {
   if (!text) return "";
-  // SECURITY: Escape HTML first to prevent XSS, then apply safe formatting
   const safe = escapeHtml(text);
   let html = safe.replace(/\*([^*]+)\*/g, "<strong class='font-bold text-slate-900'>$1</strong>");
   html = html.replace(/\n/g, "<br/>");
@@ -44,8 +43,8 @@ const TypingDots = () => (
 const CarrierCard = ({ quotes, selectedSlug, onSelect }) => {
   if (!quotes?.length) return null;
   return (
-    <div className="bg-gradient-to-b from-indigo-50/60 to-white border border-indigo-100/90 rounded-2xl p-4 mt-3 shadow-xs">
-      <div className="flex items-center justify-between mb-3 pb-2 border-b border-indigo-100/60">
+    <div className="bg-gradient-to-b from-indigo-50/70 via-white to-white border border-indigo-100 rounded-2xl p-4 mt-3 shadow-xs">
+      <div className="flex items-center justify-between mb-3 pb-2 border-b border-indigo-100/70">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs">
             <Truck size={13} />
@@ -83,7 +82,7 @@ const CarrierCard = ({ quotes, selectedSlug, onSelect }) => {
                   <div className="text-xs font-black text-slate-900 flex items-center gap-1.5">
                     {q.name}
                     {q.isLowest && (
-                      <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wide border border-emerald-200">
+                      <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-emerald-200">
                         Lowest Rate
                       </span>
                     )}
@@ -121,9 +120,9 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
   const isError = msg.isError;
   const [copied, setCopied] = useState(false);
 
-  const handleCopyAwb = (awb) => {
-    if (!awb) return;
-    navigator.clipboard.writeText(awb);
+  const handleCopyText = (content) => {
+    if (!content) return;
+    navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -142,23 +141,37 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
         </div>
       )}
 
-      <div className={`max-w-[82%] sm:max-w-[75%] flex flex-col gap-1.5 ${isAgent ? "items-start" : "items-end"}`}>
+      <div className={`max-w-[85%] sm:max-w-[78%] flex flex-col gap-1.5 ${isAgent ? "items-start" : "items-end"}`}>
         {/* Render Attached Image Preview */}
         {msg.imagePreview && (
           <div className="rounded-2xl overflow-hidden border border-slate-200/90 shadow-xs max-w-[240px] bg-white p-1">
             <img src={msg.imagePreview} alt="Order attachment" className="w-full max-h-48 object-cover rounded-xl" />
           </div>
         )}
-        <div
-          className={`p-4 text-[13.5px] leading-relaxed transition-all shadow-xs ${
-            isAgent
-              ? isError
-                ? "bg-rose-50/90 border border-rose-200/80 text-rose-900 rounded-2xl rounded-tl-xs"
-                : "bg-white border border-slate-200/90 text-slate-800 rounded-2xl rounded-tl-xs shadow-slate-100"
-              : "bg-gradient-to-r from-[#1E56E3] to-[#4F46E5] text-white font-medium rounded-2xl rounded-tr-xs shadow-indigo-500/20"
-          }`}
-          dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
-        />
+
+        <div className="relative group">
+          <div
+            className={`p-4 text-[13.5px] leading-relaxed transition-all shadow-xs ${
+              isAgent
+                ? isError
+                  ? "bg-rose-50/90 border border-rose-200/80 text-rose-900 rounded-2xl rounded-tl-xs"
+                  : "bg-white border border-slate-200/90 text-slate-800 rounded-2xl rounded-tl-xs shadow-slate-100"
+                : "bg-gradient-to-r from-[#1E56E3] to-[#4338CA] text-white font-medium rounded-2xl rounded-tr-xs shadow-indigo-500/20"
+            }`}
+            dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
+          />
+
+          {isAgent && !isError && (
+            <button
+              type="button"
+              onClick={() => handleCopyText(msg.content)}
+              title="Copy message"
+              className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white hover:bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 p-1 rounded-lg shadow-xs cursor-pointer"
+            >
+              {copied ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+            </button>
+          )}
+        </div>
 
         {/* Carrier Quotes Widget */}
         {msg.showCarriers && msg.carrierQuotes?.length > 0 && (
@@ -195,8 +208,8 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCopyAwb(msg.shipmentId)}
-                    className="p-1 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition"
+                    onClick={() => handleCopyText(msg.shipmentId)}
+                    className="p-1 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition cursor-pointer"
                     title="Copy Tracking ID"
                   >
                     {copied ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
@@ -212,7 +225,7 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
           </div>
         )}
 
-        {/* Live Support Helpline Escalation Card (Rendered ONLY when escalation triggered as last resort) */}
+        {/* Live Support Helpline Escalation Card */}
         {isAgent && msg.showSupport && (
           <div className="w-full max-w-md bg-gradient-to-br from-indigo-50/90 via-blue-50/60 to-white border border-indigo-200/90 rounded-2xl p-4 mt-2 shadow-xs animate-fade-in">
             <div className="flex items-center justify-between pb-2 mb-3 border-b border-indigo-100/80">
@@ -284,7 +297,7 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
           <button
             onClick={onRetry}
             type="button"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200/80 transition"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200/80 transition cursor-pointer"
           >
             <RotateCcw size={12} />
             <span>Reset and Try Again</span>
@@ -301,33 +314,28 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
 };
 
 const QUICK_REPLIES = {
-  0: ["📦 Book Shipment", "🔍 Track Recent Order", "💰 My Wallet", "🔄 Replacement Guide", "🛡️ RTO Rules", "⚡ Defect Discount", "🎁 My Referral Code"],
+  0: ["📦 Book Shipment", "🚚 Track Order", "💰 My Wallet", "🔄 Replacement Guide", "🛡️ RTO Rules", "✨ Defect Discount"],
   1: ["Cancel Booking", "How does Delivery Protection work?", "Replacement Guide"],
   7: ["Prepaid Order", "Cash on Delivery (COD)"],
   8: ["Yes, Enable RTO Protection", "No, Skip RTO"],
   9: ["Yes, Allow Returns", "No, Final Sale"],
   10: ["Confirm Courier", "Change Courier"],
-  11: ["Confirm & Book", "Change Courier", "Edit Address", "Edit Payment", "Toggle RTO", "Edit Dimensions", "Edit Amount", "Toggle Return", "Edit Name", "Edit Phone", "Edit Pincode"],
+  11: ["Confirm & Book", "Change Courier", "Edit Address", "Edit Payment", "Toggle RTO", "Edit Dimensions", "Edit Amount"],
   12: ["Book Another Shipment", "Track Recent Order", "Check Wallet"]
 };
 
 const QUICK_REPLY_KEYWORDS = {
   '📦 Book Shipment':           'Book a new shipment',
-  '🔍 Track Recent Order':      'Track my recent order',
+  '🚚 Track Order':             'Track my recent order',
   '💰 My Wallet':               'What is my wallet balance?',
   '🔄 Replacement Guide':       'How does replacement work?',
   '🛡️ RTO Rules':               'Explain RTO protection rules',
-  '⚡ Defect Discount':          'How does defect partial discount work?',
-  '📞 Call Support':            'Call merchant support helpline',
-  '🎁 My Referral Code':        'What is my referral code?',
+  '✨ Defect Discount':          'How does defect partial discount work?',
   'Cancel Booking':             'cancel',
   'How does Delivery Protection work?': 'How does delivery protection work?',
   'Check Wallet':               'What is my wallet balance?',
   'Track Recent Order':         'Track my recent order',
   'Prepaid Order':              '1',
-  'Prepaid Protection':         '1',
-  'Prepaid Escrow':             '1',
-  'Prepaid (Online)':            '1',
   'Cash on Delivery (COD)':      '2',
   'Yes, Enable RTO Protection':  'yes',
   'No, Skip RTO':               'no',
@@ -345,7 +353,6 @@ const QUICK_REPLY_KEYWORDS = {
   'Edit Pincode':               'edit pincode',
   'Edit Amount':                'edit amount',
   'Toggle Return':              'toggle return',
-  'Edit Return':                'toggle return',
   'Book Another Shipment':      'Book Another Shipment'
 };
 
@@ -373,11 +380,12 @@ export default function AIAgentView({ onBack }) {
   const [selectedCarrier, setSelectedCarrier] = useState(null);
   const [step, setStep] = useState(0);
   const [showBulk, setShowBulk] = useState(false);
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
-  const [selectedImage, setSelectedImage] = useState(null); // { base64, mimeType, previewUrl, name }
+  const [selectedImage, setSelectedImage] = useState(null);
   const selectedImageRef = useRef(null);
 
   useEffect(() => {
@@ -453,6 +461,13 @@ export default function AIAgentView({ onBack }) {
     liveTranscript,
     isSpeaking,
     voiceEnabled,
+    micError,
+    clearMicError,
+    audioLevel,
+    availableVoices,
+    selectedVoiceName,
+    changeVoice,
+    testVoice,
     toggleVoiceEnabled,
     startListening,
     stopListening,
@@ -530,9 +545,7 @@ export default function AIAgentView({ onBack }) {
         try {
           const d = await res.json();
           if (d.error) errMsg = d.error;
-        } catch (e2) {
-          // ignore
-        }
+        } catch (e2) {}
         throw new Error(errMsg);
       }
 
@@ -570,7 +583,7 @@ export default function AIAgentView({ onBack }) {
       }
       const isNetworkErr = err?.message?.includes("Failed to fetch") || err?.name === "TypeError";
       const errMsg = isNetworkErr
-        ? "Cannot connect to the SecureKaro backend server (http://localhost:5001). Please check that your backend server is running (`npm run dev` in safecart-backend)."
+        ? "Cannot connect to the SecureKaro backend server. Please verify your connection or try again."
         : `Notice: ${err.message || "Something went wrong while connecting to the assistant."}`;
       setMessages(prev => [
         ...prev, 
@@ -585,7 +598,7 @@ export default function AIAgentView({ onBack }) {
       setIsLoading(false);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [sessionId, isLoading]);
+  }, [sessionId, isLoading, speak]);
 
   const handleCarrierSelect = (c) => { 
     setSelectedCarrier(c); 
@@ -638,17 +651,17 @@ export default function AIAgentView({ onBack }) {
         setIsLoading(false);
         setTimeout(() => inputRef.current?.focus(), 100);
       });
-  }, [sessionId, isLoading]);
+  }, [sessionId, isLoading, speak]);
 
   const currentQR = QUICK_REPLIES[step] || [];
 
   return (
     <div className="flex h-full min-h-0 bg-slate-50 font-sans overflow-hidden select-none">
       
-      {/* ── LEFT SIDEBAR ── */}
-      <aside className="w-80 shrink-0 border-r border-slate-200/80 bg-white/90 backdrop-blur-xl flex flex-col overflow-hidden hidden lg:flex shadow-2xs">
+      {/* ── LEFT DESKTOP SIDEBAR ── */}
+      <aside className="w-80 shrink-0 border-r border-slate-200/80 bg-white flex flex-col overflow-hidden hidden lg:flex shadow-2xs">
         
-        {/* Header Hero Banner */}
+        {/* Header Banner */}
         <div className="relative p-6 pb-5 bg-gradient-to-br from-[#1E56E3] via-indigo-600 to-indigo-800 text-white overflow-hidden">
           <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
           
@@ -659,19 +672,19 @@ export default function AIAgentView({ onBack }) {
             <div>
               <div className="text-base font-black tracking-tight text-white flex items-center gap-1.5">
                 SecureKaro AI
-                <span className="text-[9px] font-black uppercase tracking-wider bg-white/20 text-white px-1.5 py-0.2 rounded-full border border-white/20">
-                  v2.4
+                <span className="text-[9px] font-black uppercase tracking-wider bg-white/20 text-white px-1.5 py-0.5 rounded-full border border-white/20">
+                  v2.5
                 </span>
               </div>
               <div className="text-xs text-indigo-100/90 font-medium">
-                Autonomous Courier Dispatch
+                Logistics Dispatch Copilot
               </div>
             </div>
           </div>
 
           <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md border border-white/15 rounded-full px-3 py-1 text-[11px] font-semibold text-white/95">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Neural Engine Online</span>
+            <span>Gemini Neural Engine Live</span>
           </div>
         </div>
 
@@ -708,7 +721,7 @@ export default function AIAgentView({ onBack }) {
                 <div className="text-[10px] text-slate-500 font-medium mt-0.5">Msgs</div>
               </div>
               <div className="bg-white p-2.5 rounded-xl border border-slate-100 shadow-2xs">
-                <div className="text-base font-black text-indigo-600">{step}/10</div>
+                <div className="text-base font-black text-indigo-600">{step}/12</div>
                 <div className="text-[10px] text-slate-500 font-medium mt-0.5">Step</div>
               </div>
               <div className="bg-white p-2.5 rounded-xl border border-slate-100 shadow-2xs">
@@ -729,7 +742,7 @@ export default function AIAgentView({ onBack }) {
               <CapCard
                 icon={Package}
                 title="Smart Booking"
-                desc="Conversational prompt to create verified courier parcels"
+                desc="Conversational prompt or WhatsApp text to create courier parcels"
                 gradient="bg-indigo-50"
                 iconColor="text-indigo-600"
               />
@@ -775,7 +788,7 @@ export default function AIAgentView({ onBack }) {
       <main className="flex-1 flex flex-col min-w-0 bg-white relative">
         
         {/* Top Navbar */}
-        <header className="px-3 sm:px-6 py-2 sm:py-3 border-b border-slate-200/80 bg-white/95 backdrop-blur-md flex items-center justify-between shrink-0 z-10 shadow-2xs">
+        <header className="px-3 sm:px-6 py-2.5 sm:py-3 border-b border-slate-200/80 bg-white/95 backdrop-blur-md flex items-center justify-between shrink-0 z-20 shadow-2xs">
           
           {/* Left Title & Status */}
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -784,15 +797,15 @@ export default function AIAgentView({ onBack }) {
             </div>
             <div className="min-w-0">
               <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5 truncate">
-                <span className="truncate">SecureKaro AI Agent</span>
-                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/60 shrink-0">
+                <span className="truncate">SecureKaro Copilot</span>
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/60 shrink-0">
                   <Sparkles size={11} className="text-indigo-600" />
-                  Google Gemini 3.5 Flash
+                  Gemini 3.5 Flash
                 </span>
               </div>
               <div className="text-[10px] sm:text-xs text-slate-500 font-medium flex items-center gap-1.5 truncate">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <span className="truncate">Autonomous Shipping & Dispute Solver</span>
+                <span className="truncate">Ready for Voice & Text Orders</span>
               </div>
             </div>
           </div>
@@ -800,11 +813,11 @@ export default function AIAgentView({ onBack }) {
           {/* Right Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             
-            {/* Voice Readout Toggle */}
+            {/* Voice Response Toggle */}
             <button
               type="button"
               onClick={toggleVoiceEnabled}
-              title={voiceEnabled ? "Voice Readout: Active (Click to mute)" : "Voice Readout: Inactive (Click to hear AI responses)"}
+              title={voiceEnabled ? "Voice Speech: Active (Click to mute)" : "Voice Speech: Inactive (Click to speak responses aloud)"}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer ${
                 voiceEnabled
                   ? "bg-emerald-50 border-emerald-300 text-emerald-700 shadow-xs"
@@ -812,7 +825,7 @@ export default function AIAgentView({ onBack }) {
               }`}
             >
               {voiceEnabled ? <Volume2 size={14} className="text-emerald-600" /> : <VolumeX size={14} />}
-              <span className="hidden md:inline">{voiceEnabled ? "Voice Readout: ON" : "Voice Readout"}</span>
+              <span className="hidden md:inline">{voiceEnabled ? "Voice: ON" : "Voice: OFF"}</span>
             </button>
 
             {/* Speaking Stop Button */}
@@ -820,13 +833,100 @@ export default function AIAgentView({ onBack }) {
               <button
                 type="button"
                 onClick={stopSpeaking}
-                title="Stop current speech"
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold cursor-pointer transition animate-pulse"
+                title="Stop current speech playback"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold cursor-pointer transition animate-pulse"
               >
                 <Radio size={13} />
-                <span className="hidden sm:inline">Stop</span>
+                <span>Stop</span>
               </button>
             )}
+
+            {/* Voice Settings Popover Trigger */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowVoiceSettings(!showVoiceSettings)}
+                title="Voice & Audio Settings (Gemini / ChatGPT Voice)"
+                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl border flex items-center justify-center transition cursor-pointer ${
+                  showVoiceSettings
+                    ? "bg-indigo-50 border-indigo-400 text-indigo-700 shadow-xs"
+                    : "border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                }`}
+              >
+                <Sliders size={14} />
+              </button>
+
+              {/* Voice Settings Dropdown */}
+              {showVoiceSettings && (
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl border border-slate-200/90 shadow-xl p-3 z-30 animate-fade-in text-left">
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                    <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                      <Sparkles size={13} className="text-indigo-600" />
+                      Voice Assistant Engine
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowVoiceSettings(false)}
+                      className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 mb-2.5 leading-snug">
+                    Natural Neural voice tuned for warm conversational cadence like ChatGPT & Gemini.
+                  </p>
+
+                  <div className="space-y-1.5 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        changeVoice("");
+                        testVoice("");
+                      }}
+                      className="w-full flex items-center justify-between p-2 rounded-xl border text-left text-xs font-bold transition hover:bg-indigo-50/50 border-slate-200"
+                    >
+                      <div>
+                        <div className="text-slate-800">Auto Neural (Recommended)</div>
+                        <div className="text-[10px] text-slate-400 font-normal">Gemini/ChatGPT style warmth</div>
+                      </div>
+                      <Play size={12} className="text-indigo-600 shrink-0" />
+                    </button>
+
+                    {availableVoices.slice(0, 5).map((v) => (
+                      <button
+                        key={v.name}
+                        type="button"
+                        onClick={() => {
+                          changeVoice(v.name);
+                          testVoice(v.name);
+                        }}
+                        className={`w-full flex items-center justify-between p-2 rounded-xl border text-left text-xs transition ${
+                          selectedVoiceName === v.name
+                            ? "bg-indigo-50 border-indigo-300 font-bold text-indigo-900"
+                            : "hover:bg-slate-50 border-slate-100 text-slate-700"
+                        }`}
+                      >
+                        <div className="truncate mr-2">
+                          <div className="truncate font-medium">{v.name}</div>
+                          <div className="text-[10px] text-slate-400">{v.lang}</div>
+                        </div>
+                        <Play size={11} className="text-slate-400 shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => testVoice(selectedVoiceName)}
+                    className="w-full py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-xs font-bold shadow-xs hover:opacity-95 transition flex items-center justify-center gap-1.5"
+                  >
+                    <Play size={12} fill="white" />
+                    <span>Test Voice Speech</span>
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Reset Button */}
             <button
@@ -858,35 +958,41 @@ export default function AIAgentView({ onBack }) {
           
           {/* Empty State Hero Prompt Starter */}
           {messages.length === 0 && !isLoading && (
-            <div className="max-w-2xl mx-auto py-10 px-4 text-center">
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#1E56E3] to-indigo-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/25 mb-5 ring-4 ring-indigo-50">
+            <div className="max-w-2xl mx-auto py-8 sm:py-12 px-4 text-center">
+              <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#1E56E3] to-indigo-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/25 mb-4 ring-4 ring-indigo-50">
                 <Sparkles size={28} className="animate-pulse" />
               </div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">
-                How can I assist your business today?
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-2">
+                SecureKaro Shipping Copilot
               </h2>
-              <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-7">
-                I can auto-book shipments, provide live tracking telemetry, check your wallet balance, and solve replacement, defect & RTO disputes.
+              <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
+                Paste raw customer chats, upload an address chit, speak via microphone, or ask shipping & escrow rules.
               </p>
 
-              {/* Starter Quick Actions */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-left">
+              {/* Starter Quick Action Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-left">
                 {[
                   {
-                    title: "Book New Parcel",
-                    desc: "Step-by-step or paste all details in 1 shot",
+                    title: "1-Click WhatsApp Order",
+                    desc: "Paste customer WhatsApp address & details",
                     icon: Package,
-                    action: () => sendMessage("Book a new shipment")
+                    action: () => sendMessage("Rajesh Kumar, 9876543210, House 42 Green Park Extension, New Delhi 110016, 1 Denim Jacket, COD Rs 1800, 900g")
                   },
                   {
-                    title: "Track Live Order",
-                    desc: "Real-time telemetry, AWB & milestones",
+                    title: "Scan Address / Chit",
+                    desc: "Upload photo or screenshot with Gemini Vision",
+                    icon: Camera,
+                    action: () => fileInputRef.current?.click()
+                  },
+                  {
+                    title: "Track Package",
+                    desc: "Live milestones & delivery telemetry",
                     icon: Truck,
                     action: () => sendMessage("Track my recent order")
                   },
                   {
-                    title: "Wallet & Payouts",
-                    desc: "Check available balance & active shipments",
+                    title: "Wallet & Remittances",
+                    desc: "Check available balance & COD escrow",
                     icon: Zap,
                     action: () => sendMessage("What is my wallet balance?")
                   },
@@ -897,14 +1003,8 @@ export default function AIAgentView({ onBack }) {
                     action: () => sendMessage("How does replacement work?")
                   },
                   {
-                    title: "Defect Discount",
-                    desc: "Offer 15%-30% partial refund & save reverse shipping",
-                    icon: Sparkles,
-                    action: () => sendMessage("How does defect partial discount work?")
-                  },
-                  {
                     title: "RTO Protection",
-                    desc: "₹40 seller relief credit & anti-rejection rules",
+                    desc: "₹140 seller relief credit & anti-rejection rules",
                     icon: Shield,
                     action: () => sendMessage("Explain RTO protection rules")
                   }
@@ -964,11 +1064,11 @@ export default function AIAgentView({ onBack }) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* ── QUICK REPLIES BAR ── */}
+        {/* ── QUICK SUGGESTION PILLS ── */}
         {currentQR.length > 0 && !isLoading && (
-          <div className="px-6 py-2.5 bg-slate-50/90 border-t border-slate-200/70 flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] font-bold text-slate-400 mr-1 flex items-center gap-1">
-              <Sparkles size={12} className="text-indigo-500" />
+          <div className="px-4 sm:px-6 py-2 bg-slate-50/90 border-t border-slate-200/70 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+            <span className="text-[10px] font-bold text-slate-400 mr-1 flex items-center gap-1 shrink-0 uppercase tracking-wider">
+              <Sparkles size={11} className="text-indigo-500" />
               Suggested:
             </span>
             {currentQR.map(qr => (
@@ -976,7 +1076,7 @@ export default function AIAgentView({ onBack }) {
                 key={qr}
                 type="button"
                 onClick={() => handleQuickReply(qr)}
-                className="px-3.5 py-1.5 rounded-full bg-white hover:bg-indigo-600 border border-slate-300 hover:border-indigo-600 text-slate-700 hover:text-white text-xs font-bold transition-all duration-150 shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
+                className="shrink-0 px-3 py-1 rounded-full bg-white hover:bg-indigo-600 border border-slate-300 hover:border-indigo-600 text-slate-700 hover:text-white text-xs font-bold transition-all duration-150 shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
               >
                 {qr}
               </button>
@@ -984,32 +1084,60 @@ export default function AIAgentView({ onBack }) {
           </div>
         )}
 
-        {/* ── BOTTOM INPUT BOX ── */}
-        <footer className="p-3 sm:p-5 pb-20 md:pb-5 border-t border-slate-200/80 bg-white/95 backdrop-blur-md shrink-0">
+        {/* ── BOTTOM INPUT DOCK (with mobile clearance) ── */}
+        <footer className="p-3 sm:p-5 pb-24 md:pb-6 border-t border-slate-200/80 bg-white/95 backdrop-blur-md shrink-0">
           
+          {/* Microphone Permission / Hardware Error Banner */}
+          {micError && (
+            <div className="max-w-4xl mx-auto mb-2.5 flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-2xl text-amber-900 shadow-xs animate-fade-in">
+              <div className="flex items-center gap-2 text-xs font-semibold">
+                <AlertCircle size={15} className="text-amber-600 shrink-0" />
+                <span>{micError}</span>
+              </div>
+              <button
+                type="button"
+                onClick={clearMicError}
+                className="p-1 rounded-lg hover:bg-amber-100 text-amber-700 text-xs font-bold shrink-0 ml-2"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
           {/* Active Voice Waveform Indicator */}
           {isListening && (
-            <div className="flex items-center justify-between p-3 mb-3 bg-rose-50/90 border border-rose-200 rounded-2xl animate-fade-in shadow-xs">
-              <div className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-                <span className="text-xs font-bold text-rose-800">
-                  Listening to voice input... speak clearly
-                </span>
-                <div className="flex items-center gap-1 ml-2">
-                  {[12, 20, 8, 24, 16, 10, 18].map((h, i) => (
-                    <div
-                      key={i}
-                      className="w-1 bg-rose-500 rounded-full animate-pulse"
-                      style={{ height: `${h}px`, animationDelay: `${i * 100}ms` }}
-                    />
-                  ))}
+            <div className="max-w-4xl mx-auto mb-3 flex items-center justify-between p-3 bg-rose-50/95 border border-rose-200 rounded-2xl animate-fade-in shadow-xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-rose-900 flex items-center gap-2">
+                    <span>Listening... speak now</span>
+                    {/* Live Waveform reacting to mic audioLevel */}
+                    <div className="flex items-end gap-1 h-5">
+                      {[1, 2, 3, 4, 5, 6, 7].map((barIdx) => {
+                        const dynamicHeight = Math.max(6, Math.min(24, Math.round((audioLevel / 100) * 24 * (0.5 + (barIdx % 3) * 0.3))));
+                        return (
+                          <div
+                            key={barIdx}
+                            className="w-1 bg-rose-500 rounded-full transition-all duration-75"
+                            style={{ height: `${dynamicHeight}px` }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {liveTranscript && (
+                    <div className="text-[11px] text-rose-700 font-medium truncate max-w-xs mt-0.5">
+                      "{liveTranscript}"
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={stopListening}
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-100 transition cursor-pointer"
+                  className="px-2.5 py-1 rounded-xl text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-100 transition cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1019,7 +1147,7 @@ export default function AIAgentView({ onBack }) {
                     stopListening();
                     if (input.trim()) sendMessage(input);
                   }}
-                  className="px-3 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white shadow-xs hover:bg-rose-700 transition cursor-pointer"
+                  className="px-3 py-1 rounded-xl text-xs font-bold bg-rose-600 text-white shadow-xs hover:bg-rose-700 transition cursor-pointer"
                 >
                   Done & Send
                 </button>
@@ -1069,10 +1197,10 @@ export default function AIAgentView({ onBack }) {
               }}
               placeholder={
                 isLoading 
-                  ? "AI reasoning..." 
+                  ? "AI thinking..." 
                   : isListening 
                     ? "Listening to voice..." 
-                    : "Paste WhatsApp customer order, ask in English/Hindi, or track package..."
+                    : "Paste customer WhatsApp order, ask in English/Hindi, or track package..."
               }
               disabled={isLoading}
               className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none py-2"
@@ -1085,10 +1213,10 @@ export default function AIAgentView({ onBack }) {
                 if (isListening) stopListening();
                 else startListening();
               }}
-              title={isListening ? "Stop voice listening" : "Speak your message"}
+              title={isListening ? "Stop voice listening" : "Speak to AI Agent (Microphone)"}
               className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                 isListening
-                  ? "bg-rose-500 text-white shadow-xs animate-pulse"
+                  ? "bg-rose-500 text-white shadow-xs ring-4 ring-rose-200 animate-pulse"
                   : "bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 border border-slate-200"
               }`}
             >
@@ -1113,7 +1241,7 @@ export default function AIAgentView({ onBack }) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              title="Upload order photo or screenshot (Ctrl+V paste supported)"
+              title="Upload order photo or chit (Ctrl+V paste supported)"
               className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
                 selectedImage
                   ? "bg-indigo-600 text-white border-indigo-700 shadow-xs ring-2 ring-indigo-200"
@@ -1140,7 +1268,7 @@ export default function AIAgentView({ onBack }) {
               disabled={isLoading || (!input.trim() && !selectedImage)}
               className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                 (input.trim() || selectedImage) && !isLoading
-                  ? "bg-gradient-to-r from-[#1E56E3] to-[#4F46E5] text-white shadow-md shadow-indigo-500/25 active:scale-95"
+                  ? "bg-gradient-to-r from-[#1E56E3] to-[#4338CA] text-white shadow-md shadow-indigo-500/25 active:scale-95"
                   : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-60"
               }`}
             >
@@ -1170,13 +1298,12 @@ export default function AIAgentView({ onBack }) {
             <span>•</span>
             <button
               type="button"
-              onClick={() => sendMessage("Bhai mera wallet balance kitna hai?")}
+              onClick={() => sendMessage("Mera wallet balance kitna hai?")}
               className="hover:text-indigo-600 hover:underline cursor-pointer"
             >
               "Mera balance?"
             </button>
             <span>•</span>
-            
             <button
               type="button"
               onClick={() => sendMessage("Book a new shipment")}
@@ -1192,45 +1319,20 @@ export default function AIAgentView({ onBack }) {
             >
               "Track order"
             </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => sendMessage("What is my wallet balance?")}
-              className="hover:text-indigo-600 hover:underline cursor-pointer"
-            >
-              "My wallet"
-            </button>
-            <span className="hidden sm:inline">•</span>
-            <button
-              type="button"
-              onClick={() => sendMessage("How does replacement work?")}
-              className="hidden sm:inline hover:text-indigo-600 hover:underline cursor-pointer"
-            >
-              "Replacement guide"
-            </button>
-            <span className="hidden sm:inline">•</span>
-            <button
-              type="button"
-              onClick={() => sendMessage("Explain RTO protection rules")}
-              className="hidden sm:inline hover:text-indigo-600 hover:underline cursor-pointer"
-            >
-              "RTO rules"
-            </button>
           </div>
         </footer>
-
-        {/* ── BULK UPLOAD MODAL ── */}
-        {showBulk && (
-          <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-slate-200 shadow-2xl animate-fade-in">
-              <BulkUploadPanel 
-                onClose={() => setShowBulk(false)} 
-                onUpload={() => setShowBulk(false)} 
-              />
-            </div>
-          </div>
-        )}
       </main>
+
+      {/* Bulk Upload Modal */}
+      {showBulk && (
+        <BulkUploadPanel
+          onClose={() => setShowBulk(false)}
+          onSuccess={() => {
+            setShowBulk(false);
+            sendMessage("Check status of my bulk orders");
+          }}
+        />
+      )}
     </div>
   );
 }

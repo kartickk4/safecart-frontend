@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
- * Helper: Clean and normalize text so speech synthesis sounds smooth,
- * natural, friendly, and casual without mechanical halts or stuck pauses.
+ * Clean and normalize text so speech synthesis sounds smooth,
+ * natural, friendly, and casual like Gemini/ChatGPT without mechanical halts.
  */
 export function cleanAndSmoothTextForSpeech(rawText) {
   if (!rawText || typeof rawText !== 'string') return '';
@@ -14,8 +14,9 @@ export function cleanAndSmoothTextForSpeech(rawText) {
   // 2. Normalize URLs
   text = text.replace(/https?:\/\/\S+/g, 'the link');
 
-  // 3. Remove quotes, markdown bold/italic/code syntax early so words flow smoothly
-  text = text.replace(/[\*_~`#|"]/g, '');
+  // 3. Remove quotes, markdown bold/italic/code syntax
+  text = text.replace(/[*_~#|"]/g, '');
+  text = text.replace(/`/g, '');
 
   // 4. Normalize currencies naturally for smooth casual Indian / global flow
   text = text.replace(/₹\s*(\d+(?:,\d+)*(?:\.\d+)?)/g, '$1 rupees');
@@ -39,7 +40,6 @@ export function cleanAndSmoothTextForSpeech(rawText) {
   text = text.replace(/#(\d+)/g, 'number $1');
 
   // 9. Colons after labels -> soft pause e.g. "Receiver:" -> "Receiver,"
-  // Prevents the robotic TTS halt on colons
   text = text.replace(/([a-zA-Z0-9]+)\s*:\s*/g, '$1, ');
 
   // 10. Numbered list items: " 1. " -> " 1, "
@@ -47,7 +47,7 @@ export function cleanAndSmoothTextForSpeech(rawText) {
 
   // 11. Remove emojis & special bullet symbols
   text = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}]/gu, '');
-  text = text.replace(/[✅❌🚀📦🚚💰📱📍👤📮⚖️⏱️🏆✓🛡️👋💳🎁👑✨•●▪️▫️▶️➡️👉]/gu, ' ');
+  text = text.replace(/[•●▪▫★☆✓✔✕✖⚡✨📦🚚💰🛡️🎁🏷️🔔📞💬]/gu, ' ');
 
   // 12. Dashes and em-dashes -> gentle breath pause
   text = text.replace(/[—–]/g, ', ');
@@ -63,7 +63,7 @@ export function cleanAndSmoothTextForSpeech(rawText) {
   // 15. Clean up duplicate punctuation & spacing
   text = text.replace(/,(\s*,)+/g, ',');
   text = text.replace(/\.(\s*\.)+/g, '.');
-  text = text.replace(/[,\s]*\./g, '.');
+  text = text.replace(/,\s*\./g, '.');
   text = text.replace(/\s*,\s*/g, ', ');
   text = text.replace(/\s+/g, ' ');
 
@@ -71,19 +71,18 @@ export function cleanAndSmoothTextForSpeech(rawText) {
 }
 
 /**
- * Helper: Select a smooth, sweet, casual female voice.
- * Prioritizes high-quality Neural / Natural online female voices (like Jenny, Neerja, Aria, Google)
- * which feature relaxed pacing, natural breath, and human-like inflection.
- * Strictly excludes male voices and avoids robotic legacy desktop voices.
+ * Select a smooth, sweet, casual female voice like Gemini or ChatGPT.
+ * Prioritizes high-quality Neural / Natural online female voices
+ * (Jenny, Aria, Sonia, Google US/UK Female, Samantha Enhanced, Neerja).
  */
-export function selectSweetCasualFemaleVoice(voices) {
+export function selectSweetCasualFemaleVoice(voices, preferredName = null) {
   if (!voices || voices.length === 0) return null;
 
-  // 1. Strict blacklist of male voices
+  // Strict blacklist of male voices
   const maleKeywords = [
     'male', 'david', 'mark', 'george', 'ravi', 'guy', 'christopher',
     'eric', 'ryan', 'james', 'stefan', 'richard', 'sean', 'mitchell',
-    'steffan', 'paul', 'deep', 'man', 'boy', 'prabhat', 'madhav'
+    'steffan', 'paul', 'deep', 'man', 'boy', 'prabhat', 'madhav', 'ajay'
   ];
 
   const isNotMale = (v) => {
@@ -91,31 +90,34 @@ export function selectSweetCasualFemaleVoice(voices) {
     return !maleKeywords.some(m => nameLower.includes(m));
   };
 
-  // 2. High priority: Modern Neural / Natural online female voices (sweet, human, relaxed)
+  // If user selected a specific voice preference
+  if (preferredName) {
+    const matched = voices.find(v => v.name === preferredName);
+    if (matched) return matched;
+  }
+
+  // Priority 1: Top-tier Neural voices matching ChatGPT/Gemini conversational warmth
   const preferredFemaleVoiceNames = [
     'jenny online (natural)',
-    'neerja online (natural)',
     'aria online (natural)',
     'sonia online (natural)',
     'michelle online (natural)',
-    'emma online (natural)',
-    'libby online (natural)',
-    'ana online (natural)',
+    'neerja online (natural)',
+    'heera online (natural)',
     'google uk english female',
     'google us english',
     'google english',
+    'samantha (enhanced)',
     'samantha',
+    'siri female',
     'karen',
     'serena',
     'victoria',
     'tessa',
-    'moira',
-    'neerja',
-    'heera',
     'jenny',
     'aria',
     'sonia',
-    'michelle'
+    'neerja'
   ];
 
   for (const nameCandidate of preferredFemaleVoiceNames) {
@@ -127,7 +129,7 @@ export function selectSweetCasualFemaleVoice(voices) {
     if (found) return found;
   }
 
-  // 3. Any English voice containing "natural" or "neural" that is not male
+  // Priority 2: Any English voice containing "natural" or "neural" that is not male
   const anyNatural = voices.find(v => 
     isNotMale(v) && 
     v.lang.startsWith('en') && 
@@ -135,15 +137,15 @@ export function selectSweetCasualFemaleVoice(voices) {
   );
   if (anyNatural) return anyNatural;
 
-  // 4. Any English voice explicitly labeled 'female' / 'woman' / 'girl'
+  // Priority 3: Any English voice explicitly labeled 'female' / 'woman'
   const explicitFemaleVoice = voices.find(v => 
     isNotMale(v) && 
     v.lang.startsWith('en') && 
-    (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('woman') || v.name.toLowerCase().includes('girl'))
+    (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('woman'))
   );
   if (explicitFemaleVoice) return explicitFemaleVoice;
 
-  // 5. Any Indian English voice that is not male (excluding Zira if possible)
+  // Priority 4: Indian English voice that is not male
   const indianNonMaleVoice = voices.find(v => 
     (v.lang === 'en-IN' || v.lang.replace('_', '-').startsWith('en-IN')) && 
     isNotMale(v) &&
@@ -151,7 +153,7 @@ export function selectSweetCasualFemaleVoice(voices) {
   );
   if (indianNonMaleVoice) return indianNonMaleVoice;
 
-  // 6. Any English voice that is not male (excluding Zira if possible)
+  // Priority 5: Any non-Zira English voice
   const nonZiraEnglish = voices.find(v => 
     v.lang.startsWith('en') && 
     isNotMale(v) && 
@@ -159,21 +161,21 @@ export function selectSweetCasualFemaleVoice(voices) {
   );
   if (nonZiraEnglish) return nonZiraEnglish;
 
-  // 7. Last resort fallback
-  const anyNonMale = voices.find(v => isNotMale(v));
-  return anyNonMale || voices[0] || null;
+  return voices.find(v => isNotMale(v)) || voices[0] || null;
 }
 
 /**
  * useVoiceAgent Hook
- * Provides speech-to-text (voice recognition) and text-to-speech (read aloud)
- * for the AI Shipping Agent.
+ * Provides advanced speech-to-text with microphone volume analysis,
+ * and conversational text-to-speech with Gemini/ChatGPT warmth.
  */
 export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
   const [isSupported, setIsSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [micError, setMicError] = useState('');
+  const [audioLevel, setAudioLevel] = useState(0); // 0 to 100 for live waveform
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
     return localStorage.getItem('sk_agent_voice_enabled') === 'true';
   });
@@ -181,9 +183,18 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
   const recognitionRef = useRef(null);
   const silenceTimerRef = useRef(null);
   const keepAliveTimerRef = useRef(null);
-  const [availableVoices, setAvailableVoices] = useState([]);
+  const mediaStreamRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const isListeningRef = useRef(false);
 
-  // Preload and keep speech synthesis voices synchronized across all browsers
+  const [availableVoices, setAvailableVoices] = useState([]);
+  const [selectedVoiceName, setSelectedVoiceName] = useState(() => {
+    return localStorage.getItem('sk_agent_voice_name') || '';
+  });
+
+  // Preload and keep speech synthesis voices synchronized
   useEffect(() => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
 
@@ -211,7 +222,7 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
     };
   }, []);
 
-  // Helper to keep Chrome/Edge speech synthesis alive during long utterances
+  // Keep Chrome/Edge speech synthesis alive for long responses
   const startKeepAlive = useCallback(() => {
     if (keepAliveTimerRef.current) clearInterval(keepAliveTimerRef.current);
     keepAliveTimerRef.current = setInterval(() => {
@@ -221,7 +232,7 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
           window.speechSynthesis.resume();
         }
       }
-    }, 9000);
+    }, 8500);
   }, []);
 
   const stopKeepAlive = useCallback(() => {
@@ -231,18 +242,83 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
     }
   }, []);
 
-  // Initialize Speech Recognition API
+  // Stop microphone stream and audio level visualizer
+  const releaseMicStream = useCallback(() => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => {
+        try { track.stop(); } catch (e) {}
+      });
+      mediaStreamRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      try { audioContextRef.current.close(); } catch (e) {}
+      audioContextRef.current = null;
+    }
+    setAudioLevel(0);
+  }, []);
+
+  // Start real-time audio volume visualizer meter
+  const startAudioMeter = useCallback((stream) => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+
+      const audioCtx = new AudioCtx();
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      analyser.smoothingTimeConstant = 0.5;
+
+      const source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      audioContextRef.current = audioCtx;
+      analyserRef.current = analyser;
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      const updateLevel = () => {
+        if (!analyserRef.current) return;
+        analyserRef.current.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i];
+        }
+        const avg = sum / bufferLength;
+        const normalized = Math.min(100, Math.round((avg / 128) * 100));
+        setAudioLevel(normalized);
+        animFrameRef.current = requestAnimationFrame(updateLevel);
+      };
+
+      updateLevel();
+    } catch (e) {
+      console.warn('Audio meter initialization notice:', e);
+    }
+  }, []);
+
+  // Initialize Speech Recognition
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       setIsSupported(true);
+      const isMobile = typeof navigator !== 'undefined' && 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
       const recognition = new SpeechRecognition();
-      recognition.continuous = true;
+      // On mobile browsers, continuous: true crashes or disconnects. Use false on mobile.
+      recognition.continuous = !isMobile;
       recognition.interimResults = true;
-      recognition.lang = 'en-IN'; // Optimized for Indian names, locations, and pincodes
+      recognition.maxAlternatives = 1;
+      recognition.lang = 'en-IN';
 
       recognition.onstart = () => {
         setIsListening(true);
+        isListeningRef.current = true;
+        setMicError('');
       };
 
       recognition.onresult = (event) => {
@@ -263,37 +339,46 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
           setLiveTranscript(currentText);
         }
 
-        // Reset silence timer
         if (silenceTimerRef.current) {
           clearTimeout(silenceTimerRef.current);
         }
 
-        if (finalText && onFinalTranscript) {
-          onFinalTranscript(finalText.trim());
-          if (autoSend) {
-            // Stop listening after sending
-            recognition.stop();
+        if (finalText) {
+          if (onFinalTranscript) {
+            onFinalTranscript(finalText.trim());
+          }
+          if (autoSend || isMobile) {
+            try { recognition.stop(); } catch (e) {}
           }
         } else if (interimText) {
-          // If paused for 2.2 seconds after speaking, consider final
+          // If paused for 2.2s after speaking, consider final
           silenceTimerRef.current = setTimeout(() => {
             if (interimText.trim() && onFinalTranscript) {
               onFinalTranscript(interimText.trim());
-              recognition.stop();
+              try { recognition.stop(); } catch (e) {}
             }
           }, 2200);
         }
       };
 
       recognition.onerror = (event) => {
-        if (event.error !== 'no-speech') {
-          console.warn('Speech recognition notice:', event.error);
+        console.warn('Speech recognition notice:', event.error);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          setMicError('Microphone permission was denied. Please allow microphone access in your browser settings.');
+        } else if (event.error === 'audio-capture') {
+          setMicError('No microphone detected. Please plug in a microphone or headset.');
+        } else if (event.error === 'network') {
+          setMicError('Speech recognition network error. Please check your internet connection.');
         }
         setIsListening(false);
+        isListeningRef.current = false;
+        releaseMicStream();
       };
 
       recognition.onend = () => {
         setIsListening(false);
+        isListeningRef.current = false;
+        releaseMicStream();
       };
 
       recognitionRef.current = recognition;
@@ -308,8 +393,9 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
       }
+      releaseMicStream();
     };
-  }, [onFinalTranscript, autoSend]);
+  }, [onFinalTranscript, autoSend, releaseMicStream]);
 
   // Persist voice response preference
   const toggleVoiceEnabled = useCallback(() => {
@@ -325,61 +411,85 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
     });
   }, [stopKeepAlive]);
 
-  // Start voice listening
-  const startListening = useCallback(() => {
-    if (!recognitionRef.current) {
-      alert('Voice input is not supported in this browser. Please use Chrome, Edge, or Safari.');
-      return;
-    }
-    // Stop any ongoing speech readout before listening to the user
+  // Start voice listening with explicit getUserMedia check
+  const startListening = useCallback(async () => {
+    setMicError('');
+    setLiveTranscript('');
+
+    // Stop ongoing speech readout before listening to the user
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
       stopKeepAlive();
       setIsSpeaking(false);
     }
-    setLiveTranscript('');
+
+    // 1. Request microphone permission via getUserMedia
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaStreamRef.current = stream;
+        startAudioMeter(stream);
+      } catch (err) {
+        console.warn('getUserMedia error:', err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setMicError('Microphone permission blocked. Please click the lock/settings icon in your browser address bar and set Microphone to "Allow".');
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          setMicError('No microphone found on this device. Please connect a headset or mic.');
+        } else {
+          setMicError('Could not start microphone: ' + (err.message || 'Permission required'));
+        }
+        return;
+      }
+    }
+
+    // 2. Start Speech Recognition
+    if (!recognitionRef.current) {
+      setMicError('Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.');
+      releaseMicStream();
+      return;
+    }
+
     try {
       recognitionRef.current.start();
     } catch (e) {
-      // If already started, stop and restart
+      // If already running, abort and re-start cleanly
       try {
-        recognitionRef.current.stop();
-        setTimeout(() => recognitionRef.current?.start(), 150);
+        recognitionRef.current.abort();
+        setTimeout(() => {
+          try { recognitionRef.current?.start(); } catch (e2) {}
+        }, 200);
       } catch (e2) {}
     }
-  }, [stopKeepAlive]);
+  }, [startAudioMeter, stopKeepAlive, releaseMicStream]);
 
-  // Stop voice listening
+  // Stop voice listening cleanly
   const stopListening = useCallback(() => {
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
     }
     if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) {}
+      try { recognitionRef.current.stop(); } catch (e) {}
     }
     setIsListening(false);
-  }, []);
+    isListeningRef.current = false;
+    releaseMicStream();
+  }, [releaseMicStream]);
 
-  // Speak agent response aloud using a smooth, sweet, casual female voice
+  // Speak agent response aloud
   const speak = useCallback((text) => {
     if (!voiceEnabled || !window.speechSynthesis) return;
 
-    // Cancel any previous utterance and stop keepalive
     window.speechSynthesis.cancel();
     stopKeepAlive();
 
     const cleanedText = cleanAndSmoothTextForSpeech(text);
     if (!cleanedText) return;
 
-    // Pick sweetest available casual female voice
     const currentVoices = (availableVoices && availableVoices.length > 0)
       ? availableVoices
       : window.speechSynthesis.getVoices();
-    const sweetFemaleVoice = selectSweetCasualFemaleVoice(currentVoices);
+    const sweetFemaleVoice = selectSweetCasualFemaleVoice(currentVoices, selectedVoiceName);
 
-    // If it's a legacy robotic desktop voice (e.g. old Zira), avoid pitch shifting to prevent harsh tinny artifacts
     const isRoboticLegacy = sweetFemaleVoice && 
       (sweetFemaleVoice.name.toLowerCase().includes('zira') || 
        (!sweetFemaleVoice.name.toLowerCase().includes('natural') && 
@@ -388,13 +498,9 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
 
     const utterance = new SpeechSynthesisUtterance(cleanedText);
 
-    // Rate: 0.97 provides a casual, conversational, relaxed rhythm
-    utterance.rate = 0.97;
-
-    // Pitch: 1.04 gives a sweet, youthful, warm inflection without digital hardness
-    utterance.pitch = isRoboticLegacy ? 1.0 : 1.04;
-
-    // Volume: 0.95 gives comfortable, soft warmth
+    // Warm, natural pace and pitch matching Gemini / ChatGPT voice agents
+    utterance.rate = 0.98;
+    utterance.pitch = isRoboticLegacy ? 1.0 : 1.02;
     utterance.volume = 0.95;
 
     if (sweetFemaleVoice) {
@@ -423,7 +529,33 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
     };
 
     window.speechSynthesis.speak(utterance);
-  }, [voiceEnabled, availableVoices, startKeepAlive, stopKeepAlive]);
+  }, [voiceEnabled, availableVoices, selectedVoiceName, startKeepAlive, stopKeepAlive]);
+
+  // Test voice sample
+  const testVoice = useCallback((voiceName) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+
+    const sample = "Hi Kartick! I am your SecureKaro AI assistant. I am ready to book, track, and protect your shipments.";
+    const currentVoices = window.speechSynthesis.getVoices();
+    const voice = selectSweetCasualFemaleVoice(currentVoices, voiceName);
+
+    const utterance = new SpeechSynthesisUtterance(sample);
+    utterance.rate = 0.98;
+    utterance.pitch = 1.02;
+    utterance.volume = 0.95;
+
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang || 'en-IN';
+    }
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+  }, []);
 
   // Stop current speech playback
   const stopSpeaking = useCallback(() => {
@@ -434,12 +566,24 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
     }
   }, [stopKeepAlive]);
 
+  const changeVoice = useCallback((voiceName) => {
+    setSelectedVoiceName(voiceName);
+    localStorage.setItem('sk_agent_voice_name', voiceName);
+  }, []);
+
   return {
     isSupported,
     isListening,
     liveTranscript,
     isSpeaking,
     voiceEnabled,
+    micError,
+    clearMicError: () => setMicError(''),
+    audioLevel,
+    availableVoices,
+    selectedVoiceName,
+    changeVoice,
+    testVoice,
     toggleVoiceEnabled,
     startListening,
     stopListening,
