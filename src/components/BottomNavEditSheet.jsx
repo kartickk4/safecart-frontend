@@ -283,13 +283,8 @@ export default function BottomNavEditSheet({
         {/* Header with Mode Toggle & Action Buttons */}
         <div className="px-5 py-2.5 flex items-center justify-between border-b border-slate-100">
           <div>
-            <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
-              <span>{isEditMode ? 'Customise Bottom Menu' : 'All Features & Navigation'}</span>
-              <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
-                isEditMode ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-[#1E56E3]'
-              }`}>
-                {isEditMode ? 'Edit Mode' : 'Menu'}
-              </span>
+            <h3 className="text-sm font-black text-slate-900">
+              {isEditMode ? 'Customise Bottom Menu' : 'All Features & Navigation'}
             </h3>
             <p className="text-[11px] text-slate-500 font-medium">
               {isEditMode 
