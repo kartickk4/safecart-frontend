@@ -16,7 +16,8 @@ import {
   ChevronDown,
   ArrowUpRight,
   SlidersHorizontal,
-  Compass
+  Compass,
+  HelpCircle
 } from 'lucide-react';
 
 export const NAV_AVAILABLE_OPTIONS = [
@@ -25,6 +26,8 @@ export const NAV_AVAILABLE_OPTIONS = [
     receiverId: 'shipments-list',
     labelSupplier: 'Dashboard',
     labelReceiver: 'Orders',
+    shortLabelSupplier: 'Home',
+    shortLabelReceiver: 'Orders',
     icon: LayoutDashboard,
     desc: 'Overview and order pipeline',
     color: 'text-[#1E56E3]',
@@ -37,7 +40,8 @@ export const NAV_AVAILABLE_OPTIONS = [
     icon: Sparkles,
     desc: 'Shipping assistant & dispute resolver',
     color: 'text-purple-600',
-    bg: 'bg-purple-50'
+    bg: 'bg-purple-50',
+    supplierOnly: true // ⚡ EXCLUSIVELY FOR MERCHANTS / SUPPLIERS
   },
   {
     id: 'wallet',
@@ -53,7 +57,7 @@ export const NAV_AVAILABLE_OPTIONS = [
     labelSupplier: 'Profile',
     labelReceiver: 'Profile',
     icon: User,
-    desc: 'Account & business settings',
+    desc: 'Account & delivery settings',
     color: 'text-slate-700',
     bg: 'bg-slate-100'
   },
@@ -73,7 +77,8 @@ export const NAV_AVAILABLE_OPTIONS = [
     icon: RotateCcw,
     desc: 'Return orders & reverse pickups',
     color: 'text-amber-600',
-    bg: 'bg-amber-50'
+    bg: 'bg-amber-50',
+    supplierOnly: true // ⚡ EXCLUSIVELY FOR MERCHANTS / SUPPLIERS
   },
   {
     id: 'notifications',
@@ -97,8 +102,23 @@ export const NAV_AVAILABLE_OPTIONS = [
     desc: 'Ambassador earnings & bonus',
     color: 'text-indigo-600',
     bg: 'bg-indigo-50'
+  },
+  {
+    id: 'support',
+    labelSupplier: 'Support',
+    labelReceiver: 'Help & Support',
+    shortLabelSupplier: 'Support',
+    shortLabelReceiver: 'Support',
+    icon: HelpCircle,
+    desc: 'Helpline, disputes & FAQs',
+    color: 'text-teal-600',
+    bg: 'bg-teal-50'
   }
 ];
+
+export function getAvailableOptions(isSupplier) {
+  return NAV_AVAILABLE_OPTIONS.filter(opt => isSupplier ? !opt.receiverOnly : !opt.supplierOnly);
+}
 
 export function getOptionDefinition(tabKey, isSupplier) {
   if (!tabKey) return null;
@@ -135,7 +155,16 @@ export default function BottomNavEditSheet({
   initialIsEditMode = false,
   onNavigateTab
 }) {
-  const [activeSlots, setActiveSlots] = useState([...currentSlots]);
+  const sanitizeBuyerSlots = (slots) => {
+    if (!isSupplier && Array.isArray(slots)) {
+      const supplierOnlyTabs = new Set(['ai-agent', 'return-orders', 'create-shipment', 'dashboard']);
+      const validDefaults = ['shipments-list', 'track', 'wallet', 'profile'];
+      return slots.map((s, idx) => supplierOnlyTabs.has(s) ? validDefaults[idx] : s);
+    }
+    return slots;
+  };
+
+  const [activeSlots, setActiveSlots] = useState(() => sanitizeBuyerSlots([...currentSlots]));
   const [selectedSlotIndex, setSelectedSlotIndex] = useState(initialSlotIndex || 0);
   const [isEditMode, setIsEditMode] = useState(initialIsEditMode);
 
@@ -149,11 +178,11 @@ export default function BottomNavEditSheet({
 
   useEffect(() => {
     if (isOpen) {
-      setActiveSlots([...currentSlots]);
+      setActiveSlots(sanitizeBuyerSlots([...currentSlots]));
       setSelectedSlotIndex(initialSlotIndex || 0);
       setIsEditMode(initialIsEditMode);
     }
-  }, [isOpen, currentSlots, initialSlotIndex, initialIsEditMode]);
+  }, [isOpen, currentSlots, initialSlotIndex, initialIsEditMode, isSupplier]);
 
   if (!isOpen) return null;
 
@@ -331,8 +360,8 @@ export default function BottomNavEditSheet({
               <span className="text-[10.5px] font-black text-slate-700 uppercase tracking-wider">
                 Your Bottom Bar Slots
               </span>
-              <span className="text-[10px] text-slate-400 font-semibold">
-                Center {isSupplier ? 'Ship' : 'Sign'} is fixed
+              <span className="text-[10px] text-slate-500 font-semibold">
+                {isSupplier ? 'Center: Quick Ship' : 'Center: Parcel Sign-Off'}
               </span>
             </div>
 
@@ -404,12 +433,9 @@ export default function BottomNavEditSheet({
                     <CheckCircle2 className="w-5 h-5" />
                   )}
                 </div>
-                <div className="flex items-center gap-0.5 mt-1">
-                  <Lock className="w-2.5 h-2.5 text-slate-400" />
-                  <span className="text-[9px] font-extrabold text-slate-500 uppercase">
-                    {isSupplier ? 'Ship' : 'Sign'}
-                  </span>
-                </div>
+                <span className="text-[9px] font-black text-slate-600 uppercase mt-1 tracking-wider">
+                  {isSupplier ? 'Ship' : 'Sign Off'}
+                </span>
               </div>
 
               {/* Slot 2 (Right 1) */}
@@ -538,7 +564,7 @@ export default function BottomNavEditSheet({
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              {NAV_AVAILABLE_OPTIONS.map((opt) => {
+              {getAvailableOptions(isSupplier).map((opt) => {
                 const Icon = opt.icon;
                 const active = isOptionActive(opt);
                 const label = isSupplier ? opt.labelSupplier : opt.labelReceiver;

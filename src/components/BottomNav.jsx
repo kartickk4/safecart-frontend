@@ -30,13 +30,26 @@ export default function BottomNav({
   const storageKey = `securekaro_bottom_nav_slots_${user?._id || 'guest'}_${isSupplier ? 'supplier' : 'receiver'}`;
 
   // Read saved slots from localStorage or fallback to defaults
+  const sanitizeBuyerSlots = (rawSlots, isSupp) => {
+    if (!Array.isArray(rawSlots) || rawSlots.length !== 4) {
+      return isSupp ? ['dashboard', 'ai-agent', 'wallet', 'profile'] : ['shipments-list', 'track', 'wallet', 'profile'];
+    }
+    if (!isSupp) {
+      const supplierOnlyTabs = new Set(['ai-agent', 'return-orders', 'create-shipment', 'dashboard']);
+      const validDefaults = ['shipments-list', 'track', 'wallet', 'profile'];
+      return rawSlots.map((s, idx) => supplierOnlyTabs.has(s) ? validDefaults[idx] : s);
+    }
+    return rawSlots;
+  };
+
+  // Read saved slots from localStorage or fallback to defaults
   const [slots, setSlots] = useState(() => {
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length === 4) {
-          return parsed;
+          return sanitizeBuyerSlots(parsed, isSupplier);
         }
       }
     } catch (_) {}
@@ -50,7 +63,7 @@ export default function BottomNav({
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length === 4) {
-          setSlots(parsed);
+          setSlots(sanitizeBuyerSlots(parsed, isSupplier));
           return;
         }
       }
@@ -165,7 +178,8 @@ export default function BottomNav({
       return;
     }
     cancelLongPress();
-    setCurrentTab(tabKey);
+    const targetKey = (!isSupplier && tabKey === 'dashboard') ? 'shipments-list' : tabKey;
+    setCurrentTab(targetKey);
   };
 
   const handleSaveSlots = (newSlots) => {
