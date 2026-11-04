@@ -179,7 +179,7 @@ export default function BottomNav({
   const renderTab = (tabKey, slotIndex) => {
     const opt = getOptionDefinition(tabKey, isSupplier);
     const Icon = opt?.icon || LayoutDashboard;
-    const label = getOptionLabel(tabKey, isSupplier);
+    const label = getOptionLabel(tabKey, isSupplier, true);
 
     // Check if this tab is active
     let isActive = false;
@@ -246,19 +246,6 @@ export default function BottomNav({
         onTouchEnd={handleBarTouchEnd}
         className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 px-2 pt-1 pb-2 pb-safe z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] select-none flex flex-col"
       >
-        {/* Subtle Top Swipe Handle Pill */}
-        <div 
-          onClick={() => {
-            handleDismissGuide();
-            setIsEditModeDirect(false);
-            setIsEditOpen(true);
-          }}
-          className="w-full flex justify-center py-0.5 cursor-pointer group"
-          title="Swipe up or tap to view all features"
-        >
-          <div className="w-9 h-1 bg-slate-300 rounded-full group-hover:bg-[#1E56E3] transition-colors" />
-        </div>
-
         {/* 5-Column Symmetrical Grid */}
         <div className="grid grid-cols-5 items-center w-full max-w-md mx-auto">
           {/* SLOT 1 (Left 1) */}

@@ -81,15 +81,27 @@ const CarrierCard = ({ quotes, selectedSlug, onSelect }) => {
                 <div>
                   <div className="text-xs font-black text-slate-900 flex items-center gap-1.5">
                     {q.name}
-                    {q.isLowest && (
+                    {q.isCostToDeliverWinner && (
+                      <span className="bg-blue-100 text-[#1E56E3] text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-blue-200">
+                        ⭐ Best Total Cost
+                      </span>
+                    )}
+                    {q.isLowest && !q.isCostToDeliverWinner && (
                       <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-emerald-200">
                         Lowest Rate
                       </span>
                     )}
                   </div>
-                  <div className="text-[11px] text-slate-500 font-medium mt-0.5 flex items-center gap-1">
-                    <Clock size={11} className="text-slate-400" />
-                    <span>Est. Delivery: {q.eta || "2-4 Days"}</span>
+                  <div className="text-[11px] text-slate-500 font-medium mt-0.5 flex flex-wrap items-center gap-2">
+                    <span className="flex items-center gap-1">
+                      <Clock size={11} className="text-slate-400" />
+                      <span>{q.eta || "2-4 Days"}</span>
+                    </span>
+                    {q.deliverySuccessRate && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200/80">
+                        🏆 {q.deliverySuccessRate}% Delivery Success
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1103,6 +1115,27 @@ export default function AIAgentView({ onBack }) {
         {/* ── REDESIGNED BOTTOM COMMAND DOCK (with clearance above mobile bottom bar) ── */}
         <footer className="p-3 sm:p-5 pb-24 md:pb-6 border-t border-slate-200/80 bg-white/95 backdrop-blur-md shrink-0">
           
+          {/* Quick Action Capsule Row */}
+          <div className="max-w-4xl mx-auto mb-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            {[
+              { label: '📦 Book Shipment', query: 'Book shipment' },
+              { label: '🛡️ Weight Shield', query: 'How does Weight Shield work?' },
+              { label: '🚨 NDR Alerts', query: 'Show active NDR shipments' },
+              { label: '📊 True Cost', query: 'Cost to deliver' },
+              { label: '💰 My Wallet', query: 'What is my wallet balance?' },
+              { label: '🔍 Track Order', query: 'Track my recent order' }
+            ].map((qp, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => sendMessage(qp.query)}
+                className="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-200/80 hover:border-indigo-200 transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs"
+              >
+                {qp.label}
+              </button>
+            ))}
+          </div>
+
           {/* Active Voice Waveform Indicator */}
           {isListening && (
             <div className="max-w-4xl mx-auto mb-3 flex items-center justify-between p-3 bg-rose-50/95 border border-rose-200 rounded-2xl animate-fade-in shadow-xs">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy, startTransition } from 'react';
 import AuthView from './views/AuthView';
 import DashboardView from './views/DashboardView';
 import ShipmentsListView from './views/ShipmentsListView';
@@ -113,7 +113,9 @@ export default function App() {
     const targetTab = typeof nextTab === 'function' ? nextTab(currentTab) : nextTab;
     if (!targetTab) return;
 
-    _setCurrentTab(targetTab);
+    startTransition(() => {
+      _setCurrentTab(targetTab);
+    });
 
     if (typeof window !== 'undefined') {
       const targetRoute = TAB_ROUTES[targetTab] || `/${targetTab}`;
@@ -145,7 +147,9 @@ export default function App() {
 
     const handlePopState = () => {
       const tab = getTabFromLocation();
-      _setCurrentTab(tab);
+      startTransition(() => {
+        _setCurrentTab(tab);
+      });
       document.title = TAB_TITLES[tab] || 'SecureKaro — Logistics Aggregator & Shipping Software';
     };
 

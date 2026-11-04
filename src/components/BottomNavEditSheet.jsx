@@ -79,6 +79,8 @@ export const NAV_AVAILABLE_OPTIONS = [
     id: 'notifications',
     labelSupplier: 'Notifications',
     labelReceiver: 'Notifications',
+    shortLabelSupplier: 'Alerts',
+    shortLabelReceiver: 'Alerts',
     icon: Bell,
     desc: 'Alerts, updates & OTP notices',
     color: 'text-rose-600',
@@ -89,6 +91,8 @@ export const NAV_AVAILABLE_OPTIONS = [
     id: 'refer',
     labelSupplier: 'Refer & Earn',
     labelReceiver: 'Refer & Earn',
+    shortLabelSupplier: 'Rewards',
+    shortLabelReceiver: 'Rewards',
     icon: Gift,
     desc: 'Ambassador earnings & bonus',
     color: 'text-indigo-600',
@@ -113,10 +117,10 @@ export function getOptionDefinition(tabKey, isSupplier) {
   );
 }
 
-export function getOptionLabel(tabKey, isSupplier) {
+export function getOptionLabel(tabKey, isSupplier, useShort = false) {
   const def = getOptionDefinition(tabKey, isSupplier);
   if (!def) return tabKey;
-  return isSupplier ? def.labelSupplier : def.labelReceiver;
+  return isSupplier ? ((useShort && def.shortLabelSupplier) || def.labelSupplier) : ((useShort && def.shortLabelReceiver) || def.labelReceiver);
 }
 
 export default function BottomNavEditSheet({
