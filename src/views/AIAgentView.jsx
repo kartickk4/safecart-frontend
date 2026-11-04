@@ -5,7 +5,7 @@ import {
   AlertCircle, RefreshCw, Mic, MicOff, Volume2, VolumeX, Radio,
   Copy, Check, ExternalLink, ArrowUpRight, Clock, HelpCircle, ChevronRight,
   Phone, PhoneCall, MessageCircle, Settings, Sliders, ChevronDown, Play,
-  Info
+  Lock, ArrowLeft
 } from "lucide-react";
 import BulkUploadPanel from "../components/BulkUploadPanel";
 import { useVoiceAgent } from "../utils/useVoiceAgent";
@@ -381,6 +381,7 @@ export default function AIAgentView({ onBack }) {
   const [step, setStep] = useState(0);
   const [showBulk, setShowBulk] = useState(false);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const [showMicHelp, setShowMicHelp] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -653,6 +654,14 @@ export default function AIAgentView({ onBack }) {
       });
   }, [sessionId, isLoading, speak]);
 
+  const handleMicClick = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
   const currentQR = QUICK_REPLIES[step] || [];
 
   return (
@@ -684,7 +693,7 @@ export default function AIAgentView({ onBack }) {
 
           <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md border border-white/15 rounded-full px-3 py-1 text-[11px] font-semibold text-white/95">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Gemini Neural Engine Live</span>
+            <span>Gemini Neural Engine Live (1.2s)</span>
           </div>
         </div>
 
@@ -787,70 +796,90 @@ export default function AIAgentView({ onBack }) {
       {/* ── MAIN CHAT VIEW ── */}
       <main className="flex-1 flex flex-col min-w-0 bg-white relative">
         
-        {/* Top Navbar */}
-        <header className="px-3 sm:px-6 py-2.5 sm:py-3 border-b border-slate-200/80 bg-white/95 backdrop-blur-md flex items-center justify-between shrink-0 z-20 shadow-2xs">
+        {/* ── REDESIGNED UPPER HEADER & BUTTONS ── */}
+        <header className="px-3 sm:px-6 py-2.5 sm:py-3.5 border-b border-slate-200/80 bg-white/95 backdrop-blur-md flex items-center justify-between shrink-0 z-20 shadow-xs">
           
           {/* Left Title & Status */}
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-800 p-0.5 shadow-sm overflow-hidden shrink-0 flex items-center justify-center">
-              <img src={SK_LOGO} alt="SecureKaro" className="w-full h-full object-cover rounded-[10px]" />
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-600 flex items-center justify-center shrink-0 transition active:scale-95 cursor-pointer shadow-2xs"
+                title="Back to Previous View"
+              >
+                <ArrowLeft size={15} />
+              </button>
+            )}
+
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-[#1E56E3] to-indigo-700 p-0.5 shadow-sm shadow-indigo-500/20 overflow-hidden shrink-0 flex items-center justify-center">
+              <img src={SK_LOGO} alt="SecureKaro" className="w-full h-full object-cover rounded-[14px]" />
             </div>
             <div className="min-w-0">
               <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5 truncate">
                 <span className="truncate">SecureKaro Copilot</span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/60 shrink-0">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50/90 px-2 py-0.5 rounded-full border border-indigo-200/70 shrink-0">
                   <Sparkles size={11} className="text-indigo-600" />
-                  Gemini 3.5 Flash
+                  Gemini 3.5 Flash-Lite
                 </span>
               </div>
               <div className="text-[10px] sm:text-xs text-slate-500 font-medium flex items-center gap-1.5 truncate">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <span className="truncate">Ready for Voice & Text Orders</span>
+                <span className="truncate">1.2s Fast Neural Dispatch</span>
               </div>
             </div>
           </div>
 
-          {/* Right Controls */}
+          {/* Right Polished Action Button Group */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             
-            {/* Voice Response Toggle */}
+            {/* Voice Response Toggle Pill */}
             <button
               type="button"
               onClick={toggleVoiceEnabled}
-              title={voiceEnabled ? "Voice Speech: Active (Click to mute)" : "Voice Speech: Inactive (Click to speak responses aloud)"}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer ${
+              title={voiceEnabled ? "Voice Speech: Active (Click to mute)" : "Voice Speech: Inactive (Click to hear voice aloud)"}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer border ${
                 voiceEnabled
-                  ? "bg-emerald-50 border-emerald-300 text-emerald-700 shadow-xs"
-                  : "bg-slate-100/80 hover:bg-slate-200/70 border-slate-200 text-slate-600"
+                  ? "bg-emerald-500 text-white border-emerald-600 shadow-sm shadow-emerald-500/25 ring-2 ring-emerald-400/30 active:scale-95"
+                  : "bg-slate-100 hover:bg-slate-200/80 text-slate-700 border-slate-200/90 active:scale-95"
               }`}
             >
-              {voiceEnabled ? <Volume2 size={14} className="text-emerald-600" /> : <VolumeX size={14} />}
-              <span className="hidden md:inline">{voiceEnabled ? "Voice: ON" : "Voice: OFF"}</span>
+              {voiceEnabled ? (
+                <>
+                  <Volume2 size={13} className="animate-pulse" />
+                  <span className="hidden sm:inline">Voice: ON</span>
+                </>
+              ) : (
+                <>
+                  <VolumeX size={13} className="text-slate-400" />
+                  <span className="hidden sm:inline">Voice: OFF</span>
+                </>
+              )}
             </button>
 
-            {/* Speaking Stop Button */}
+            {/* Speaking Stop Pill (Only when speaking) */}
             {isSpeaking && (
               <button
                 type="button"
                 onClick={stopSpeaking}
                 title="Stop current speech playback"
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold cursor-pointer transition animate-pulse"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-bold shadow-sm shadow-rose-500/30 cursor-pointer transition animate-pulse active:scale-95"
               >
-                <Radio size={13} />
+                <Radio size={12} />
                 <span>Stop</span>
               </button>
             )}
 
-            {/* Voice Settings Popover Trigger */}
+            {/* Voice Audio Settings Button */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowVoiceSettings(!showVoiceSettings)}
                 title="Voice & Audio Settings (Gemini / ChatGPT Voice)"
-                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl border flex items-center justify-center transition cursor-pointer ${
+                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full border flex items-center justify-center transition-all cursor-pointer ${
                   showVoiceSettings
-                    ? "bg-indigo-50 border-indigo-400 text-indigo-700 shadow-xs"
-                    : "border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    ? "bg-indigo-50 border-indigo-400 text-indigo-700 shadow-sm"
+                    : "border-slate-200/90 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 shadow-2xs active:scale-95"
                 }`}
               >
                 <Sliders size={14} />
@@ -933,23 +962,10 @@ export default function AIAgentView({ onBack }) {
               type="button"
               onClick={handleReset}
               title="Start fresh conversation"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition cursor-pointer"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-slate-200/90 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95"
             >
               <RotateCcw size={14} />
             </button>
-
-            {/* Exit AI Agent */}
-            {onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                className="flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition cursor-pointer ml-0.5 sm:ml-1"
-                title="Return to Dashboard / Orders"
-              >
-                <ArrowRight size={13} className="rotate-180 text-slate-500" />
-                <span>Exit</span>
-              </button>
-            )}
           </div>
         </header>
 
@@ -966,7 +982,7 @@ export default function AIAgentView({ onBack }) {
                 SecureKaro Shipping Copilot
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
-                Paste raw customer chats, upload an address chit, speak via microphone, or ask shipping & escrow rules.
+                Paste customer WhatsApp chats, scan an address chit, speak via microphone, or ask shipping & escrow rules.
               </p>
 
               {/* Starter Quick Action Cards */}
@@ -1076,7 +1092,7 @@ export default function AIAgentView({ onBack }) {
                 key={qr}
                 type="button"
                 onClick={() => handleQuickReply(qr)}
-                className="shrink-0 px-3 py-1 rounded-full bg-white hover:bg-indigo-600 border border-slate-300 hover:border-indigo-600 text-slate-700 hover:text-white text-xs font-bold transition-all duration-150 shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
+                className="shrink-0 px-3.5 py-1.5 rounded-full bg-white hover:bg-indigo-600 border border-slate-300 hover:border-indigo-600 text-slate-700 hover:text-white text-xs font-bold transition-all duration-150 shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
               >
                 {qr}
               </button>
@@ -1084,26 +1100,9 @@ export default function AIAgentView({ onBack }) {
           </div>
         )}
 
-        {/* ── BOTTOM INPUT DOCK (with mobile clearance) ── */}
+        {/* ── REDESIGNED BOTTOM COMMAND DOCK (with clearance above mobile bottom bar) ── */}
         <footer className="p-3 sm:p-5 pb-24 md:pb-6 border-t border-slate-200/80 bg-white/95 backdrop-blur-md shrink-0">
           
-          {/* Microphone Permission / Hardware Error Banner */}
-          {micError && (
-            <div className="max-w-4xl mx-auto mb-2.5 flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-2xl text-amber-900 shadow-xs animate-fade-in">
-              <div className="flex items-center gap-2 text-xs font-semibold">
-                <AlertCircle size={15} className="text-amber-600 shrink-0" />
-                <span>{micError}</span>
-              </div>
-              <button
-                type="button"
-                onClick={clearMicError}
-                className="p-1 rounded-lg hover:bg-amber-100 text-amber-700 text-xs font-bold shrink-0 ml-2"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          )}
-
           {/* Active Voice Waveform Indicator */}
           {isListening && (
             <div className="max-w-4xl mx-auto mb-3 flex items-center justify-between p-3 bg-rose-50/95 border border-rose-200 rounded-2xl animate-fade-in shadow-xs">
@@ -1111,7 +1110,7 @@ export default function AIAgentView({ onBack }) {
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping shrink-0" />
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-rose-900 flex items-center gap-2">
-                    <span>Listening... speak now</span>
+                    <span>Listening to your voice...</span>
                     {/* Live Waveform reacting to mic audioLevel */}
                     <div className="flex items-end gap-1 h-5">
                       {[1, 2, 3, 4, 5, 6, 7].map((barIdx) => {
@@ -1137,7 +1136,7 @@ export default function AIAgentView({ onBack }) {
                 <button
                   type="button"
                   onClick={stopListening}
-                  className="px-2.5 py-1 rounded-xl text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-100 transition cursor-pointer"
+                  className="px-3 py-1 rounded-full text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-100 transition cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1147,7 +1146,7 @@ export default function AIAgentView({ onBack }) {
                     stopListening();
                     if (input.trim()) sendMessage(input);
                   }}
-                  className="px-3 py-1 rounded-xl text-xs font-bold bg-rose-600 text-white shadow-xs hover:bg-rose-700 transition cursor-pointer"
+                  className="px-3.5 py-1 rounded-full text-xs font-bold bg-rose-600 text-white shadow-xs hover:bg-rose-700 transition cursor-pointer"
                 >
                   Done & Send
                 </button>
@@ -1173,7 +1172,7 @@ export default function AIAgentView({ onBack }) {
               <button
                 type="button"
                 onClick={() => setSelectedImage(null)}
-                className="w-8 h-8 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 flex items-center justify-center transition cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 flex items-center justify-center transition cursor-pointer"
                 title="Remove image"
               >
                 <X size={15} />
@@ -1181,8 +1180,8 @@ export default function AIAgentView({ onBack }) {
             </div>
           )}
 
-          {/* Main Floating Input Enclosure */}
-          <div className="relative max-w-4xl mx-auto flex items-center gap-2 bg-slate-50 focus-within:bg-white border border-slate-300 focus-within:border-indigo-600 focus-within:ring-3 focus-within:ring-indigo-500/15 rounded-2xl p-1.5 pl-4 transition-all duration-200 shadow-xs">
+          {/* Elevated Floating Command Dock */}
+          <div className="relative max-w-4xl mx-auto flex items-center gap-2 bg-slate-50 focus-within:bg-white border border-slate-300/90 focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 rounded-full p-2 pl-4 sm:pl-5 transition-all duration-200 shadow-sm shadow-slate-200/60">
             
             <input
               ref={inputRef}
@@ -1197,30 +1196,27 @@ export default function AIAgentView({ onBack }) {
               }}
               placeholder={
                 isLoading 
-                  ? "AI thinking..." 
+                  ? "AI thinking (1.2s)..." 
                   : isListening 
                     ? "Listening to voice..." 
-                    : "Paste customer WhatsApp order, ask in English/Hindi, or track package..."
+                    : "Paste WhatsApp order, ask in English/Hindi, or track package..."
               }
               disabled={isLoading}
-              className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none py-2"
+              className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none py-1.5 font-medium"
             />
 
-            {/* Voice Input Microphone */}
+            {/* Tactile Microphone Button with Animated Glow */}
             <button
               type="button"
-              onClick={() => {
-                if (isListening) stopListening();
-                else startListening();
-              }}
+              onClick={handleMicClick}
               title={isListening ? "Stop voice listening" : "Speak to AI Agent (Microphone)"}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer ${
                 isListening
-                  ? "bg-rose-500 text-white shadow-xs ring-4 ring-rose-200 animate-pulse"
-                  : "bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 border border-slate-200"
+                  ? "bg-gradient-to-tr from-rose-500 to-pink-600 text-white shadow-md shadow-rose-500/35 ring-4 ring-rose-200 animate-pulse"
+                  : "bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border border-slate-200/90 hover:border-indigo-200 active:scale-95 shadow-2xs"
               }`}
             >
-              {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+              {isListening ? <MicOff size={17} /> : <Mic size={17} />}
             </button>
 
             {/* Hidden file input for camera / image selection */}
@@ -1242,23 +1238,23 @@ export default function AIAgentView({ onBack }) {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               title="Upload order photo or chit (Ctrl+V paste supported)"
-              className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-150 cursor-pointer ${
                 selectedImage
-                  ? "bg-indigo-600 text-white border-indigo-700 shadow-xs ring-2 ring-indigo-200"
-                  : "bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 border-slate-200"
+                  ? "bg-indigo-600 text-white border-indigo-700 shadow-sm ring-2 ring-indigo-200"
+                  : "bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border-slate-200/90 hover:border-indigo-200 active:scale-95 shadow-2xs"
               }`}
             >
-              <Camera size={16} />
+              <Camera size={17} />
             </button>
 
-            {/* Bulk Upload Icon Button */}
+            {/* Bulk Upload Button */}
             <button
               type="button"
               onClick={() => setShowBulk(true)}
-              title="Bulk Excel Upload"
-              className="w-9 h-9 rounded-xl bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 border border-slate-200 flex items-center justify-center transition-all cursor-pointer"
+              title="Bulk Excel Upload (100+ Orders)"
+              className="w-10 h-10 rounded-full bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border border-slate-200/90 hover:border-indigo-200 flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs"
             >
-              <FileSpreadsheet size={16} />
+              <FileSpreadsheet size={17} />
             </button>
 
             {/* Send Button */}
@@ -1266,9 +1262,9 @@ export default function AIAgentView({ onBack }) {
               type="button"
               onClick={() => sendMessage(input)}
               disabled={isLoading || (!input.trim() && !selectedImage)}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer ${
                 (input.trim() || selectedImage) && !isLoading
-                  ? "bg-gradient-to-r from-[#1E56E3] to-[#4338CA] text-white shadow-md shadow-indigo-500/25 active:scale-95"
+                  ? "bg-gradient-to-r from-[#1E56E3] via-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/30 hover:shadow-indigo-500/40 active:scale-95"
                   : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-60"
               }`}
             >
@@ -1277,12 +1273,12 @@ export default function AIAgentView({ onBack }) {
           </div>
 
           {/* Quick Prompts Footnote */}
-          <div className="flex items-center justify-center gap-2 mt-2 text-[10px] sm:text-[11px] text-slate-400 flex-wrap">
+          <div className="flex items-center justify-center gap-2 mt-2.5 text-[10px] sm:text-[11px] text-slate-400 flex-wrap">
             <span className="font-semibold text-slate-500">Quick:</span>
             <button
               type="button"
               onClick={() => sendMessage("Rajesh Kumar, 9876543210, House 42 Green Park Extension, New Delhi 110016, 1 Denim Jacket, COD Rs 1800, 900g")}
-              className="font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50/80 px-2 py-0.5 rounded-md cursor-pointer"
+              className="font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50/80 px-2.5 py-0.5 rounded-full cursor-pointer hover:bg-indigo-100 transition"
             >
               ⚡ 1-Click WhatsApp Order
             </button>
@@ -1290,10 +1286,10 @@ export default function AIAgentView({ onBack }) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50/80 px-2 py-0.5 rounded-md cursor-pointer flex items-center gap-1"
+              className="font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50/80 px-2.5 py-0.5 rounded-full cursor-pointer hover:bg-indigo-100 transition flex items-center gap-1"
             >
               <Camera size={12} />
-              📸 Scan Photo / Chit
+              📸 Scan Chit
             </button>
             <span>•</span>
             <button
@@ -1322,6 +1318,76 @@ export default function AIAgentView({ onBack }) {
           </div>
         </footer>
       </main>
+
+      {/* ── MICROPHONE PERMISSION GUIDE MODAL ── */}
+      {(micError || showMicHelp) && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-sm w-full p-5 shadow-2xl text-center">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-3 shadow-xs">
+              <Lock size={26} />
+            </div>
+            
+            <h3 className="text-base font-black text-slate-900 mb-1">
+              Microphone Permission Needed
+            </h3>
+            
+            <p className="text-xs text-slate-500 leading-relaxed mb-4">
+              Browsers and phone operating systems strictly require you to grant permission once so you can speak to the AI Assistant.
+            </p>
+
+            <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200 text-left space-y-2.5 mb-4 text-xs">
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
+                  1
+                </span>
+                <span className="text-slate-700">
+                  Look at your browser URL bar at the top and tap the <strong>Lock / Settings icon (🔒 / ⚙️)</strong>.
+                </span>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
+                  2
+                </span>
+                <span className="text-slate-700">
+                  Find <strong>Microphone</strong> in Permissions and switch it to <strong>"Allow"</strong>.
+                </span>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
+                  3
+                </span>
+                <span className="text-slate-700">
+                  Tap <strong>"Try Again"</strong> below to start speaking!
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  clearMicError();
+                  setShowMicHelp(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  clearMicError();
+                  setShowMicHelp(false);
+                  startListening();
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#1E56E3] to-indigo-600 text-white font-bold text-xs shadow-md shadow-indigo-500/25 hover:opacity-95 transition cursor-pointer"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bulk Upload Modal */}
       {showBulk && (
