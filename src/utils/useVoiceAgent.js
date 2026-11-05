@@ -496,7 +496,7 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
         !sweetFemaleVoice.name.toLowerCase().includes('google') && 
         !sweetFemaleVoice.name.toLowerCase().includes('samantha')));
 
-    const utterance = new SpeechSynthesisUtterance(cleanedText);
+    const utterance = new window.SpeechSynthesisUtterance(cleanedText);
 
     // Warm, natural pace and pitch matching Gemini / ChatGPT voice agents
     utterance.rate = 0.98;
@@ -540,7 +540,7 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
     const currentVoices = window.speechSynthesis.getVoices();
     const voice = selectSweetCasualFemaleVoice(currentVoices, voiceName);
 
-    const utterance = new SpeechSynthesisUtterance(sample);
+    const utterance = new window.SpeechSynthesisUtterance(sample);
     utterance.rate = 0.98;
     utterance.pitch = 1.02;
     utterance.volume = 0.95;

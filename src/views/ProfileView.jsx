@@ -555,12 +555,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                 {!isEditingPhone && !isPhoneVerifiedState && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setVerifyPhoneInput(phone || '');
-                      setPhoneOtpStep(1);
-                      setPhoneOtpErr('');
-                      setShowPhoneVerifyModal(true);
-                    }}
+                    onClick={() => openSecurityModal('phone_verification', phone)}
                     className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shrink-0 cursor-pointer shadow-2xs"
                   >
                     Verify via OTP

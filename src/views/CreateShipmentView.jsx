@@ -352,7 +352,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
     try {
       const isCod = targetMode === 'cod';
-      const decVal = parseFloat(amount || orderAmount) || 2500;
+      const decVal = parseFloat(amount) || 2500;
       const res = await agentAPI.getCarrierRates({
         fromPincode: senderPincode,
         toPincode: receiverPincode,

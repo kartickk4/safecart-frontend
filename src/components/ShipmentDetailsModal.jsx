@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, ShieldAlert, Gavel, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw, Clock, Sparkles, Lock, MessageSquare, Send, Camera, Tag, MapPin, Check, QrCode, Printer, Smartphone, Wifi, Globe, Laptop, Zap, Building, Image as ImageIcon, Eye, ZoomIn, PackageCheck } from 'lucide-react';
+import { X, ShieldCheck, ShieldAlert, Gavel, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw, Clock, Sparkles, Lock, MessageSquare, Send, Camera, Tag, MapPin, Check, QrCode, Printer, Smartphone, Wifi, Globe, Laptop, Zap, Building, Image as ImageIcon, Eye, ZoomIn, PackageCheck, Package } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { shipmentAPI, profileAPI, claimAPI } from '../services/api';
 import { uploadImageToHost } from '../services/imageUpload';
@@ -388,7 +388,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
     setActionLoading(true);
     // OPTIMISTIC UPDATE: Instantly mark as Cancelled in UI
     const prevStatus = currentShipment.status;
-    setCurrentShipment(prev => ({ ...prev, status: 'Cancelled' }));
+    setDetails(prev => prev ? { ...prev, shipment: { ...(prev.shipment || {}), status: 'Cancelled' } } : prev);
     try {
       await shipmentAPI.cancelShipment(currentShipment.shipmentId, cancelReason);
       setShowCancelForm(false);
@@ -396,7 +396,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       onClose();
     } catch (err) {
       // ROLLBACK on failure
-      setCurrentShipment(prev => ({ ...prev, status: prevStatus }));
+      setDetails(prev => prev ? { ...prev, shipment: { ...(prev.shipment || {}), status: prevStatus } } : prev);
       alert(err.response?.data?.error || 'Failed to cancel shipment. Status reverted.');
     } finally {
       setActionLoading(false);

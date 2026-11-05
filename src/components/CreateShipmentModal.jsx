@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, ShieldCheck, ArrowRight, ArrowLeft, AlertTriangle, RotateCcw, 

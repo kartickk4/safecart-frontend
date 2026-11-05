@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Camera, Bot, Send, RotateCcw, Upload, X, Zap, Package, Truck, 
+  Camera, Bot, Send, RotateCcw, Upload, X, Zap, Package, Truck, Printer, 
   CheckCircle2, Sparkles, FileSpreadsheet, Shield, ArrowRight,
   AlertCircle, RefreshCw, Mic, MicOff, Volume2, VolumeX, Radio,
   Copy, Check, ExternalLink, ArrowUpRight, Clock, HelpCircle, ChevronRight,

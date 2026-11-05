@@ -108,7 +108,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
     setSignUpResendMsg('');
     try {
       const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
-      const otpRes = await authAPI.sendOtp({ phone: formattedPhone, email, role: selectedRole });
+      const otpRes = await authAPI.sendOtp({ phone: formattedPhone, email, role: selectedRoleType || 'Supplier' });
       if (otpRes.data?.debugCode) {
         setSignUpDebugOtp(otpRes.data.debugCode);
       }
@@ -528,7 +528,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
         const formattedPhone = phone.startsWith('+') ? phone : `+91${phone.replace(/\D/g, '')}`;
         window.confirmationResult = null;
         try {
-          const otpRes = await authAPI.sendOtp({ phone: formattedPhone, email, role: selectedRole });
+          const otpRes = await authAPI.sendOtp({ phone: formattedPhone, email, role: selectedRoleType || 'Supplier' });
           if (otpRes.data?.debugCode) {
             setSignUpDebugOtp(otpRes.data.debugCode);
           }

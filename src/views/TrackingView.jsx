@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Navigation, Truck, MapPin, CheckCircle2, Clock, ShieldCheck, RefreshCw, ExternalLink, Lock, Send, Package, ArrowRight, Radio, Crown, Sparkles, Camera, AlertTriangle, Eye, RotateCcw, Tag, Copy, Check, XCircle, CreditCard, Image as ImageIcon, X, ZoomIn } from 'lucide-react';
+import { Search, Navigation, Truck, MapPin, CheckCircle2, Clock, ShieldCheck, RefreshCw, ExternalLink, Lock, Send, Package, ArrowRight, Radio, Crown, Sparkles, Camera, AlertTriangle, Eye, RotateCcw, Tag, Copy, Check, XCircle, CreditCard, Image as ImageIcon, X, ZoomIn, Scale, Zap } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
 import { uploadImageToHost } from '../services/imageUpload';
 import { analyzeImageClarity } from '../utils/imageClarity';
@@ -17,32 +17,6 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
   const [searchId, setSearchId] = useState(selectedShipment?.shipmentId || selectedShipment?.awbCode || '');
   const [activeTab, setActiveTab] = useState('escrow'); // 'escrow' | 'carrier' | 'return'
 
-  const isOrderCancelled = trackingResult?.status === 'Cancelled' || Boolean(trackingResult?.cancelledAt);
-
-  const isParcelPickedUp = Boolean(
-    trackingResult?.isPickedUp ||
-    ['Picked Up', 'In Transit', 'Out for Delivery', 'Delivered', 'Completed', 'Cancelled', 'Returned & Refunded', 'Return Requested', 'Return In Transit'].includes(trackingResult?.status) ||
-    (trackingResult?.milestones || []).some(m => /picked\s*up|pickup\s*done|in\s*transit|out\s*for\s*delivery|delivered/i.test(m?.status || m?.activity || ''))
-  );
-
-  const isOutForDelivery = Boolean(
-    ['Out for Delivery', 'Delivered', 'Completed'].includes(trackingResult?.status) ||
-    (trackingResult?.milestones || []).some(m => /out\s*for\s*delivery|delivered/i.test(m?.status || m?.activity || ''))
-  );
-
-  const isParcelDelivered = Boolean(
-    trackingResult?.deliveryConfirmed ||
-    ['Delivered', 'Completed'].includes(trackingResult?.status) ||
-    (trackingResult?.milestones || []).some(m => /delivered/i.test(m?.status || m?.activity || ''))
-  );
-
-  const isReturnApplied = Boolean(
-    (trackingResult?.returnStatus && trackingResult?.returnStatus !== 'None') ||
-    trackingResult?.status?.includes('Return') ||
-    Number(trackingResult?.discountOfferedAmount) > 0 ||
-    trackingResult?.returnType ||
-    trackingResult?.returnRequested
-  );
   const [loading, setLoading] = useState(false);
   const [isAutoSyncing, setIsAutoSyncing] = useState(true);
   const [lastSyncedTime, setLastSyncedTime] = useState(new Date());
@@ -114,6 +88,33 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
       ['Delivered', 'Confirmed'].includes(trackingResult.status) ||
       Boolean(trackingResult.deliveryConfirmed)
     )
+  );
+
+  const isOrderCancelled = trackingResult?.status === 'Cancelled' || Boolean(trackingResult?.cancelledAt);
+
+  const isParcelPickedUp = Boolean(
+    trackingResult?.isPickedUp ||
+    ['Picked Up', 'In Transit', 'Out for Delivery', 'Delivered', 'Completed', 'Cancelled', 'Returned & Refunded', 'Return Requested', 'Return In Transit'].includes(trackingResult?.status) ||
+    (trackingResult?.milestones || []).some(m => /picked\s*up|pickup\s*done|in\s*transit|out\s*for\s*delivery|delivered/i.test(m?.status || m?.activity || ''))
+  );
+
+  const isOutForDelivery = Boolean(
+    ['Out for Delivery', 'Delivered', 'Completed'].includes(trackingResult?.status) ||
+    (trackingResult?.milestones || []).some(m => /out\s*for\s*delivery|delivered/i.test(m?.status || m?.activity || ''))
+  );
+
+  const isParcelDelivered = Boolean(
+    trackingResult?.deliveryConfirmed ||
+    ['Delivered', 'Completed'].includes(trackingResult?.status) ||
+    (trackingResult?.milestones || []).some(m => /delivered/i.test(m?.status || m?.activity || ''))
+  );
+
+  const isReturnApplied = Boolean(
+    (trackingResult?.returnStatus && trackingResult?.returnStatus !== 'None') ||
+    trackingResult?.status?.includes('Return') ||
+    Number(trackingResult?.discountOfferedAmount) > 0 ||
+    trackingResult?.returnType ||
+    trackingResult?.returnRequested
   );
 
   // Return form state
@@ -608,7 +609,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
       alert(`Discount offer of ₹${discountAmount} successfully sent to buyer! Once the buyer accepts, funds will auto-split.`);
       setSellerDiscountInput('');
       setIsEditingDiscount(false);
-      handleSearch(trackingResult.shipmentId);
+      fetchTrackingData(trackingResult.shipmentId);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to offer discount.');
     } finally {
@@ -623,7 +624,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
     try {
       await shipmentAPI.respondDiscount(trackingResult.shipmentId, accepted);
       alert(accepted ? 'Discount accepted! The agreed discount amount has been credited to your wallet.' : 'Discount rejected. A full 100% refund has been credited to your wallet.');
-      handleSearch(trackingResult.shipmentId);
+      fetchTrackingData(trackingResult.shipmentId);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to respond to discount offer.');
     } finally {
@@ -1873,7 +1874,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                                       try {
                                         await shipmentAPI.respondDiscount(trackingResult.shipmentId, true);
                                         alert(`Partial refund of ₹${trackingResult.discountOfferedAmount} auto-completed!`);
-                                        handleSearch(trackingResult.shipmentId);
+                                        fetchTrackingData(trackingResult.shipmentId);
                                       } catch (err) {
                                         alert(err.response?.data?.error || 'Failed to auto-complete discount.');
                                       } finally {
