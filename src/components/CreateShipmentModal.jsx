@@ -426,7 +426,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 <div>
                   <h4 className="font-extrabold text-emerald-950 text-xs">🎉 Welcome Offer — ₹50 OFF on Your First Shipment!</h4>
                   <p className="text-[11px] text-emerald-700/90 font-medium">
-                    Automatically deducted at checkout. You also earn ₹10 seller cashback on booking!
+                    Automatically deducted at checkout on your first order.
                   </p>
                 </div>
               </div>

@@ -958,34 +958,36 @@ export default function WalletModal({ user, onUpdateUser }) {
 
       {/* REWARD & WALLET TRANSACTIONS HISTORY */}
       <div className="bg-white p-3.5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-4 sm:space-y-6">
-        {/* Dual Ledger Tab Switcher for All Users */}
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => setActiveLedgerTab('WALLET')}
-            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
-              activeLedgerTab === 'WALLET'
-                ? 'bg-[#1E56E3] text-white shadow-md shadow-blue-500/25'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
-            }`}
-          >
-            <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>Wallet History ({walletTransactions.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveLedgerTab('REWARDS')}
-            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
-              activeLedgerTab === 'REWARDS'
-                ? 'bg-[#1E56E3] text-white shadow-md shadow-blue-500/25'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
-            }`}
-          >
-            <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>{isSupplier ? 'Seller Shipping Cashback (₹3 – ₹6)' : 'Cashback & Rewards'} ({rewardHistory.length})</span>
-          </button>
-        </div>
+        {/* Dual Ledger Tab Switcher for Buyers (Suppliers use unified Wallet History) */}
+        {!isSupplier && (
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-3 overflow-x-auto no-scrollbar">
+            <button
+              onClick={() => setActiveLedgerTab('WALLET')}
+              className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
+                activeLedgerTab === 'WALLET'
+                  ? 'bg-[#1E56E3] text-white shadow-md shadow-blue-500/25'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+              }`}
+            >
+              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Wallet History ({walletTransactions.length})</span>
+            </button>
+            <button
+              onClick={() => setActiveLedgerTab('REWARDS')}
+              className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
+                activeLedgerTab === 'REWARDS'
+                  ? 'bg-[#1E56E3] text-white shadow-md shadow-blue-500/25'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+              }`}
+            >
+              <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Cashback & Rewards ({rewardHistory.length})</span>
+            </button>
+          </div>
+        )}
 
         {/* 1. WALLET TRANSACTIONS LEDGER VIEW */}
-        {activeLedgerTab === 'WALLET' ? (
+        {activeLedgerTab === 'WALLET' || isSupplier ? (
           <div className="space-y-3 sm:space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100">
               <div>
@@ -1149,12 +1151,10 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-base">
-                    {isSupplier ? 'Seller Shipping Cashback Transactions' : 'Orders & Payout History'}
+                    Orders & Payout History
                   </h3>
                   <p className="text-xs text-slate-500">
-                    {isSupplier 
-                      ? 'History of all earned ₹3 – ₹6 seller cashbacks and completed payouts.'
-                      : 'History of all order receipts and withdrawals.'}
+                    History of all order receipts, buyer rewards, and withdrawals.
                   </p>
                 </div>
               </div>
@@ -1202,9 +1202,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <div>
                   <p className="text-sm font-bold text-slate-800">No transactions match this filter.</p>
                   <p className="text-xs text-slate-400 mt-1">
-                    {isSupplier 
-                      ? 'Prepay or fulfill parcels to start earning instant cash rewards (₹1 to ₹10)!'
-                      : 'Completed deliveries and payouts will appear here once orders are fulfilled.'}
+                    Completed deliveries and payouts will appear here once orders are fulfilled.
                   </p>
                 </div>
               </div>
@@ -1288,11 +1286,11 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">
-                    {isSupplier ? 'Withdraw Cash Reward' : 'Withdraw Order Balance'}
+                    {isSupplier ? 'Withdraw Cleared Payout Balance' : 'Withdraw Order Balance'}
                   </h3>
                   <p className="text-xs text-slate-500">
                     {isSupplier 
-                      ? 'Transfer your earned cash rewards directly to UPI or Bank.' 
+                      ? 'Transfer your cleared seller wallet payouts directly to UPI or Bank.' 
                       : 'Transfer your order balance directly to UPI or Bank.'}
                   </p>
                 </div>
