@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, ShieldAlert, Gavel, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw, Clock, Sparkles, Lock, MessageSquare, Send, Camera, Tag, MapPin, Check, QrCode, Printer, Smartphone, Wifi, Globe, Laptop, Zap, Building, Image as ImageIcon, Eye, ZoomIn, PackageCheck, Package } from 'lucide-react';
+import { X, ShieldCheck, ShieldAlert, Gavel, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw, Clock, Sparkles, Lock, MessageSquare, Send, Camera, Tag, MapPin, Check, QrCode, Printer, Zap, Building, Image as ImageIcon, Eye, ZoomIn, PackageCheck, Package } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { shipmentAPI, profileAPI, claimAPI } from '../services/api';
 import { uploadImageToHost } from '../services/imageUpload';
@@ -60,25 +60,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
   const [qrLabelData, setQrLabelData] = useState(null);
   const [showQrPanel, setShowQrPanel] = useState(false);
   const [qrCopied, setQrCopied] = useState(false);
-  const [networkInfo, setNetworkInfo] = useState({ 
-    localIp: typeof window !== 'undefined' ? window.location.hostname : 'localhost', 
-    frontendNetworkUrl: typeof window !== 'undefined' ? (window.location.origin || 'http://localhost:3001') : 'http://localhost:3001' 
-  });
-  const [qrScanMode, setQrScanMode] = useState('phone'); // 'phone' | 'localhost' | 'custom'
-  const [customQrUrl, setCustomQrUrl] = useState('');
 
-  // Fetch local machine IP dynamically so mobile phone scanning works over Wi-Fi
-  useEffect(() => {
-    if (showQrPanel) {
-      shipmentAPI.getNetworkInfo().then(res => {
-        if (res.data?.localIp) {
-          setNetworkInfo(res.data);
-        }
-      }).catch(err => {
-        console.warn('Network info fetch note:', err);
-      });
-    }
-  }, [showQrPanel]);
 
   // Reverse Courier Assignment State (Supplier)
   const [returnCarrierSlug, setReturnCarrierSlug] = useState('delhivery');
@@ -1632,121 +1614,17 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 </div>
 
                 {showQrPanel && (() => {
-                  const localIp = networkInfo?.localIp || window.location.hostname || 'localhost';
-                  const currentPort = window.location.port || '3001';
-                  let resolvedBase = `http://${localIp}:${currentPort}`;
-
-                  if (qrScanMode === 'localhost') {
-                    resolvedBase = window.location.origin;
-                  } else if (qrScanMode === 'custom' && customQrUrl.trim()) {
-                    resolvedBase = customQrUrl.trim().replace(/\/+$/, '');
-                  } else {
-                    resolvedBase = networkInfo?.frontendNetworkUrl || `http://${localIp}:${currentPort}`;
-                  }
-
-                  const qrUrl = `${resolvedBase}/qr-confirm/${currentShipment.inboxQrToken}`;
+                  const qrUrl = `${window.location.origin}/qr-confirm/${currentShipment.inboxQrToken}`;
 
                   return (
                     <div className="border-t border-violet-200 bg-white px-5 py-5 space-y-4 animate-in fade-in duration-200">
-                      {/* Device Scan Mode Selector */}
-                      <div className="space-y-2 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                            <Smartphone className="w-3.5 h-3.5 text-violet-600" />
-                            <span>Scan Target Destination:</span>
-                          </span>
-                          <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
-                            qrScanMode === 'phone'
-                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                              : qrScanMode === 'localhost'
-                              ? 'bg-blue-100 text-blue-800 border-blue-300'
-                              : 'bg-violet-100 text-violet-800 border-violet-300'
-                          }`}>
-                            {qrScanMode === 'phone' ? '📱 Mobile Phone Ready' : qrScanMode === 'localhost' ? '💻 Laptop Testing' : '🌐 Custom Network'}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-1.5 p-1 bg-white rounded-xl border border-slate-200 text-[11px] font-bold">
-                          <button
-                            type="button"
-                            onClick={() => setQrScanMode('phone')}
-                            className={`py-1.5 px-2 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer ${
-                              qrScanMode === 'phone'
-                                ? 'bg-emerald-600 text-white shadow-xs font-extrabold'
-                                : 'text-slate-600 hover:text-slate-900'
-                            }`}
-                          >
-                            <Smartphone className="w-3 h-3" />
-                            <span>Phone (Wi-Fi)</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setQrScanMode('localhost')}
-                            className={`py-1.5 px-2 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer ${
-                              qrScanMode === 'localhost'
-                                ? 'bg-[#1E56E3] text-white shadow-xs font-extrabold'
-                                : 'text-slate-600 hover:text-slate-900'
-                            }`}
-                          >
-                            <Laptop className="w-3 h-3" />
-                            <span>Localhost</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setQrScanMode('custom')}
-                            className={`py-1.5 px-2 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer ${
-                              qrScanMode === 'custom'
-                                ? 'bg-violet-600 text-white shadow-xs font-extrabold'
-                                : 'text-slate-600 hover:text-slate-900'
-                            }`}
-                          >
-                            <Globe className="w-3 h-3" />
-                            <span>Custom IP</span>
-                          </button>
-                        </div>
-
-                        {qrScanMode === 'custom' && (
-                          <div className="pt-1">
-                            <input
-                              type="text"
-                              placeholder="e.g. http://192.168.1.100:5173 or https://myapp.ngrok.app"
-                              value={customQrUrl}
-                              onChange={(e) => setCustomQrUrl(e.target.value)}
-                              className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg font-mono text-slate-800"
-                            />
-                          </div>
-                        )}
-
-                        {/* Mode Explanation & Guidance */}
-                        {qrScanMode === 'phone' ? (
-                          <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-2 text-[11px] text-emerald-900">
-                            <Wifi className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                            <div className="space-y-0.5">
-                              <p className="font-bold text-emerald-950">
-                                Scannable with your Phone's Camera App:
-                              </p>
-                              <p className="text-[10.5px] text-emerald-800 leading-relaxed">
-                                Point your iPhone or Android camera at the QR code below. Your phone will open <span className="font-mono font-bold">{resolvedBase}</span> over local Wi-Fi. (Phone and PC must be on same Wi-Fi).
-                              </p>
-                            </div>
-                          </div>
-                        ) : qrScanMode === 'localhost' ? (
-                          <div className="p-2.5 rounded-xl bg-blue-50 border border-blue-200 flex items-start gap-2 text-[11px] text-blue-900">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
-                            <p className="text-[10.5px] leading-relaxed">
-                              Encodes <span className="font-mono font-bold">{resolvedBase}</span>. Best when opening or testing the sign-off link in this browser on this PC.
-                            </p>
-                          </div>
-                        ) : null}
-                      </div>
-
-                      {/* Printable QR Label */}
+                      {/* Printable QR Label Slip */}
                       <div id="qr-print-area" className="flex flex-col items-center gap-3.5 p-5 border-2 border-dashed border-violet-300 rounded-2xl bg-violet-50/40">
                         <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wider">SecureKaro — Delivery Sign-Off QR</p>
-                        <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
                           <QRCodeSVG
                             value={qrUrl}
-                            size={154}
+                            size={160}
                             level="H"
                             includeMargin={false}
                             fgColor="#1e1b4b"
@@ -1756,17 +1634,17 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                           <p className="text-xs font-bold text-slate-800">Scan to confirm delivery</p>
                           <p className="text-[11px] text-slate-500">{currentShipment.description}</p>
                           <p className="text-sm font-extrabold text-violet-800 mt-0.5">₹{currentShipment.amount?.toLocaleString('en-IN')}</p>
-                          <p className="text-[10px] font-mono text-slate-400 break-all max-w-xs mt-1 bg-white/70 py-1 px-2 rounded-md border border-slate-200">
+                          <p className="text-[10px] font-mono text-slate-500 break-all max-w-xs mt-1 bg-white/80 py-1 px-2.5 rounded-lg border border-slate-200">
                             {qrUrl}
                           </p>
                         </div>
                         <p className="text-[9.5px] text-slate-400 text-center leading-relaxed">
-                          Receiver scans QR &amp; verifies mobile number at securekaro.app/qr-confirm<br />No login required • Protected by SecureKaro
+                          Receiver scans QR &amp; confirms delivery at securekaro.in<br />No login required • Protected by SecureKaro
                         </p>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex gap-2">
+                      {/* Production Action Buttons */}
+                      <div className="flex gap-2.5">
                         <button
                           type="button"
                           onClick={() => window.print()}
@@ -1782,21 +1660,11 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                             setQrCopied(true);
                             setTimeout(() => setQrCopied(false), 2500);
                           }}
-                          className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200"
                         >
                           {qrCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           <span>{qrCopied ? 'Copied!' : 'Copy Link'}</span>
                         </button>
-                        <a
-                          href={qrUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
-                          title="Open sign-off page in new tab"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          <span>Test</span>
-                        </a>
                       </div>
                     </div>
                   );
