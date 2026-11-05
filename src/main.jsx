@@ -9,6 +9,14 @@ if (typeof window !== 'undefined' && window.location.hostname.includes('onrender
   window.location.replace(`https://securekaro.in${window.location.pathname}${window.location.search}${window.location.hash}`);
 }
 
+// Automatically recover from stale Vite chunk hashes across deployments
+if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', () => {
+    console.warn('[SecureKaro] Stale deployment asset detected, auto-reloading page...');
+    window.location.reload();
+  });
+}
+
 const GlobalFallback = () => (
   <div className="min-h-screen bg-[#F7F9FC] flex flex-col items-center justify-center p-6 text-center select-none">
     <div className="w-10 h-10 border-[3px] border-blue-100 border-t-[#1E56E3] rounded-full animate-spin shadow-xs" />

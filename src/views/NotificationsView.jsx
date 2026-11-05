@@ -29,7 +29,15 @@ export default function NotificationsView({ onSelectShipment, onNotificationsCha
             type: n.type || 'shipping',
             title: n.title,
             desc: n.message,
-            time: new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            time: (() => {
+              try {
+                if (!n.createdAt) return '';
+                const d = new Date(n.createdAt);
+                return isNaN(d.getTime()) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              } catch (_) {
+                return '';
+              }
+            })(),
             read: n.read,
             shipmentId: extractedShipmentId,
             actionType: n.actionType || (n.title?.toLowerCase().includes('confirm') ? 'CONFIRM_PARCEL' : ''),

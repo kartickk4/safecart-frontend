@@ -56,11 +56,16 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
   }, []);
 
   const referralCode = stats?.referralCode || user?.referralCode || 'SK-GROWTH';
-  const liveOrigin = (typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1'))
-    ? window.location.origin
-    : (stats?.referralLink && !stats.referralLink.includes('localhost') && !stats.referralLink.includes('undefined')
-        ? new URL(stats.referralLink).origin
-        : 'https://securekaro.in');
+  let liveOrigin = 'https://securekaro.in';
+  if (typeof window !== 'undefined' && window.location?.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1')) {
+    liveOrigin = window.location.origin;
+  } else if (stats?.referralLink && !stats.referralLink.includes('localhost') && !stats.referralLink.includes('undefined')) {
+    try {
+      liveOrigin = new URL(stats.referralLink).origin;
+    } catch (_) {
+      liveOrigin = 'https://securekaro.in';
+    }
+  }
   const referralLink = `${liveOrigin}/signup?ref=${referralCode}`;
   const totalReferred = Number(stats?.totalReferred || 0);
   const earnedReferrals = Number(stats?.earnedReferrals || 0);

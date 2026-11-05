@@ -2,34 +2,35 @@ import React, { useState, useEffect, Suspense, lazy, startTransition } from 'rea
 import AuthView from './views/AuthView';
 import DashboardView from './views/DashboardView';
 import ShipmentsListView from './views/ShipmentsListView';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
-// ⚡ PERFORMANCE: Heavy views lazy-loaded on demand (<350KB initial bundle)
-const CreateShipmentView = lazy(() => import('./views/CreateShipmentView'));
-const TrackingView = lazy(() => import('./views/TrackingView'));
-const DeliveryConfirmView = lazy(() => import('./views/DeliveryConfirmView'));
-const NotificationsView = lazy(() => import('./views/NotificationsView'));
-const ProfileView = lazy(() => import('./views/ProfileView'));
-const SupportView = lazy(() => import('./views/SupportView'));
-const LegalComplianceView = lazy(() => import('./views/LegalComplianceView'));
-const ReturnOrdersView = lazy(() => import('./views/ReturnOrdersView'));
-const PublicPayView = lazy(() => import('./views/PublicPayView'));
-const PublicTrackingView = lazy(() => import('./views/PublicTrackingView'));
-const AIAgentView = lazy(() => import('./views/AIAgentView'));
-const PhotoReviewResponseView = lazy(() => import('./views/PhotoReviewResponseView'));
-const ReferralView = lazy(() => import('./views/ReferralView'));
-const PublicQrConfirmView = lazy(() => import('./views/PublicQrConfirmView'));
-const AdminView = lazy(() => import('./views/AdminView'));
-const ROISavingsCalculatorView = lazy(() => import('./views/ROISavingsCalculatorView'));
+// ⚡ PERFORMANCE: Heavy views lazy-loaded on demand with auto-retry on fresh deployments (<350KB initial bundle)
+const CreateShipmentView = lazyWithRetry(() => import('./views/CreateShipmentView'));
+const TrackingView = lazyWithRetry(() => import('./views/TrackingView'));
+const DeliveryConfirmView = lazyWithRetry(() => import('./views/DeliveryConfirmView'));
+const NotificationsView = lazyWithRetry(() => import('./views/NotificationsView'));
+const ProfileView = lazyWithRetry(() => import('./views/ProfileView'));
+const SupportView = lazyWithRetry(() => import('./views/SupportView'));
+const LegalComplianceView = lazyWithRetry(() => import('./views/LegalComplianceView'));
+const ReturnOrdersView = lazyWithRetry(() => import('./views/ReturnOrdersView'));
+const PublicPayView = lazyWithRetry(() => import('./views/PublicPayView'));
+const PublicTrackingView = lazyWithRetry(() => import('./views/PublicTrackingView'));
+const AIAgentView = lazyWithRetry(() => import('./views/AIAgentView'));
+const PhotoReviewResponseView = lazyWithRetry(() => import('./views/PhotoReviewResponseView'));
+const ReferralView = lazyWithRetry(() => import('./views/ReferralView'));
+const PublicQrConfirmView = lazyWithRetry(() => import('./views/PublicQrConfirmView'));
+const AdminView = lazyWithRetry(() => import('./views/AdminView'));
+const ROISavingsCalculatorView = lazyWithRetry(() => import('./views/ROISavingsCalculatorView'));
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 
-// Modals code-split on demand
-const CreateShipmentModal = lazy(() => import('./components/CreateShipmentModal'));
-const ShipmentDetailsModal = lazy(() => import('./components/ShipmentDetailsModal'));
-const WalletModal = lazy(() => import('./components/WalletModal'));
-const RoleSelectionModal = lazy(() => import('./components/RoleSelectionModal'));
-const WelcomeAnimationModal = lazy(() => import('./components/WelcomeAnimationModal'));
+// Modals code-split on demand with auto-retry
+const CreateShipmentModal = lazyWithRetry(() => import('./components/CreateShipmentModal'));
+const ShipmentDetailsModal = lazyWithRetry(() => import('./components/ShipmentDetailsModal'));
+const WalletModal = lazyWithRetry(() => import('./components/WalletModal'));
+const RoleSelectionModal = lazyWithRetry(() => import('./components/RoleSelectionModal'));
+const WelcomeAnimationModal = lazyWithRetry(() => import('./components/WelcomeAnimationModal'));
 
 // Sleek minimal fallback loading spinner
 const ViewLoadingFallback = () => (
