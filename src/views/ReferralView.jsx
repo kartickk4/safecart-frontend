@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import { 
   Gift, 
   Copy, 
@@ -24,7 +26,8 @@ import {
   Award,
   Star,
   Truck,
-  ArrowUpRight
+  ArrowUpRight,
+  X
 } from 'lucide-react';
 import { profileAPI } from '../services/api';
 
@@ -583,42 +586,104 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
       </div>
 
       {/* ── QR CODE MODAL ── */}
-      {showQrModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-slate-200 space-y-5 animate-scaleUp">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-slate-900">Scan to Register</span>
+      {showQrModal && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fadeIn"
+          onClick={() => setShowQrModal(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center shadow-2xl border border-slate-200 space-y-4 my-auto relative animate-scaleUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <QrCode className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <span className="text-xs font-black text-slate-900 block">Scan to Register</span>
+                  <span className="text-[10px] text-slate-400 font-medium block">Pre-filled referral link</span>
+                </div>
+              </div>
               <button 
+                type="button"
                 onClick={() => setShowQrModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold transition cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 transition cursor-pointer"
+                aria-label="Close QR Modal"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Generated QR Code Display */}
-            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 inline-block shadow-inner">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(referralLink)}&margin=10`}
-                alt="Referral QR Code"
-                className="w-48 h-48 mx-auto rounded-lg"
+            {/* Generated Native Vector QR Code Display */}
+            <div className="p-4 sm:p-5 bg-gradient-to-b from-slate-50 to-white rounded-2xl border border-slate-200/80 inline-flex flex-col items-center justify-center shadow-inner">
+              <QRCodeSVG
+                value={referralLink}
+                size={180}
+                level="M"
+                includeMargin={true}
+                className="rounded-xl shadow-xs bg-white p-2"
               />
+              <span className="text-[10px] font-bold text-slate-400 mt-2 flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>SecureKaro Instant Referral QR</span>
+              </span>
             </div>
 
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Referral Code</span>
-              <span className="text-2xl font-black font-mono text-[#1E56E3] tracking-widest block">{referralCode}</span>
-              <p className="text-[11px] text-slate-400">Point phone camera at this QR code to sign up with your code pre-filled.</p>
+            {/* Referral Code Box */}
+            <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-200/90 space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Referral Code
+              </span>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-xl sm:text-2xl font-black font-mono text-[#1E56E3] tracking-widest">
+                  {referralCode}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-[#1E56E3] hover:bg-blue-50 transition cursor-pointer"
+                  title="Copy Code"
+                >
+                  {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400">Point phone camera to sign up with code pre-filled.</p>
             </div>
 
-            <button
-              onClick={handleCopyLink}
-              className="w-full py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-md transition cursor-pointer"
-            >
-              {copiedLink ? 'Link Copied!' : 'Copy Invite Link'}
-            </button>
+            {/* Actions */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="w-full py-3 px-4 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-black shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                <span>{copiedLink ? 'Invite Link Copied!' : 'Copy Invite Link'}</span>
+              </button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleWhatsAppShare}
+                  className="py-2.5 px-3 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>WhatsApp</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowQrModal(false)}
+                  className="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
