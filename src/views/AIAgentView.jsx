@@ -1023,7 +1023,7 @@ export default function AIAgentView({ onBack }) {
                 SecureKaro Shipping Copilot
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed mb-6">
-                Paste customer WhatsApp chats, scan an address chit, speak via microphone, or ask shipping & escrow rules.
+                Paste customer WhatsApp chats, scan an address chit, speak via microphone, or ask shipping & delivery rules.
               </p>
 
               {/* Starter Quick Action Cards */}
@@ -1049,7 +1049,7 @@ export default function AIAgentView({ onBack }) {
                   },
                   {
                     title: "Wallet & Remittances",
-                    desc: "Check available balance & COD escrow",
+                    desc: "Check available balance & COD on hold",
                     icon: Zap,
                     action: () => sendMessage("What is my wallet balance?")
                   },

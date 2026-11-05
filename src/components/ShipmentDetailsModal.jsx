@@ -635,7 +635,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
         reason: claimReason,
         description: claimDescription.trim() || claimReason
       });
-      setClaimSuccessMsg('Dispute claim submitted successfully! Order payment is frozen in escrow while support investigates.');
+      setClaimSuccessMsg('Dispute claim submitted successfully! Order payout is placed on hold while support investigates.');
       setDetails(prev => ({
         ...prev,
         shipment: {
@@ -973,7 +973,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                     <p className="text-[11px] text-slate-600 mt-0.5 italic">"{currentShipment.claimDescription}"</p>
                   )}
                   <p className="text-[11px] text-rose-700 mt-1 leading-relaxed">
-                    🔒 <strong>SecureKaro Escrow Protection:</strong> Order payment is safely frozen in escrow while support investigates. The seller cannot withdraw until resolution.
+                    🔒 <strong>Dispute Protection:</strong> Order payout is on hold while our team investigates. The seller cannot withdraw until resolution.
                   </p>
                 </div>
               </div>
@@ -4157,7 +4157,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 <div className="p-3 bg-blue-50/80 rounded-xl border border-blue-200 text-[11px] text-blue-900 leading-relaxed flex items-start gap-2">
                   <ShieldCheck className="w-4 h-4 text-blue-700 shrink-0 mt-0.5" />
                   <span>
-                    Our specialist team is investigating this case with the courier and merchant. Order payment remains safely frozen in escrow.
+                    Our specialist team is investigating this case with the courier and merchant. Order payment remains on hold.
                   </span>
                 </div>
 
@@ -4247,12 +4247,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   />
                 </div>
 
-                <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200 text-[11px] text-amber-900 leading-relaxed flex items-start gap-2">
-                  <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-                  <span>
-                    <strong>Escrow Safety Guarantee:</strong> Submitting a claim freezes the order payment in SecureKaro escrow so the seller cannot withdraw until your issue is verified and resolved.
-                  </span>
-                </div>
+                
 
                 <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
                   <button
