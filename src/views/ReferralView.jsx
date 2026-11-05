@@ -128,10 +128,6 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
       a: 'Yes, absolutely! The ₹30 cash reward is deposited directly to your withdrawable Wallet balance. You can withdraw it instantly to your registered Bank Account or UPI ID via the Wallet section.'
     },
     {
-      q: 'How do I receive and withdraw my referral earnings?',
-      a: 'All referral cash is credited directly to your withdrawable Wallet balance. You can withdraw it anytime to your UPI ID or Bank account (IMPS/NEFT) with zero lock-in.'
-    },
-    {
       q: 'Is there any limit to how many merchants I can invite?',
       a: 'There is zero limit! You can invite as many suppliers, ecommerce merchants, and WhatsApp/Instagram sellers as you want. You earn ₹30 for every single friend who completes their first delivery.'
     },
@@ -488,12 +484,6 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
               </div>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200/70 text-xs text-slate-700 flex items-center justify-between">
-              <span className="font-medium">Ambassador Milestone:</span>
-              <span className="font-extrabold text-emerald-800">
-                {calculatorCount >= 6 ? 'Gold VIP Ambassador 🏆' : calculatorCount >= 3 ? 'Silver Partner 🌟' : 'Starter Advocate 🚀'}
-              </span>
-            </div>
           </div>
         </div>
 
@@ -560,77 +550,6 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
         </div>
 
       </div>
-
-      {/* ── AMBASSADOR TIERS ── */}
-      <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-6">
-        <div>
-          <span className="text-xs font-black text-indigo-600 uppercase tracking-wider block">REWARD RECOGNITION</span>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">Ambassador Progression Tiers</h2>
-          <p className="text-xs text-slate-500">Earn higher recognition as your merchant network expands.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          
-          {/* Tier 1 */}
-          <div className={`p-6 rounded-2xl border transition-all ${
-            earnedReferrals < 3 
-              ? 'bg-blue-50/50 border-[#1E56E3] ring-2 ring-blue-100 shadow-sm' 
-              : 'bg-slate-50/60 border-slate-200 opacity-80'
-          }`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-black uppercase tracking-wider bg-blue-100 text-[#1E56E3] px-2 py-0.5 rounded-full">
-                0-2 REFERRALS
-              </span>
-              {earnedReferrals < 3 && <span className="text-xs font-bold text-[#1E56E3]">Current Tier</span>}
-            </div>
-            <h4 className="text-base font-extrabold text-slate-900">Starter Advocate</h4>
-            <p className="text-xs text-slate-500 mt-1">Earn ₹30 cash on every verified merchant delivery.</p>
-            <div className="mt-4 pt-4 border-t border-slate-200/60 text-xs font-bold text-slate-700">
-              Perk: ₹30 Wallet Cash per order
-            </div>
-          </div>
-
-          {/* Tier 2 */}
-          <div className={`p-6 rounded-2xl border transition-all ${
-            earnedReferrals >= 3 && earnedReferrals < 6
-              ? 'bg-purple-50/50 border-purple-500 ring-2 ring-purple-100 shadow-sm' 
-              : 'bg-slate-50/60 border-slate-200 opacity-80'
-          }`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                3-5 REFERRALS
-              </span>
-              {earnedReferrals >= 3 && earnedReferrals < 6 && <span className="text-xs font-bold text-purple-700">Current Tier</span>}
-            </div>
-            <h4 className="text-base font-extrabold text-slate-900">Silver Partner</h4>
-            <p className="text-xs text-slate-500 mt-1">Accelerated payout verification and priority customer support.</p>
-            <div className="mt-4 pt-4 border-t border-slate-200/60 text-xs font-bold text-purple-700">
-              Perk: Priority Support + Instant Credit
-            </div>
-          </div>
-
-          {/* Tier 3 */}
-          <div className={`p-6 rounded-2xl border transition-all ${
-            earnedReferrals >= 6 
-              ? 'bg-amber-50/50 border-amber-500 ring-2 ring-amber-100 shadow-sm' 
-              : 'bg-slate-50/60 border-slate-200 opacity-80'
-          }`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-                6+ REFERRALS
-              </span>
-              {earnedReferrals >= 6 && <span className="text-xs font-bold text-amber-700">Current Tier</span>}
-            </div>
-            <h4 className="text-base font-extrabold text-slate-900">Gold VIP Ambassador</h4>
-            <p className="text-xs text-slate-500 mt-1">Dedicated Key Account Manager and customized merchant shipping discounts.</p>
-            <div className="mt-4 pt-4 border-t border-slate-200/60 text-xs font-bold text-amber-800">
-              Perk: Dedicated Key Account Manager
-            </div>
-          </div>
-
-        </div>
-      </div>
-
       {/* ── FREQUENTLY ASKED QUESTIONS ── */}
       <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-4">
         <div>
