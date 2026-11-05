@@ -674,10 +674,18 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <span className="text-[10px] text-blue-300 font-bold">
                   SecureKaro Delivery Protection
                 </span>
-                <div className="flex items-center gap-1 text-[10px] text-blue-200 font-bold">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>100% Secured</span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowWithdrawModal(true);
+                    setWithdrawError('');
+                    setWithdrawSuccess('');
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-blue-50 text-[#1E56E3] text-xs font-black transition shadow-md flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Withdraw</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
 
@@ -1033,14 +1041,16 @@ export default function WalletModal({ user, onUpdateUser }) {
                   </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setShowRechargeModal(true)}
-                  className="px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1E56E3] font-black text-[11px] sm:text-xs border border-blue-200 flex items-center gap-1.5 cursor-pointer transition shrink-0 whitespace-nowrap"
-                >
-                  <Zap className="w-3.5 h-3.5" />
-                  <span>+ Recharge</span>
-                </button>
+                {isSupplier && (
+                  <button
+                    type="button"
+                    onClick={() => setShowRechargeModal(true)}
+                    className="px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1E56E3] font-black text-[11px] sm:text-xs border border-blue-200 flex items-center gap-1.5 cursor-pointer transition shrink-0 whitespace-nowrap"
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>+ Recharge</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1058,17 +1068,32 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <div>
                   <p className="text-sm font-bold text-slate-800">No transactions match this filter</p>
                   <p className="text-xs text-slate-400 mt-1">
-                    Top up your wallet, receive refunds, or withdraw funds to view automatic ledger entries.
+                    {isSupplier ? 'Top up your wallet, receive refunds, or withdraw funds to view automatic ledger entries.' : 'Receive refunds, cashback, or withdraw funds to view automatic ledger entries.'}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowRechargeModal(true)}
-                  className="px-4 py-2 rounded-xl bg-[#1E56E3] text-white text-xs font-bold shadow-sm inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Zap className="w-3.5 h-3.5" />
-                  <span>Recharge Now</span>
-                </button>
+                {isSupplier ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowRechargeModal(true)}
+                    className="px-4 py-2 rounded-xl bg-[#1E56E3] text-white text-xs font-bold shadow-sm inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>Recharge Now</span>
+                  </button>
+                ) : (Number(user?.walletBalance) || 0) > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowWithdrawModal(true);
+                      setWithdrawError('');
+                      setWithdrawSuccess('');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#1E56E3] text-white text-xs font-bold shadow-sm inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <span>Withdraw Funds</span>
+                  </button>
+                ) : null}
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
