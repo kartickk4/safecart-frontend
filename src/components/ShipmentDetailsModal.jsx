@@ -945,18 +945,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
             </div>
           </div>
 
-          {/* Repeat Shipment Action for Seller */}
-          {isSupplier && onRepeatShipment && (
-            <button
-              type="button"
-              onClick={() => onRepeatShipment(currentShipment)}
-              className="mr-8 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-[#1E56E3] text-[#1E56E3] hover:text-white border border-blue-200 hover:border-[#1E56E3] transition font-bold text-xs shadow-2xs cursor-pointer group shrink-0"
-              title="Repeat this shipment with exact same details (can edit before booking)"
-            >
-              <RotateCcw className="w-3.5 h-3.5 group-hover:-rotate-90 transition duration-200" />
-              <span>Repeat Shipment</span>
-            </button>
-          )}
+
         </div>
 
         {loading ? (
@@ -1010,30 +999,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               </div>
             </div>
 
-            {/* Quick Repeat Shipment Banner for Sellers */}
-            {isSupplier && onRepeatShipment && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-white border border-blue-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
-                    <RotateCcw className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-black text-slate-900">Need to ship another parcel to this buyer?</h4>
-                    <p className="text-[11px] text-slate-500 font-medium">
-                      One-click repeat with same details, with full freedom to edit details before booking.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onRepeatShipment(currentShipment)}
-                  className="shrink-0 w-full sm:w-auto px-3.5 py-2 rounded-xl bg-[#1E56E3] hover:bg-blue-700 text-white font-extrabold text-xs shadow-sm shadow-blue-500/20 transition flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Ship Again</span>
-                </button>
-              </div>
-            )}
+
 
             {/* Carrier & AWB Details */}
             <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 flex items-center justify-between">
