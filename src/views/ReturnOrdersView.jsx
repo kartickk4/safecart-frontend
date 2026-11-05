@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   RotateCcw, ShieldCheck, CheckCircle2, Clock, AlertTriangle, 
-  Package, Truck, ArrowRight, RefreshCw, Filter, Search, ChevronRight, ExternalLink, X, Send, MessageSquare, Tag, Copy, Check, MapPin, Radio, Zap, Sparkles, Camera, Eye, ZoomIn, QrCode, Printer
+  Package, Truck, ArrowRight, RefreshCw, Filter, Search, ChevronRight, 
+  ExternalLink, X, Send, MessageSquare, Tag, Copy, Check, MapPin, 
+  Zap, Sparkles, Camera, Eye, ZoomIn, QrCode, Printer, ChevronDown, 
+  ArrowUpRight, AlertCircle, HelpCircle, CheckCircle, PackageCheck
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { shipmentAPI } from '../services/api';
@@ -160,7 +163,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
       const savings = data.estimatedSavings || data.shipment?.returnEstimatedSavings || 0;
 
       setAssignSuccessMsg(
-        `⚡ Reverse Courier Auto-Booked! ${carrier} selected at lowest delivery rate ₹${rate}${savings > 0 ? ` (Saved ₹${savings})` : ''}. Reverse AWB: ${awb}. Pickup Scheduled: ${windowStr}. Buyer notified via SMS.`
+        `⚡ Reverse Courier Auto-Booked! ${carrier} selected at ₹${rate}${savings > 0 ? ` (Saved ₹${savings})` : ''}. Reverse AWB: ${awb}. Pickup Scheduled: ${windowStr}. Buyer notified via SMS.`
       );
       setTimeout(() => setAssignSuccessMsg(''), 8000);
       fetchReturnOrders();
@@ -344,194 +347,214 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
   });
 
   return (
-    <div className="p-6 sm:p-8 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-200 flex items-center justify-center font-bold shrink-0">
-            <RotateCcw className="w-5 h-5" />
+    <div className="p-4 sm:p-7 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300">
+      
+      {/* ── Top Hero Header ────────────────────────────────────────── */}
+      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-600/20">
+            <RotateCcw className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-              {isSupplier ? 'Return Orders & Reverse Logistics' : 'Return Orders & Tracking'}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                {isSupplier ? 'Reverse Logistics & Returns' : 'Return Orders & Tracking'}
+              </h1>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Escrow Protected</span>
+              </span>
+            </div>
             <p className="text-xs text-slate-500 font-normal mt-0.5">
               {isSupplier 
-                ? 'Manage buyer returns, assign reverse couriers, and inspect protected inventory.'
-                : 'Track return shipments, courier pickups, discount proposals, and order refunds.'}
+                ? 'Review return requests, auto-dispatch reverse couriers, and inspect verified items before refund release.'
+                : 'Monitor reverse pickup status, courier tracking, replacement dispatches, and escrow refunds.'}
             </p>
           </div>
         </div>
 
-        <button
-          onClick={fetchReturnOrders}
-          disabled={loading}
-          className="self-start sm:self-auto px-4 py-2 rounded-xl border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50/50 bg-white text-slate-700 text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-2xs"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-indigo-500' : 'text-slate-600'}`} />
-          <span>Refresh</span>
-        </button>
+        <div className="flex items-center gap-2.5 self-start md:self-auto">
+          <button
+            onClick={fetchReturnOrders}
+            disabled={loading}
+            className="px-3.5 py-2 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 bg-white text-slate-700 text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-indigo-600' : 'text-slate-500'}`} />
+            <span>{loading ? 'Updating...' : 'Refresh'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Success Notification Banner */}
+      {/* ── Success Alert Banner ────────────────────────────────────── */}
       {assignSuccessMsg && (
-        <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 text-emerald-900 text-xs font-medium flex items-center justify-between gap-3 animate-in fade-in duration-200 shadow-xs">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>{assignSuccessMsg}</span>
+        <div className="p-4 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-emerald-900 text-xs font-medium flex items-center justify-between gap-3 animate-in fade-in duration-200 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span className="whitespace-pre-line leading-relaxed">{assignSuccessMsg}</span>
           </div>
           <button
             onClick={() => setAssignSuccessMsg('')}
-            className="p-1 rounded text-emerald-600 hover:bg-emerald-100 cursor-pointer"
+            className="p-1 rounded-lg text-emerald-600 hover:bg-emerald-100 transition cursor-pointer"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Colorful KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Returns - Indigo */}
-        <div className="bg-gradient-to-br from-indigo-50/70 via-white to-white p-5 rounded-2xl border border-indigo-100/90 shadow-xs hover:shadow-md hover:border-indigo-200 hover:-translate-y-0.5 transition-all duration-200 space-y-2 group cursor-default">
+      {/* ── Modern Bento Metric Strip ──────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Total Returns */}
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Total Returns
             </span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-2xs">
+            <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
               <RotateCcw className="w-4 h-4" />
             </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-indigo-950 font-mono">{totalReturns}</p>
-            <p className="text-[11px] text-indigo-600/90 font-medium">₹{totalReturnValue.toLocaleString('en-IN')} return value</p>
-          </div>
-        </div>
-
-        {/* Pending Action - Warm Amber */}
-        <div className="bg-gradient-to-br from-amber-50/70 via-white to-white p-5 rounded-2xl border border-amber-200/80 shadow-xs hover:shadow-md hover:border-amber-300 hover:-translate-y-0.5 transition-all duration-200 space-y-2 group cursor-default">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800">
-              Pending Action
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-2xs">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-amber-950 font-mono">{pendingRequests}</p>
-            <p className="text-[11px] text-amber-700/90 font-medium">
-              {isSupplier ? 'Awaiting courier / offer' : 'Awaiting seller resolution'}
+          <div className="mt-2.5">
+            <p className="text-2xl font-black text-slate-900 font-mono tracking-tight">{totalReturns}</p>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+              ₹{totalReturnValue.toLocaleString('en-IN')} held in escrow
             </p>
           </div>
         </div>
 
-        {/* In Return Transit - Vibrant Blue */}
-        <div className="bg-gradient-to-br from-blue-50/70 via-white to-white p-5 rounded-2xl border border-blue-200/80 shadow-xs hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all duration-200 space-y-2 group cursor-default">
+        {/* Pending Action */}
+        <div className={`p-4 sm:p-5 rounded-2xl border shadow-xs transition-all ${
+          pendingRequests > 0 
+            ? 'bg-amber-50/40 border-amber-200/90' 
+            : 'bg-white border-slate-200/80'
+        }`}>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
-              In Return Transit
+            <span className={`text-[11px] font-bold uppercase tracking-wider ${
+              pendingRequests > 0 ? 'text-amber-800' : 'text-slate-500'
+            }`}>
+              Needs Action
             </span>
-            <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-2xs">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+              pendingRequests > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+            }`}>
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-2.5">
+            <p className={`text-2xl font-black font-mono tracking-tight ${
+              pendingRequests > 0 ? 'text-amber-900' : 'text-slate-900'
+            }`}>
+              {pendingRequests}
+            </p>
+            <p className={`text-[11px] font-medium mt-0.5 ${
+              pendingRequests > 0 ? 'text-amber-700' : 'text-slate-500'
+            }`}>
+              {isSupplier ? 'Awaiting courier / discount offer' : 'Waiting for seller resolution'}
+            </p>
+          </div>
+        </div>
+
+        {/* In Return Transit */}
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              In Transit
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
               <Truck className="w-4 h-4" />
             </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-blue-950 font-mono">{inTransitReturns}</p>
-            <p className="text-[11px] text-blue-700/90 font-medium">Pickup active or en route</p>
+          <div className="mt-2.5">
+            <p className="text-2xl font-black text-slate-900 font-mono tracking-tight">{inTransitReturns}</p>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Pickup en route or collected</p>
           </div>
         </div>
 
-        {/* Completed - Fresh Emerald */}
-        <div className="bg-gradient-to-br from-emerald-50/70 via-white to-white p-5 rounded-2xl border border-emerald-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 hover:-translate-y-0.5 transition-all duration-200 space-y-2 group cursor-default">
+        {/* Completed & Settled */}
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Completed
             </span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-2xs">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-emerald-950 font-mono">{completedReturns}</p>
-            <p className="text-[11px] text-emerald-700/90 font-medium">Refunded &amp; settled</p>
+          <div className="mt-2.5">
+            <p className="text-2xl font-black text-slate-900 font-mono tracking-tight">{completedReturns}</p>
+            <p className="text-[11px] text-emerald-700 font-medium mt-0.5">Refunded or exchange complete</p>
           </div>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100/80 rounded-xl w-full sm:w-auto overflow-x-auto">
-          <button
-            onClick={() => setActiveFilter('all')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
-              activeFilter === 'all' 
-                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs' 
-                : 'text-slate-600 hover:text-indigo-600 hover:bg-white/60'
-            }`}
-          >
-            All ({totalReturns})
-          </button>
-          <button
-            onClick={() => setActiveFilter('requested')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
-              activeFilter === 'requested' 
-                ? 'bg-amber-500 text-white shadow-xs' 
-                : 'text-slate-600 hover:text-amber-700 hover:bg-white/60'
-            }`}
-          >
-            Pending ({pendingRequests})
-          </button>
-          <button
-            onClick={() => setActiveFilter('transit')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
-              activeFilter === 'transit' 
-                ? 'bg-blue-600 text-white shadow-xs' 
-                : 'text-slate-600 hover:text-blue-700 hover:bg-white/60'
-            }`}
-          >
-            In Transit ({inTransitReturns})
-          </button>
-          <button
-            onClick={() => setActiveFilter('completed')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
-              activeFilter === 'completed' 
-                ? 'bg-emerald-600 text-white shadow-xs' 
-                : 'text-slate-600 hover:text-emerald-700 hover:bg-white/60'
-            }`}
-          >
-            Completed ({completedReturns})
-          </button>
+      {/* ── Filter & Search Bar ────────────────────────────────────── */}
+      <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Segmented Filter Control */}
+        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl overflow-x-auto">
+          {[
+            { id: 'all', label: 'All Orders', count: totalReturns },
+            { id: 'requested', label: 'Pending', count: pendingRequests, highlight: pendingRequests > 0 },
+            { id: 'transit', label: 'In Transit', count: inTransitReturns },
+            { id: 'completed', label: 'Resolved', count: completedReturns }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveFilter(tab.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                activeFilter === tab.id
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
+                activeFilter === tab.id
+                  ? 'bg-slate-100 text-slate-800'
+                  : tab.highlight ? 'bg-amber-100 text-amber-800 font-black' : 'bg-slate-200/80 text-slate-500'
+              }`}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
         </div>
 
-        <div className="relative w-full sm:w-64">
+        {/* Search Input */}
+        <div className="relative w-full sm:w-72">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search return orders..."
+            placeholder="Search ID, customer, AWB..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition"
+            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white transition"
           />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-0.5 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Orders List / Cards */}
+      {/* ── Orders List ────────────────────────────────────────────── */}
       {loading ? (
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center space-y-2">
-          <RefreshCw className="w-5 h-5 text-slate-400 animate-spin mx-auto" />
-          <p className="text-xs font-medium text-slate-500">Loading return requests...</p>
+        <div className="bg-white rounded-3xl border border-slate-200/80 p-16 text-center space-y-3">
+          <RefreshCw className="w-6 h-6 text-indigo-600 animate-spin mx-auto" />
+          <p className="text-xs font-bold text-slate-600">Loading return requests...</p>
         </div>
       ) : filteredOrders.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center space-y-2.5">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-            <RotateCcw className="w-5 h-5" />
+        <div className="bg-white rounded-3xl border border-slate-200/80 p-16 text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+            <RotateCcw className="w-6 h-6" />
           </div>
-          <h3 className="text-sm font-bold text-slate-800">No Return Orders</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          <h3 className="text-sm font-bold text-slate-900">No Return Orders Found</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
             {activeFilter !== 'all' 
               ? `There are no returns currently matching the "${activeFilter}" filter.`
               : isSupplier 
-                ? 'No return requests have been submitted for your shipments.'
+                ? 'No return requests have been submitted for your shipments. When a buyer requests a return, it will appear here.'
                 : 'You have not submitted any return requests.'}
           </p>
         </div>
@@ -544,53 +567,45 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
 
             // Stage 1 to 4 calculation
             const currentStage = isCompleted ? 4 : isTransit ? 3 : (order.returnAwbCode || order.returnCarrierSlug) ? 2 : 1;
-            const stageLabel = isCompleted 
-              ? 'Stage 4/4 • Completed & Refunded' 
-              : isTransit 
-              ? 'Stage 3/4 • In Return Transit' 
-              : (order.returnAwbCode || order.returnCarrierSlug) 
-              ? 'Stage 2/4 • Courier Assigned' 
-              : 'Stage 1/4 • Return Requested';
+            
+            const stages = [
+              { label: 'Requested', done: currentStage >= 1, active: currentStage === 1 },
+              { label: 'Courier Assigned', done: currentStage >= 2, active: currentStage === 2 },
+              { label: 'In Return Transit', done: currentStage >= 3, active: currentStage === 3 },
+              { label: 'Settled & Refunded', done: currentStage >= 4, active: currentStage === 4 }
+            ];
 
             return (
               <div 
                 key={order._id || order.shipmentId}
-                className={`bg-white rounded-2xl border p-5 shadow-xs hover:shadow-md transition space-y-4 ${
-                  isRequested ? 'border-slate-200/90 border-l-4 border-l-amber-500' :
-                  isTransit ? 'border-slate-200/90 border-l-4 border-l-blue-500' :
-                  'border-slate-200/90 border-l-4 border-l-emerald-500'
-                }`}
+                className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-xs hover:border-slate-300 hover:shadow-md transition-all duration-200 space-y-5"
               >
-                {/* Header: ID, Status Pill, Type, Order Value */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                {/* ── Top Header Row ─────────────────────────────────── */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="text-sm font-bold text-slate-900 font-mono tracking-tight">
+                    <span className="text-sm font-black text-slate-900 font-mono tracking-tight bg-slate-100 px-2.5 py-1 rounded-xl">
                       {order.shipmentId}
                     </span>
 
-                    {/* Status Pill */}
-                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 ${
-                      isRequested ? 'bg-amber-50 text-amber-800 border border-amber-300/80 shadow-2xs' :
-                      isTransit ? 'bg-blue-50 text-blue-800 border border-blue-300/80 shadow-2xs' :
-                      'bg-emerald-50 text-emerald-800 border border-emerald-300/80 shadow-2xs'
+                    {/* Status Badge */}
+                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1.5 ${
+                      isRequested ? 'bg-amber-50 text-amber-900 border border-amber-200' :
+                      isTransit ? 'bg-indigo-50 text-indigo-900 border border-indigo-200' :
+                      'bg-emerald-50 text-emerald-900 border border-emerald-200'
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${
                         isRequested ? 'bg-amber-500 animate-pulse' :
-                        isTransit ? 'bg-blue-500 animate-pulse' :
+                        isTransit ? 'bg-indigo-600 animate-pulse' :
                         'bg-emerald-500'
                       }`} />
                       <span>{order.returnStatus || order.status}</span>
                     </span>
 
-                    {/* Return Type Tag */}
-                    <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-lg border ${
-                      order.returnType === 'replacement' ? 'bg-indigo-50 text-indigo-700 border-indigo-200/80' :
-                      order.returnType === 'partial_discount' ? 'bg-teal-50 text-teal-700 border-teal-200/80' :
-                      'bg-violet-50 text-violet-700 border-violet-200/80'
-                    }`}>
+                    {/* Return Category Pill */}
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
                       {order.returnType === 'replacement' && 'Replacement Exchange'}
                       {order.returnType === 'partial_discount' && 'Defect Discount'}
-                      {(!order.returnType || order.returnType === 'full_refund') && 'Full Refund'}
+                      {(!order.returnType || order.returnType === 'full_refund') && 'Full Return & Refund'}
                     </span>
 
                     <span className="text-xs text-slate-400 font-medium">
@@ -599,67 +614,69 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   </div>
 
                   <div className="flex items-center gap-2 sm:text-right">
-                    <span className="text-[11px] text-slate-500 font-medium">Order Value:</span>
-                    <span className="text-base font-bold text-emerald-700 font-mono">
+                    <span className="text-xs text-slate-400 font-medium">Order Value:</span>
+                    <span className="text-base font-black text-slate-900 font-mono">
                       ₹{order.amount ? order.amount.toLocaleString('en-IN') : '0'}
                     </span>
                   </div>
                 </div>
 
-                {/* Minimal Slim Progress Indicator with Color Stage Accents */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-600 font-semibold flex items-center gap-1.5">
-                      <Truck className={`w-3.5 h-3.5 ${
-                        currentStage === 4 ? 'text-emerald-500' :
-                        currentStage === 3 ? 'text-blue-500' :
-                        currentStage === 2 ? 'text-indigo-500' : 'text-amber-500'
-                      }`} />
-                      <span>{stageLabel}</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setTrackingModalOrder(order)}
-                      className="text-indigo-600 hover:text-indigo-800 font-semibold hover:underline text-[11px] cursor-pointer flex items-center gap-1"
-                    >
-                      <span>View Steps</span>
-                      <ChevronRight className="w-3 h-3 text-indigo-400" />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    <div className={`h-1.5 rounded-full transition ${currentStage >= 1 ? 'bg-amber-500 shadow-2xs' : 'bg-slate-100'}`} />
-                    <div className={`h-1.5 rounded-full transition ${currentStage >= 2 ? 'bg-indigo-500 shadow-2xs' : 'bg-slate-100'}`} />
-                    <div className={`h-1.5 rounded-full transition ${currentStage >= 3 ? 'bg-blue-500 shadow-2xs' : 'bg-slate-100'}`} />
-                    <div className={`h-1.5 rounded-full transition ${currentStage >= 4 ? 'bg-emerald-500 shadow-2xs' : 'bg-slate-100'}`} />
+                {/* ── Sleek Visual Return Stepper ──────────────────────── */}
+                <div className="bg-slate-50/70 p-3 sm:p-4 rounded-2xl border border-slate-100">
+                  <div className="grid grid-cols-4 gap-2 relative">
+                    {stages.map((st, i) => (
+                      <div key={i} className="flex flex-col items-center text-center">
+                        <div className="w-full flex items-center mb-1.5">
+                          <div className={`h-1 flex-1 rounded-full ${
+                            i === 0 ? 'bg-transparent' : st.done ? 'bg-indigo-600' : 'bg-slate-200'
+                          }`} />
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 transition-all ${
+                            st.done 
+                              ? 'bg-indigo-600 text-white shadow-xs' 
+                              : 'bg-white border-2 border-slate-300 text-slate-400'
+                          }`}>
+                            {st.done ? '✓' : i + 1}
+                          </div>
+                          <div className={`h-1 flex-1 rounded-full ${
+                            i === 3 ? 'bg-transparent' : currentStage > i + 1 ? 'bg-indigo-600' : 'bg-slate-200'
+                          }`} />
+                        </div>
+                        <span className={`text-[10px] sm:text-[11px] font-bold truncate max-w-full ${
+                          st.active ? 'text-indigo-900 font-extrabold' : st.done ? 'text-slate-800' : 'text-slate-400'
+                        }`}>
+                          {st.label}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Details Grid (Clean 3-column layout) */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
+                {/* ── Order Meta Info Grid ─────────────────────────────── */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50/70 p-3.5 rounded-2xl border border-slate-100">
                   <div>
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                      {isSupplier ? 'Buyer' : 'Seller'}
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      {isSupplier ? 'Buyer Customer' : 'Supplier'}
                     </span>
-                    <p className="font-semibold text-slate-800 mt-0.5">{order.receiverName}</p>
-                    <p className="text-[11px] text-slate-500 font-mono">{order.receiverPhone}</p>
+                    <p className="font-bold text-slate-900 mt-0.5">{order.receiverName}</p>
+                    <p className="text-[11px] text-slate-500 font-mono mt-0.5">{order.receiverPhone}</p>
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                       {order.returnAwbCode ? 'Reverse Courier' : order.replacementAwbCode ? 'Replacement Courier' : 'Carrier'}
                     </span>
-                    <p className="font-semibold text-indigo-900 capitalize mt-0.5">
+                    <p className="font-bold text-indigo-900 capitalize mt-0.5">
                       {order.replacementCarrierName || order.returnCarrierName || (order.returnCarrierSlug ? order.returnCarrierSlug.toUpperCase() + ' Express' : (order.carrierSlug || 'Delhivery'))}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <p className="text-[11px] text-slate-700 font-mono font-bold">
+                      <p className="text-[11px] text-slate-800 font-mono font-bold">
                         {order.returnAwbCode ? order.returnAwbCode : order.replacementAwbCode ? order.replacementAwbCode : (order.awbCode || 'Pending Assignment')}
                       </p>
                       {(order.returnAwbCode || order.replacementAwbCode) && (
                         <button
                           type="button"
                           onClick={() => copyToClipboard(order.returnAwbCode || order.replacementAwbCode, order.shipmentId)}
-                          className="p-0.5 hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 rounded transition cursor-pointer"
+                          className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-700 transition cursor-pointer"
                           title="Copy AWB Code"
                         >
                           {copiedAwb === order.shipmentId ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
@@ -669,9 +686,9 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Return Reason</span>
-                    <p className="font-medium text-slate-700 mt-0.5 line-clamp-1">
-                      {order.returnReason || 'Return requested within window'}
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Return Reason</span>
+                    <p className="font-bold text-slate-800 mt-0.5 line-clamp-1">
+                      {order.returnReason || 'Product return requested'}
                     </p>
                     {order.returnRequestedAt && (
                       <p className="text-[10px] text-slate-400 mt-0.5">
@@ -681,22 +698,22 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   </div>
                 </div>
 
-                {/* Auto-Booked Pickup Status Banner (Warm & clear) */}
+                {/* ── Scheduled Reverse Pickup Banner ─────────────────── */}
                 {(order.returnPickupWindow || order.returnShippingRate > 0 || order.returnAutoBooked) && (
-                  <div className="px-3.5 py-2.5 bg-gradient-to-r from-amber-50/80 via-orange-50/40 to-amber-50/80 border border-amber-200/90 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="px-4 py-3 bg-amber-50/60 border border-amber-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                        <Zap className="w-3.5 h-3.5" />
+                      <div className="w-7 h-7 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                        <Zap className="w-4 h-4" />
                       </div>
                       <span className="font-medium text-slate-800">
-                        Reverse pickup scheduled: <strong className="text-amber-950 font-bold">{order.returnPickupWindow || 'Pending slot'}</strong>
+                        Doorstep reverse pickup: <strong className="text-amber-950 font-bold">{order.returnPickupWindow || 'Scheduled'}</strong>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       {order.returnShippingRate > 0 && (
                         <span className="text-slate-600 font-medium flex items-center gap-1.5">
                           Reverse Freight: <strong className="text-slate-900 font-mono">₹{order.returnShippingRate}</strong>
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${
                             order.returnShippingChargeStatus === 'Deducted'
                               ? 'bg-purple-100 text-purple-800 border-purple-200'
                               : 'bg-amber-100 text-amber-800 border-amber-200'
@@ -706,7 +723,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                         </span>
                       )}
                       {order.returnEstimatedSavings > 0 && (
-                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md border border-emerald-200 shadow-2xs">
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-lg border border-emerald-200">
                           Saved ₹{order.returnEstimatedSavings}
                         </span>
                       )}
@@ -714,38 +731,38 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   </div>
                 )}
 
-                {/* Defect Photo & Evidence Section (Option 2 - Fresh Teal/Emerald layout) */}
+                {/* ── Defect Evidence & Partial Refund Panel ───────────── */}
                 {order.returnType === 'partial_discount' && (
-                  <div className="p-3.5 rounded-xl bg-gradient-to-r from-teal-50/60 via-white to-emerald-50/40 border border-teal-200/80 flex flex-col sm:flex-row items-start gap-3.5">
+                  <div className="p-4 rounded-2xl bg-teal-50/50 border border-teal-200 flex flex-col sm:flex-row items-start gap-4">
                     {order.defectPhotoUrl && (
-                      <div className="shrink-0 space-y-1">
+                      <div className="shrink-0">
                         <div 
-                          onClick={() => setPreviewPhotoModal({ isOpen: true, url: order.defectPhotoUrl, title: `Defect Evidence — ${order.shipmentId}` })}
-                          className="w-16 h-16 rounded-xl overflow-hidden border border-teal-200 bg-white cursor-pointer relative group shadow-2xs"
+                          onClick={() => setPreviewPhotoModal({ isOpen: true, url: order.defectPhotoUrl, title: `Defect Photo — ${order.shipmentId}` })}
+                          className="w-20 h-20 rounded-2xl overflow-hidden border border-teal-200 bg-white cursor-pointer relative group shadow-xs"
                           title="Click to view full photo"
                         >
                           <img loading="lazy" src={order.defectPhotoUrl} alt="Defect Evidence" className="w-full h-full object-cover group-hover:scale-105 transition" />
-                          <div className="absolute inset-0 bg-teal-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white">
-                            <ZoomIn className="w-4 h-4" />
+                          <div className="absolute inset-0 bg-teal-950/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white">
+                            <ZoomIn className="w-5 h-5" />
                           </div>
                         </div>
                       </div>
                     )}
-                    <div className="flex-1 space-y-1 text-xs">
-                      <div className="flex items-center gap-1.5 font-bold text-teal-900">
-                        <Tag className="w-3.5 h-3.5 text-teal-600" />
-                        <span>Defect Discount &amp; Partial Refund</span>
+                    <div className="flex-1 space-y-2 text-xs">
+                      <div className="flex items-center gap-1.5 font-bold text-teal-950">
+                        <Tag className="w-4 h-4 text-teal-700" />
+                        <span>Defect Discount &amp; Settlement Option</span>
                       </div>
-                      <p className="text-slate-600">
-                        <span className="text-slate-400 font-medium">Buyer note:</span> {order.defectDescription || 'No description provided'}
+                      <p className="text-slate-600 leading-relaxed">
+                        <span className="text-slate-400 font-bold">Buyer Note:</span> {order.defectDescription || 'Customer reported minor defect and requested discount offer.'}
                       </p>
 
                       {order.discountOfferedAmount > 0 && (
-                        <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-teal-200/60">
                           <div className="flex items-center gap-2">
                             <span className="text-slate-500 font-medium">Offered Discount:</span>
-                            <span className="font-bold text-teal-800 font-mono text-sm">₹{order.discountOfferedAmount}</span>
-                            <span className="text-[11px] text-slate-400">(Item kept by buyer)</span>
+                            <span className="font-black text-teal-900 font-mono text-sm">₹{order.discountOfferedAmount}</span>
+                            <span className="text-[11px] text-slate-400">(Buyer keeps product)</span>
                           </div>
 
                           {/* Buyer decision if pending */}
@@ -760,8 +777,8 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
 
                             if (!isOrderRecipient) {
                               return (
-                                <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg">
-                                  Awaiting Recipient Response
+                                <span className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl">
+                                  Awaiting Buyer Response
                                 </span>
                               );
                             }
@@ -772,7 +789,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                                   type="button"
                                   onClick={() => handleRespondDiscount(order.shipmentId, true)}
                                   disabled={actionLoading}
-                                  className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer"
+                                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
                                 >
                                   Accept ₹{order.discountOfferedAmount}
                                 </button>
@@ -780,7 +797,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                                   type="button"
                                   onClick={() => handleRespondDiscount(order.shipmentId, false)}
                                   disabled={actionLoading}
-                                  className="px-3 py-1.5 border border-rose-200 bg-white hover:bg-rose-50 text-rose-700 font-semibold text-xs rounded-xl transition cursor-pointer"
+                                  className="px-3.5 py-2 border border-rose-200 bg-white hover:bg-rose-50 text-rose-700 font-bold text-xs rounded-xl transition cursor-pointer"
                                 >
                                   Reject &amp; Full Refund
                                 </button>
@@ -801,9 +818,9 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
 
                             if (!is15hPassed) {
                               return (
-                                <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                                <span className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
                                   <Clock className="w-3.5 h-3.5 text-amber-600" />
-                                  <span>Awaiting Buyer Response ({remH}h {remM}m left)</span>
+                                  <span>Waiting for Buyer ({remH}h {remM}m left)</span>
                                 </span>
                               );
                             } else {
@@ -816,24 +833,24 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                                     }
                                   }}
                                   disabled={actionLoading}
-                                  className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1 cursor-pointer"
+                                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1 cursor-pointer"
                                 >
                                   <Zap className="w-3.5 h-3.5 fill-current" />
-                                  <span>⚡ Auto-Complete ₹{order.discountOfferedAmount}</span>
+                                  <span>Auto-Complete ₹{order.discountOfferedAmount}</span>
                                 </button>
                               );
                             }
                           })()}
 
                           {order.discountAccepted === true && (
-                            <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-lg">
+                            <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-xl">
                               ✓ Accepted (₹{order.discountBuyerWalletCredited || order.discountOfferedAmount} credited to wallet)
                             </span>
                           )}
 
                           {order.discountAccepted === false && (
-                            <span className="text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
-                              Rejected (100% Order refund issued)
+                            <span className="text-[11px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl">
+                              Rejected (100% Full Return Issued)
                             </span>
                           )}
                         </div>
@@ -842,18 +859,18 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   </div>
                 )}
 
-                {/* Action Buttons (Cohesive and Polished) */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100">
-                  <div className="text-[11px] text-emerald-700 flex items-center gap-1.5 font-medium">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>Protected by Delivery Vault</span>
+                {/* ── Action Buttons Footer ────────────────────────────── */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                  <div className="text-[11px] text-emerald-800 flex items-center gap-1.5 font-bold">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Protected by Safe Escrow Vault</span>
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
                     {/* View Details Button */}
                     <button
                       onClick={() => onSelectShipment(order)}
-                      className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 bg-white text-slate-700 text-xs font-semibold transition cursor-pointer shadow-2xs"
+                      className="px-3.5 py-2 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 bg-white text-slate-700 text-xs font-bold transition cursor-pointer shadow-xs"
                     >
                       Details
                     </button>
@@ -862,9 +879,9 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                     <button
                       type="button"
                       onClick={() => setTrackingModalOrder(order)}
-                      className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50/50 bg-white text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                      className="px-3.5 py-2 rounded-xl border border-slate-200 hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50/50 bg-white text-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
-                      <Truck className="w-3.5 h-3.5 text-indigo-500" />
+                      <Truck className="w-3.5 h-3.5 text-indigo-600" />
                       <span>Track Journey</span>
                     </button>
 
@@ -876,9 +893,9 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                             type="button"
                             onClick={() => handleCloseReturnRequest(order.shipmentId)}
                             disabled={actionLoading}
-                            className="px-3.5 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-semibold transition cursor-pointer"
+                            className="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition cursor-pointer"
                           >
-                            Cancel Return
+                            Withdraw Return
                           </button>
                         )}
                         {order.returnType === 'replacement' && order.replacementItemDispatched && !order.replacementDelivered && !isCompleted && (
@@ -886,9 +903,9 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                             type="button"
                             onClick={() => handleConfirmReplacementDelivery(order.shipmentId)}
                             disabled={actionLoading}
-                            className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
                           >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <CheckCircle2 className="w-4 h-4" />
                             <span>Confirm Replacement Received</span>
                           </button>
                         )}
@@ -904,22 +921,22 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                             <button
                               onClick={() => handleAutoApproveReplacement(order.shipmentId)}
                               disabled={actionLoading}
-                              className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-semibold rounded-xl shadow-xs shadow-indigo-500/20 transition flex items-center gap-1.5 cursor-pointer"
+                              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs shadow-indigo-600/20 transition flex items-center gap-1.5 cursor-pointer"
                             >
-                              <Zap className="w-3.5 h-3.5 text-amber-300" />
+                              <Zap className="w-3.5 h-3.5 text-amber-300 fill-current" />
                               <span>Auto-Book Courier</span>
                             </button>
                             <button
                               onClick={() => openAssignModal(order, 'replacement')}
                               disabled={actionLoading}
-                              className="px-3 py-1.5 border border-indigo-200 hover:border-indigo-300 hover:bg-indigo-50/50 text-indigo-700 text-xs font-semibold rounded-xl transition cursor-pointer"
+                              className="px-3.5 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
                             >
                               Manual Courier
                             </button>
                             <button
                               onClick={() => handleRejectReplacement(order.shipmentId)}
                               disabled={actionLoading}
-                              className="px-3 py-1.5 border border-rose-200 bg-rose-50/60 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl transition cursor-pointer"
+                              className="px-3.5 py-2 border border-rose-200 bg-rose-50/50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl transition cursor-pointer"
                             >
                               Reject (Full Refund)
                             </button>
@@ -930,20 +947,20 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                         {order.returnType === 'partial_discount' && isRequested && (!order.discountOfferedAmount || order.discountOfferedAmount <= 0) && (
                           <div className="flex items-center gap-1.5">
                             <div className="relative">
-                              <span className="absolute left-2.5 top-1.5 text-xs font-semibold text-slate-400">₹</span>
+                              <span className="absolute left-2.5 top-2 text-xs font-bold text-slate-400">₹</span>
                               <input
                                 type="number"
                                 placeholder="Discount"
                                 value={discountInputs[order.shipmentId] || ''}
                                 onChange={(e) => setDiscountInputs({ ...discountInputs, [order.shipmentId]: e.target.value })}
-                                className="w-24 pl-5 pr-2 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-teal-500"
+                                className="w-24 pl-5 pr-2 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-teal-600"
                               />
                             </div>
                             <button
                               type="button"
                               onClick={() => handleOfferDiscount(order.shipmentId, order.amount)}
                               disabled={actionLoading}
-                              className="px-3.5 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer"
+                              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer"
                             >
                               Offer Discount
                             </button>
@@ -956,64 +973,20 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                             <button
                               onClick={() => handleAutoApproveReturn(order.shipmentId)}
                               disabled={actionLoading}
-                              className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-semibold rounded-xl shadow-xs shadow-indigo-500/20 transition flex items-center gap-1.5 cursor-pointer"
+                              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs shadow-indigo-600/20 transition flex items-center gap-1.5 cursor-pointer"
                             >
-                              <Zap className="w-3.5 h-3.5 text-amber-300" />
+                              <Zap className="w-3.5 h-3.5 text-amber-300 fill-current" />
                               <span>Auto-Book Courier</span>
                             </button>
                             <button
                               onClick={() => openAssignModal(order, 'return')}
                               disabled={actionLoading}
-                              className="px-3 py-1.5 border border-indigo-200 hover:border-indigo-300 hover:bg-indigo-50/50 text-indigo-700 text-xs font-semibold rounded-xl transition cursor-pointer"
+                              className="px-3.5 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
                             >
                               Manual Courier
                             </button>
                           </>
                         )}
-
-                        {/* Partial Discount Pending: Inform supplier that courier is locked until buyer decision or 15h inactivity */}
-                        {order.returnType === 'partial_discount' && isRequested && order.discountAccepted !== false && (() => {
-                          const offeredAt = order.discountOfferedAt ? new Date(order.discountOfferedAt).getTime() : 0;
-                          const elapsedMs = offeredAt > 0 ? (Date.now() - offeredAt) : 0;
-                          const fifteenHoursMs = 15 * 60 * 60 * 1000;
-                          const is15hPassed = offeredAt > 0 && elapsedMs >= fifteenHoursMs;
-                          const remainingMs = Math.max(0, fifteenHoursMs - elapsedMs);
-                          const totalMins = Math.ceil(remainingMs / (1000 * 60));
-                          const remH = Math.floor(totalMins / 60);
-                          const remM = totalMins % 60;
-
-                          if (Number(order.discountOfferedAmount) > 0) {
-                            if (is15hPassed) {
-                              return (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (window.confirm(`Buyer has not responded within 15 hours.\n\nAuto-complete partial refund of ₹${order.discountOfferedAmount} to buyer now?`)) {
-                                      handleRespondDiscount(order.shipmentId, true);
-                                    }
-                                  }}
-                                  disabled={actionLoading}
-                                  className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1 cursor-pointer"
-                                >
-                                  <Zap className="w-3.5 h-3.5 fill-current" />
-                                  <span>Auto-Complete ₹{order.discountOfferedAmount} (15h Expired)</span>
-                                </button>
-                              );
-                            }
-                            return (
-                              <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5">
-                                <Clock className="w-3 h-3 text-amber-600" />
-                                <span>Offer ₹{order.discountOfferedAmount} Sent — Buyer Window ({remH}h {remM}m left)</span>
-                              </span>
-                            );
-                          }
-                          return (
-                            <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5">
-                              <Clock className="w-3 h-3 text-amber-600" />
-                              <span>Offer Discount First</span>
-                            </span>
-                          );
-                        })()}
 
                         {/* Replacement In-Transit: Inspect & Dispatch Replacement */}
                         {order.returnType === 'replacement' && (isTransit || order.status === 'Replacement In Transit') && (
@@ -1021,23 +994,23 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                             <button
                               onClick={() => handleDispatchReplacement(order.shipmentId)}
                               disabled={actionLoading}
-                              className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
                               title="Reverse pickup scanned at buyer doorstep — Fast-track dispatch replacement parcel now"
                             >
                               <Zap className="w-3.5 h-3.5 fill-current" />
-                              <span>⚡ Fast-Track Dispatch (Pickup Scanned)</span>
+                              <span>Fast-Track Dispatch (Pickup Scanned)</span>
                             </button>
                           ) : !order.replacementDelivered && !isCompleted ? (
                             <div className="flex items-center gap-2">
-                              <span className="text-[11px] font-semibold text-blue-800 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5">
-                                <Truck className="w-3.5 h-3.5 text-blue-600" />
-                                <span>Dispatched (AWB: {order.replacementAwbCode})</span>
+                              <span className="text-[11px] font-bold text-indigo-900 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-xl inline-flex items-center gap-1.5">
+                                <Truck className="w-3.5 h-3.5 text-indigo-600" />
+                                <span>Dispatched ({order.replacementAwbCode})</span>
                               </span>
                               {order.replacementQrToken && (
                                 <button
                                   type="button"
                                   onClick={() => setReplacementQrModalOrder(order)}
-                                  className="px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                                  className="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
                                   title="Print or view In-Box QR code label for replacement package"
                                 >
                                   <QrCode className="w-3.5 h-3.5" />
@@ -1053,9 +1026,9 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                           <button
                             onClick={() => handleConfirmReceived(order.shipmentId)}
                             disabled={actionLoading}
-                            className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
                           >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <CheckCircle2 className="w-4 h-4" />
                             <span>Confirm Arrived (Refund Buyer)</span>
                           </button>
                         )}
@@ -1063,9 +1036,9 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                     )}
 
                     {isCompleted && (
-                      <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg inline-flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{order.returnType === 'replacement' ? 'Closed & Complete' : 'Closed & Refunded'}</span>
+                      <span className="text-xs font-bold text-emerald-900 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl inline-flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>{order.returnType === 'replacement' ? 'Settled & Replacement Complete' : 'Settled & Full Refund Issued'}</span>
                       </span>
                     )}
                   </div>
@@ -1076,23 +1049,23 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
         </div>
       )}
 
-      {/* TRACK REVERSE JOURNEY MODAL */}
+      {/* ── TRACK REVERSE JOURNEY MODAL ────────────────────────────── */}
       {trackingModalOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative border border-slate-200/90 space-y-5 animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200 space-y-5 animate-in zoom-in-95 duration-150">
             <button
               onClick={() => setTrackingModalOrder(null)}
-              className="absolute top-5 right-5 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center font-bold shadow-xs shadow-indigo-300">
-                <RotateCcw className="w-4.5 h-4.5" />
+              <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
+                <RotateCcw className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-black text-slate-900">
                   Return Journey Milestones
                 </h3>
                 <p className="text-xs text-slate-500 font-mono">#{trackingModalOrder.shipmentId} • {trackingModalOrder.city || 'India'}</p>
@@ -1100,35 +1073,35 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
             </div>
 
             {/* Courier & AWB Banner */}
-            <div className="p-3.5 bg-gradient-to-r from-indigo-50/70 via-white to-blue-50/60 border border-indigo-100/90 rounded-xl flex items-center justify-between text-xs">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
               <div>
-                <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider block">Reverse Carrier</span>
-                <span className="font-bold text-slate-900">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Reverse Carrier</span>
+                <span className="font-bold text-slate-900 text-sm">
                   {trackingModalOrder.returnCarrierName || (trackingModalOrder.returnCarrierSlug ? trackingModalOrder.returnCarrierSlug.toUpperCase() + ' Express' : 'Carrier Pending')}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider block">Tracking AWB</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tracking AWB</span>
                 <div className="flex items-center gap-1.5 justify-end">
-                  <span className="font-mono font-bold text-slate-800">
-                    {trackingModalOrder.returnAwbCode || 'Awaiting Generation'}
+                  <span className="font-mono font-bold text-slate-900">
+                    {trackingModalOrder.returnAwbCode || 'Awaiting Assignment'}
                   </span>
                   {trackingModalOrder.returnAwbCode && (
                     <button
                       onClick={() => copyToClipboard(trackingModalOrder.returnAwbCode, 'modal')}
-                      className="p-0.5 hover:bg-indigo-100 rounded text-slate-400 hover:text-indigo-600 transition cursor-pointer"
+                      className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-700 transition cursor-pointer"
                     >
-                      {copiedAwb === 'modal' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                      {copiedAwb === 'modal' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Reverse Milestone Timeline with Stage Colors */}
+            {/* Reverse Milestone Timeline */}
             <div className="space-y-3">
-              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Milestones</h4>
-              <div className="space-y-3 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-200">
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Milestone History</h4>
+              <div className="space-y-3.5 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-200">
                 {[
                   {
                     title: 'Return Requested',
@@ -1153,13 +1126,13 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                       : 'Courier assigned for home pickup.',
                     active: Boolean(trackingModalOrder.returnStatus === 'In Return Transit' || trackingModalOrder.returnStatus === 'Completed'),
                     time: trackingModalOrder.returnStatus === 'In Return Transit' ? 'In Transit' : 'Scheduled',
-                    color: 'bg-blue-600'
+                    color: 'bg-indigo-600'
                   },
                   {
                     title: 'Return Received & Refunded',
                     desc: trackingModalOrder.returnStatus === 'Completed' || trackingModalOrder.status === 'Returned & Refunded'
-                      ? `Parcel received. 100% Order Amount (₹${trackingModalOrder.amount}) credited to buyer wallet.`
-                      : 'Refunds auto-issue upon merchant receipt confirmation.',
+                      ? `Parcel received. 100% Order Amount (₹${trackingModalOrder.amount}) released from escrow to buyer.`
+                      : 'Refund auto-issues upon warehouse receipt confirmation.',
                     active: Boolean(trackingModalOrder.returnStatus === 'Completed' || trackingModalOrder.status === 'Returned & Refunded'),
                     time: trackingModalOrder.returnStatus === 'Completed' ? 'Completed' : 'Pending',
                     color: 'bg-emerald-600'
@@ -1173,10 +1146,10 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <p className={`text-xs font-semibold ${m.active ? 'text-slate-900' : 'text-slate-400'}`}>{m.title}</p>
+                        <p className={`text-xs font-bold ${m.active ? 'text-slate-900' : 'text-slate-400'}`}>{m.title}</p>
                         <span className="text-[10px] text-slate-400 font-medium">{m.time}</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5">{m.desc}</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{m.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -1187,7 +1160,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
               <button
                 type="button"
                 onClick={() => setTrackingModalOrder(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition cursor-pointer"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
               >
                 Close
               </button>
@@ -1196,53 +1169,53 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
         </div>
       )}
 
-      {/* ASSIGN REVERSE COURIER PARTNER & TRACKING ID MODAL (SUPPLIER ONLY) */}
+      {/* ── ASSIGN REVERSE COURIER PARTNER MODAL ────────────────────── */}
       {assignModalOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative border border-slate-200/90 space-y-4 animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
             <button
               onClick={() => setAssignModalOrder(null)}
-              className="absolute top-5 right-5 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             {/* Header */}
             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center font-bold shadow-xs shadow-indigo-300">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
                 <Truck className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-black text-slate-900">
                   {assignMode === 'replacement' ? 'Assign Replacement Courier' : 'Assign Reverse Courier'}
                 </h3>
-                <p className="text-xs text-slate-500">#{assignModalOrder.shipmentId} • Buyer: {assignModalOrder.receiverName}</p>
+                <p className="text-xs text-slate-500">#{assignModalOrder.shipmentId} • Customer: {assignModalOrder.receiverName}</p>
               </div>
             </div>
 
-            {/* Return Request Summary */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+            {/* Summary */}
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
               <div className="flex justify-between">
-                <span className="font-semibold text-slate-800">
-                  {assignMode === 'replacement' ? 'Exchange Type: Full Replacement' : 'Return Reason:'}
+                <span className="font-bold text-slate-800">
+                  {assignMode === 'replacement' ? 'Exchange: Replacement Unit' : 'Return Reason:'}
                 </span>
-                <span className="font-mono text-emerald-700 font-bold">₹{assignModalOrder.amount} Held</span>
+                <span className="font-mono text-emerald-800 font-bold">₹{assignModalOrder.amount} Held</span>
               </div>
               <p className="text-slate-600">
                 {assignMode === 'replacement'
-                  ? 'Dispatch a new parcel to the buyer. Upon receipt confirmation, order funds will release to your wallet.'
+                  ? 'Dispatch a new parcel to the buyer. Upon receipt confirmation, escrow funds will release to your wallet.'
                   : assignModalOrder.returnReason || 'Buyer requested return within verification window.'}
               </p>
             </div>
 
             {/* 1-Click Auto-Book Option */}
-            <div className="p-3.5 bg-gradient-to-r from-amber-50/90 to-orange-50/60 border border-amber-200/90 rounded-xl flex items-center justify-between gap-3 text-xs">
+            <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-2xl flex items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
                   <Zap className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-amber-950 font-medium">
-                  Auto-select lowest delivery rate?
+                <span className="text-amber-950 font-bold">
+                  Auto-select lowest rate courier?
                 </span>
               </div>
               <button
@@ -1255,17 +1228,16 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   }
                   setAssignModalOrder(null);
                 }}
-                className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold text-xs rounded-xl shadow-xs transition shrink-0 cursor-pointer"
+                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition shrink-0 cursor-pointer"
               >
                 Auto-Book
               </button>
             </div>
 
             {/* Assign Form */}
-            <form onSubmit={handleConfirmAssignCourier} className="space-y-3.5">
-              {/* Courier Partner Selector */}
+            <form onSubmit={handleConfirmAssignCourier} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Select Courier Partner
                 </label>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -1282,10 +1254,10 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                       key={c.slug}
                       type="button"
                       onClick={() => handleCarrierChange(c.slug)}
-                      className={`p-2 rounded-xl border text-xs font-semibold transition flex items-center justify-center cursor-pointer ${
+                      className={`p-2 rounded-xl border text-xs font-bold transition flex items-center justify-center cursor-pointer ${
                         carrierSlug === c.slug
-                          ? 'bg-gradient-to-r from-indigo-600 to-violet-600 border-transparent text-white shadow-xs'
-                          : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/30'
+                          ? 'bg-indigo-600 border-transparent text-white shadow-xs'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                       }`}
                     >
                       <span>{c.name}</span>
@@ -1294,10 +1266,9 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                 </div>
               </div>
 
-              {/* Reverse or Replacement Tracking ID */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-semibold text-slate-700">
+                  <label className="block text-xs font-bold text-slate-700">
                     {assignMode === 'replacement' ? 'Replacement Tracking ID / AWB' : 'Reverse Tracking ID / AWB'}
                   </label>
                   <button
@@ -1308,7 +1279,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                         : `REV-${carrierSlug.toUpperCase().substring(0, 3)}`;
                       setTrackingId(`${prefix}-${Math.floor(10000000 + Math.random() * 90000000)}`);
                     }}
-                    className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+                    className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
                   >
                     Generate ID
                   </button>
@@ -1319,13 +1290,12 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   placeholder={assignMode === 'replacement' ? 'e.g. REP-DEL-84920412' : 'e.g. REV-DEL-84920412'}
                   value={trackingId}
                   onChange={(e) => setTrackingId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white"
                 />
               </div>
 
-              {/* Pickup Notes (Optional) */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   {assignMode === 'replacement' ? 'Dispatch Instructions (Optional)' : 'Pickup Instructions (Optional)'}
                 </label>
                 <input
@@ -1333,24 +1303,15 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   placeholder={assignMode === 'replacement' ? 'e.g. Dispatched sealed replacement unit' : 'e.g. Keep product box ready for courier agent'}
                   value={courierNotes}
                   onChange={(e) => setCourierNotes(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
                 />
               </div>
 
-              {/* Notification Notice */}
-              <div className="p-2.5 bg-indigo-50/60 border border-indigo-100 rounded-xl flex items-start gap-2 text-[11px] text-indigo-900">
-                <MessageSquare className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
-                <p>
-                  Buyer will be automatically notified via in-app alert and SMS with courier tracking details.
-                </p>
-              </div>
-
-              {/* Actions */}
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setAssignModalOrder(null)}
-                  className="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1358,7 +1319,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
                 >
                   {actionLoading ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -1374,7 +1335,8 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
           </div>
         </div>
       )}
-      {/* Lightbox / Full Photo View Modal */}
+
+      {/* ── Lightbox / Full Photo View Modal ──────────────────────── */}
       {previewPhotoModal.isOpen && (
         <div 
           className="fixed inset-0 z-[70] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-6"
@@ -1384,7 +1346,6 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
             className="relative max-w-4xl w-full max-h-[92vh] bg-slate-950 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-3.5 bg-slate-900 border-b border-slate-800 text-white shrink-0">
               <div className="flex items-center gap-2">
                 <Camera className="w-4 h-4 text-amber-400" />
@@ -1410,18 +1371,19 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
               </div>
             </div>
 
-            {/* Viewport */}
             <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-black/60 min-h-[300px]">
-              <img loading="lazy" src={previewPhotoModal.url}
+              <img 
+                loading="lazy" 
+                src={previewPhotoModal.url}
                 alt={previewPhotoModal.title || 'Full Evidence View'}
-                className="max-h-[78vh] max-w-full object-contain rounded-xl shadow-2xl"
+                className="max-h-[78vh] max-w-full object-contain rounded-2xl shadow-2xl"
               />
             </div>
           </div>
         </div>
       )}
 
-      {/* REPLACEMENT IN-BOX QR LABEL MODAL */}
+      {/* ── REPLACEMENT IN-BOX QR LABEL MODAL ──────────────────────── */}
       {replacementQrModalOrder && (() => {
         const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
         const repQrUrl = `${origin}/qr-confirm/${replacementQrModalOrder.replacementQrToken}`;
@@ -1431,13 +1393,13 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
             <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
               <button
                 onClick={() => setReplacementQrModalOrder(null)}
-                className="absolute top-5 right-5 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-violet-200">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
                   <QrCode className="w-5 h-5" />
                 </div>
                 <div>
@@ -1446,14 +1408,12 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                 </div>
               </div>
 
-              {/* Instructions banner */}
-              <div className="p-3 bg-violet-50/70 border border-violet-200/80 rounded-2xl text-[11px] text-violet-900 leading-relaxed">
-                <span className="font-bold">Instructions for Seller:</span> Print this QR label and stick it <strong>inside the replacement box</strong>. When the buyer opens the parcel, they scan this QR to receive a 6-digit SMS OTP, confirming good condition and releasing your order payout.
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] text-slate-700 leading-relaxed">
+                <span className="font-bold text-slate-900">Seller Instructions:</span> Print this QR label and place it <strong>inside the replacement package</strong>. When buyer receives and unboxes, they scan this QR to verify condition via SMS OTP and instantly release your order funds.
               </div>
 
-              {/* Printable Area */}
-              <div id="replacement-qr-printable" className="flex flex-col items-center gap-3 p-5 border-2 border-dashed border-violet-300 rounded-2xl bg-violet-50/30 text-center">
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-violet-700 uppercase tracking-wider">
+              <div id="replacement-qr-printable" className="flex flex-col items-center gap-3 p-5 border-2 border-dashed border-indigo-200 rounded-2xl bg-slate-50/50 text-center">
+                <div className="flex items-center gap-1.5 text-[10px] font-black text-indigo-700 uppercase tracking-wider">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   <span>SecureKaro — Replacement Delivery Sign-Off</span>
                 </div>
@@ -1464,33 +1424,29 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                     size={160}
                     level="H"
                     includeMargin={false}
-                    fgColor="#1e1b4b"
+                    fgColor="#0f172a"
                   />
                 </div>
 
                 <div className="space-y-0.5">
-                  <p className="text-xs font-bold text-slate-900">Scan to Verify Replacement Parcel</p>
+                  <p className="text-xs font-black text-slate-900">Scan to Verify Replacement Parcel</p>
                   <p className="text-[11px] text-slate-500">{replacementQrModalOrder.description || 'Replacement Parcel'}</p>
-                  <p className="text-xs font-extrabold text-violet-700 mt-1 font-mono">
+                  <p className="text-xs font-black text-indigo-700 mt-1 font-mono">
                     AWB: {replacementQrModalOrder.replacementAwbCode} ({replacementQrModalOrder.replacementCarrierName || 'Express Courier'})
-                  </p>
-                  <p className="text-[10px] font-mono text-slate-400 break-all bg-white py-1 px-2 rounded-md border border-slate-200 mt-1">
-                    {repQrUrl}
                   </p>
                 </div>
 
                 <p className="text-[9.5px] text-slate-400 leading-tight">
-                  Receiver scans QR upon opening &amp; verifies SMS OTP<br />
-                  Unlocks Payout Release to Seller • Protected by SecureKaro
+                  Receiver scans QR upon unboxing &amp; verifies SMS OTP<br />
+                  Safe Escrow Payout Release • Protected by SecureKaro
                 </p>
               </div>
 
-              {/* Actions */}
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-violet-600/20"
+                  className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Print Label</span>
@@ -1511,7 +1467,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   href={repQrUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
+                  className="py-2.5 px-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
                   title="Test scan in browser"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
