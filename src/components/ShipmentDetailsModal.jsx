@@ -1617,7 +1617,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                     <div>
                       <p className="text-xs font-black text-slate-900">In-Box QR Code</p>
                       <p className="text-[11px] text-slate-500 mt-0.5">
-                        Print &amp; place inside parcel — receiver scans to confirm delivery
+                        Print and place inside box for receiver delivery scan.
                       </p>
                     </div>
                   </div>
@@ -1844,32 +1844,43 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-900">Return Policy</span>
                     <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${currentShipment.returnAllowed !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}>
-                      {currentShipment.returnAllowed !== false ? 'Returns Allowed (24h Window)' : 'Returns Disabled (Final Sale)'}
+                      {currentShipment.returnAllowed !== false ? 'Returns Allowed (24h Window)' : 'No Returns'}
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 mt-0.5">
                     {currentShipment.returnAllowed !== false 
-                      ? 'Buyer can inspect & request return within 24 hours of delivery. (Locked once payment link is sent)' 
-                      : 'Returns are disabled by seller for this parcel.'}
+                      ? 'Buyer can request return within 24 hours of delivery.' 
+                      : 'Returns are disabled for this parcel.'}
                   </p>
                 </div>
               </div>
 
-              {/* Seller toggle action to enable returns (disabling is locked once payment link is sent) */}
+              {/* Seller toggle action */}
               {isSender && !isReceiverUser && activeRole !== 'Receiver' && !['Released', 'Cancelled', 'Returned & Refunded'].includes(currentShipment.status) && (
-                currentShipment.returnAllowed === false ? (
-                  <button
-                    type="button"
-                    disabled={actionLoading}
-                    onClick={() => handleToggleReturnOption(true)}
-                    className="px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-xs shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white"
-                  >
-                    Enable Return Option
-                  </button>
+                !isPickedUp ? (
+                  currentShipment.returnAllowed === false ? (
+                    <button
+                      type="button"
+                      disabled={actionLoading}
+                      onClick={() => handleToggleReturnOption(true)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-xs shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                    >
+                      Enable Returns
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={actionLoading}
+                      onClick={() => handleToggleReturnOption(false)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold transition border border-slate-300 hover:bg-slate-100 text-slate-700 shrink-0 cursor-pointer"
+                    >
+                      Disable
+                    </button>
+                  )
                 ) : (
-                  <div className="px-3 py-1.5 rounded-xl bg-emerald-100/70 border border-emerald-200 text-emerald-800 text-[11px] font-bold flex items-center gap-1.5 shrink-0 shadow-2xs">
-                    <Lock className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>Locked (Link Sent)</span>
+                  <div className="px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold flex items-center gap-1 shrink-0">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Active</span>
                   </div>
                 )
               )}
@@ -1897,7 +1908,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-600 mt-0.5">
-                          Buyer has completed the order payment. Funds are protected safely in delivery vault and will disburse upon verified delivery.
+                          Payment confirmed. Disburses to wallet upon verified delivery.
                         </p>
                       </div>
                     </div>
@@ -1927,7 +1938,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   </div>
 
                   <p className="text-[11px] text-slate-600">
-                    Send this payment link to {currentShipment.receiverName || 'the buyer'} to collect ₹{formattedAmt} directly into vault protection.
+                    Share payment link with {currentShipment.receiverName || 'the buyer'} to collect ₹{formattedAmt}.
                   </p>
 
                   <div className="flex items-center gap-2">
@@ -1998,7 +2009,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                     </span>
                   ) : (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300">
-                      Optional — Weight Dispute Protection
+                      Optional (Weight Shield)
                     </span>
                   )}
                 </div>
@@ -2043,10 +2054,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 ) : (
                   <div className="space-y-3">
                     <p className="text-[11px] text-slate-600 leading-relaxed">
-                      You enabled the weight scale photo option for this parcel. You can upload a photo of the packed parcel on a scale showing label and dead weight before courier pickup for dispute protection.
-                      <span className="block text-slate-500 font-medium mt-0.5">
-                        (Optional: If not uploaded, parcel pickup and tracking will still proceed normally without any delay).
-                      </span>
+                      Upload parcel photo on scale with shipping label before courier pickup (optional dispute protection).
                     </p>
 
                     {isSupplier && !isPickedUp && (

@@ -903,7 +903,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
                               <Scale className="w-3.5 h-3.5 text-indigo-600" />
-                              <span>Packed Parcel Photo on Weight Scale with Label</span>
+                              <span>Weight Scale Photo</span>
                             </span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
                               {parcelPhoto || trackingResult?.parcelPhotoUrl ? 'Photo Uploaded' : 'Optional (Weight Shield)'}
@@ -912,7 +912,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                           <p className="text-[11px] text-slate-600 leading-relaxed">
                             {parcelPhoto || trackingResult?.parcelPhotoUrl
                               ? 'Parcel photo on scale saved for dispute protection.'
-                              : 'You enabled Weight Scale Photo. You can upload a photo of your parcel on a scale before courier pickup. (Optional — does not block pickup if not uploaded).'}
+                              : 'Upload parcel photo on scale with label before courier pickup (optional).'}
                           </p>
                           {(parcelPhoto || trackingResult?.parcelPhotoUrl) && (
                             <div className="rounded-xl overflow-hidden max-h-40 border border-slate-200 mt-1">
