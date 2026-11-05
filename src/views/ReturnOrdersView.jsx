@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   RotateCcw, ShieldCheck, CheckCircle2, Clock, AlertTriangle, 
   Package, Truck, ArrowRight, RefreshCw, Filter, Search, ChevronRight, 
@@ -1046,192 +1047,213 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
       )}
 
       {/* ── TRACK REVERSE JOURNEY MODAL ────────────────────────────── */}
-      {trackingModalOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200 space-y-5 animate-in zoom-in-95 duration-150">
-            <button
-              onClick={() => setTrackingModalOrder(null)}
-              className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
-                <RotateCcw className="w-5 h-5" />
+      {trackingModalOrder && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] bg-slate-950/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+          onClick={() => setTrackingModalOrder(null)}
+        >
+          <div 
+            className="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[85vh] sm:max-h-[88vh] flex flex-col shadow-2xl relative border-t sm:border border-slate-200 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="shrink-0 flex items-center justify-between p-5 pb-3 border-b border-slate-100 bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
+                  <RotateCcw className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900">
+                    Return Journey Milestones
+                  </h3>
+                  <p className="text-xs text-slate-500 font-mono">#{trackingModalOrder.shipmentId} • {trackingModalOrder.city || 'India'}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-black text-slate-900">
-                  Return Journey Milestones
-                </h3>
-                <p className="text-xs text-slate-500 font-mono">#{trackingModalOrder.shipmentId} • {trackingModalOrder.city || 'India'}</p>
-              </div>
+              <button
+                onClick={() => setTrackingModalOrder(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Courier & AWB Banner */}
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Reverse Carrier</span>
-                <span className="font-bold text-slate-900 text-sm">
-                  {trackingModalOrder.returnCarrierName || (trackingModalOrder.returnCarrierSlug ? trackingModalOrder.returnCarrierSlug.toUpperCase() + ' Express' : 'Carrier Pending')}
-                </span>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tracking AWB</span>
-                <div className="flex items-center gap-1.5 justify-end">
-                  <span className="font-mono font-bold text-slate-900">
-                    {trackingModalOrder.returnAwbCode || 'Awaiting Assignment'}
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* Courier & AWB Banner */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Reverse Carrier</span>
+                  <span className="font-bold text-slate-900 text-sm">
+                    {trackingModalOrder.returnCarrierName || (trackingModalOrder.returnCarrierSlug ? trackingModalOrder.returnCarrierSlug.toUpperCase() + ' Express' : 'Carrier Pending')}
                   </span>
-                  {trackingModalOrder.returnAwbCode && (
-                    <button
-                      onClick={() => copyToClipboard(trackingModalOrder.returnAwbCode, 'modal')}
-                      className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-700 transition cursor-pointer"
-                    >
-                      {copiedAwb === 'modal' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
-                  )}
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tracking AWB</span>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <span className="font-mono font-bold text-slate-900">
+                      {trackingModalOrder.returnAwbCode || 'Awaiting Assignment'}
+                    </span>
+                    {trackingModalOrder.returnAwbCode && (
+                      <button
+                        onClick={() => copyToClipboard(trackingModalOrder.returnAwbCode, 'modal')}
+                        className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-700 transition cursor-pointer"
+                      >
+                        {copiedAwb === 'modal' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Reverse Milestone Timeline */}
+              <div className="space-y-3">
+                <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Milestone History</h4>
+                <div className="space-y-3.5 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-200">
+                  {[
+                    {
+                      title: 'Return Requested',
+                      desc: `Reason: "${trackingModalOrder.returnReason || 'Product return requested'}"`,
+                      active: true,
+                      time: trackingModalOrder.returnRequestedAt ? new Date(trackingModalOrder.returnRequestedAt).toLocaleDateString('en-IN') : 'Initiated',
+                      color: 'bg-amber-500'
+                    },
+                    {
+                      title: 'Reverse Courier Assigned',
+                      desc: trackingModalOrder.returnAwbCode 
+                        ? `${trackingModalOrder.returnCarrierName || 'Delhivery Express'} AWB: ${trackingModalOrder.returnAwbCode}`
+                        : 'Pending courier partner assignment.',
+                      active: Boolean(trackingModalOrder.returnAwbCode || trackingModalOrder.returnStatus === 'In Return Transit' || trackingModalOrder.returnStatus === 'Completed'),
+                      time: trackingModalOrder.returnApprovedAt ? new Date(trackingModalOrder.returnApprovedAt).toLocaleDateString('en-IN') : 'Pending',
+                      color: 'bg-indigo-600'
+                    },
+                    {
+                      title: 'In Return Transit',
+                      desc: trackingModalOrder.returnStatus === 'In Return Transit' || trackingModalOrder.returnStatus === 'Completed'
+                        ? 'Package collected and en route to merchant warehouse.'
+                        : 'Courier assigned for home pickup.',
+                      active: Boolean(trackingModalOrder.returnStatus === 'In Return Transit' || trackingModalOrder.returnStatus === 'Completed'),
+                      time: trackingModalOrder.returnStatus === 'In Return Transit' ? 'In Transit' : 'Scheduled',
+                      color: 'bg-indigo-600'
+                    },
+                    {
+                      title: 'Return Received & Refunded',
+                      desc: trackingModalOrder.returnStatus === 'Completed' || trackingModalOrder.status === 'Returned & Refunded'
+                        ? `Parcel received. 100% Order Amount (₹${trackingModalOrder.amount}) refunded to buyer.`
+                        : 'Refund auto-issues upon warehouse receipt confirmation.',
+                      active: Boolean(trackingModalOrder.returnStatus === 'Completed' || trackingModalOrder.status === 'Returned & Refunded'),
+                      time: trackingModalOrder.returnStatus === 'Completed' ? 'Completed' : 'Pending',
+                      color: 'bg-emerald-600'
+                    }
+                  ].map((m, idx) => (
+                    <div key={idx} className="flex items-start gap-3 relative z-10">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 transition ${
+                        m.active ? `${m.color} text-white shadow-2xs` : 'bg-slate-100 text-slate-400 border border-slate-200'
+                      }`}>
+                        {m.active ? '✓' : idx + 1}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className={`text-xs font-bold ${m.active ? 'text-slate-900' : 'text-slate-400'}`}>{m.title}</p>
+                          <span className="text-[10px] text-slate-400 font-medium">{m.time}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{m.desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Reverse Milestone Timeline */}
-            <div className="space-y-3">
-              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Milestone History</h4>
-              <div className="space-y-3.5 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-200">
-                {[
-                  {
-                    title: 'Return Requested',
-                    desc: `Reason: "${trackingModalOrder.returnReason || 'Product return requested'}"`,
-                    active: true,
-                    time: trackingModalOrder.returnRequestedAt ? new Date(trackingModalOrder.returnRequestedAt).toLocaleDateString('en-IN') : 'Initiated',
-                    color: 'bg-amber-500'
-                  },
-                  {
-                    title: 'Reverse Courier Assigned',
-                    desc: trackingModalOrder.returnAwbCode 
-                      ? `${trackingModalOrder.returnCarrierName || 'Delhivery Express'} AWB: ${trackingModalOrder.returnAwbCode}`
-                      : 'Pending courier partner assignment.',
-                    active: Boolean(trackingModalOrder.returnAwbCode || trackingModalOrder.returnStatus === 'In Return Transit' || trackingModalOrder.returnStatus === 'Completed'),
-                    time: trackingModalOrder.returnApprovedAt ? new Date(trackingModalOrder.returnApprovedAt).toLocaleDateString('en-IN') : 'Pending',
-                    color: 'bg-indigo-600'
-                  },
-                  {
-                    title: 'In Return Transit',
-                    desc: trackingModalOrder.returnStatus === 'In Return Transit' || trackingModalOrder.returnStatus === 'Completed'
-                      ? 'Package collected and en route to merchant warehouse.'
-                      : 'Courier assigned for home pickup.',
-                    active: Boolean(trackingModalOrder.returnStatus === 'In Return Transit' || trackingModalOrder.returnStatus === 'Completed'),
-                    time: trackingModalOrder.returnStatus === 'In Return Transit' ? 'In Transit' : 'Scheduled',
-                    color: 'bg-indigo-600'
-                  },
-                  {
-                    title: 'Return Received & Refunded',
-                    desc: trackingModalOrder.returnStatus === 'Completed' || trackingModalOrder.status === 'Returned & Refunded'
-                      ? `Parcel received. 100% Order Amount (₹${trackingModalOrder.amount}) refunded to buyer.`
-                      : 'Refund auto-issues upon warehouse receipt confirmation.',
-                    active: Boolean(trackingModalOrder.returnStatus === 'Completed' || trackingModalOrder.status === 'Returned & Refunded'),
-                    time: trackingModalOrder.returnStatus === 'Completed' ? 'Completed' : 'Pending',
-                    color: 'bg-emerald-600'
-                  }
-                ].map((m, idx) => (
-                  <div key={idx} className="flex items-start gap-3 relative z-10">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 transition ${
-                      m.active ? `${m.color} text-white shadow-2xs` : 'bg-slate-100 text-slate-400 border border-slate-200'
-                    }`}>
-                      {m.active ? '✓' : idx + 1}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className={`text-xs font-bold ${m.active ? 'text-slate-900' : 'text-slate-400'}`}>{m.title}</p>
-                        <span className="text-[10px] text-slate-400 font-medium">{m.time}</span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{m.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-100 flex justify-end">
+            {/* Footer */}
+            <div className="shrink-0 p-4 border-t border-slate-100 bg-white flex justify-end pb-safe">
               <button
                 type="button"
                 onClick={() => setTrackingModalOrder(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
+                className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer text-center"
               >
                 Close
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── ASSIGN REVERSE COURIER PARTNER MODAL ────────────────────── */}
-      {assignModalOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
-            <button
-              onClick={() => setAssignModalOrder(null)}
-              className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
+      {assignModalOrder && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] bg-slate-950/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+          onClick={() => setAssignModalOrder(null)}
+        >
+          <div 
+            className="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full max-h-[85vh] sm:max-h-[88vh] flex flex-col shadow-2xl relative border-t sm:border border-slate-200 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
-                <Truck className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-slate-900">
-                  {assignMode === 'replacement' ? 'Assign Replacement Courier' : 'Assign Reverse Courier'}
-                </h3>
-                <p className="text-xs text-slate-500">#{assignModalOrder.shipmentId} • Customer: {assignModalOrder.receiverName}</p>
-              </div>
-            </div>
-
-            {/* Summary */}
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-              <div className="flex justify-between">
-                <span className="font-bold text-slate-800">
-                  {assignMode === 'replacement' ? 'Exchange: Replacement Unit' : 'Return Reason:'}
-                </span>
-                <span className="font-mono text-emerald-800 font-bold">₹{assignModalOrder.amount} Held</span>
-              </div>
-              <p className="text-slate-600">
-                {assignMode === 'replacement'
-                  ? 'Dispatch a new parcel to the buyer. Upon receipt confirmation, order payment will release to your wallet.'
-                  : assignModalOrder.returnReason || 'Buyer requested return within verification window.'}
-              </p>
-            </div>
-
-            {/* 1-Click Auto-Book Option */}
-            <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-2xl flex items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                  <Zap className="w-3.5 h-3.5" />
+            <div className="shrink-0 flex items-center justify-between p-5 pb-3 border-b border-slate-100 bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
+                  <Truck className="w-5 h-5" />
                 </div>
-                <span className="text-amber-950 font-bold">
-                  Auto-select lowest rate courier?
-                </span>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900">
+                    {assignMode === 'replacement' ? 'Assign Replacement Courier' : 'Assign Reverse Courier'}
+                  </h3>
+                  <p className="text-xs text-slate-500">#{assignModalOrder.shipmentId} • Customer: {assignModalOrder.receiverName}</p>
+                </div>
               </div>
               <button
-                type="button"
-                onClick={() => {
-                  if (assignMode === 'replacement') {
-                    handleAutoApproveReplacement(assignModalOrder.shipmentId);
-                  } else {
-                    handleAutoApproveReturn(assignModalOrder.shipmentId);
-                  }
-                  setAssignModalOrder(null);
-                }}
-                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition shrink-0 cursor-pointer"
+                onClick={() => setAssignModalOrder(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
               >
-                Auto-Book
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Assign Form */}
-            <form onSubmit={handleConfirmAssignCourier} className="space-y-4">
+            {/* Scrollable Form Body */}
+            <form onSubmit={handleConfirmAssignCourier} className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* Summary */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span className="font-bold text-slate-800">
+                    {assignMode === 'replacement' ? 'Exchange: Replacement Unit' : 'Return Reason:'}
+                  </span>
+                  <span className="font-mono text-emerald-800 font-bold">₹{assignModalOrder.amount} Held</span>
+                </div>
+                <p className="text-slate-600">
+                  {assignMode === 'replacement'
+                    ? 'Dispatch a new parcel to the buyer. Upon receipt confirmation, order payment will release to your wallet.'
+                    : assignModalOrder.returnReason || 'Buyer requested return within verification window.'}
+                </p>
+              </div>
+
+              {/* 1-Click Auto-Book Option */}
+              <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-2xl flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                    <Zap className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-amber-950 font-bold">
+                    Auto-select lowest rate courier?
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (assignMode === 'replacement') {
+                      handleAutoApproveReplacement(assignModalOrder.shipmentId);
+                    } else {
+                      handleAutoApproveReturn(assignModalOrder.shipmentId);
+                    }
+                    setAssignModalOrder(null);
+                  }}
+                  className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition shrink-0 cursor-pointer"
+                >
+                  Auto-Book
+                </button>
+              </div>
+
+              {/* Courier Partner Selector */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Select Courier Partner
@@ -1303,7 +1325,8 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              {/* Actions Footer */}
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setAssignModalOrder(null)}
@@ -1329,13 +1352,14 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── Lightbox / Full Photo View Modal ──────────────────────── */}
-      {previewPhotoModal.isOpen && (
+      {previewPhotoModal.isOpen && typeof document !== 'undefined' && createPortal(
         <div 
-          className="fixed inset-0 z-[70] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-6"
+          className="fixed inset-0 z-[110] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-6"
           onClick={() => setPreviewPhotoModal({ isOpen: false, url: '', title: '' })}
         >
           <div 
@@ -1376,69 +1400,82 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── REPLACEMENT IN-BOX QR LABEL MODAL ──────────────────────── */}
-      {replacementQrModalOrder && (() => {
+      {replacementQrModalOrder && typeof document !== 'undefined' && (() => {
         const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
         const repQrUrl = `${origin}/qr-confirm/${replacementQrModalOrder.replacementQrToken}`;
 
-        return (
-          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
-              <button
-                onClick={() => setReplacementQrModalOrder(null)}
-                className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
-                  <QrCode className="w-5 h-5" />
+        return createPortal(
+          <div 
+            className="fixed inset-0 z-[100] bg-slate-950/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+            onClick={() => setReplacementQrModalOrder(null)}
+          >
+            <div 
+              className="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full max-h-[85vh] sm:max-h-[88vh] flex flex-col shadow-2xl relative border-t sm:border border-slate-200 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="shrink-0 flex items-center justify-between p-5 pb-3 border-b border-slate-100 bg-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
+                    <QrCode className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">Replacement In-Box QR Label</h3>
+                    <p className="text-[11px] text-slate-500 font-mono">#{replacementQrModalOrder.shipmentId} • AWB: {replacementQrModalOrder.replacementAwbCode || 'Auto'}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-900">Replacement In-Box QR Label</h3>
-                  <p className="text-[11px] text-slate-500 font-mono">#{replacementQrModalOrder.shipmentId} • AWB: {replacementQrModalOrder.replacementAwbCode || 'Auto'}</p>
-                </div>
+                <button
+                  onClick={() => setReplacementQrModalOrder(null)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] text-slate-700 leading-relaxed">
-                <span className="font-bold text-slate-900">Seller Instructions:</span> Print this QR label and place it <strong>inside the replacement package</strong>. When buyer receives and unboxes, they scan this QR to verify condition via SMS OTP and instantly release your order funds.
-              </div>
-
-              <div id="replacement-qr-printable" className="flex flex-col items-center gap-3 p-5 border-2 border-dashed border-indigo-200 rounded-2xl bg-slate-50/50 text-center">
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-indigo-700 uppercase tracking-wider">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>SecureKaro — Replacement Delivery Sign-Off</span>
+              {/* Scrollable Body */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] text-slate-700 leading-relaxed">
+                  <span className="font-bold text-slate-900">Seller Instructions:</span> Print this QR label and place it <strong>inside the replacement package</strong>. When buyer receives and unboxes, they scan this QR to verify condition via SMS OTP and instantly release your order funds.
                 </div>
 
-                <div className="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
-                  <QRCodeSVG
-                    value={repQrUrl}
-                    size={160}
-                    level="H"
-                    includeMargin={false}
-                    fgColor="#0f172a"
-                  />
-                </div>
+                <div id="replacement-qr-printable" className="flex flex-col items-center gap-3 p-5 border-2 border-dashed border-indigo-200 rounded-2xl bg-slate-50/50 text-center">
+                  <div className="flex items-center gap-1.5 text-[10px] font-black text-indigo-700 uppercase tracking-wider">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>SecureKaro — Replacement Delivery Sign-Off</span>
+                  </div>
 
-                <div className="space-y-0.5">
-                  <p className="text-xs font-black text-slate-900">Scan to Verify Replacement Parcel</p>
-                  <p className="text-[11px] text-slate-500">{replacementQrModalOrder.description || 'Replacement Parcel'}</p>
-                  <p className="text-xs font-black text-indigo-700 mt-1 font-mono">
-                    AWB: {replacementQrModalOrder.replacementAwbCode} ({replacementQrModalOrder.replacementCarrierName || 'Express Courier'})
+                  <div className="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
+                    <QRCodeSVG
+                      value={repQrUrl}
+                      size={160}
+                      level="H"
+                      includeMargin={false}
+                      fgColor="#0f172a"
+                    />
+                  </div>
+
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-black text-slate-900">Scan to Verify Replacement Parcel</p>
+                    <p className="text-[11px] text-slate-500">{replacementQrModalOrder.description || 'Replacement Parcel'}</p>
+                    <p className="text-xs font-black text-indigo-700 mt-1 font-mono">
+                      AWB: {replacementQrModalOrder.replacementAwbCode} ({replacementQrModalOrder.replacementCarrierName || 'Express Courier'})
+                    </p>
+                  </div>
+
+                  <p className="text-[9.5px] text-slate-400 leading-tight">
+                    Receiver scans QR upon unboxing &amp; verifies SMS OTP<br />
+                    Verified Delivery Confirmation • Protected by SecureKaro
                   </p>
                 </div>
-
-                <p className="text-[9.5px] text-slate-400 leading-tight">
-                  Receiver scans QR upon unboxing &amp; verifies SMS OTP<br />
-                  Verified Delivery Confirmation • Protected by SecureKaro
-                </p>
               </div>
 
-              <div className="flex gap-2">
+              {/* Footer */}
+              <div className="shrink-0 p-4 border-t border-slate-100 bg-white flex gap-2 pb-safe">
                 <button
                   type="button"
                   onClick={() => window.print()}
@@ -1471,7 +1508,8 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                 </a>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         );
       })()}
     </div>
