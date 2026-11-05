@@ -46,6 +46,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   const [fundImmediately, setFundImmediately] = useState(true);
   const [paymentMode, setPaymentMode] = useState('cod'); // 'cod' (prepaid temporarily disabled)
   const [returnAllowed, setReturnAllowed] = useState(true);
+  const [photoReviewEnabled, setPhotoReviewEnabled] = useState(false);
   const [rtoProtectionEnabled, setRtoProtectionEnabled] = useState(false);
   const [secureShipmentEnabled, setSecureShipmentEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -327,7 +328,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         codCharge: isCod ? (selectedQuote.codCharge || 52) : 0,
         fundEscrow: isCod ? false : fundImmediately,
         returnAllowed,
-        photoReviewEnabled: true,
+        photoReviewEnabled: Boolean(photoReviewEnabled),
         rtoProtectionEnabled
       };
 
@@ -641,6 +642,35 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     className="sr-only peer"
                   />
                   <div className="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-amber-600"></div>
+                </label>
+              </div>
+
+              {/* Packed Parcel Photo on Weight Scale with Label (Default: OFF) */}
+              <div className={`p-3 rounded-2xl border transition-all ${
+                photoReviewEnabled ? 'bg-indigo-50/80 border-indigo-200' : 'bg-slate-50 border-slate-200'
+              } flex items-center justify-between`}>
+                <div className="flex items-center gap-2">
+                  <Scale className={`w-4 h-4 shrink-0 ${photoReviewEnabled ? 'text-indigo-600' : 'text-slate-500'}`} />
+                  <div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-xs font-bold text-slate-900">Packed Parcel Photo on Weight Scale with Label</p>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
+                        photoReviewEnabled ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-200 text-slate-600'
+                      }`}>
+                        {photoReviewEnabled ? 'Enabled' : 'Off'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500">Optional: Upload parcel on scale with label before pickup</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
+                  <input
+                    type="checkbox"
+                    checked={photoReviewEnabled}
+                    onChange={(e) => setPhotoReviewEnabled(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-indigo-600"></div>
                 </label>
               </div>
 

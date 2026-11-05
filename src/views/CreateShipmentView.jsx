@@ -171,7 +171,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [paymentMode, setPaymentMode] = useState('cod'); // 'cod' | 'paid_offline' (prepaid temporarily disabled)
   const [returnAllowed, setReturnAllowed] = useState(true);
   const isNonEcommerce = user?.platformType !== 'ecommerce';
-  const [photoReviewEnabled, setPhotoReviewEnabled] = useState(true);
+  const [photoReviewEnabled, setPhotoReviewEnabled] = useState(false);
   const [rtoProtectionEnabled, setRtoProtectionEnabled] = useState(false);
 
   // Volumetric weight helper
@@ -530,7 +530,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         paymentMode,
         isPrepaid: paymentMode === 'prepaid' || paymentMode === 'paid_offline',
         returnAllowed,
-        photoReviewEnabled: true,
+        photoReviewEnabled: Boolean(photoReviewEnabled),
         rtoProtectionEnabled: Boolean(rtoProtectionEnabled),
         deliveryCharge: targetDeliveryCharge,
         freightCharge: selectedQuote?.freightCharge !== undefined ? selectedQuote.freightCharge : (paymentMode === 'cod' ? Math.max(0, targetDeliveryCharge - (codQuote.codCharge || 0)) : targetDeliveryCharge),
@@ -1321,24 +1321,45 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 )}
               </div>
 
-              {/* Mandatory Parcel Photo on Weighing Scale for all shipments */}
-              <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/90 flex items-center justify-between">
+              {/* Packed Parcel Photo on Weight Scale with Label (Default: OFF) */}
+              <div className={`p-4 rounded-2xl border transition-all ${
+                photoReviewEnabled
+                  ? 'bg-indigo-50/80 border-indigo-200/90'
+                  : 'bg-slate-50 border-slate-200'
+              } flex items-center justify-between`}>
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold shrink-0">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold shrink-0 ${
+                    photoReviewEnabled
+                      ? 'bg-indigo-100 text-indigo-700'
+                      : 'bg-slate-200 text-slate-500'
+                  }`}>
                     <Scale className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-xs font-bold text-slate-900">Mandatory Parcel Photo on Weighing Scale</p>
-                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300">
-                        Mandatory for All Shipments
+                      <p className="text-xs font-bold text-slate-900">Packed Parcel Photo on Weight Scale with Label</p>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        photoReviewEnabled
+                          ? 'bg-indigo-100 text-indigo-800 border border-indigo-300'
+                          : 'bg-slate-200 text-slate-700'
+                      }`}>
+                        {photoReviewEnabled ? 'Enabled' : 'Optional (Off)'}
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                      Photo of packed parcel resting on a weighing scale showing weight &amp; dimensions is mandatory for every shipment before courier dispatch to guarantee weight shield and zero-penalty dispute protection.
+                      Optional: Turn on if you want to upload a photo of the packed parcel resting on a weight scale showing weight &amp; shipping label before courier pickup for dispute protection.
                     </p>
                   </div>
                 </div>
+                <label className="relative inline-flex items-center shrink-0 ml-4 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={photoReviewEnabled}
+                    onChange={(e) => setPhotoReviewEnabled(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
               </div>
 
               <button

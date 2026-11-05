@@ -16,6 +16,33 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
 
   const [searchId, setSearchId] = useState(selectedShipment?.shipmentId || selectedShipment?.awbCode || '');
   const [activeTab, setActiveTab] = useState('escrow'); // 'escrow' | 'carrier' | 'return'
+
+  const isOrderCancelled = trackingResult?.status === 'Cancelled' || Boolean(trackingResult?.cancelledAt);
+
+  const isParcelPickedUp = Boolean(
+    trackingResult?.isPickedUp ||
+    ['Picked Up', 'In Transit', 'Out for Delivery', 'Delivered', 'Completed', 'Cancelled', 'Returned & Refunded', 'Return Requested', 'Return In Transit'].includes(trackingResult?.status) ||
+    (trackingResult?.milestones || []).some(m => /picked\s*up|pickup\s*done|in\s*transit|out\s*for\s*delivery|delivered/i.test(m?.status || m?.activity || ''))
+  );
+
+  const isOutForDelivery = Boolean(
+    ['Out for Delivery', 'Delivered', 'Completed'].includes(trackingResult?.status) ||
+    (trackingResult?.milestones || []).some(m => /out\s*for\s*delivery|delivered/i.test(m?.status || m?.activity || ''))
+  );
+
+  const isParcelDelivered = Boolean(
+    trackingResult?.deliveryConfirmed ||
+    ['Delivered', 'Completed'].includes(trackingResult?.status) ||
+    (trackingResult?.milestones || []).some(m => /delivered/i.test(m?.status || m?.activity || ''))
+  );
+
+  const isReturnApplied = Boolean(
+    (trackingResult?.returnStatus && trackingResult?.returnStatus !== 'None') ||
+    trackingResult?.status?.includes('Return') ||
+    Number(trackingResult?.discountOfferedAmount) > 0 ||
+    trackingResult?.returnType ||
+    trackingResult?.returnRequested
+  );
   const [loading, setLoading] = useState(false);
   const [isAutoSyncing, setIsAutoSyncing] = useState(true);
   const [lastSyncedTime, setLastSyncedTime] = useState(new Date());
@@ -422,15 +449,9 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
     if (!courierAwb) return;
     setPhotoError('');
 
-    const isPhotoMandatory = true;
-    if (isPhotoMandatory && (!parcelPhoto || !isPhotoClear)) {
-      setPhotoError('A CLEAR, sharp photo of the packaged product is mandatory for all shipments before dispatch.');
-      return;
-    }
-
-    if (parcelPhoto && !isPhotoClear) {
-      setPhotoError('The uploaded photo is not clear! The system requires a clear, sharp photo of the product before submitting.');
-      return;
+    // Packed parcel photo is optional (if user does not upload it, it is ok)
+    if (parcelPhoto && isPhotoClear === false) {
+      setPhotoError('The uploaded photo appears blurry. You may retake or proceed.');
     }
 
     setDispatchLoading(true);
@@ -856,744 +877,217 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                 <h3 className="text-lg font-black text-slate-900 border-b border-slate-100 pb-4">Transaction Journey</h3>
 
                 <div className="space-y-8 relative before:absolute before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-blue-100">
-                  {/* Stage 1 */}
-                  {/* Stage 1: Order Registered */}
+                  {/* STAGE 1: Shipment Created */}
                   <div className="flex items-start gap-4 relative z-10">
-                    <div className="w-10 h-10 rounded-full bg-[#1E56E3] text-white font-bold flex items-center justify-center text-sm shadow-md shrink-0">✓</div>
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h4 className="text-xs font-extrabold text-slate-900">Order details saved on platform</h4>
+                    <div className="w-10 h-10 rounded-full bg-[#1E56E3] text-white font-bold flex items-center justify-center text-sm shadow-md shrink-0">
+                      ✓
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h4 className="text-xs font-extrabold text-slate-900">Shipment Created</h4>
                         <span className="text-[10px] text-slate-400">
-                          {trackingResult.createdAt ? new Date(trackingResult.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Saved'}
+                          {trackingResult?.createdAt ? new Date(trackingResult.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Created'}
+                        </span>
+                        <span className="bg-blue-100 text-[#1E56E3] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          Booked ✓
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">Seller registered parcel details and assigned courier preferences on SafeCart.</p>
-                    </div>
-                  </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Shipment registered on platform. Assigned Courier: <strong>{(selectedCourier || trackingResult?.carrier || 'Delhivery Express').replace('_', ' ').toUpperCase()}</strong> • AWB: <span className="font-mono font-bold text-slate-800">{courierAwb || trackingResult?.awbCode || 'Assigned'}</span>.
+                      </p>
 
-                  {/* Stage 2: Payment Request Generated */}
-                  <div className="flex items-start gap-4 relative z-10">
-                    <div className="w-10 h-10 rounded-full bg-[#1E56E3] text-white font-bold flex items-center justify-center text-sm shadow-md shrink-0">✓</div>
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h4 className="text-xs font-extrabold text-slate-900">Secure payment link generated</h4>
-                        <span className="text-[10px] text-slate-400">
-                          {trackingResult.createdAt ? new Date(trackingResult.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Active'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">Payment request for ₹{Number(trackingResult.amount || 0).toLocaleString('en-IN')} dispatched to {trackingResult.receiverName}.</p>
-                    </div>
-                  </div>
-
-                  {/* Stage 3: Buyer Payment & Protection */}
-                  {(() => {
-                    const isPaymentReceived = Boolean(
-                      trackingResult?.receiverPaymentDone || 
-                      trackingResult?.escrowStage >= 3 || 
-                      (trackingResult?.status && trackingResult.status !== 'Awaiting Payment' && trackingResult.status !== 'Draft')
-                    );
-
-                    return (
-                      <div className="flex items-start gap-4 relative z-10">
-                        <div className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm shadow-md shrink-0 transition-all ${
-                          isPaymentReceived 
-                            ? 'bg-[#1E56E3] text-white' 
-                            : 'bg-amber-500 text-white ring-4 ring-amber-100 shadow-amber-400/30 animate-pulse'
-                        }`}>
-                          {isPaymentReceived ? '✓' : <Clock className="w-4 h-4" />}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <h4 className="text-xs font-extrabold text-slate-900">
-                              {isPaymentReceived ? 'Buyer payment confirmed & protected under Delivery Verification' : `Awaiting payment from ${trackingResult.receiverName}`}
-                            </h4>
-                            <span className="text-[10px] text-slate-400">
-                              {isPaymentReceived && trackingResult.receiverPaidAt 
-                                ? new Date(trackingResult.receiverPaidAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) 
-                                : isPaymentReceived ? 'Confirmed' : 'Pending'}
+                      {/* Optional: Weight scale photo info if enabled and not picked up */}
+                      {!isParcelPickedUp && trackingResult?.photoReviewEnabled && isSupplier && (
+                        <div className="mt-3 p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-2xl space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+                              <Scale className="w-3.5 h-3.5 text-indigo-600" />
+                              <span>Packed Parcel Photo on Weight Scale with Label</span>
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                              {parcelPhoto || trackingResult?.parcelPhotoUrl ? 'Photo Uploaded' : 'Optional (Weight Shield)'}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            {isPaymentReceived
-                              ? `₹${Number(trackingResult.amount || 0).toLocaleString('en-IN')} is protected safely under SecureKaro Delivery Protection. Courier shipment was automatically booked upon payment.`
-                              : `SafeCart will automatically book the courier pickup and assign the AWB code as soon as ${trackingResult.receiverName} pays.`}
+                          <p className="text-[11px] text-slate-600 leading-relaxed">
+                            {parcelPhoto || trackingResult?.parcelPhotoUrl
+                              ? 'Parcel photo on scale saved for dispute protection.'
+                              : 'You enabled Weight Scale Photo. You can upload a photo of your parcel on a scale before courier pickup. (Optional — does not block pickup if not uploaded).'}
                           </p>
-
-                          {!isPaymentReceived && (
-                            <div className="mt-3 p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                              <span className="text-xs font-bold text-amber-900">
-                                Link: <code className="font-mono text-[11px] text-blue-700 bg-white px-2 py-0.5 rounded border border-amber-200">/pay/{trackingResult.shipmentId}</code>
-                              </span>
-                              <div className="flex items-center gap-2">
-                                <a
-                                  href={`/pay/${trackingResult.shipmentId}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-xs"
-                                >
-                                  <span>Open Pay Page</span>
-                                  <ExternalLink className="w-3.5 h-3.5" />
-                                </a>
-                              </div>
+                          {(parcelPhoto || trackingResult?.parcelPhotoUrl) && (
+                            <div className="rounded-xl overflow-hidden max-h-40 border border-slate-200 mt-1">
+                              <img src={parcelPhoto || trackingResult?.parcelPhotoUrl} alt="Parcel on Scale" className="w-full h-36 object-cover" />
                             </div>
                           )}
                         </div>
-                      </div>
-                    );
-                  })()}
+                      )}
+                    </div>
+                  </div>
 
-                  {/* Stage 4: Enter Courier Details — Supplier or Buyer */}
-                  {isSupplier ? (
+                  {/* STAGE 2: Order Canceled (if shipment canceled) OR Parcel Picked Up (if updated to picked up) */}
+                  {isOrderCancelled ? (
                     <div className="flex items-start gap-4 relative z-10">
-                      {/* Step bubble: green check only when dispatched + photo uploaded */}
-                      <div className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm shadow-md shrink-0 transition-all ${
-                        isDispatched && !isEditingCourier && trackingResult?.parcelPhotoUrl
-                          ? 'bg-[#1E56E3] text-white'
-                          : isDispatched && !isEditingCourier && !trackingResult?.parcelPhotoUrl
-                          ? 'bg-amber-500 text-white ring-4 ring-amber-100 shadow-amber-400/30 animate-pulse'
-                          : 'bg-[#1E56E3] text-white ring-4 ring-blue-100 shadow-blue-500/20 animate-pulse'
-                      }`}>
-                        {isDispatched && !isEditingCourier && trackingResult?.parcelPhotoUrl
-                          ? '✓'
-                          : isDispatched && !isEditingCourier
-                          ? <Camera className="w-5 h-5" />
-                          : <Truck className="w-5 h-5" />}
+                      <div className="w-10 h-10 rounded-full bg-rose-600 text-white font-bold flex items-center justify-center text-sm shadow-md shrink-0">
+                        <X className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
-                        {isDispatched && !isEditingCourier ? (
-                          <div className={`p-5 rounded-3xl space-y-3 border ${
-                            trackingResult?.parcelPhotoUrl
-                              ? 'bg-blue-50/50 border-blue-200/70'
-                              : 'bg-amber-50/60 border-amber-300/70'
-                          }`}>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-xs font-black text-slate-900">Courier details submitted &amp; parcel dispatched</h4>
-                                {trackingResult?.parcelPhotoUrl ? (
-                                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                    COMPLETED ✓
-                                  </span>
-                                ) : (
-                                  <span className="bg-amber-100 text-amber-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1">
-                                    <Camera className="w-3 h-3 text-amber-600" />
-                                    PHOTO REQUIRED
-                                  </span>
-                                )}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setIsEditingCourier(true)}
-                                className="text-[11px] font-bold text-[#1E56E3] hover:underline cursor-pointer flex items-center gap-1"
-                              >
-                                Edit Details
-                              </button>
-                            </div>
-
-                            {/* Missing photo warning */}
-                            {!trackingResult?.parcelPhotoUrl && (
-                              <div className="p-3 rounded-2xl bg-amber-100 border border-amber-300 flex items-center gap-2.5">
-                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                                <p className="text-[11px] text-amber-800 font-semibold">
-                                  Parcel photo has not been uploaded yet. Upload a photo via <strong>Edit Details</strong> to mark this step as complete.
-                                </p>
-                              </div>
-                            )}
-
-                            <div className="p-3.5 rounded-2xl bg-white border border-blue-100 flex items-center justify-between gap-3 shadow-2xs">
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold">
-                                  <Truck className="w-4 h-4" />
-                                </div>
-                                <div>
-                                  <p className="text-xs font-bold text-slate-900 uppercase">
-                                    Dispatched via {(selectedCourier || trackingResult?.carrier || 'Delhivery').replace('_', ' ')}
-                                  </p>
-                                  <p className="text-[11px] font-mono text-slate-600 font-semibold mt-0.5">
-                                    AWB Tracking Code: <span className="text-[#1E56E3] font-bold">{courierAwb || trackingResult?.awbCode}</span>
-                                  </p>
-                                </div>
-                              </div>
-                              <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                                Dispatched
-                              </span>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="p-6 rounded-3xl bg-blue-50/60 border border-blue-200/80 space-y-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2 text-[#1E56E3] font-bold text-xs">
-                                <Truck className="w-4 h-4" />
-                                <span>{isEditingCourier ? 'Update Courier Details' : 'Enter Courier Details'}</span>
-                              </div>
-                              {isEditingCourier && (
-                                <button
-                                  type="button"
-                                  onClick={() => setIsEditingCourier(false)}
-                                  className="text-[11px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
-                                >
-                                  Cancel
-                                </button>
-                              )}
-                            </div>
-                            <p className="text-xs text-slate-600">As the sender, enter the courier details to dispatch the parcel and advance to the next step.</p>
-
-                            <form onSubmit={handleDispatchCourier} className="space-y-4">
-                              <div>
-                                <div className="flex items-center justify-between mb-1">
-                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">SELECT COURIER SERVICE</label>
-                                  {(trackingResult?.carrier || trackingResult?.pickupCarrier || selectedCourier) && (
-                                    <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
-                                      🔒 Auto-Assigned & Locked
-                                    </span>
-                                  )}
-                                </div>
-                                <select
-                                  value={selectedCourier}
-                                  onChange={(e) => setSelectedCourier(e.target.value)}
-                                  disabled={Boolean(trackingResult?.carrier || trackingResult?.pickupCarrier || trackingResult?.awbCode)}
-                                  className={`w-full px-4 py-2.5 rounded-xl text-xs font-semibold ${
-                                    trackingResult?.carrier || trackingResult?.pickupCarrier || trackingResult?.awbCode
-                                      ? 'bg-slate-100/90 border border-slate-300 text-slate-700 cursor-not-allowed select-none'
-                                      : 'bg-white border border-blue-200 text-slate-800 focus:ring-2 focus:ring-blue-500'
-                                  }`}
-                                >
-                                  <option value="delhivery">Delhivery Express</option>
-                                  <option value="rapido">Rapido Parcel / Express</option>
-                                  <option value="bluedart">BlueDart Logistics</option>
-                                  <option value="dtdc">DTDC Express</option>
-                                  <option value="ekart">Ekart Logistics</option>
-                                  <option value="shadowfax">Shadowfax</option>
-                                  <option value="indiapost">India Post Speed Post</option>
-                                </select>
-                              </div>
-
-                              <div>
-                                <div className="flex items-center justify-between mb-1">
-                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">COURIER TRACKING ID</label>
-                                  {courierAwb && (
-                                    <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200 font-sans">
-                                      🔒 Auto-Generated AWB (Locked)
-                                    </span>
-                                  )}
-                                </div>
-                                <input
-                                  type="text"
-                                  required
-                                  readOnly={Boolean(trackingResult?.awbCode || courierAwb)}
-                                  value={courierAwb}
-                                  onChange={(e) => setCourierAwb(e.target.value.toUpperCase())}
-                                  placeholder="E.G. DLV1234567890IN"
-                                  className={`w-full px-4 py-2.5 rounded-xl text-xs font-mono font-bold uppercase ${
-                                    trackingResult?.awbCode || courierAwb
-                                      ? 'bg-slate-100/90 border border-slate-300 text-slate-800 cursor-not-allowed select-none'
-                                      : 'bg-white border border-blue-200 text-slate-900 focus:ring-2 focus:ring-blue-500'
-                                  }`}
-                                />
-                              </div>
-
-                              {/* Parcel Photo Upload Field */}
-                              {(() => {
-                                const isPhotoMandatory = true;
-                                return (
-                                  <div className="p-4 rounded-2xl border transition-all bg-amber-50/90 border-amber-300 shadow-xs">
-                                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                                      <div className="flex items-center gap-1.5 text-slate-900 font-bold text-xs">
-                                        <Camera className="w-4 h-4 text-indigo-600" />
-                                        <span>Parcel & Product Photo Upload</span>
-                                      </div>
-                                      <span className="text-[10px] font-black uppercase tracking-wider bg-amber-200 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-300">
-                                        Mandatory (All Shipments)
-                                      </span>
-                                    </div>
-                                    <p className="text-[11px] text-slate-600 mb-3 leading-relaxed">
-                                      Uploading a clear photo of the packaged parcel and product is mandatory for all shipments before courier dispatch to guarantee delivery verification.
-                                    </p>
-
-                                    {analyzingPhoto && (
-                                      <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center gap-2.5 text-xs text-blue-800 font-bold">
-                                        <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />
-                                        <span>AI System analyzing photo clarity, lighting, and sharpness...</span>
-                                      </div>
-                                    )}
-
-                                    {parcelPhoto && isPhotoClear ? (
-                                      <div className="rounded-2xl overflow-hidden border border-emerald-300 bg-emerald-50/50 p-3 space-y-2.5">
-                                        <div className="relative rounded-xl overflow-hidden max-h-48 border border-slate-200 bg-white">
-                                          <img loading="lazy" src={parcelPhoto} alt="Parcel Preview" className="w-full h-44 object-cover" />
-                                          <div className="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow flex items-center gap-1">
-                                            <CheckCircle2 className="w-3 h-3" />
-                                            <span>CLEAR & APPROVED</span>
-                                          </div>
-                                        </div>
-
-                                        {/* 10-Minute Retake Window Reminder Banner */}
-                                        {!isRetakeExpired ? (
-                                          <div className="p-2.5 rounded-xl bg-amber-50/90 border border-amber-300/80 flex items-center justify-between text-xs text-amber-900 shadow-2xs">
-                                            <div className="flex items-center gap-1.5 font-bold">
-                                              <Clock className="w-3.5 h-3.5 text-amber-600 animate-spin" />
-                                              <span>Reminder: Retake option will be gone after 10 minutes</span>
-                                            </div>
-                                            <span className="font-mono font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-md text-[10px] shrink-0">
-                                              {formattedRetakeRemaining} left
-                                            </span>
-                                          </div>
-                                        ) : (
-                                          <div className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between text-xs text-slate-700">
-                                            <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                                              <Lock className="w-3.5 h-3.5 text-slate-500" />
-                                              <span>Photo Locked: 10-minute retake window has expired</span>
-                                            </div>
-                                            <span className="font-mono font-bold bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md text-[10px]">
-                                              Retake Expired
-                                            </span>
-                                          </div>
-                                        )}
-
-                                        <div className="flex items-center justify-between text-xs pt-1">
-                                          <span className="font-bold text-emerald-700 flex items-center gap-1">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                            Photo is clear & sharp (Clarity Score: {photoClarityScore || 95}%)
-                                          </span>
-
-                                          {!isRetakeExpired ? (
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                if (isRetakeExpired) return;
-                                                setParcelPhoto('');
-                                                setIsPhotoClear(false);
-                                                setPhotoClarityScore(null);
-                                              }}
-                                              className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer flex items-center gap-1"
-                                            >
-                                              <RotateCcw className="w-3 h-3" />
-                                              <span>Retake Photo</span>
-                                            </button>
-                                          ) : (
-                                            <span className="text-[11px] text-slate-400 font-semibold italic flex items-center gap-1">
-                                              <Lock className="w-3 h-3" />
-                                              Retake option expired
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ) : !analyzingPhoto ? (
-                                      isRetakeExpired ? (
-                                        <div className="p-4 rounded-2xl bg-slate-100 border border-slate-200 text-center space-y-1">
-                                          <Lock className="w-5 h-5 text-slate-400 mx-auto" />
-                                          <p className="text-xs font-bold text-slate-700">Photo Retake Window Closed</p>
-                                          <p className="text-[11px] text-slate-500">More than 10 minutes have passed since the original photo upload.</p>
-                                        </div>
-                                      ) : (
-                                        <div>
-                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            {/* Option A: Direct Camera Capture */}
-                                            <button
-                                              type="button"
-                                              onClick={() => setCameraModal({
-                                                isOpen: true,
-                                                type: 'parcel',
-                                                title: 'Take Parcel & Product Photo',
-                                                subtitle: 'Position your parcel clearly in the frame and snap a photo'
-                                              })}
-                                              className="border-2 border-dashed border-blue-200 hover:border-blue-400 bg-white hover:bg-blue-50/50 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition text-center shadow-xs"
-                                            >
-                                              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                                                <Camera className="w-5 h-5" />
-                                              </div>
-                                              <div>
-                                                <span className="text-xs font-bold text-slate-800 block">Take Camera Photo</span>
-                                                <span className="text-[10px] text-slate-500">Snap directly with camera</span>
-                                              </div>
-                                            </button>
-
-                                            {/* Option B: Choose Photo from Gallery */}
-                                            <label className="border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-white hover:bg-indigo-50/50 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition text-center shadow-xs">
-                                              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                                <ImageIcon className="w-5 h-5" />
-                                              </div>
-                                              <div>
-                                                <span className="text-xs font-bold text-slate-800 block">Upload from Gallery</span>
-                                                <span className="text-[10px] text-slate-500">Choose PNG/JPG from phone gallery</span>
-                                              </div>
-                                              <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="sr-only"
-                                                onChange={(e) => {
-                                                  const file = e.target.files?.[0];
-                                                  if (file) handlePhotoSelected(file);
-                                                }}
-                                              />
-                                            </label>
-                                          </div>
-
-                                          {photoError && (
-                                            <div className="p-3.5 mt-3 bg-red-50 border border-red-200 rounded-2xl space-y-1">
-                                              <div className="flex items-center gap-1.5 text-xs text-red-700 font-bold">
-                                                <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
-                                                <span>Photo Rejected: Not Clear</span>
-                                              </div>
-                                              <p className="text-[11px] text-red-600 leading-relaxed">{photoError}</p>
-                                              <p className="text-[10px] text-red-500 font-bold">
-                                                ⚠️ Submission is blocked. Please take a clear, well-lit photo of the product.
-                                              </p>
-                                            </div>
-                                          )}
-                                        </div>
-                                      )
-                                    ) : null}
-                                  </div>
-                                );
-                              })()}
-
-                              {(() => {
-                                const isPhotoMandatory = true;
-                                const isBlockedByPhoto = isPhotoMandatory && (!parcelPhoto || !isPhotoClear);
-                                const isBlockedByUnclearPhoto = parcelPhoto && !isPhotoClear;
-                                const isSubmitDisabled = dispatchLoading || analyzingPhoto || isBlockedByPhoto || isBlockedByUnclearPhoto;
-
-                                return (
-                                  <button
-                                    type="submit"
-                                    disabled={isSubmitDisabled}
-                                    className={`w-full py-3 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 ${
-                                      isSubmitDisabled
-                                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
-                                        : 'bg-[#1E56E3] hover:bg-[#1649CC] shadow-blue-500/20'
-                                    }`}
-                                  >
-                                    {dispatchLoading ? (
-                                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    ) : analyzingPhoto ? (
-                                      <span>Checking Photo Quality...</span>
-                                    ) : isBlockedByPhoto || isBlockedByUnclearPhoto ? (
-                                      <span>Clear Product Photo Required to Submit</span>
-                                    ) : (
-                                      <>
-                                        <Send className="w-4 h-4" />
-                                        <span>{isEditingCourier ? 'UPDATE COURIER DETAILS' : 'SUBMIT & DISPATCH PARCEL'}</span>
-                                      </>
-                                    )}
-                                  </button>
-                                );
-                              })()}
-                            </form>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h4 className="text-xs font-extrabold text-rose-900">Order Canceled</h4>
+                          <span className="text-[10px] text-rose-700 font-bold bg-rose-100 px-2 py-0.5 rounded-full border border-rose-200">
+                            Canceled
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {trackingResult?.cancelledAt ? new Date(trackingResult.cancelledAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Canceled'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          This shipment has been canceled. Courier pickup request terminated.
+                        </p>
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-start gap-4 relative z-10">
                       <div className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm shrink-0 border transition-all ${
-                        isDispatched 
-                          ? 'bg-[#1E56E3] text-white shadow-md border-transparent' 
+                        isParcelPickedUp
+                          ? 'bg-[#1E56E3] text-white shadow-md border-transparent'
                           : 'bg-slate-100 text-slate-400 border-slate-200'
                       }`}>
-                        {isDispatched ? '✓' : <Truck className="w-5 h-5" />}
+                        {isParcelPickedUp ? '✓' : <Truck className="w-5 h-5" />}
                       </div>
-                      <div className="flex-1 space-y-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-xs font-extrabold text-slate-900">
-                              {isDispatched ? 'Courier Dispatched by Supplier' : 'Awaiting Courier Dispatch by Supplier'}
-                            </h4>
-                            {isDispatched && (
-                              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-200">
-                                DISPATCHED ✓
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            {isDispatched
-                              ? `Supplier dispatched parcel via ${(selectedCourier || trackingResult?.carrier || 'Delhivery').replace('_', ' ').toUpperCase()} (AWB: ${courierAwb || trackingResult?.awbCode}).`
-                              : 'The supplier will enter courier details and dispatch your parcel.'
-                            }
-                          </p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h4 className="text-xs font-extrabold text-slate-900">Parcel Picked Up</h4>
+                          {isParcelPickedUp ? (
+                            <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              PICKED UP ✓
+                            </span>
+                          ) : (
+                            <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-300">
+                              Awaiting Pickup
+                            </span>
+                          )}
                         </div>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {isParcelPickedUp
+                            ? `Parcel picked up from sender by courier partner (${(selectedCourier || trackingResult?.carrier || 'Delhivery Express').replace('_', ' ').toUpperCase()}). In transit to sorting hub.`
+                            : `Courier partner has received the pickup manifest. Courier executive is scheduled to arrive at sender address.`}
+                        </p>
                       </div>
                     </div>
                   )}
 
-                  {/* Stage 5: Parcel Sent to Receiver — In Transit */}
-                  <div className={`flex items-start gap-4 relative z-10 transition-all ${
-                    !isDispatched ? 'opacity-70' : ''
-                  }`}>
+                  {/* STAGE 3: Out for Delivery */}
+                  <div className={`flex items-start gap-4 relative z-10 transition-all ${!isParcelPickedUp ? 'opacity-70' : ''}`}>
                     <div className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm shrink-0 border transition-all ${
-                      isDelivered 
-                        ? 'bg-[#1E56E3] text-white shadow-md border-transparent' 
-                        : isDispatched && isPhotoUploaded
-                          ? 'bg-[#1E56E3] text-white shadow-lg ring-4 ring-blue-100 border-transparent animate-pulse' 
-                          : isDispatched && !isPhotoUploaded
-                          ? 'bg-amber-400 text-white shadow-md border-transparent'
-                          : 'bg-slate-100 text-slate-400 border-slate-200'
-                    }`}>
-                      {isDelivered ? '✓' : isDispatched && !isPhotoUploaded ? <Camera className="w-5 h-5" /> : <Truck className="w-5 h-5" />}
-                    </div>
-
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <div className="flex items-center gap-2.5 flex-wrap">
-                          <h4 className={`text-xs font-black ${isDispatched ? 'text-slate-900' : 'text-slate-700'}`}>
-                            Parcel has been sent to {trackingResult?.receiverName || 'Recipient'}
-                          </h4>
-                          {isDispatched && !isDelivered && isPhotoUploaded && (
-                            <span className="bg-[#1E56E3] text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-xs animate-pulse flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                              CURRENT STEP: IN TRANSIT
-                            </span>
-                          )}
-                          {isDispatched && !isPhotoUploaded && (
-                            <span className="bg-amber-100 text-amber-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1">
-                              <Camera className="w-3 h-3 text-amber-600" />
-                              BLOCKED: PHOTO REQUIRED
-                            </span>
-                          )}
-                          {isDelivered && (
-                            <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-200">
-                              DELIVERED ✓
-                            </span>
-                          )}
-                        </div>
-                        <p className={`text-xs mt-0.5 ${isDispatched ? 'text-slate-600' : 'text-slate-400'}`}>
-                          {!isDispatched
-                            ? 'Awaiting courier dispatch by sender.'
-                            : !isPhotoUploaded
-                            ? 'Parcel photo must be uploaded before this step can proceed.'
-                            : isDelivered
-                              ? `Parcel successfully delivered at ${trackingResult?.route?.split('→')?.[1]?.trim() || 'destination'}.`
-                              : `Dispatched via ${(selectedCourier || trackingResult?.carrier || 'Delhivery').replace('_', ' ').toUpperCase()} (AWB: ${courierAwb || trackingResult?.awbCode}). Active on live linehaul route.`
-                          }
-                        </p>
-                      </div>
-
-                      {/* Photo upload blocker wall */}
-                      {isDispatched && !isPhotoUploaded && (
-                        <div className="p-5 rounded-3xl bg-amber-50 border-2 border-amber-300 border-dashed space-y-3">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                              <Camera className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-black text-amber-900">Parcel Photo Required to Proceed</p>
-                              <p className="text-[11px] text-amber-700 mt-0.5">You must upload a clear photo of the packaged parcel before the next step is unlocked.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 p-3 bg-amber-100 rounded-2xl border border-amber-300">
-                            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                            <p className="text-[11px] text-amber-800 font-semibold">
-                              Go to <strong>Edit Details</strong> above to upload the parcel photo. This step and all subsequent steps are locked until the photo is uploaded.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Active In-Transit Action Card */}
-                      {isDispatched && isPhotoUploaded && !isDelivered && (
-                        <div className="p-5 rounded-3xl bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-white border border-blue-200/90 space-y-4 shadow-xs">
-                          <div className="flex items-center justify-between flex-wrap gap-2">
-                            <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
-                              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
-                              <span>Live Parcel Transit Active • Route: {trackingResult?.route || 'Origin → Destination'}</span>
-                            </div>
-                            <span className="text-[11px] font-bold text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full border border-blue-200">
-                              Estimated Delivery: 2-3 Days
-                            </span>
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-2 pt-1">
-                            <button
-                              type="button"
-                              onClick={() => setActiveTab('carrier')}
-                              className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-blue-200 text-[#1E56E3] text-xs font-bold shadow-2xs transition flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <Truck className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>View Carrier Journey Milestones →</span>
-                            </button>
-                            <span className="text-[10px] text-slate-400 ml-auto font-medium italic flex items-center gap-1">
-                              <RefreshCw className="w-3 h-3" />
-                              Delivery status auto-updates from Shiprocket
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Stage 6: Item confirmed by receiver */}
-                  <div className={`flex items-start gap-4 relative z-10 transition-all ${
-                    !isDelivered ? 'opacity-70' : ''
-                  }`}>
-                    <div className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm shrink-0 border transition-all ${
-                      isReleased 
-                        ? 'bg-[#1E56E3] text-white shadow-md border-transparent' 
-                        : isDelivered 
-                          ? 'bg-[#1E56E3] text-white shadow-lg ring-4 ring-blue-100 border-transparent animate-pulse' 
-                          : 'bg-slate-100 text-slate-400 border-slate-200'
-                    }`}>
-                      {isReleased ? '✓' : <Package className="w-4 h-4" />}
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <div className="flex items-center gap-2.5 flex-wrap">
-                          <h4 className={`text-xs font-black ${isDelivered ? 'text-slate-900' : 'text-slate-700'}`}>
-                            Item confirmed by {trackingResult?.receiverName || 'Recipient'}
-                          </h4>
-                          {/* If discount was offered and accepted */}
-                          {trackingResult?.discountAccepted === true && (
-                            <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                              DISCOUNT SETTLED ✓
-                            </span>
-                          )}
-                          {/* If discount was offered but pending decision */}
-                          {Boolean(Number(trackingResult?.discountOfferedAmount) > 0 && trackingResult?.discountAccepted !== true && trackingResult?.discountAccepted !== false) && (
-                            <span className="bg-amber-100 text-amber-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center gap-1">
-                              <Clock className="w-3 h-3 text-amber-600" />
-                              DISCOUNT OFFER PENDING
-                            </span>
-                          )}
-                          {/* If discount was rejected */}
-                          {trackingResult?.discountAccepted === false && (
-                            <span className="bg-rose-100 text-rose-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-rose-200">
-                              DISCOUNT REJECTED
-                            </span>
-                          )}
-                          {/* If return or discount requested but no offer yet */}
-                          {(trackingResult?.status === 'Return Requested' || trackingResult?.returnStatus === 'Requested') && !Number(trackingResult?.discountOfferedAmount) && (
-                            <span className="bg-indigo-100 text-indigo-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-indigo-200">
-                              {trackingResult?.returnType === 'partial_discount' ? 'DISCOUNT REQUESTED' : 'RETURN REQUESTED'}
-                            </span>
-                          )}
-                          {/* Normal released without discount */}
-                          {isReleased && trackingResult?.discountAccepted !== true && (
-                            <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200">
-                              APPROVED ✓
-                            </span>
-                          )}
-                          {/* Normal 24h inspection running */}
-                          {isDelivered && !isReleased && !trackingResult?.status?.includes('Return') && (!trackingResult?.returnStatus || trackingResult?.returnStatus === 'None') && !Number(trackingResult?.discountOfferedAmount) && (
-                            <span className="bg-amber-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-xs animate-pulse">
-                              24H INSPECTION RUNNING
-                            </span>
-                          )}
-                        </div>
-                        <p className={`text-xs mt-0.5 ${isDelivered ? 'text-slate-600' : 'text-slate-400'}`}>
-                          {!isDelivered
-                            ? 'Awaiting delivery and receiver confirmation.'
-                            : trackingResult?.discountAccepted === true
-                              ? `${trackingResult?.receiverName || 'Recipient'} confirmed parcel and accepted ₹${trackingResult?.discountOfferedAmount} discount refund. Settlement completed.`
-                              : trackingResult?.discountAccepted === false
-                              ? `Discount offer rejected. Full refund of ₹${Number(trackingResult?.amount || 0).toLocaleString('en-IN')} processed.`
-                              : Number(trackingResult?.discountOfferedAmount) > 0
-                              ? `Supplier offered ₹${trackingResult?.discountOfferedAmount} discount refund. Awaiting ${trackingResult?.receiverName || 'Recipient'}'s decision.`
-                              : (trackingResult?.returnStatus === 'Requested' || trackingResult?.status === 'Return Requested')
-                              ? `${trackingResult?.receiverName || 'Recipient'} received the parcel and requested a ${trackingResult?.returnType === 'partial_discount' ? 'partial discount refund' : 'return'}.`
-                              : isReleased
-                              ? `${trackingResult?.receiverName || 'Recipient'} confirmed parcel condition and approved payout release.`
-                              : `Parcel delivered. ${trackingResult?.receiverName || 'Recipient'} has 24 hours to inspect before auto-release.`
-                          }
-                        </p>
-                      </div>
-
-                      {/* If discount offer is pending, show quick action banner in Stage 6 */}
-                      {Boolean(Number(trackingResult?.discountOfferedAmount) > 0 && trackingResult?.discountAccepted !== true && trackingResult?.discountAccepted !== false) && (
-                        <div className="p-4 rounded-2xl bg-amber-50/90 border border-amber-300/80 space-y-2">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-extrabold text-amber-900 flex items-center gap-1.5">
-                              <Tag className="w-3.5 h-3.5 text-amber-600" />
-                              Discount Offer of ₹{Number(trackingResult?.discountOfferedAmount).toLocaleString('en-IN')} Active
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setActiveTab('return')}
-                              className="text-[11px] font-bold text-amber-900 bg-amber-200/80 hover:bg-amber-300/80 px-2.5 py-1 rounded-lg transition cursor-pointer"
-                            >
-                              View in Return Orders →
-                            </button>
-                          </div>
-                          <p className="text-[11px] text-amber-800">
-                            {isSellerView 
-                              ? `You offered ₹${Number(trackingResult?.discountOfferedAmount).toLocaleString('en-IN')} discount to the buyer. If accepted, ₹${Number(trackingResult?.discountOfferedAmount).toLocaleString('en-IN')} is refunded to buyer and remaining ₹${Number((trackingResult?.amount || 0) - (trackingResult?.discountOfferedAmount || 0)).toLocaleString('en-IN')} is credited to your wallet.`
-                              : `The seller offered a discount of ₹${Number(trackingResult?.discountOfferedAmount).toLocaleString('en-IN')}. You keep the product and receive ₹${Number(trackingResult?.discountOfferedAmount).toLocaleString('en-IN')} back.`
-                            }
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Active Confirmation Action Card (Only if normal inspection, not return/discount) */}
-                      {isDelivered && !isReleased && !trackingResult?.status?.includes('Return') && (!trackingResult?.returnStatus || trackingResult?.returnStatus === 'None') && !Number(trackingResult?.discountOfferedAmount) && (
-                        <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/90 space-y-3">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-extrabold text-amber-900 flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-amber-600 animate-spin" />
-                              24-Hour Buyer Confirmation & Inspection Window
-                            </span>
-                            <span className="font-mono font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
-                              23h 54m Remaining
-                            </span>
-                          </div>
-
-                          {isSellerView ? (
-                            /* SELLER VIEW: Compressed status notice — NO confirmation button */
-                            <div className="p-3 bg-white/90 rounded-xl border border-amber-300/80 flex items-center gap-2.5 text-xs shadow-2xs">
-                              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                              <p className="text-[11px] text-slate-700 leading-snug">
-                                <span className="font-bold text-slate-900">Awaiting Buyer Confirmation: </span>
-                                Funds auto-release in 24h or immediately upon buyer confirmation.
-                              </p>
-                            </div>
-                          ) : (
-                            /* BUYER / RECEIVER VIEW: Active confirmation action button */
-                            <div className="space-y-2.5">
-                              <p className="text-[11px] text-amber-800">
-                                Supplier wallet holds ₹{Number(trackingResult?.amount || 3420).toLocaleString('en-IN')}. Funds auto-unlock after 24h or immediately upon buyer confirmation.
-                              </p>
-                              <button
-                                type="button"
-                                onClick={handleConfirmAndRelease}
-                                disabled={releaseLoading}
-                                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
-                              >
-                                {releaseLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                                <span>Confirm Parcel & Authorize Delivery Payout to Seller (Instant Settlement)</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Stage 7: Payment released to sender */}
-                  <div className={`flex items-start gap-4 relative z-10 transition-all ${
-                    !isReleased ? 'opacity-70' : ''
-                  }`}>
-                    <div className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm shrink-0 border transition-all ${
-                      isReleased 
-                        ? 'bg-emerald-600 text-white shadow-md border-transparent ring-4 ring-emerald-100' 
+                      isOutForDelivery
+                        ? 'bg-[#1E56E3] text-white shadow-md border-transparent'
+                        : isParcelPickedUp && !isOutForDelivery
+                        ? 'bg-blue-500 text-white shadow-md ring-4 ring-blue-100 animate-pulse'
                         : 'bg-slate-100 text-slate-400 border-slate-200'
                     }`}>
-                      {isReleased ? '✓' : <ShieldCheck className="w-4 h-4" />}
+                      {isOutForDelivery ? '✓' : <Truck className="w-5 h-5" />}
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        <h4 className={`text-xs font-black ${isReleased ? 'text-emerald-950 font-black' : 'text-slate-700'}`}>
-                          Payment released to sender
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h4 className="text-xs font-extrabold text-slate-900">Out for Delivery</h4>
+                        {isOutForDelivery ? (
+                          <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            OUT FOR DELIVERY ✓
+                          </span>
+                        ) : isParcelPickedUp ? (
+                          <span className="bg-blue-100 text-[#1E56E3] text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-200 flex items-center gap-1">
+                            In Transit
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400">Pending</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {isOutForDelivery
+                          ? 'Parcel is out for delivery with the local courier executive to the recipient address.'
+                          : 'Shipment will move to out for delivery once it reaches the destination delivery center.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* STAGE 4: Parcel Delivered */}
+                  <div className={`flex items-start gap-4 relative z-10 transition-all ${!isOutForDelivery ? 'opacity-70' : ''}`}>
+                    <div className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm shrink-0 border transition-all ${
+                      isParcelDelivered
+                        ? 'bg-emerald-600 text-white shadow-md border-transparent ring-4 ring-emerald-100'
+                        : 'bg-slate-100 text-slate-400 border-slate-200'
+                    }`}>
+                      {isParcelDelivered ? '✓' : <Package className="w-4 h-4" />}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h4 className="text-xs font-extrabold text-slate-900">Parcel Delivered</h4>
+                        {isParcelDelivered ? (
+                          <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            DELIVERED ✓
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400">Pending</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {isParcelDelivered
+                          ? 'Parcel has been successfully delivered to the recipient.'
+                          : 'Awaiting final doorstep delivery confirmation by carrier.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* STAGE 5: Return / Partial Return / Replacement Applied */}
+                  <div className={`flex items-start gap-4 relative z-10 transition-all ${!isParcelDelivered ? 'opacity-70' : ''}`}>
+                    <div className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm shrink-0 border transition-all ${
+                      isReturnApplied
+                        ? 'bg-amber-500 text-white shadow-md ring-4 ring-amber-100 animate-pulse'
+                        : 'bg-slate-100 text-slate-400 border-slate-200'
+                    }`}>
+                      <RotateCcw className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h4 className="text-xs font-extrabold text-slate-900">
+                          Return / Partial Return / Replacement Applied
                         </h4>
-                        {isReleased && (
-                          <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-200">
-                            SETTLED & WITHDRAWABLE
+                        {isReturnApplied ? (
+                          <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-amber-300">
+                            {trackingResult?.returnType === 'replacement' ? 'Replacement Active' : trackingResult?.returnType === 'partial_discount' ? 'Partial Return Active' : 'Return Active'}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400">
+                            Eligible after Delivery
                           </span>
                         )}
                       </div>
-                      <p className={`text-xs mt-0.5 ${isReleased ? 'text-emerald-800 font-semibold' : 'text-slate-400'}`}>
-                        {isReleased 
-                          ? `₹${Number(trackingResult?.discountSupplierWalletCredited || (trackingResult?.discountAccepted === true ? Math.max(0, Number(trackingResult?.amount || 0) - Number(trackingResult?.discountOfferedAmount || 0)) : trackingResult?.amount) || 0).toLocaleString('en-IN')} order payout completed and transferred to supplier wallet.${trackingResult?.discountAccepted === true ? ` (₹${Number(trackingResult?.discountOfferedAmount || trackingResult?.discountBuyerWalletCredited || 0).toLocaleString('en-IN')} refunded to buyer)` : ''}`
-                          : 'Funds will be disbursed after confirmed delivery.'
-                        }
+
+                      <p className="text-xs text-slate-600">
+                        {isReturnApplied
+                          ? 'Buyer has applied for a return, replacement, or partial discount refund on this parcel.'
+                          : 'When eligible, buyers can apply for return, instant replacement, or partial refund within 24 hours of delivery.'}
                       </p>
+
+                      {/* Prominent line requested by user: "Check return status on Return tab." */}
+                      <div className="p-3 bg-amber-50 border border-amber-200/90 rounded-2xl flex items-center justify-between gap-3 shadow-2xs">
+                        <div className="flex items-center gap-2">
+                          <RotateCcw className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                          <span className="text-xs font-bold text-amber-950">
+                            Check return status on Return tab.
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('return')}
+                          className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold rounded-xl transition flex items-center gap-1 shrink-0 cursor-pointer shadow-xs"
+                        >
+                          <span>Open Return Tab</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

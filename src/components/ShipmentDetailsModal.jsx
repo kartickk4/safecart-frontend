@@ -908,6 +908,12 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       || Boolean(currentShipment?.deliveryConfirmed)
     );
 
+  const isPickedUp = Boolean(
+    currentShipment?.isPickedUp ||
+    ['Picked Up', 'In Transit', 'Out for Delivery', 'Delivered', 'Completed', 'Cancelled', 'Returned & Refunded', 'Return Requested', 'Return In Transit'].includes(currentShipment?.status) ||
+    (currentShipment?.carrierMilestones || []).some(m => /picked\s*up|pickup\s*done|in\s*transit|out\s*for\s*delivery|delivered/i.test(m?.status || m?.title || ''))
+  );
+
   const discountOfferedAtTime = currentShipment?.discountOfferedAt ? new Date(currentShipment.discountOfferedAt).getTime() : 0;
   const discountElapsedMs = discountOfferedAtTime > 0 ? (Date.now() - discountOfferedAtTime) : 0;
   const fifteenHoursMs = 15 * 60 * 60 * 1000;
@@ -1600,44 +1606,9 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               </div>
             )}
 
-            {/* ── IN-BOX QR CODE PANEL (Seller / Supplier only - active before buyer verification) ──────────── */}
-            {isSupplier && !currentShipment.inboxQrUsed && (
-              !currentShipment.parcelPhotoUrl ? (
-                /* LOCKED STATE: Photo required before QR code generation */
-                <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-amber-50/80 p-4 shadow-2xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs">
-                        <Lock className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-xs font-black text-slate-900">In-Box QR Code</p>
-                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-200/90 text-amber-900 border border-amber-300">
-                            🔒 Locked — Photo Required First
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-600 mt-0.5">
-                          In-box delivery QR label will be generated automatically only after you upload the parcel review photo below.
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const el = document.getElementById('parcel-photo-section');
-                        if (el) el.scrollIntoView({ behavior: 'smooth' });
-                        else setShowCameraModal(true);
-                      }}
-                      className="shrink-0 px-3.5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <Camera className="w-4 h-4" />
-                      <span>Upload Photo to Unlock QR</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50/60 overflow-hidden shadow-sm">
+            {/* ── IN-BOX QR CODE PANEL (Seller / Supplier only - active before parcel pickup & buyer verification) ──────────── */}
+            {isSupplier && !currentShipment.inboxQrUsed && !isPickedUp && currentShipment.inboxQrToken && (
+              <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50/60 overflow-hidden shadow-sm">
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
@@ -1653,7 +1624,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   <button
                     type="button"
                     onClick={() => setShowQrPanel(!showQrPanel)}
-                    className="shrink-0 px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-violet-500/20 transition flex items-center gap-1.5"
+                    className="shrink-0 px-3.5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-violet-500/20 transition flex items-center gap-1.5 cursor-pointer"
                   >
                     <QrCode className="w-3.5 h-3.5" />
                     <span>{showQrPanel ? 'Hide QR' : 'View QR Label'}</span>
@@ -1831,7 +1802,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   );
                 })()}
               </div>
-            ))}
+            )}
 
             {/* ── VERIFIED CONFIRMATION BADGE (Replaces QR code once buyer verified) ──────────── */}
             {isSupplier && currentShipment.inboxQrUsed && (
@@ -1855,8 +1826,8 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               </div>
             )}
 
-            {/* QR panel for dispatched shipments without token yet (fallback message) */}
-            {isSupplier && currentShipment.trackingSubmitted && !currentShipment.inboxQrToken && !currentShipment.inboxQrUsed && (
+            {/* QR panel for dispatched shipments without token yet (fallback message - hidden once picked up) */}
+            {isSupplier && !isPickedUp && currentShipment.trackingSubmitted && !currentShipment.inboxQrToken && !currentShipment.inboxQrUsed && (
               <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-800 font-medium">QR code will generate when you refresh after dispatch. If missing, please re-dispatch or contact support.</p>
@@ -2014,20 +1985,20 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
 
             {/* PARCEL PHOTO REVIEW STATUS, UPLOAD & PREVIEW */}
-            {(currentShipment.parcelPhotoUrl || currentShipment.photoReviewEnabled || isSupplier) && (
+            {Boolean(currentShipment.parcelPhotoUrl || (!isPickedUp && currentShipment.photoReviewEnabled && isSupplier)) && (
               <div id="parcel-photo-section" className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200 space-y-3 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Camera className="w-4 h-4 text-indigo-600" />
-                    <span className="text-xs font-black text-slate-900">Parcel &amp; Product Review Photo</span>
+                    <span className="text-xs font-black text-slate-900">Packed Parcel on Weight Scale Photo</span>
                   </div>
                   {currentShipment.parcelPhotoUrl ? (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                      Photo Uploaded &amp; Verified
+                      Photo Uploaded &amp; Saved
                     </span>
                   ) : (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
-                      Mandatory — Awaiting Photo from Sender
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300">
+                      Optional — Weight Dispute Protection
                     </span>
                   )}
                 </div>
@@ -2043,10 +2014,10 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-slate-600">
                       <span>
-                        Uploaded by supplier prior to dispatch for buyer inspection.
+                        Packed parcel on scale with label.
                         {currentShipment.parcelPhotoUploadedAt ? ` (${new Date(currentShipment.parcelPhotoUploadedAt).toLocaleString()})` : ''}
                       </span>
-                      {isSupplier && (() => {
+                      {isSupplier && !isPickedUp && (() => {
                         const uploadTime = currentShipment?.parcelPhotoUploadedAt ? new Date(currentShipment.parcelPhotoUploadedAt).getTime() : null;
                         const isExpired = uploadTime ? (Date.now() - uploadTime > 10 * 60 * 1000) : false;
                         if (isExpired) {
@@ -2071,14 +2042,14 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-[11px] text-slate-600">
-                      Parcel photo upload is mandatory for all shipments before courier dispatch to guarantee delivery verification.
-                      <strong className="block text-indigo-900 mt-1">
-                        ⚡ The In-Box QR Code and courier dispatch will be generated and unlocked immediately once you upload the parcel photo.
-                      </strong>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      You enabled the weight scale photo option for this parcel. You can upload a photo of the packed parcel on a scale showing label and dead weight before courier pickup for dispute protection.
+                      <span className="block text-slate-500 font-medium mt-0.5">
+                        (Optional: If not uploaded, parcel pickup and tracking will still proceed normally without any delay).
+                      </span>
                     </p>
 
-                    {isSupplier && (
+                    {isSupplier && !isPickedUp && (
                       <div className="p-3.5 bg-white rounded-xl border border-indigo-200/80 shadow-2xs space-y-3">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
@@ -2087,7 +2058,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                           </span>
                           {uploadingParcelPhoto && (
                             <span className="text-[10px] font-bold text-indigo-600 flex items-center gap-1">
-                              <RefreshCw className="w-3 h-3 animate-spin" /> Uploading &amp; Generating QR...
+                              <RefreshCw className="w-3 h-3 animate-spin" /> Uploading Photo...
                             </span>
                           )}
                         </div>
