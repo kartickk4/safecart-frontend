@@ -912,7 +912,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                           <p className="text-[11px] text-slate-600 leading-relaxed">
                             {parcelPhoto || trackingResult?.parcelPhotoUrl
                               ? 'Parcel photo on scale saved for dispute protection.'
-                              : 'Upload parcel photo on scale with label before courier pickup (optional).'}
+                              : <>Upload parcel photo on scale with label before courier pickup <strong className="font-bold text-slate-900">(Stay safe from extra charges)</strong>.</>}
                           </p>
                           {(parcelPhoto || trackingResult?.parcelPhotoUrl) && (
                             <div className="rounded-xl overflow-hidden max-h-40 border border-slate-200 mt-1">

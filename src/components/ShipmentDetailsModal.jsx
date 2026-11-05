@@ -1922,7 +1922,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 ) : (
                   <div className="space-y-3">
                     <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Upload parcel photo on scale with shipping label before courier pickup (optional dispute protection).
+                      Upload parcel photo on scale with shipping label before courier pickup <strong className="font-bold text-slate-900">(Stay safe from extra charges)</strong>.
                     </p>
 
                     {isSupplier && !isPickedUp && (
