@@ -360,15 +360,11 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
               <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
                 {isSupplier ? 'Reverse Logistics & Returns' : 'Return Orders & Tracking'}
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Escrow Protected</span>
-              </span>
             </div>
             <p className="text-xs text-slate-500 font-normal mt-0.5">
               {isSupplier 
                 ? 'Review return requests, auto-dispatch reverse couriers, and inspect verified items before refund release.'
-                : 'Monitor reverse pickup status, courier tracking, replacement dispatches, and escrow refunds.'}
+                : 'Monitor reverse pickup status, courier tracking, replacement dispatches, and order refunds.'}
             </p>
           </div>
         </div>
@@ -416,7 +412,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
           <div className="mt-2.5">
             <p className="text-2xl font-black text-slate-900 font-mono tracking-tight">{totalReturns}</p>
             <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-              ₹{totalReturnValue.toLocaleString('en-IN')} held in escrow
+              ₹{totalReturnValue.toLocaleString('en-IN')} total return value
             </p>
           </div>
         </div>
@@ -861,9 +857,9 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
 
                 {/* ── Action Buttons Footer ────────────────────────────── */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
-                  <div className="text-[11px] text-emerald-800 flex items-center gap-1.5 font-bold">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Protected by Safe Escrow Vault</span>
+                  <div className="text-[11px] text-slate-500 flex items-center gap-1.5 font-medium">
+                    <PackageCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+                    <span>Verified Return Process</span>
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
@@ -1131,7 +1127,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                   {
                     title: 'Return Received & Refunded',
                     desc: trackingModalOrder.returnStatus === 'Completed' || trackingModalOrder.status === 'Returned & Refunded'
-                      ? `Parcel received. 100% Order Amount (₹${trackingModalOrder.amount}) released from escrow to buyer.`
+                      ? `Parcel received. 100% Order Amount (₹${trackingModalOrder.amount}) refunded to buyer.`
                       : 'Refund auto-issues upon warehouse receipt confirmation.',
                     active: Boolean(trackingModalOrder.returnStatus === 'Completed' || trackingModalOrder.status === 'Returned & Refunded'),
                     time: trackingModalOrder.returnStatus === 'Completed' ? 'Completed' : 'Pending',
@@ -1203,7 +1199,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
               </div>
               <p className="text-slate-600">
                 {assignMode === 'replacement'
-                  ? 'Dispatch a new parcel to the buyer. Upon receipt confirmation, escrow funds will release to your wallet.'
+                  ? 'Dispatch a new parcel to the buyer. Upon receipt confirmation, order payment will release to your wallet.'
                   : assignModalOrder.returnReason || 'Buyer requested return within verification window.'}
               </p>
             </div>
@@ -1438,7 +1434,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
 
                 <p className="text-[9.5px] text-slate-400 leading-tight">
                   Receiver scans QR upon unboxing &amp; verifies SMS OTP<br />
-                  Safe Escrow Payout Release • Protected by SecureKaro
+                  Verified Delivery Confirmation • Protected by SecureKaro
                 </p>
               </div>
 
