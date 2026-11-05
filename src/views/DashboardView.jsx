@@ -319,7 +319,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
       labels,
       datasets: [
         {
-          label: 'Money in Escrow (In Delivery)',
+          label: 'Money in Hold (In Delivery)',
           data: heldPoints,
           borderColor: '#1E56E3',
           backgroundColor: 'rgba(30, 86, 227, 0.08)',
@@ -611,7 +611,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
-            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Money in Escrow</span>
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Money in Hold</span>
             <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold shrink-0">
               <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
