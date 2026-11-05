@@ -738,7 +738,7 @@ export default function AIAgentView({ onBack }) {
 
           <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md border border-white/15 rounded-full px-3 py-1 text-[11px] font-semibold text-white/95">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Gemini Neural Engine Live (1.2s)</span>
+            <span>Neural Engine Live (1.2s)</span>
           </div>
         </div>
 
@@ -863,10 +863,6 @@ export default function AIAgentView({ onBack }) {
             <div className="min-w-0">
               <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5 truncate">
                 <span className="truncate">SecureKaro Copilot</span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50/90 px-2 py-0.5 rounded-full border border-indigo-200/70 shrink-0">
-                  <Sparkles size={11} className="text-indigo-600" />
-                  Gemini 3.5 Flash-Lite
-                </span>
               </div>
               <div className="text-[10px] sm:text-xs text-slate-500 font-medium flex items-center gap-1.5 truncate">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />

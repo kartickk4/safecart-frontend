@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw, Clock, Sparkles, Lock, MessageSquare, Send, Camera, Tag, MapPin, Check, QrCode, Printer, Smartphone, Wifi, Globe, Laptop, Zap, Building, Image as ImageIcon, Eye, ZoomIn, PackageCheck } from 'lucide-react';
+import { X, ShieldCheck, ShieldAlert, Gavel, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw, Clock, Sparkles, Lock, MessageSquare, Send, Camera, Tag, MapPin, Check, QrCode, Printer, Smartphone, Wifi, Globe, Laptop, Zap, Building, Image as ImageIcon, Eye, ZoomIn, PackageCheck } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { shipmentAPI, profileAPI } from '../services/api';
+import { shipmentAPI, profileAPI, claimAPI } from '../services/api';
 import { uploadImageToHost } from '../services/imageUpload';
 import PaymentCheckoutModal from './PaymentCheckoutModal';
 import QrScannerModal from './QrScannerModal';
@@ -101,6 +101,14 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
   const [supplierDiscountInput, setSupplierDiscountInput] = useState('');
   const [isEditingDiscountOffer, setIsEditingDiscountOffer] = useState(false);
   const [showSupplierPartialRefundModal, setShowSupplierPartialRefundModal] = useState(false);
+
+  // ── Buyer Dispute Claim State ─────────────────────────────────────
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimReason, setClaimReason] = useState('Refund is not credited');
+  const [claimDescription, setClaimDescription] = useState('');
+  const [submittingClaim, setSubmittingClaim] = useState(false);
+  const [claimSuccessMsg, setClaimSuccessMsg] = useState('');
+  const [claimErrorMsg, setClaimErrorMsg] = useState('');
 
   const handleQrScanSuccessInModal = async ({ token, shipmentId: scannedId, rawText }) => {
     try {
@@ -626,6 +634,51 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
     other: 'Custom Express'
   };
 
+  const handleFileClaim = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!claimReason) {
+      setClaimErrorMsg('Please select a claim reason.');
+      return;
+    }
+    const currentId = currentShipment?.shipmentId;
+    if (!currentId) return;
+
+    setSubmittingClaim(true);
+    setClaimErrorMsg('');
+    setClaimSuccessMsg('');
+    try {
+      const res = await claimAPI.fileClaim({
+        shipmentId: currentId,
+        role: 'receiver',
+        reason: claimReason,
+        description: claimDescription.trim() || claimReason
+      });
+      setClaimSuccessMsg('Dispute claim submitted successfully! Order payment is frozen in escrow while support investigates.');
+      setDetails(prev => ({
+        ...prev,
+        shipment: {
+          ...prev.shipment,
+          hasActiveClaim: true,
+          claimId: res.data?.claim?.claimId || 'CLM-PENDING',
+          claimReason: claimReason,
+          claimDescription: claimDescription.trim(),
+          claimStatus: 'Under Review',
+          status: 'Locked'
+        }
+      }));
+      if (onRefresh) onRefresh();
+      setTimeout(() => {
+        setShowClaimModal(false);
+        setClaimSuccessMsg('');
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to submit claim:', err);
+      setClaimErrorMsg(err.response?.data?.error || 'Failed to submit dispute claim. Please try again.');
+    } finally {
+      setSubmittingClaim(false);
+    }
+  };
+
   const handleCarrierChange = (slug) => {
     setReturnCarrierSlug(slug);
     setReturnCarrierName(carrierNameMap[slug] || 'Delhivery Express');
@@ -925,6 +978,30 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
           </div>
         ) : (
           <div className="space-y-6">
+            {/* Active Dispute Claim Alert Banner */}
+            {currentShipment.hasActiveClaim && (
+              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-3 shadow-xs animate-in fade-in duration-200">
+                <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 mt-0.5 font-bold">
+                  <ShieldAlert className="w-5 h-5 text-rose-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-black text-rose-950">Dispute Claim Active — {currentShipment.claimId}</span>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 border border-rose-300">
+                      {currentShipment.claimStatus || 'Under Review'}
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold text-slate-800 mt-1">Reason: {currentShipment.claimReason}</p>
+                  {currentShipment.claimDescription && currentShipment.claimDescription !== currentShipment.claimReason && (
+                    <p className="text-[11px] text-slate-600 mt-0.5 italic">"{currentShipment.claimDescription}"</p>
+                  )}
+                  <p className="text-[11px] text-rose-700 mt-1 leading-relaxed">
+                    🔒 <strong>SecureKaro Escrow Protection:</strong> Order payment is safely frozen in escrow while support investigates. The seller cannot withdraw until resolution.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Overview Summary Cards */}
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
@@ -3240,6 +3317,20 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                     <span>Cancel</span>
                   </button>
                 )}
+
+                {/* Receiver / Buyer Raise Claim Button */}
+                {!isSupplier && (
+                  <button
+                    type="button"
+                    onClick={() => setShowClaimModal(true)}
+                    disabled={actionLoading}
+                    className="py-3 px-3.5 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/90 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    title="Raise dispute if refund, replacement, or partial refund is delayed or missing"
+                  >
+                    <ShieldAlert className="w-4 h-4 text-rose-600" />
+                    <span>{currentShipment.hasActiveClaim ? 'View Claim' : 'Raise a Claim'}</span>
+                  </button>
+                )}
               </div>
             ) : showReturnForm ? (
               <form onSubmit={handleRequestReturn} className="pt-4 border-t border-slate-100 space-y-4 bg-amber-50/80 p-4 rounded-2xl border border-amber-200">
@@ -4174,6 +4265,214 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
           }
         }}
       />
+
+      {/* ── BUYER DISPUTE CLAIM MODAL ── */}
+      {showClaimModal && (
+        <div 
+          className="fixed inset-0 z-[75] bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150 overflow-y-auto"
+          onClick={() => setShowClaimModal(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4 relative my-auto max-h-[92vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowClaimModal(false)}
+              className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-start gap-3 border-b border-slate-100 pb-3.5 pr-8">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold shrink-0">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900">
+                  {currentShipment.hasActiveClaim ? 'Dispute Claim Details' : 'Raise a Dispute / Claim'}
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Order <strong className="font-mono text-slate-800">#{currentShipment.shipmentId}</strong> • Protected Amount: <strong>₹{currentShipment.amount}</strong>
+                </p>
+              </div>
+            </div>
+
+            {claimErrorMsg && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{claimErrorMsg}</span>
+              </div>
+            )}
+
+            {claimSuccessMsg && (
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                <span>{claimSuccessMsg}</span>
+              </div>
+            )}
+
+            {currentShipment.hasActiveClaim ? (
+              <div className="space-y-4">
+                <div className="p-4 rounded-2xl bg-rose-50/80 border border-rose-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-500">Claim ID</span>
+                    <span className="text-xs font-mono font-black text-rose-700 bg-white border border-rose-200 px-2 py-0.5 rounded-md">
+                      {currentShipment.claimId}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-500">Status</span>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 border border-rose-300">
+                      {currentShipment.claimStatus || 'Under Review'}
+                    </span>
+                  </div>
+                  <div className="pt-1 border-t border-rose-200/80">
+                    <span className="text-[11px] font-bold text-slate-500 block mb-0.5">Claim Reason</span>
+                    <p className="text-xs font-extrabold text-slate-900">{currentShipment.claimReason}</p>
+                  </div>
+                  {currentShipment.claimDescription && currentShipment.claimDescription !== currentShipment.claimReason && (
+                    <div className="pt-1 border-t border-rose-200/80">
+                      <span className="text-[11px] font-bold text-slate-500 block mb-0.5">Description Note</span>
+                      <p className="text-xs text-slate-700 italic bg-white p-2.5 rounded-xl border border-rose-100">
+                        "{currentShipment.claimDescription}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-3 bg-blue-50/80 rounded-xl border border-blue-200 text-[11px] text-blue-900 leading-relaxed flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-blue-700 shrink-0 mt-0.5" />
+                  <span>
+                    Our specialist team is investigating this case with the courier and merchant. Order payment remains safely frozen in escrow.
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-end pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowClaimModal(false)}
+                    className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleFileClaim} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-extrabold text-slate-800 mb-2">
+                    Select Reason for Claim <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="space-y-2">
+                    {[
+                      {
+                        id: 'refund_not_credited',
+                        title: 'Refund is not credited',
+                        desc: 'Refund was approved or marked, but money has not reached your bank account / UPI.'
+                      },
+                      {
+                        id: 'not_getting_replacement',
+                        title: 'Not getting replacement',
+                        desc: 'Replacement was promised or return received, but seller has not dispatched the new item.'
+                      },
+                      {
+                        id: 'delay_partial_refund',
+                        title: 'Delay in getting partial refund',
+                        desc: 'Agreed defect discount / partial refund amount is delayed or pending in seller payout.'
+                      },
+                      {
+                        id: 'other',
+                        title: 'Others',
+                        desc: 'Any other delivery issue, missing item, or dispute regarding this order.'
+                      }
+                    ].map((item) => (
+                      <label
+                        key={item.id}
+                        className={`block p-3 rounded-2xl border-2 cursor-pointer transition text-left ${
+                          claimReason === item.title
+                            ? 'border-rose-500 bg-rose-50/70 shadow-xs'
+                            : 'border-slate-200 bg-slate-50/60 hover:bg-white hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-start gap-2.5">
+                          <input
+                            type="radio"
+                            name="buyer_claim_reason"
+                            checked={claimReason === item.title}
+                            onChange={() => setClaimReason(item.title)}
+                            className="mt-1 text-rose-600 focus:ring-rose-500"
+                          />
+                          <div className="min-w-0">
+                            <p className={`text-xs font-extrabold ${claimReason === item.title ? 'text-rose-950' : 'text-slate-800'}`}>
+                              {item.title}
+                            </p>
+                            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                              {item.desc}
+                            </p>
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">
+                      Small Description <span className="text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400">{claimDescription.length}/300</span>
+                  </div>
+                  <textarea
+                    rows="3"
+                    maxLength="300"
+                    value={claimDescription}
+                    onChange={(e) => setClaimDescription(e.target.value)}
+                    placeholder="Write a small description or note (optional)..."
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition"
+                  />
+                </div>
+
+                <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200 text-[11px] text-amber-900 leading-relaxed flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Escrow Safety Guarantee:</strong> Submitting a claim freezes the order payment in SecureKaro escrow so the seller cannot withdraw until your issue is verified and resolved.
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowClaimModal(false)}
+                    disabled={submittingClaim}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingClaim || !claimReason}
+                    className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md shadow-rose-600/20 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+                  >
+                    {submittingClaim ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Submitting Claim...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldAlert className="w-4 h-4" />
+                        <span>Submit Dispute Claim</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
