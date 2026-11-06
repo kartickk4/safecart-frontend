@@ -83,6 +83,8 @@ export default function WalletModal({ user, onUpdateUser }) {
 
   // Cash Reward & Supplier 24h Confirmation Window State
   const [cashbackBalance, setCashbackBalance] = useState(user?.cashbackBalance || 0);
+  const [securityReserve, setSecurityReserve] = useState(user?.securityReserve || 0);
+  const [activeShipmentsCount, setActiveShipmentsCount] = useState(user?.activeShipmentsCount || 0);
   const [withdrawableBalance, setWithdrawableBalance] = useState(user?.withdrawableBalance !== undefined ? user.withdrawableBalance : (user?.cashbackBalance || null));
   const [pendingConfirmationBalance, setPendingConfirmationBalance] = useState(user?.pendingConfirmationBalance || 0);
   const [totalWalletBalance, setTotalWalletBalance] = useState(user?.totalWalletBalance !== undefined ? user.totalWalletBalance : null);
@@ -147,6 +149,7 @@ export default function WalletModal({ user, onUpdateUser }) {
         await Promise.allSettled([
           fetchShipments(),
           fetchRewardWallet(),
+          fetchWalletBalance(),
           fetchWalletTransactions(),
           isSupplier ? fetchGatewayQuota() : Promise.resolve()
         ]);
@@ -233,6 +236,25 @@ export default function WalletModal({ user, onUpdateUser }) {
     } catch (e) {}
   };
 
+  const fetchWalletBalance = async () => {
+    try {
+      const res = await walletAPI.getBalance();
+      if (res.data) {
+        if (res.data.securityReserve !== undefined) {
+          setSecurityReserve(Number(res.data.securityReserve));
+        }
+        if (res.data.activeShipmentsCount !== undefined) {
+          setActiveShipmentsCount(Number(res.data.activeShipmentsCount));
+        }
+        if (res.data.withdrawableBalance !== undefined && isSupplier) {
+          setWithdrawableBalance(Number(res.data.withdrawableBalance));
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch wallet balance:', e);
+    }
+  };
+
   const fetchRewardWallet = async () => {
     try {
       const res = await rewardAPI.getRewardWallet();
@@ -241,6 +263,12 @@ export default function WalletModal({ user, onUpdateUser }) {
         setWithdrawableBalance(res.data.withdrawableBalance !== undefined ? res.data.withdrawableBalance : (res.data.cashbackBalance || 0));
         setPendingConfirmationBalance(res.data.pendingConfirmationBalance || 0);
         setTotalWalletBalance(res.data.totalWalletBalance !== undefined ? res.data.totalWalletBalance : (res.data.cashbackBalance || 0));
+        if (res.data.securityReserve !== undefined) {
+          setSecurityReserve(Number(res.data.securityReserve));
+        }
+        if (res.data.activeShipmentsCount !== undefined) {
+          setActiveShipmentsCount(Number(res.data.activeShipmentsCount));
+        }
         setConfirmationPipeline(res.data.confirmationPipeline || []);
         setRewardHistory(res.data.history || []);
       }
@@ -256,7 +284,7 @@ export default function WalletModal({ user, onUpdateUser }) {
   const displayPendingConfirmation = Number(pendingConfirmationBalance) || 0;
   const displayWithdrawable = withdrawableBalance !== undefined && withdrawableBalance !== null
     ? Number(withdrawableBalance)
-    : (isSupplier ? ((Number(cashbackBalance) || 0) + supplierDirectWallet) : (Number(user?.walletBalance) || 0));
+    : (isSupplier ? Math.max(0, ((Number(cashbackBalance) || 0) + supplierDirectWallet) - (securityReserve || 0)) : (Number(user?.walletBalance) || 0));
 
   const displayUnwithdrawable = displayPendingConfirmation;
   const displayTotalWallet = totalWalletBalance !== undefined && totalWalletBalance !== null
@@ -527,35 +555,53 @@ export default function WalletModal({ user, onUpdateUser }) {
                   </p>
                 </div>
 
-                {/* Breakdown: Withdrawable & Unwithdrawable */}
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Breakdown: Withdrawable, Security Reserve & Unwithdrawable */}
+                <div className={`bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 grid grid-cols-1 ${isSupplier && securityReserve > 0 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4`}>
                   {/* Withdrawable Amount */}
                   <div className="space-y-1 sm:border-r sm:border-white/15 sm:pr-4">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 uppercase tracking-wide">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-                        <span>Withdrawable Amount</span>
+                        <span>Withdrawable</span>
                       </span>
                     </div>
                     <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
                         ₹{displayWithdrawable.toLocaleString('en-IN')}
-                      </div>
+                    </div>
                     <p className="text-[10px] text-blue-200/90 leading-tight">
                       Available now for instant UPI or Bank (IMPS) withdrawal
                     </p>
                   </div>
+
+                  {/* Dynamic Security Reserve Buffer */}
+                  {isSupplier && securityReserve > 0 && (
+                    <div className="space-y-1 sm:border-r sm:border-white/15 sm:pr-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-sky-300 flex items-center gap-1.5 uppercase tracking-wide">
+                          <ShieldCheck className="w-3.5 h-3.5 text-sky-300 shrink-0" />
+                          <span>Security Reserve</span>
+                        </span>
+                      </div>
+                      <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
+                          ₹{securityReserve.toLocaleString('en-IN')}
+                      </div>
+                      <p className="text-[10px] text-blue-200/90 leading-tight">
+                        {activeShipmentsCount} active parcel{activeShipmentsCount === 1 ? '' : 's'} (₹100/shipment, max ₹1,000)
+                      </p>
+                    </div>
+                  )}
 
                   {/* Unwithdrawable Amount */}
                   <div className="space-y-1 sm:pl-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
                         <Clock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                        <span>Unwithdrawable Amount</span>
+                        <span>24h Verification</span>
                       </span>
                     </div>
                     <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
                         ₹{displayUnwithdrawable.toLocaleString('en-IN')}
-                      </div>
+                    </div>
                     <p className="text-[10px] text-blue-200/90 leading-tight">
                       Held in 24h buyer verification window ({activePipelineItems.length} in pipeline)
                     </p>
@@ -1417,6 +1463,16 @@ export default function WalletModal({ user, onUpdateUser }) {
                   placeholder="e.g. 5"
                   className="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
                 />
+                <div className="flex items-center justify-between mt-1.5 text-[11px]">
+                  <span className="text-slate-500 font-medium">Available to Withdraw:</span>
+                  <span className="font-extrabold text-emerald-600 font-mono">₹{displayWithdrawable.toLocaleString('en-IN')}</span>
+                </div>
+                {isSupplier && securityReserve > 0 && (
+                  <p className="mt-1.5 text-[10px] text-amber-700 bg-amber-50 border border-amber-200/80 rounded-lg p-2 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                    <span>₹{securityReserve} is retained as security reserve for {activeShipmentsCount} active parcel{activeShipmentsCount === 1 ? '' : 's'} (₹100/shipment, max ₹1,000).</span>
+                  </p>
+                )}
               </div>
 
               {/* Live Fee Preview */}

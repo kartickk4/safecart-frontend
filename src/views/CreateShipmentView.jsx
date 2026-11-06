@@ -400,16 +400,23 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         const codFee = Number(chosen.codCharge || 0);
         const total = Number(chosen.exactRate || chosen.price || (freight + codFee));
         const walletBal = Number(user?.walletBalance) || 0;
+        const activeCount = codQuote?.activeShipmentsCount !== undefined ? codQuote.activeShipmentsCount : (user?.activeShipmentsCount || 0);
+        const requiredReserve = codQuote?.requiredReserve || Math.min(1000, (activeCount + 1) * 100);
+        const totalRequired = total + requiredReserve;
 
-        setCodQuote({
+        setCodQuote(prev => ({
+          ...prev,
           deliveryCharge: freight,
           codCharge: codFee,
           totalCharge: total,
+          totalRequired,
+          requiredReserve,
+          activeShipmentsCount: activeCount,
           walletBalance: walletBal,
-          canAdjustWallet: walletBal >= total,
-          shortfall: Math.max(0, total - walletBal),
+          canAdjustWallet: walletBal >= totalRequired,
+          shortfall: Math.max(0, totalRequired - walletBal),
           carrierName: chosen.courierPartner || chosen.name
-        });
+        }));
       }
 
       return quotes;
@@ -473,18 +480,25 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       const requiredCodFee = Number(quote.codCharge || 0);
       const totalFee = Number(quote.exactRate || quote.price || (requiredDelivery + requiredCodFee));
       const currentWallet = Number(user?.walletBalance) || 0;
+      const activeCount = codQuote?.activeShipmentsCount !== undefined ? codQuote.activeShipmentsCount : (user?.activeShipmentsCount || 0);
+      const requiredReserve = codQuote?.requiredReserve || Math.min(1000, (activeCount + 1) * 100);
+      const totalRequired = totalFee + requiredReserve;
 
-      setCodQuote({
+      setCodQuote(prev => ({
+        ...prev,
         deliveryCharge: requiredDelivery,
         codCharge: requiredCodFee,
         totalCharge: totalFee,
+        totalRequired,
+        requiredReserve,
+        activeShipmentsCount: activeCount,
         carrierName: quote.courierPartner || quote.name,
         walletBalance: currentWallet,
-        canAdjustWallet: currentWallet >= totalFee,
-        shortfall: Math.max(0, totalFee - currentWallet)
-      });
+        canAdjustWallet: currentWallet >= totalRequired,
+        shortfall: Math.max(0, totalRequired - currentWallet)
+      }));
 
-      if (currentWallet < totalFee) {
+      if (currentWallet < totalRequired) {
         setShowCodPaymentModal(true);
         return;
       }
@@ -561,6 +575,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       if (err.response?.data?.code === 'COD_PAYMENT_REQUIRED') {
         setShowCodPaymentModal(true);
         setError(err.response.data.message);
+      } else if (err.response?.data?.code === 'SECURITY_BUFFER_REQUIRED') {
+        setError(err.response.data.message);
+        setShowRechargeModal(true);
       } else {
         const msg = err.response?.data?.message || err.response?.data?.error || 'Failed to create shipment. Please verify bank details and recipient info.';
         setError(msg);
@@ -2160,9 +2177,16 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       <span>COD Handling Fee:</span>
                       <span className="font-mono font-bold text-slate-800">₹{codQuote.codCharge}</span>
                     </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span className="flex items-center gap-1">
+                        <span>Dynamic Security Reserve:</span>
+                        <span className="text-[10px] text-blue-600 font-semibold">(₹100/active, max ₹1,000)</span>
+                      </span>
+                      <span className="font-mono font-bold text-blue-700">₹{codQuote.requiredReserve || Math.min(1000, ((codQuote.activeShipmentsCount || 0) + 1) * 100)}</span>
+                    </div>
                     <div className="flex justify-between text-slate-500 text-[10px]">
                       <span>Current Wallet Balance:</span>
-                      <span className="font-mono">₹{codQuote.walletBalance} (Shortfall: ₹{codQuote.shortfall})</span>
+                      <span className="font-mono">₹{codQuote.walletBalance} {codQuote.shortfall > 0 ? `(Shortfall: ₹${codQuote.shortfall})` : ''}</span>
                     </div>
                     <div className="border-t border-slate-200 pt-2 flex justify-between font-extrabold text-slate-900 text-sm">
                       <span>Total Upfront Payable:</span>
