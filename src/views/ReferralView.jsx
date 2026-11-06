@@ -31,7 +31,8 @@ import {
 } from 'lucide-react';
 import { profileAPI } from '../services/api';
 
-export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, onNavigateToCreateShipment }) {
+export default function ReferralView({ user, isSupplier: propIsSupplier, onUpdateUser, onNavigateToWallet, onNavigateToCreateShipment }) {
+  const isSupplier = propIsSupplier ?? (user?.role === 'Supplier' || user?.activeRole === 'Supplier');
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -135,8 +136,12 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
       q: 'Can I withdraw my referral earnings to my Bank Account or UPI?',
       a: 'Yes, absolutely! The ₹30 cash reward is deposited directly to your withdrawable Wallet balance. You can withdraw it instantly to your registered Bank Account or UPI ID via the Wallet section.'
     },
+    ...(isSupplier ? [{
+      q: 'Can I use my referral reward cash to pay for booking shipments?',
+      a: 'Yes! Whenever you create or book courier shipments on SecureKaro, your available Wallet balance can be used directly to pay for shipping charges and courier freight.'
+    }] : []),
     {
-      q: 'Is there any limit to how many merchants I can invite?',
+      q: 'Is there any limit to how many friends or merchants I can invite?',
       a: 'There is zero limit! You can invite as many suppliers, ecommerce merchants, and WhatsApp/Instagram sellers as you want. You earn ₹30 for every single friend who completes their first delivery.'
     },
     {
@@ -172,7 +177,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
             </h1>
 
             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed max-w-xl font-medium">
-              Invite merchant suppliers & buyers to SecureKaro. When their first shipment is safely delivered, you instantly receive <strong className="text-slate-900 font-bold">₹30 Real Cash</strong> deposited directly into your Wallet balance — instantly withdrawable to your Bank/UPI account.
+              Invite merchant suppliers & buyers to SecureKaro. When their first shipment is safely delivered, you instantly receive <strong className="text-slate-900 font-bold">₹30 Real Cash</strong> deposited directly into your Wallet balance — {isSupplier ? 'withdrawable to your Bank/UPI or usable to pay courier shipping fees.' : 'instantly withdrawable to your Bank/UPI account.'}
             </p>
 
             {/* Quick benefit tags */}
@@ -185,10 +190,17 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
                 <ArrowUpRight className="w-3.5 h-3.5 text-blue-600" />
                 <span>Withdraw to UPI / Bank</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/90 border border-slate-200/90 text-xs font-semibold text-slate-700 shadow-2xs">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Zero Lock-in or Expiry</span>
-              </span>
+              {isSupplier ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/90 border border-slate-200/90 text-xs font-semibold text-slate-700 shadow-2xs">
+                  <Truck className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Pay for Courier Shipping</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/90 border border-slate-200/90 text-xs font-semibold text-slate-700 shadow-2xs">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Zero Lock-in or Expiry</span>
+                </span>
+              )}
             </div>
           </div>
 
@@ -428,7 +440,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
               Upon confirmed delivery at destination, ₹30 is instantly added to your withdrawable Wallet balance.
             </p>
             <div className="pt-2 text-[11px] font-bold text-emerald-600 flex items-center gap-1">
-              <span>Instant Bank / UPI Withdrawal</span>
+              <span>{isSupplier ? 'Withdraw to Bank or Pay Shipping' : 'Instant Bank / UPI Withdrawal'}</span>
               <Sparkles className="w-3.5 h-3.5" />
             </div>
           </div>
@@ -482,13 +494,27 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
                 <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">₹30 × {calculatorCount} orders</span>
               </div>
               <div className="pl-4">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Payout Speed</span>
-                <span className="text-3xl font-black text-emerald-600 font-mono">
-                  Instant
-                </span>
-                <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
-                  Direct to Bank account or UPI
-                </span>
+                {isSupplier ? (
+                  <>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Shipping Freight Offset</span>
+                    <span className="text-3xl font-black text-indigo-600 font-mono">
+                      ~{Math.floor((calculatorCount * 30) / 60)} Parcels
+                    </span>
+                    <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
+                      Free shipping covers or direct cash
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Payout Speed</span>
+                    <span className="text-3xl font-black text-emerald-600 font-mono">
+                      Instant
+                    </span>
+                    <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
+                      Direct to Bank account or UPI
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
@@ -527,13 +553,33 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
 
           {/* Action Buttons */}
           <div className="pt-1">
-            <button
-              onClick={() => onNavigateToWallet && onNavigateToWallet()}
-              className="w-full py-3.5 px-4 rounded-2xl bg-[#1E56E3] hover:bg-[#1649CC] text-white font-extrabold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-            >
-              <ArrowUpRight className="w-4 h-4" />
-              <span>Withdraw to UPI / Bank</span>
-            </button>
+            {isSupplier ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={() => onNavigateToWallet && onNavigateToWallet()}
+                  className="py-3.5 px-4 rounded-2xl bg-[#1E56E3] hover:bg-[#1649CC] text-white font-extrabold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <ArrowUpRight className="w-4 h-4" />
+                  <span>Withdraw to UPI / Bank</span>
+                </button>
+
+                <button
+                  onClick={() => onNavigateToCreateShipment && onNavigateToCreateShipment()}
+                  className="py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Truck className="w-4 h-4" />
+                  <span>Pay for Courier Shipping</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => onNavigateToWallet && onNavigateToWallet()}
+                className="w-full py-3.5 px-4 rounded-2xl bg-[#1E56E3] hover:bg-[#1649CC] text-white font-extrabold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <ArrowUpRight className="w-4 h-4" />
+                <span>Withdraw to UPI / Bank</span>
+              </button>
+            )}
           </div>
 
           {/* Feature Highlights */}
@@ -548,7 +594,7 @@ export default function ReferralView({ user, onUpdateUser, onNavigateToWallet, o
             </span>
             <span className="flex items-center gap-1.5">
               <Check className="w-3.5 h-3.5 text-emerald-600" />
-              Instant Cash Payouts
+              {isSupplier ? 'Offset Shipping Freight' : 'Instant Cash Payouts'}
             </span>
             <span className="flex items-center gap-1.5">
               <Check className="w-3.5 h-3.5 text-emerald-600" />

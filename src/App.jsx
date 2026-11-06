@@ -924,6 +924,7 @@ export default function App() {
           {currentTab === 'refer' && (
             <ReferralView
               user={user}
+              isSupplier={isSupplier}
               onUpdateUser={(updated) => setUser(updated)}
               onNavigateToWallet={() => setCurrentTab('wallet')}
               onNavigateToCreateShipment={() => setCurrentTab('create-shipment')}
