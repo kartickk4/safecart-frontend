@@ -633,13 +633,13 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
   };
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-8">
+    <div className="w-full max-w-5xl mx-auto px-3.5 py-4 sm:p-6 md:p-8 space-y-4 md:space-y-6 min-w-0 overflow-x-hidden">
       {/* Header & Search */}
-      <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs sm:shadow-sm space-y-3 sm:space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+              <h1 className="text-lg sm:text-2xl font-extrabold text-slate-900 flex items-center gap-2">
                 <Navigation className="w-6 h-6 text-[#1E56E3]" />
                 Live Parcel & Delivery Tracking
               </h1>
@@ -659,7 +659,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
           </div>
         </div>
 
-        <form onSubmit={handleTrack} className="flex gap-3">
+        <form onSubmit={handleTrack} className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
@@ -673,7 +673,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-3 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 transition inline-flex items-center gap-2"
+            className="px-6 py-3 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 transition inline-flex items-center justify-center gap-2 w-full sm:w-auto cursor-pointer"
           >
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span>Track Live</span>}
           </button>
@@ -848,7 +848,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
           {activeTab === 'escrow' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               {/* Current Status Card */}
-              <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">CURRENT STATUS</span>
                   <div className="flex items-center gap-2 mt-1">
@@ -874,7 +874,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
               </div>
 
               {/* Transaction Journey Vertical Stepper Timeline */}
-              <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+              <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
                 <h3 className="text-lg font-black text-slate-900 border-b border-slate-100 pb-4">Transaction Journey</h3>
 
                 <div className="space-y-8 relative before:absolute before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-blue-100">
@@ -1073,7 +1073,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                       </p>
 
                       {/* Prominent line requested by user: "Check return status on Return tab." */}
-                      <div className="p-3 bg-amber-50 border border-amber-200/90 rounded-2xl flex items-center justify-between gap-3 shadow-2xs">
+                      <div className="p-3 bg-amber-50 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 shadow-2xs">
                         <div className="flex items-center gap-2">
                           <RotateCcw className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                           <span className="text-xs font-bold text-amber-950">
@@ -1100,7 +1100,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
           {activeTab === 'carrier' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               {/* Top Status Header Banner */}
-              <div className="bg-gradient-to-r from-[#1E56E3] via-blue-700 to-indigo-900 text-white p-6 rounded-3xl shadow-xl shadow-blue-500/20 border border-blue-400/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="bg-gradient-to-r from-[#1E56E3] via-blue-700 to-indigo-900 text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl shadow-blue-500/20 border border-blue-400/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md text-white border border-white/20 flex items-center justify-center font-bold shadow-inner">
                     <Truck className="w-6 h-6 text-white" />
@@ -1123,11 +1123,11 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
               </div>
 
               {/* VISUAL PROGRESS TIMELINE BAR (TRACKING 2 VIEW) */}
-              <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+              <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
                 <h3 className="font-bold text-slate-900 text-sm">Carrier Milestone Progress</h3>
 
                 {/* Stepper Progress Bar */}
-                <div className="grid grid-cols-4 gap-2 relative">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 relative">
                   <div className="flex flex-col items-center text-center space-y-2">
                     <div className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shadow-md">✓</div>
                     <span className="text-xs font-bold text-slate-900">Booked & Funded</span>
@@ -1544,7 +1544,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                   </span>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 relative">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 relative">
                   {[
                     { 
                       step: 1, 
@@ -2073,7 +2073,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
 
       {/* EMPTY STATE WHEN NO SHIPMENT TRACKED */}
       {!trackingResult && !loading && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs max-w-xl mx-auto space-y-4 animate-in fade-in duration-200">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-6 sm:p-12 text-center shadow-xs max-w-xl mx-auto space-y-4 animate-in fade-in duration-200">
           <div className="w-16 h-16 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center mx-auto">
             <Package className="w-8 h-8" />
           </div>
@@ -2088,7 +2088,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
 
       {/* INITIAL LOADING STATE */}
       {!trackingResult && loading && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs max-w-xl mx-auto space-y-3 animate-in fade-in duration-200">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-6 sm:p-12 text-center shadow-xs max-w-xl mx-auto space-y-3 animate-in fade-in duration-200">
           <RefreshCw className="w-8 h-8 text-[#1E56E3] animate-spin mx-auto" />
           <p className="text-xs font-bold text-slate-700">Loading latest shipment tracking...</p>
         </div>
