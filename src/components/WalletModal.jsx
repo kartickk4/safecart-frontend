@@ -494,7 +494,7 @@ export default function WalletModal({ user, onUpdateUser }) {
 
       const methodLabel = withdrawMethod === 'UPI' ? `UPI (${withdrawUpiId})` : 'Bank Account';
       const feeNote = fee > 0 ? ` (₹${fee} processing fee deducted)` : '';
-      setWithdrawSuccess(`✅ ₹${netTransfer.toFixed(2)} will be transferred to your ${methodLabel}${feeNote}`);
+      setWithdrawSuccess(res.data?.message || `✅ ₹${netTransfer.toFixed(2)} will be transferred to your ${methodLabel}${feeNote}`);
       setWithdrawAmount('');
       fetchRewardWallet();
       fetchWalletTransactions();

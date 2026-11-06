@@ -286,11 +286,21 @@ export const walletAPI = {
   getTransactions: (params) => api.get('/wallet/transactions', { params }),
   createRechargeOrder: (data) => api.post('/wallet/create-order', data),
   verifyPayment: (data) => api.post('/wallet/verify', data),
-  // Withdrawals
+  // Withdrawals (guarded with unique banking idempotency keys)
   // Buyer cashback withdraw: < ₹100 → ₹3 fee deducted
-  withdrawBuyer: (data) => api.post('/wallet/buyer/withdraw', data),
+  withdrawBuyer: (data, config = {}) => api.post('/wallet/buyer/withdraw', data, {
+    headers: {
+      'X-Idempotency-Key': `IDEMP_CB_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      ...(config.headers || {})
+    }
+  }),
   // Seller wallet withdraw: < ₹2,000 → ₹2 fee deducted
-  withdrawSeller: (data) => api.post('/wallet/seller/withdraw', data),
+  withdrawSeller: (data, config = {}) => api.post('/wallet/seller/withdraw', data, {
+    headers: {
+      'X-Idempotency-Key': `IDEMP_W_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      ...(config.headers || {})
+    }
+  }),
 };
 
 export const agentAPI = {
@@ -346,6 +356,7 @@ export const adminAPI = {
   getWithdrawals: () => api.get('/admin/finance/withdrawals'),
   processWithdrawal: (id, data) => api.post(`/admin/finance/withdrawals/${id}`, data),
   adjustWallet: (data) => api.post('/admin/wallet/adjust', data),
+  reconcileWallet: (params) => api.get('/admin/wallet/reconcile', { params }),
 
   getSystemConfig: () => api.get('/admin/system/config'),
   updateSystemConfig: (data) => api.put('/admin/system/config', data),
