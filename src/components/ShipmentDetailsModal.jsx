@@ -387,32 +387,16 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
   const handleReportUndelivered = async (e) => {
     e.preventDefault();
-    if (currentShipment.rtoProtectionEnabled) {
-      const proceed = window.confirm(
-        '⚠️ Fair-Play Policy Warning:\n\n' +
-        'Under RTO & Undelivered Protection, you receive 100% full refunds on up to 2 rejected parcels per week (SecureKaro compensates seller ₹40).\n\n' +
-        'Starting from your 3rd rejection this week, a ₹40 fair-play fee is charged (₹30 transferred directly to the supplier wallet, ₹10 platform fee).\n\n' +
-        'Do you wish to confirm marking this shipment as undelivered / rejected?'
-      );
-      if (!proceed) return;
-    }
+    if (!window.confirm('Do you wish to confirm marking this shipment as undelivered / rejected?')) return;
     setActionLoading(true);
     try {
       const res = await shipmentAPI.refundUndelivered(currentShipment.shipmentId, undeliveredReason);
       const summary = res.data?.refundSummary;
-      if (summary?.receiverPenalty > 0) {
+      if (summary?.supplierRelief > 0) {
         alert(
-          `Shipment marked undelivered/rejected!\n\n` +
-          `• 3rd+ rejection this week: ₹${summary.receiverPenalty} fair-play fee charged.\n` +
-          `• ₹${summary.supplierBuyerPenaltyShare || 30} credited to seller's wallet.\n` +
-          `• Net refund of ₹${summary.receiverRefund} credited to your wallet.`
-        );
-      } else if (summary?.rtoProtectionEnabled) {
-        alert(
-          `Shipment marked undelivered/rejected!\n\n` +
+          `Shipment marked undelivered!\n\n` +
           `• 100% Full refund of ₹${summary.receiverRefund} credited to receiver wallet.\n` +
-          `• SecureKaro credited seller +₹${summary.supplierRelief} compensation under RTO Protection.\n` +
-          `• Notice: You have used ${summary.receiverWeeklyRejectionCount || 1} of 2 free rejections this week.`
+          `• SecureKaro credited seller +₹${summary.supplierRelief} compensation under RTO Protection.`
         );
       } else {
         const amtStr = summary ? `₹${summary.principal?.toLocaleString() || summary.totalRefundAmount?.toLocaleString()} principal` : 'Principal Refund';
@@ -438,15 +422,6 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
     if (!defectPhotoUrl.trim()) {
       alert('Uploading photo proof of the package/item is mandatory for refund, partial return, and replacement requests.');
       return;
-    }
-    if (currentShipment.rtoProtectionEnabled && returnTypeChoice === 'full_refund') {
-      const proceed = window.confirm(
-        '⚠️ Fair-Play Policy Warning:\n\n' +
-        'Under RTO Protection, you get 2 free parcel rejections/returns per week with 100% full refund.\n\n' +
-        'From your 3rd rejection this week onwards, a ₹40 fair-play fee is charged (₹30 transferred to supplier wallet).\n\n' +
-        'Do you want to proceed with this return request?'
-      );
-      if (!proceed) return;
     }
 
     const hasExistingBank = Boolean(
@@ -3157,20 +3132,6 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   </span>
                 </div>
 
-                {/* Fair-Play Warning banner shown when RTO Protection is active */}
-                {currentShipment.rtoProtectionEnabled && (
-                  <div className="p-3 bg-amber-100 border border-amber-300 rounded-xl space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
-                      <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
-                      <span>Fair-Play Policy: Parcel Rejection Notice</span>
-                    </div>
-                    <p className="text-[11px] text-amber-800 leading-relaxed">
-                      You receive <strong>100% full refund on up to 2 rejected parcels per week</strong> (SecureKaro compensates seller ₹40). 
-                      Starting from your <strong>3rd rejection this week</strong>, a <strong>₹40 fair-play fee</strong> is charged from your refund (<strong>₹30 goes to seller's wallet</strong>, ₹10 to SecureKaro).
-                    </p>
-                  </div>
-                )}
-
                 {/* 3 Option Selector */}
                 <div className="grid grid-cols-3 gap-2">
                   <button
@@ -3477,14 +3438,10 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                     If marked undelivered, order principal (₹{currentShipment.amount?.toLocaleString() || '3,420'}) will be refunded to the receiver.
                   </p>
                   {currentShipment.rtoProtectionEnabled ? (
-                    <div className="mt-2 pt-2 border-t border-amber-100 space-y-1.5">
+                    <div className="mt-2 pt-2 border-t border-amber-100">
                       <div className="flex items-start gap-1.5 text-[11px] text-emerald-800 font-medium">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                        <span><strong>RTO Protection Active.</strong> SecureKaro compensates seller ₹40 (if buyer's 1st or 2nd rejection this week). Buyer gets full refund.</span>
-                      </div>
-                      <div className="flex items-start gap-1.5 text-[11px] text-amber-800 font-medium">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                        <span>From buyer's 3rd rejection/week: ₹40 fair-play fee charged (₹30 to seller, ₹10 to SecureKaro).</span>
+                        <span><strong>RTO Protection Active.</strong> SecureKaro compensates seller ₹40 relief if parcel returns undelivered. Buyer receives 100% full refund.</span>
                       </div>
                     </div>
                   ) : (

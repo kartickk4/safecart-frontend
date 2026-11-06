@@ -1278,7 +1278,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                        Available for all shipments (COD &amp; Prepaid). SecureKaro compensates seller ₹40 relief if parcel returns undelivered (limit 1 claim per week per seller). Buyers get 2 free rejections/week; from 3rd rejection, buyer pays ₹40 (₹30 to seller, ₹10 to SecureKaro).
+                        Available for all shipments (COD &amp; Prepaid). SecureKaro compensates seller ₹40 relief if parcel returns undelivered (limit 1 claim per week per seller). Buyer receives 100% full refund with zero deduction.
                       </p>
                     </div>
                   </div>
@@ -1296,7 +1296,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 {/* Conditions panel — only shown when Protection is ON */}
                 {rtoProtectionEnabled && (
                   <div className="border-t border-emerald-200 bg-white px-4 py-3.5 space-y-2.5">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-emerald-800">Fair-Play &amp; Relief Rules (When Protection is Active)</p>
+                    <p className="text-[10px] font-black uppercase tracking-wider text-emerald-800">RTO Protection Benefits</p>
                     <div className="space-y-2">
                       <div className="flex items-start gap-2">
                         <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">1</span>
@@ -1305,15 +1305,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         </p>
                       </div>
                       <div className="flex items-start gap-2">
-                        <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">2</span>
-                        <p className="text-[11px] text-slate-700 leading-relaxed">
-                          <strong>Buyer Fair-Play:</strong> Buyers get up to 2 free rejections/week. On their 3rd+ rejection, buyer is charged a <strong className="text-amber-700">₹40 fair-play fee</strong> — ₹30 goes to your seller wallet, ₹10 to SecureKaro.
-                        </p>
-                      </div>
-                      <div className="flex items-start gap-2">
                         <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">✓</span>
                         <p className="text-[11px] text-slate-700 leading-relaxed">
-                          <strong>Zero Seller Penalty:</strong> Sellers are never penalized or charged fair-play fees under this protection.
+                          <strong>Zero Deduction:</strong> Buyers receive 100% full refunds on undelivered parcels with zero deduction, and sellers are never penalized.
                         </p>
                       </div>
                     </div>
