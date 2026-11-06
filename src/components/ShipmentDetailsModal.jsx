@@ -395,12 +395,11 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       if (summary?.supplierRelief > 0) {
         alert(
           `Shipment marked undelivered!\n\n` +
-          `• 100% Full refund of ₹${summary.receiverRefund} credited to receiver wallet.\n` +
+          `• Order status updated to Undelivered (Returning to Origin).\n` +
           `• SecureKaro credited seller +₹${summary.supplierRelief} compensation under RTO Protection.`
         );
       } else {
-        const amtStr = summary ? `₹${summary.principal?.toLocaleString() || summary.totalRefundAmount?.toLocaleString()} principal` : 'Principal Refund';
-        alert(`Courier marked as undelivered! ${amtStr} successfully refunded to receiver.`);
+        alert('Courier marked as undelivered! Order status updated to Undelivered.');
       }
       setShowUndeliveredForm(false);
       onRefresh();
@@ -744,7 +743,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       } else {
         alert(isReplacement
           ? 'Return delivery confirmed! Replacement cycle is complete and order payment has been released to your account.'
-          : `✅ Return confirmed and settled!\n\n• Buyer refunded 100% principal.\n• Reverse shipping fee (₹${charged}) debited from your seller wallet.`);
+          : `✅ Return confirmed and settled!\n\n• Return package received at warehouse.\n• Reverse shipping fee (₹${charged}) debited from your seller wallet.`);
       }
       onRefresh();
       fetchFullDetails();
@@ -3426,16 +3425,16 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-xs text-amber-900 flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4 text-amber-600" />
-                    Undelivered Courier Refund (Principal Refund)
+                    Mark Shipment Undelivered (RTO)
                   </h4>
                   <span className="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">
-                    100% Principal Refund
+                    RTO Return
                   </span>
                 </div>
 
                 <div className="p-3 bg-white rounded-xl border border-amber-200 text-xs space-y-1">
                   <p className="text-slate-600">
-                    If marked undelivered, order principal (₹{currentShipment.amount?.toLocaleString() || '3,420'}) will be refunded to the receiver.
+                    If marked undelivered, the shipment will be routed back to the seller's origin warehouse.
                   </p>
                   {currentShipment.rtoProtectionEnabled ? (
                     <div className="mt-2 pt-2 border-t border-amber-100">
