@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { walletAPI } from '../services/api';
 
-export default function RechargeModal({ isOpen, onClose, currentBalance = 0, onSuccess }) {
+export default function RechargeModal({ isOpen, onClose, currentBalance = 0, initialAmount = null, onSuccess }) {
   if (!isOpen) return null;
 
   const currentNum = Number(currentBalance) || 0;
@@ -27,7 +27,9 @@ export default function RechargeModal({ isOpen, onClose, currentBalance = 0, onS
   const absDue = Math.abs(currentNum);
 
   // Suggested amounts
-  const defaultAmount = isNegative ? Math.ceil(absDue + 200) : 500;
+  const defaultAmount = initialAmount && Number(initialAmount) > 0 
+    ? Math.max(10, Math.ceil(Number(initialAmount))) 
+    : (isNegative ? Math.ceil(absDue + 200) : 500);
   const [amount, setAmount] = useState(defaultAmount.toString());
   const [paymentMode, setPaymentMode] = useState('UPI'); // 'UPI' | 'CARD' | 'NETBANKING'
   const [selectedBank, setSelectedBank] = useState('HDFC Bank');

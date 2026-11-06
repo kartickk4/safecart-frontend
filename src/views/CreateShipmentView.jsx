@@ -2637,6 +2637,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         isOpen={showRechargeModal}
         onClose={() => setShowRechargeModal(false)}
         currentBalance={user?.walletBalance || 0}
+        initialAmount={codQuote?.shortfall || 100}
         onSuccess={(newBalance) => {
           if (onUpdateUser) {
             onUpdateUser({ ...user, walletBalance: newBalance });
