@@ -7,9 +7,13 @@ import {
 } from 'lucide-react';
 import { shipmentAPI, profileAPI, agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
+import RechargeModal from './RechargeModal';
+
 export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData }) {
   // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection
   const [modalStep, setModalStep] = useState(1);
+  const [showRechargeModal, setShowRechargeModal] = useState(false);
+  const [shortfallAmount, setShortfallAmount] = useState(0);
   // Rewards & Pricing System: Hide welcome offer if user has completed at least 1 order
   const [modalShipmentsCount, setModalShipmentsCount] = useState(() => {
     return Number(user?.totalShipments || user?.shipmentsCount || 0);
@@ -344,7 +348,13 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         setError('Phone verification required before your first shipment. Please verify your mobile number above.');
         return;
       }
-      setError(err.response?.data?.error || err.message || 'Failed to create shipment. Please verify details and try again.');
+      if (err.response?.data?.code === 'COD_PAYMENT_REQUIRED' || err.response?.data?.code === 'SECURITY_BUFFER_REQUIRED') {
+        setError(err.response.data.message);
+        setShortfallAmount(err.response.data.shortfall || 100);
+        setShowRechargeModal(true);
+        return;
+      }
+      setError(err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to create shipment. Please verify details and try again.');
     } finally {
       setLoading(false);
     }
@@ -385,9 +395,20 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-xs font-medium border border-red-200 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
-            <span>{error}</span>
+          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-xs font-medium border border-red-200 flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+              <span>{error}</span>
+            </div>
+            {shortfallAmount > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowRechargeModal(true)}
+                className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-xs transition cursor-pointer"
+              >
+                Recharge Wallet
+              </button>
+            )}
           </div>
         )}
 
@@ -1335,6 +1356,18 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
             </div>
           </div>
         )}
+
+        {/* Dynamic Reserve Buffer Recharge Modal */}
+        <RechargeModal
+          isOpen={showRechargeModal}
+          onClose={() => setShowRechargeModal(false)}
+          currentBalance={user?.walletBalance || 0}
+          initialAmount={shortfallAmount || 100}
+          onSuccess={(newBalance) => {
+            setShowRechargeModal(false);
+            setError('');
+          }}
+        />
       </div>
     </div>,
     document.body
