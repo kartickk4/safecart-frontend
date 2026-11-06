@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Eye, ChevronLeft, ChevronRight, Download, Plus, Box, CheckCircle2, Clock, AlertTriangle, QrCode, Camera, RotateCcw } from 'lucide-react';
+import { Search, Filter, Eye, ChevronLeft, ChevronRight, Download, Plus, Box, CheckCircle2, Clock, AlertTriangle, QrCode, Camera } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
 import QrScannerModal from '../components/QrScannerModal';
 
@@ -225,15 +225,6 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
                   <div>{renderDeliveryBadge(item.status)}</div>
                   <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    {isMerchant && onRepeatShipment && (
-                      <button
-                        onClick={() => onRepeatShipment(item)}
-                        className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-[#1E56E3] font-bold text-[10px] rounded-lg border border-blue-200 inline-flex items-center gap-1 transition active:scale-95"
-                      >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Repeat</span>
-                      </button>
-                    )}
                     {!isMerchant && ['In Transit', 'Out for Delivery', 'Delivered', 'Reached Destination Hub'].includes(item.status) && (
                       <button
                         onClick={() => {
@@ -319,19 +310,6 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                       {renderDeliveryBadge(item.status)}
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      {isMerchant && onRepeatShipment && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onRepeatShipment(item);
-                          }}
-                          className="px-2.5 py-1 bg-blue-50 hover:bg-[#1E56E3] text-[#1E56E3] hover:text-white font-bold text-[10px] rounded-lg transition inline-flex items-center gap-1 border border-blue-200 mr-2 shadow-2xs group cursor-pointer"
-                          title="Repeat Shipment with same details"
-                        >
-                          <RotateCcw className="w-3 h-3 group-hover:-rotate-90 transition-transform" />
-                          <span>Repeat</span>
-                        </button>
-                      )}
                       {!isMerchant && ['In Transit', 'Out for Delivery', 'Delivered', 'Reached Destination Hub'].includes(item.status) && (
                         <button
                           onClick={(e) => {
