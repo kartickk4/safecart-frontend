@@ -242,19 +242,33 @@ export default function App() {
       }
 
       let updatedBalances = {};
+      if (walletRes.status === 'fulfilled' && walletRes.value?.data) {
+        const wData = walletRes.value.data;
+        if (wData.walletBalance !== undefined) updatedBalances.walletBalance = wData.walletBalance;
+        if (wData.withdrawableBalance !== undefined) updatedBalances.withdrawableBalance = wData.withdrawableBalance;
+        if (wData.securityReserve !== undefined) updatedBalances.securityReserve = wData.securityReserve;
+        if (wData.activeShipmentsCount !== undefined) updatedBalances.activeShipmentsCount = wData.activeShipmentsCount;
+        if (wData.cashbackBalance !== undefined) updatedBalances.cashbackBalance = wData.cashbackBalance;
+      }
+
       if (rewardRes.status === 'fulfilled' && rewardRes.value?.data) {
         const rData = rewardRes.value.data;
         if (rData.totalWalletBalance !== undefined) updatedBalances.totalWalletBalance = rData.totalWalletBalance;
-        if (rData.withdrawableBalance !== undefined) updatedBalances.withdrawableBalance = rData.withdrawableBalance;
+        if (updatedBalances.withdrawableBalance === undefined && rData.withdrawableBalance !== undefined) {
+          updatedBalances.withdrawableBalance = rData.withdrawableBalance;
+        }
         if (rData.pendingConfirmationBalance !== undefined) updatedBalances.pendingConfirmationBalance = rData.pendingConfirmationBalance;
-        if (rData.cashbackBalance !== undefined) updatedBalances.cashbackBalance = rData.cashbackBalance;
-        if (rData.walletBalance !== undefined) updatedBalances.walletBalance = rData.walletBalance;
-      }
-
-      if (walletRes.status === 'fulfilled' && walletRes.value?.data) {
-        const wData = walletRes.value.data;
-        if (wData.walletBalance !== undefined && updatedBalances.walletBalance === undefined) {
-          updatedBalances.walletBalance = wData.walletBalance;
+        if (updatedBalances.cashbackBalance === undefined && rData.cashbackBalance !== undefined) {
+          updatedBalances.cashbackBalance = rData.cashbackBalance;
+        }
+        if (updatedBalances.walletBalance === undefined && rData.walletBalance !== undefined) {
+          updatedBalances.walletBalance = rData.walletBalance;
+        }
+        if (updatedBalances.securityReserve === undefined && rData.securityReserve !== undefined) {
+          updatedBalances.securityReserve = rData.securityReserve;
+        }
+        if (updatedBalances.activeShipmentsCount === undefined && rData.activeShipmentsCount !== undefined) {
+          updatedBalances.activeShipmentsCount = rData.activeShipmentsCount;
         }
       }
 

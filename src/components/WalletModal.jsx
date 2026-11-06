@@ -246,8 +246,21 @@ export default function WalletModal({ user, onUpdateUser }) {
         if (res.data.activeShipmentsCount !== undefined) {
           setActiveShipmentsCount(Number(res.data.activeShipmentsCount));
         }
-        if (res.data.withdrawableBalance !== undefined && isSupplier) {
+        if (res.data.withdrawableBalance !== undefined) {
           setWithdrawableBalance(Number(res.data.withdrawableBalance));
+        }
+        if (res.data.cashbackBalance !== undefined) {
+          setCashbackBalance(Number(res.data.cashbackBalance));
+        }
+        if (onUpdateUser && res.data.walletBalance !== undefined) {
+          onUpdateUser({
+            ...user,
+            walletBalance: res.data.walletBalance,
+            withdrawableBalance: res.data.withdrawableBalance,
+            securityReserve: res.data.securityReserve,
+            activeShipmentsCount: res.data.activeShipmentsCount,
+            cashbackBalance: res.data.cashbackBalance
+          });
         }
       }
     } catch (e) {
@@ -464,9 +477,18 @@ export default function WalletModal({ user, onUpdateUser }) {
           if (onUpdateUser) onUpdateUser({ ...user, walletBalance: res.data.walletBalance });
         }
       } else {
-        setCashbackBalance(res.data.cashbackBalance ?? (cashbackBalance - amt));
-        if (onUpdateUser && res.data.cashbackBalance !== undefined) {
-          onUpdateUser({ ...user, cashbackBalance: res.data.cashbackBalance });
+        const newCashback = res.data.cashbackBalance !== undefined ? res.data.cashbackBalance : (cashbackBalance - amt);
+        const newWallet = res.data.walletBalance !== undefined ? res.data.walletBalance : (user?.walletBalance || 0);
+        const newWithdrawable = res.data.withdrawableBalance !== undefined ? res.data.withdrawableBalance : (newCashback + newWallet);
+        setCashbackBalance(newCashback);
+        setWithdrawableBalance(newWithdrawable);
+        if (onUpdateUser) {
+          onUpdateUser({ 
+            ...user, 
+            cashbackBalance: newCashback,
+            walletBalance: newWallet,
+            withdrawableBalance: newWithdrawable
+          });
         }
       }
 
@@ -708,7 +730,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
 
                 <h2 className="text-3xl font-black text-white tracking-tight flex items-baseline gap-1">
-                    <span>₹{(Number(user?.walletBalance) || 0).toLocaleString('en-IN')}</span>
+                    <span>₹{displayWithdrawable.toLocaleString('en-IN')}</span>
                     <span className="text-xs font-normal text-blue-300">.00</span>
                   </h2>
                 <p className="text-[11px] text-blue-200 mt-1 font-medium">
