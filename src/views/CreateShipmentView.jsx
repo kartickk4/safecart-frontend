@@ -2611,7 +2611,11 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
             <div className="flex items-center justify-center gap-4 pt-2">
               {!isAwaitingBuyerPayment && (
                 <a
-                  href={createdData.shippingLabelUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'}
+                  href={
+                    createdData.shippingLabelUrl && !createdData.shippingLabelUrl.includes('dummy.pdf') && !createdData.shippingLabelUrl.includes('/label')
+                      ? createdData.shippingLabelUrl
+                      : `/api/v1/shipments/${createdData.shipmentId}/label?format=pdf`
+                  }
                   target="_blank"
                   rel="noreferrer"
                   className="px-5 py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-md inline-flex items-center gap-1.5"

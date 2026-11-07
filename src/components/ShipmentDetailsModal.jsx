@@ -994,7 +994,11 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 </div>
               </div>
               <a
-                href={currentShipment.shippingLabelUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'}
+                href={
+                  currentShipment.shippingLabelUrl && !currentShipment.shippingLabelUrl.includes('dummy.pdf') && !currentShipment.shippingLabelUrl.includes('/label')
+                    ? currentShipment.shippingLabelUrl
+                    : `/api/v1/shipments/${currentShipment.shipmentId}/label?format=pdf`
+                }
                 target="_blank"
                 rel="noreferrer"
                 className="text-xs font-bold text-[#1E56E3] hover:underline flex items-center gap-1"
