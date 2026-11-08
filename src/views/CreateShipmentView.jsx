@@ -1218,33 +1218,6 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     )}
                   </button>
                 </div>
-
-                {/* Contextual hint */}
-                {paymentMode === 'prepaid' ? (
-                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-[#1E56E3] shrink-0" />
-                      <span className="text-xs font-black text-blue-950">Prepaid Shipment Mode</span>
-                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-blue-100 text-[#1E56E3]">₹0 Collection at Doorstep</span>
-                    </div>
-                    <p className="text-[11px] text-blue-800 leading-relaxed pl-6">
-                      Buyer already paid you directly. Courier shipping fee is deducted from your seller wallet upon booking. Delivery agent collects ₹0 from recipient and hands over the parcel.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Truck className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span className="text-xs font-black text-amber-950">Cash on Delivery (COD) Mode</span>
-                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
-                        Collects {amount ? `₹${Number(amount).toLocaleString('en-IN')}` : 'Cash'}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-amber-800 leading-relaxed pl-6">
-                      Courier delivery fee is paid upfront from your wallet. The delivery partner collects {amount ? `₹${Number(amount).toLocaleString('en-IN')}` : 'cash'} at recipient&apos;s doorstep upon delivery. Once delivered, the collected COD money is remitted directly into your seller wallet for instant bank/UPI withdrawal.
-                    </p>
-                  </div>
-                )}
               </div>
 
               {/* Return Policy Selection */}
