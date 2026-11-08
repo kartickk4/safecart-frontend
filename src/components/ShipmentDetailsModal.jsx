@@ -918,22 +918,6 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               <p className="text-xs text-slate-500 font-medium">{currentShipment.description || 'ParcelSafe Secured Order'}</p>
             </div>
           </div>
-
-          {/* Direct Ship Again / Re-book Action Button (Top Header) */}
-          {isSupplier && onRepeatShipment && (
-            <button
-              type="button"
-              onClick={() => {
-                onClose?.();
-                onRepeatShipment(currentShipment);
-              }}
-              className="mr-8 px-3.5 py-2 bg-gradient-to-r from-[#1E56E3] to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm shadow-blue-500/20 transition flex items-center gap-1.5 active:scale-95 cursor-pointer"
-              title="Duplicate & ship another parcel to this recipient"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Ship Again</span>
-            </button>
-          )}
         </div>
 
         {loading ? (
@@ -3131,22 +3115,6 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   >
                     <XCircle className="w-4 h-4 text-slate-500" />
                     <span>Cancel</span>
-                  </button>
-                )}
-
-                {/* Supplier Ship Again Action Button */}
-                {isSupplier && onRepeatShipment && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose?.();
-                      onRepeatShipment(currentShipment);
-                    }}
-                    className="py-3 px-3.5 bg-gradient-to-r from-[#1E56E3] to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 transition flex items-center gap-1.5 shrink-0 active:scale-95 cursor-pointer"
-                    title="Duplicate this shipment with the same recipient details"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    <span>Ship Again</span>
                   </button>
                 )}
 
