@@ -1014,7 +1014,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             </span>
           </div>
 
-          {/* Cashfree Merchant Compliance Active Policy Links */}
+          {/* PhonePe Merchant Compliance Active Policy Links */}
           <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-x-3.5 gap-y-2 text-[11px] font-bold text-slate-500">
             <a 
               href="/contact" 
@@ -1720,7 +1720,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
         </div>
       )}
 
-      {/* CASHFREE MERCHANT LEGAL COMPLIANCE POPUP MODAL */}
+      {/* PHONEPE MERCHANT LEGAL COMPLIANCE POPUP MODAL */}
       {showLegalModal && (
         <div className="fixed inset-0 bg-slate-900/75 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
           <div className="bg-[#F7F9FC] rounded-3xl max-w-5xl w-full shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto relative my-8">

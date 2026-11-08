@@ -168,7 +168,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     return list;
   }, [carrierQuotes, carrierTab, carrierSearch, carrierSort, onlyCloseToWeight, parcelWeight]);
 
-  const [paymentMode, setPaymentMode] = useState('cod'); // 'cod' | 'paid_offline' (prepaid temporarily disabled)
+  const [paymentMode, setPaymentMode] = useState('prepaid'); // 'prepaid' (PhonePe Gateway) | 'cod' | 'paid_offline'
   const [returnAllowed, setReturnAllowed] = useState(true);
   const isNonEcommerce = user?.platformType !== 'ecommerce';
   const [photoReviewEnabled, setPhotoReviewEnabled] = useState(false);
@@ -560,6 +560,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       const res = await shipmentAPI.createShipment(payload);
 
       setCreatedData(res.data);
+      if (res.data?.paymentLink) {
+        window.open(res.data.paymentLink, '_blank');
+      }
       setCashbackEarned(10); // ₹10 seller cashback credited per shipment
       if (res.data?.walletBalanceRemaining !== undefined && onUpdateUser) {
         onUpdateUser({ ...user, walletBalance: (res.data.walletBalanceRemaining || 0) + 10 });
@@ -568,8 +571,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       if (onUpdateUser) {
         onUpdateUser({ totalShipments: (user?.totalShipments || 0) + 1, shipmentsCount: (user?.shipmentsCount || 0) + 1 });
       }
-      setStep(2); // Move to Shipment Success Confirmation view
-      if (onCreated) onCreated(res.data);
+      setStep(2); // Move to Shipment Success Confirmation view (do not auto-popup details modal)
     } catch (err) {
       console.error('Create Shipment API Error:', err);
       if (err.response?.data?.code === 'COD_PAYMENT_REQUIRED') {
@@ -1142,7 +1144,34 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* PhonePe Online Payment Gateway */}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setPaymentMode('prepaid');
+                      if (senderPincode && receiverPincode && receiverPincode.length === 6) {
+                        await fetchQuotesForRoute(carrierSlug, 'prepaid');
+                      }
+                    }}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
+                      paymentMode === 'prepaid'
+                        ? 'border-[#1E56E3] bg-blue-50/80 shadow-sm shadow-blue-200'
+                        : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-base">💳</span>
+                      {paymentMode === 'prepaid' && (
+                        <span className="w-4 h-4 rounded-full bg-[#1E56E3] flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 text-white" />
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-xs font-extrabold ${ paymentMode === 'prepaid' ? 'text-[#1E56E3]' : 'text-slate-800'}`}>PhonePe Online</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">UPI / QR / Cards via PhonePe Gateway link. 100% Escrow protected.</p>
+                  </button>
+
                   {/* COD */}
                   <button
                     type="button"
@@ -1156,7 +1185,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         await fetchQuotesForRoute(carrierSlug, 'cod');
                       }
                     }}
-                    className={`p-3.5 rounded-2xl border-2 text-left transition-all duration-150 ${
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
                       (Number(user?.walletBalance) || 0) < 0
                         ? 'border-slate-200 bg-slate-100/80 opacity-60 cursor-not-allowed'
                         : paymentMode === 'cod'
@@ -1172,17 +1201,17 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         </span>
                       )}
                     </div>
-                    <p className={`text-xs font-extrabold ${ paymentMode === 'cod' ? 'text-amber-700' : 'text-slate-800'}`}>COD (Cash on Delivery)</p>
+                    <p className={`text-xs font-extrabold ${ paymentMode === 'cod' ? 'text-amber-700' : 'text-slate-800'}`}>COD (Doorstep Cash)</p>
                     {(Number(user?.walletBalance) || 0) < 0 ? (
                       <span className="inline-block mt-1 text-[9px] font-bold text-rose-700 bg-rose-100 border border-rose-200 px-1.5 py-0.5 rounded-full">
                         Suspended (Negative Balance)
                       </span>
                     ) : (
-                      <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">No upfront link. Buyer pays courier executive upon delivery.</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">No gateway link. Buyer pays cash to courier upon delivery.</p>
                     )}
                   </button>
 
-                  {/* Prepaid (formerly Paid Offline) */}
+                  {/* Paid Offline (Bypass Gateway) */}
                   <button
                     type="button"
                     onClick={() => {
@@ -1192,30 +1221,24 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       }
                       setPaymentMode('paid_offline');
                     }}
-                    className={`p-3.5 rounded-2xl border-2 text-left transition-all duration-150 ${
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
                       (Number(user?.walletBalance) || 0) < 0
                         ? 'border-slate-200 bg-slate-100/80 opacity-60 cursor-not-allowed'
-                        : paymentMode === 'paid_offline' || paymentMode === 'prepaid'
+                        : paymentMode === 'paid_offline'
                         ? 'border-emerald-500 bg-emerald-50 shadow-sm shadow-emerald-200'
                         : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-base">✅</span>
-                      {(paymentMode === 'paid_offline' || paymentMode === 'prepaid') && (
+                      <span className="text-base">⚡</span>
+                      {paymentMode === 'paid_offline' && (
                         <span className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
                           <Check className="w-2.5 h-2.5 text-white" />
                         </span>
                       )}
                     </div>
-                    <p className={`text-xs font-extrabold ${ paymentMode === 'paid_offline' || paymentMode === 'prepaid' ? 'text-emerald-700' : 'text-slate-800'}`}>Prepaid</p>
-                    {(Number(user?.walletBalance) || 0) < 0 ? (
-                      <span className="inline-block mt-1 text-[9px] font-bold text-rose-700 bg-rose-100 border border-rose-200 px-1.5 py-0.5 rounded-full">
-                        Suspended (Negative Balance)
-                      </span>
-                    ) : (
-                      <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">Payment received upfront via UPI / online / bank transfer. Immediate label booking.</p>
-                    )}
+                    <p className={`text-xs font-extrabold ${ paymentMode === 'paid_offline' ? 'text-emerald-700' : 'text-slate-800'}`}>Paid Offline</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">Already paid directly to seller. Bypasses gateway and books courier immediately.</p>
                   </button>
                 </div>
 
@@ -2484,6 +2507,25 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
             {/* PROMINENT BUYER PAYMENT LINK & SHARE CARD */}
             {isAwaitingBuyerPayment && (
               <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50/80 p-5 sm:p-6 rounded-3xl border border-blue-200/90 text-left max-w-md mx-auto space-y-4 shadow-sm">
+                {/* Direct PhonePe Gateway Checkout Button */}
+                {createdData.paymentLink && (
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 border border-purple-200 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-black text-purple-950">
+                      <span>⚡ PhonePe Payment Gateway</span>
+                      <span className="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold">UAT Sandbox Mode</span>
+                    </div>
+                    <a
+                      href={createdData.paymentLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 via-[#1E56E3] to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-purple-500/20 transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer text-center"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>Test Checkout on PhonePe Gateway ↗</span>
+                    </a>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-blue-900 font-extrabold text-xs">
                     <LinkIcon className="w-4 h-4 text-blue-600" />
@@ -2630,6 +2672,16 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition"
               >
                 Return to Dashboard
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (onCreated) onCreated(createdData);
+                }}
+                className="px-5 py-2.5 rounded-xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100/80 text-xs font-bold text-[#1E56E3] transition inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>View Full Details</span>
               </button>
             </div>
           </div>

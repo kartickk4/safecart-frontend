@@ -49,7 +49,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   const [amount, setAmount] = useState('');
   const [cityRoute, setCityRoute] = useState('');
   const [fundImmediately, setFundImmediately] = useState(true);
-  const [paymentMode, setPaymentMode] = useState('cod'); // 'cod' (prepaid temporarily disabled)
+  const [paymentMode, setPaymentMode] = useState('prepaid'); // 'prepaid' (PhonePe) | 'cod'
   const [returnAllowed, setReturnAllowed] = useState(true);
   const [photoReviewEnabled, setPhotoReviewEnabled] = useState(false);
   const [rtoProtectionEnabled, setRtoProtectionEnabled] = useState(false);
@@ -331,13 +331,16 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         paymentMode,
         isPrepaid: !isCod,
         codCharge: isCod ? (selectedQuote.codCharge || 52) : 0,
-        fundEscrow: isCod ? false : fundImmediately,
+        fundEscrow: false,
         returnAllowed,
         photoReviewEnabled: Boolean(photoReviewEnabled),
         rtoProtectionEnabled
       };
 
       const res = await shipmentAPI.createShipment(payload);
+      if (res.data?.paymentLink) {
+        window.open(res.data.paymentLink, '_blank');
+      }
       onCreated(res.data);
       onClose();
     } catch (err) {
@@ -624,14 +627,30 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               {/* Payment Mode Selector */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">Payment Mode *</label>
-                <div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMode('prepaid')}
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                      paymentMode === 'prepaid'
+                        ? 'bg-blue-50 border-[#1E56E3] text-[#1E56E3] shadow-xs ring-1 ring-[#1E56E3]'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <CreditCard className="w-4 h-4 text-[#1E56E3]" />
+                    <span>PhonePe Online</span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => setPaymentMode('cod')}
-                    className="w-full py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-50 border-amber-600 text-amber-800 shadow-xs ring-1 ring-amber-500"
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                      paymentMode === 'cod'
+                        ? 'bg-amber-50 border-amber-600 text-amber-800 shadow-xs ring-1 ring-amber-500'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
                   >
                     <Truck className="w-4 h-4 text-amber-600" />
-                    <span>Cash on Delivery (COD)</span>
+                    <span>COD (Cash)</span>
                   </button>
                 </div>
               </div>

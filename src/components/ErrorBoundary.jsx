@@ -36,7 +36,8 @@ export default class ErrorBoundary extends React.Component {
       if (!alreadyReloaded) {
         sessionStorage.setItem('securekaro_eb_chunk_reloaded', 'true');
         setTimeout(() => {
-          window.location.reload();
+          const now = Date.now();
+          window.location.replace(window.location.pathname + (window.location.search ? window.location.search + '&' : '?') + '_v=' + now);
         }, 300);
       }
     }
@@ -45,7 +46,8 @@ export default class ErrorBoundary extends React.Component {
   handleReload = () => {
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('securekaro_eb_chunk_reloaded');
-      window.location.reload();
+      const now = Date.now();
+      window.location.replace(window.location.pathname + (window.location.search ? window.location.search + '&' : '?') + '_v=' + now);
     }
   };
 
@@ -53,7 +55,8 @@ export default class ErrorBoundary extends React.Component {
     this.setState({ hasError: false, error: null, errorInfo: null, isChunkLoadError: false });
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('securekaro_eb_chunk_reloaded');
-      window.location.href = '/';
+      const now = Date.now();
+      window.location.replace('/?_v=' + now);
     }
   };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   ShieldCheck, Package, Clock, AlertTriangle, TrendingUp, IndianRupee, 
   Search, Filter, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, 
@@ -66,11 +67,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
   const [isTaxModalOpen, setIsTaxModalOpen] = useState(false);
   const [activeAnalysisTab, setActiveAnalysisTab] = useState('revenue');
 
-  const [dismissActionPopup, setDismissActionPopup] = useState(() => {
-    try {
-      return sessionStorage.getItem('dismiss_return_action_popup') === 'true';
-    } catch (_) { return false; }
-  });
+  const [showActionModal, setShowActionModal] = useState(false);
 
   const pendingActionOrders = useMemo(() => {
     return shipments.filter(s => {
@@ -492,7 +489,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
             </div>
           </div>
           <button
-            onClick={() => setDismissActionPopup(false)}
+            onClick={() => setShowActionModal(true)}
             className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition shrink-0 cursor-pointer shadow-xs"
           >
             Review Orders
@@ -500,10 +497,16 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         </div>
       )}
 
-      {/* MODAL POPUP FOR PENDING RETURN ACTIONS */}
-      {pendingActionOrders.length > 0 && !dismissActionPopup && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-amber-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+      {/* MODAL POPUP FOR PENDING RETURN ACTIONS (Opens ONLY when user clicks Review Orders) */}
+      {showActionModal && pendingActionOrders.length > 0 && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 pb-24 overflow-y-auto select-none"
+          onClick={() => setShowActionModal(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-amber-200 space-y-4 animate-in fade-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto my-auto relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
@@ -519,11 +522,9 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
                 </div>
               </div>
               <button
-                onClick={() => {
-                  setDismissActionPopup(true);
-                  try { sessionStorage.setItem('dismiss_return_action_popup', 'true'); } catch(_) {}
-                }}
+                onClick={() => setShowActionModal(false)}
                 className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg cursor-pointer"
+                title="Close"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -562,7 +563,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
                   <div
                     key={order._id || order.shipmentId}
                     onClick={() => {
-                      setDismissActionPopup(true);
+                      setShowActionModal(false);
                       onSelectShipment(order);
                     }}
                     className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 hover:border-blue-300 transition cursor-pointer flex items-center justify-between gap-3 group"
@@ -592,17 +593,15 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
                 Smart routing applies automatically to reverse & replacement shipments.
               </span>
               <button
-                onClick={() => {
-                  setDismissActionPopup(true);
-                  try { sessionStorage.setItem('dismiss_return_action_popup', 'true'); } catch(_) {}
-                }}
+                onClick={() => setShowActionModal(false)}
                 className="text-xs text-slate-500 hover:text-slate-800 font-semibold px-3 py-1.5 cursor-pointer"
               >
                 Review Later
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* 4 PRIMARY EXECUTIVE KPI CARDS (2x2 on Mobile, 4x1 on Desktop) */}

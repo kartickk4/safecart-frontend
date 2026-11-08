@@ -86,7 +86,7 @@ export default function RechargeModal({ isOpen, onClose, currentBalance = 0, ini
         amount: numAmount,
         fee: gatewayFee,
         totalPaid: totalPayable,
-        gateway: 'cashfree',
+        gateway: 'phonepe',
         paymentMode: paymentMode,
         signature: 'sim_verified_sig'
       });

@@ -24,10 +24,10 @@ const ROISavingsCalculatorView = lazyWithRetry(() => import('./views/ROISavingsC
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import ShipmentDetailsModal from './components/ShipmentDetailsModal';
 
 // Modals code-split on demand with auto-retry
 const CreateShipmentModal = lazyWithRetry(() => import('./components/CreateShipmentModal'));
-const ShipmentDetailsModal = lazyWithRetry(() => import('./components/ShipmentDetailsModal'));
 const WalletModal = lazyWithRetry(() => import('./components/WalletModal'));
 const RoleSelectionModal = lazyWithRetry(() => import('./components/RoleSelectionModal'));
 const WelcomeAnimationModal = lazyWithRetry(() => import('./components/WelcomeAnimationModal'));
@@ -1004,8 +1004,7 @@ export default function App() {
             }}
             onCreated={(newShipment) => {
               setRepeatShipmentData(null);
-              setSelectedShipment(newShipment);
-              window.location.reload();
+              setIsCreateModalOpen(false);
             }}
           />
         )}

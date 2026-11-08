@@ -94,7 +94,7 @@ const REAL_BENEFITS = [
     icon: Zap,
     iconBg: 'bg-blue-100',
     iconColor: 'text-blue-700',
-    summary: 'Normal COD courier platforms hold your money for 7 to 14 days. With SecureKaro, funds transfer directly to your bank via Cashfree IMPS / UPI within 30–60 minutes.',
+    summary: 'Normal COD courier platforms hold your money for 7 to 14 days. With SecureKaro, funds transfer directly to your bank via PhonePe / IMPS / UPI within 30–60 minutes.',
     impact: 'Zero stuck capital: Buy new inventory right away'
   },
   {
@@ -116,7 +116,7 @@ const REAL_BENEFITS = [
     icon: Lock,
     iconBg: 'bg-rose-100',
     iconColor: 'text-rose-700',
-    summary: 'Scammers cannot send edited GPay or Paytm screenshots. Buyers pay through authentic Cashfree links with live bank verification.',
+    summary: 'Scammers cannot send edited GPay or Paytm screenshots. Buyers pay through authentic PhonePe links with live bank verification.',
     impact: 'Stops 100% loss from edited screenshot fraud'
   },
   {
@@ -179,7 +179,7 @@ const COMPARISON_ROWS = [
   {
     feature: 'Payment Verification',
     without: 'Risk of fake/edited Paytm & GPay screenshots',
-    withKaro: '100% verified RBI-compliant Cashfree links'
+    withKaro: '100% verified RBI-compliant PhonePe links'
   },
   {
     feature: 'Courier Rates',

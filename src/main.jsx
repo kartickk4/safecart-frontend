@@ -11,9 +11,12 @@ if (typeof window !== 'undefined' && window.location.hostname.includes('onrender
 
 // Automatically recover from stale Vite chunk hashes across deployments
 if (typeof window !== 'undefined') {
-  window.addEventListener('vite:preloadError', () => {
-    console.warn('[SecureKaro] Stale deployment asset detected, auto-reloading page...');
-    window.location.reload();
+  window.addEventListener('vite:preloadError', (event) => {
+    event?.preventDefault?.();
+    console.warn('[SecureKaro] Stale deployment asset detected, auto-reloading page with cache-bust...');
+    const now = Date.now();
+    const cleanUrl = window.location.pathname + (window.location.search ? window.location.search + '&' : '?') + '_v=' + now;
+    window.location.replace(cleanUrl);
   });
 }
 

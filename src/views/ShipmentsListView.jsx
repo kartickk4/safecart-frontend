@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Eye, ChevronLeft, ChevronRight, Download, Plus, Box, CheckCircle2, Clock, AlertTriangle, QrCode, Camera } from 'lucide-react';
+import { Search, Filter, Eye, ChevronLeft, ChevronRight, Download, Plus, Box, CheckCircle2, Clock, AlertTriangle, QrCode, Camera, RotateCcw } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
 import QrScannerModal from '../components/QrScannerModal';
 
@@ -237,6 +237,19 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                         <span>QR</span>
                       </button>
                     )}
+                    {isMerchant && onRepeatShipment && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRepeatShipment(item);
+                        }}
+                        className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-[#1E56E3] font-bold text-[10px] rounded-lg border border-blue-200 inline-flex items-center gap-1 transition active:scale-95 cursor-pointer"
+                        title="Duplicate and ship another parcel to this recipient"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Ship Again</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => onSelectShipment(item)}
                       className="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-[#1E56E3] font-bold text-[10px] rounded-lg transition inline-flex items-center gap-1"
@@ -322,6 +335,19 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                         >
                           <Camera className="w-3 h-3 text-emerald-600 group-hover:scale-110 transition-transform" />
                           <span>Scan QR</span>
+                        </button>
+                      )}
+                      {isMerchant && onRepeatShipment && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRepeatShipment(item);
+                          }}
+                          className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#1E56E3] font-bold text-[11px] rounded-lg transition inline-flex items-center gap-1 border border-blue-200 mr-2 shadow-2xs hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                          title="Duplicate and ship another parcel to this recipient"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          <span>Ship Again</span>
                         </button>
                       )}
                       <button 

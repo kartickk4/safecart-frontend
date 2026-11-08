@@ -3471,7 +3471,7 @@ export default function AdminView({ user, onBackToApp }) {
                 <label className="block text-xs font-bold text-slate-700 mb-1">Bank / UPI Transfer Reference</label>
                 <input
                   type="text"
-                  placeholder="e.g. UTR-9876543210 / Cashfree Transfer ID"
+                  placeholder="e.g. UTR-9876543210 / PhonePe Transfer ID"
                   value={payoutForm.transactionRef}
                   onChange={(e) => setPayoutForm({ ...payoutForm, transactionRef: e.target.value })}
                   className="w-full bg-white border border-slate-200 rounded-2xl p-3 text-xs text-slate-900 focus:outline-none font-mono"

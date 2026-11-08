@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building, ShieldCheck, Mail, Phone, Lock, Save, CheckCircle2, RefreshCw, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles, Zap, MapPin, Edit3, Navigation, Check, AlertCircle, Gift, Copy, ExternalLink, Users, AlertTriangle, Send, Trash2, LogOut } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { User, Building, ShieldCheck, Mail, Phone, Lock, Save, CheckCircle2, RefreshCw, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles, Zap, MapPin, Edit3, Navigation, Check, AlertCircle, Gift, Copy, ExternalLink, Users, AlertTriangle, Send, Trash2, LogOut, X } from 'lucide-react';
 
 import { profileAPI, authAPI } from '../services/api';
 
@@ -214,12 +215,23 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
       setMsg('Please provide a valid 10-digit mobile number.');
       return;
     }
-    if (trimmed === (user?.phone || phone) && user?.isPhoneVerified) {
+    setPhoneSaving(true);
+    setMsg('');
+    setIsError(false);
+    try {
+      const res = await profileAPI.updateProfile({ phone: trimmed });
+      setPhone(trimmed);
       setIsEditingPhone(false);
-      return;
+      setIsError(false);
+      setMsg('Mobile number updated successfully!');
+      if (onUpdateUser) onUpdateUser(res.data);
+    } catch (err) {
+      console.error('Save phone error:', err);
+      setIsError(true);
+      setMsg(err.response?.data?.error || 'Failed to update phone number.');
+    } finally {
+      setPhoneSaving(false);
     }
-    // Updating phone number requires verification of phone or email first
-    openSecurityModal('phone', trimmed);
   };
 
   const fetchLatestProfile = async () => {
@@ -570,10 +582,6 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                   <label className="block text-xs font-bold text-slate-800">Account Type & Active Portal Mode</label>
                   <p className="text-[11px] text-slate-500">You can seamlessly toggle between Supplier (Seller) and Receiver (Buyer) modes anytime.</p>
                 </div>
-                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                  Dual-Mode Enabled
-                </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -675,12 +683,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
             </div>
 
             <div className="flex items-center gap-2">
-              {addressData.street && addressData.pincode ? (
-                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5 shrink-0">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  Verified Hub
-                </span>
-              ) : (
+              {(!addressData.street || !addressData.pincode) && (
                 <span className="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5 shrink-0">
                   <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
                   Address Missing
@@ -1084,9 +1087,25 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
       )}
 
       {/* ── UNIFIED SECURITY VERIFICATION MODAL ── */}
-      {showSecurityModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white p-7 sm:p-8 rounded-3xl max-w-md w-full border border-slate-100 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
+      {showSecurityModal && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto select-none"
+          onClick={() => setShowSecurityModal(false)}
+        >
+          <div 
+            className="bg-white p-6 sm:p-8 rounded-3xl max-w-md w-full border border-slate-100 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200 relative my-auto max-h-[92vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Close Button */}
+            <button
+              type="button"
+              onClick={() => setShowSecurityModal(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition cursor-pointer"
+              title="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
             <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center mx-auto font-bold shadow-sm">
               <ShieldCheck className="w-6 h-6" />
             </div>
@@ -1243,7 +1262,8 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

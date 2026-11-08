@@ -113,7 +113,7 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
                 </div>
               </div>
 
-              {/* Grievance Redressal Officer (Mandatory for RBI & Cashfree compliance) */}
+              {/* Grievance Redressal Officer (Mandatory for RBI & PhonePe compliance) */}
               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 space-y-3 md:col-span-2">
                 <div className="flex items-center gap-2.5 text-slate-900 font-bold text-sm">
                   <ShieldCheck className="w-5 h-5 text-emerald-600" />
@@ -369,7 +369,7 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
                 <li><strong>Identity &amp; Account Information:</strong> Full name, business trade name, email address, password hash (encrypted via salted bcrypt), and role assignment (Sender / Receiver).</li>
                 <li><strong>Contact &amp; Verification Telephony:</strong> 10-digit mobile phone numbers verified through real-time SMS OTP codes for account authentication and delivery sign-offs.</li>
                 <li><strong>Logistics &amp; Delivery Carriage Details:</strong> Doorstep pickup address, consignee/recipient delivery address, landmark, pin code, parcel weight, package dimensions, and shipment contents description.</li>
-                <li><strong>Financial &amp; Payout Data:</strong> Bank account numbers, IFSC codes, bank beneficiary names, or UPI IDs — collected exclusively from verified sellers for remittance of order earnings and wallet withdrawals. Online payments and checkout sessions are processed directly through RBI-authorized payment aggregators (Cashfree); SecureKaro never stores debit/credit card CVV or net banking credentials.</li>
+                <li><strong>Financial &amp; Payout Data:</strong> Bank account numbers, IFSC codes, bank beneficiary names, or UPI IDs — collected exclusively from verified sellers for remittance of order earnings and wallet withdrawals. Online payments and checkout sessions are processed directly through RBI-authorized payment aggregators (PhonePe); SecureKaro never stores debit/credit card CVV or net banking credentials.</li>
                 <li><strong>Device &amp; Telemetry Data:</strong> IP address, browser type, operating system, and digital access timestamps used for fraud mitigation and audit logging.</li>
               </ul>
             </div>
@@ -447,7 +447,7 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
               </p>
               <ul className="list-disc pl-5 space-y-1 text-slate-600">
                 <li><strong>Integrated Logistics Carrier Networks:</strong> Delhivery, Blue Dart, DTDC, and Shadowfax receive shipping manifests solely to execute transit and doorstep parcel delivery.</li>
-                <li><strong>Payment Aggregators:</strong> Cashfree Payments India Pvt. Ltd. (RBI regulated) to process online payments and instant bank settlements.</li>
+                <li><strong>Payment Aggregators:</strong> PhonePe Payment Services Pvt. Ltd. (RBI regulated) to process online payments and instant bank settlements.</li>
                 <li><strong>Public PII Redaction:</strong> On all public-facing tracking pages and SMS notifications, phone numbers are masked (e.g. <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-800 font-bold">+91 ******1234</span>) to protect consumer privacy against unauthorized scraping.</li>
               </ul>
             </div>

@@ -119,6 +119,14 @@ export default function PublicPayView({ shipmentId, onPaymentComplete }) {
     setError('');
 
     try {
+      // 1. If PhonePe Gateway payment link exists, redirect directly to PhonePe Checkout!
+      if (shipment?.paymentLink) {
+        setWaitingForGateway(true);
+        window.location.href = shipment.paymentLink;
+        startPollingStatus(shipment.shipmentId);
+        return;
+      }
+
       if (paymentMethod === 'upi') {
         try {
           const youpiRes = await shipmentAPI.generateYoupiLink(shipment.shipmentId, {

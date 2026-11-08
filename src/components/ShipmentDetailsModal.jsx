@@ -919,7 +919,21 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
             </div>
           </div>
 
-
+          {/* Direct Ship Again / Re-book Action Button (Top Header) */}
+          {isSupplier && onRepeatShipment && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose?.();
+                onRepeatShipment(currentShipment);
+              }}
+              className="mr-8 px-3.5 py-2 bg-gradient-to-r from-[#1E56E3] to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm shadow-blue-500/20 transition flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              title="Duplicate & ship another parcel to this recipient"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Ship Again</span>
+            </button>
+          )}
         </div>
 
         {loading ? (
@@ -1015,8 +1029,11 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               const isCod = currentShipment.paymentMode === 'cod';
               const codFee = isCod ? (Number(currentShipment.codHandlingCharge) || 30) : 0;
               const isOffline = currentShipment.paymentMode === 'paid_offline';
+              const codFeePaidUpfront = Boolean(currentShipment.codFeePaid);
               const serviceFee = 0; // Platform fee removed — service is free
-              const calculatedNet = Math.max(0, parseFloat((grossAmt - (isOffline ? 0 : courierFee) - codFee).toFixed(2)));
+              const courierDeduction = (isOffline || (isCod && codFeePaidUpfront)) ? 0 : courierFee;
+              const codDeduction = (isCod && !codFeePaidUpfront) ? codFee : 0;
+              const calculatedNet = Math.max(0, parseFloat((grossAmt - courierDeduction - codDeduction).toFixed(2)));
               const netPayout = (currentShipment.netSellerPayout > 0 && currentShipment.netSellerPayout <= grossAmt)
                 ? currentShipment.netSellerPayout
                 : (currentShipment.principalDisbursedToSupplier > 0 && currentShipment.principalDisbursedToSupplier <= grossAmt)
@@ -1055,12 +1072,20 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                         <Truck className="w-3.5 h-3.5 text-rose-500" />
                         <span>Courier Freight ({currentShipment.pickupCarrier || 'Delhivery'})</span>
                       </span>
-                      <span className="font-mono font-bold text-rose-600">-₹{courierFee}</span>
+                      {codFeePaidUpfront ? (
+                        <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[11px]">Paid Upfront (₹{courierFee})</span>
+                      ) : (
+                        <span className="font-mono font-bold text-rose-600">-₹{courierFee}</span>
+                      )}
                     </div>
                     {isCod && (
                       <div className="flex justify-between items-center text-slate-600">
                         <span>COD Collection Fee</span>
-                        <span className="font-mono font-bold text-amber-600">-₹{codFee}</span>
+                        {codFeePaidUpfront ? (
+                          <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[11px]">Paid Upfront (₹{codFee})</span>
+                        ) : (
+                          <span className="font-mono font-bold text-amber-600">-₹{codFee}</span>
+                        )}
                       </div>
                     )}
                     <div className="flex justify-between items-center text-emerald-700 bg-emerald-50/60 -mx-3 px-3 py-1 rounded-lg">
@@ -3106,6 +3131,22 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   >
                     <XCircle className="w-4 h-4 text-slate-500" />
                     <span>Cancel</span>
+                  </button>
+                )}
+
+                {/* Supplier Ship Again Action Button */}
+                {isSupplier && onRepeatShipment && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose?.();
+                      onRepeatShipment(currentShipment);
+                    }}
+                    className="py-3 px-3.5 bg-gradient-to-r from-[#1E56E3] to-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 transition flex items-center gap-1.5 shrink-0 active:scale-95 cursor-pointer"
+                    title="Duplicate this shipment with the same recipient details"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    <span>Ship Again</span>
                   </button>
                 )}
 
