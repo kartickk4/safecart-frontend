@@ -338,9 +338,6 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       };
 
       const res = await shipmentAPI.createShipment(payload);
-      if (res.data?.paymentLink) {
-        window.open(res.data.paymentLink, '_blank');
-      }
       onCreated(res.data);
       onClose();
     } catch (err) {
@@ -631,26 +628,32 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <button
                     type="button"
                     onClick={() => setPaymentMode('prepaid')}
-                    className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       paymentMode === 'prepaid'
                         ? 'bg-blue-50 border-[#1E56E3] text-[#1E56E3] shadow-xs ring-1 ring-[#1E56E3]'
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <CreditCard className="w-4 h-4 text-[#1E56E3]" />
-                    <span>PhonePe Online</span>
+                    <div className="flex items-center gap-1.5">
+                      <CreditCard className="w-4 h-4 text-[#1E56E3]" />
+                      <span>Prepaid (Advance)</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-normal">Buyer paid directly</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setPaymentMode('cod')}
-                    className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       paymentMode === 'cod'
                         ? 'bg-amber-50 border-amber-600 text-amber-800 shadow-xs ring-1 ring-amber-500'
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <Truck className="w-4 h-4 text-amber-600" />
-                    <span>COD (Cash)</span>
+                    <div className="flex items-center gap-1.5">
+                      <Truck className="w-4 h-4 text-amber-600" />
+                      <span>Cash on Delivery</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-normal">Courier collects cash</span>
                   </button>
                 </div>
               </div>
