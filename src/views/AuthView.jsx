@@ -360,23 +360,19 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
         try {
           await window.googleConfirmationResult.confirm(googleOtpCode);
         } catch (fbErr) {
-          if (!(googleDebugOtp && googleOtpCode.trim() === googleDebugOtp.trim())) {
-            setGoogleProfileErr('Invalid or expired SMS verification code.');
+          setGoogleProfileErr('Invalid or expired SMS verification code.');
             setGoogleProfileLoading(false);
             return;
-          }
         }
       } else {
         try {
           await authAPI.verifyOtp({ phone: formattedPhone, code: googleOtpCode, purpose: 'verification' });
         } catch (vErr) {
-          if (googleDebugOtp && googleOtpCode.trim() === googleDebugOtp.trim()) {
-            // Match allowed debug code
-          } else {
+          
             setGoogleProfileErr(vErr.response?.data?.error || 'Invalid or expired SMS verification code.');
             setGoogleProfileLoading(false);
             return;
-          }
+          
         }
       }
 
@@ -436,11 +432,9 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
         try {
           await window.confirmationResult.confirm(signUpOtp);
         } catch (fbErr) {
-          if (!(signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim())) {
-            setSignUpOtpErr('Invalid verification code entered or code expired.');
+          setSignUpOtpErr('Invalid verification code entered or code expired.');
             setSignUpOtpLoading(false);
             return;
-          }
         }
       }
 
@@ -449,13 +443,11 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
         const verifyRes = await authAPI.verifyOtp({ phone: formattedPhone, code: signUpOtp });
         otpVerifyData = verifyRes.data;
       } catch (vErr) {
-        if (signUpDebugOtp && signUpOtp.trim() === signUpDebugOtp.trim()) {
-          // Debug OTP fallback — continue without backend verify data
-        } else {
+        
           setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP code.');
           setSignUpOtpLoading(false);
           return;
-        }
+        
       }
 
       // 3. Use the token from verifyOtp (user already created by backend)
@@ -1230,14 +1222,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
               </p>
             </div>
 
-            {signUpDebugOtp && (
-              <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 text-xs text-[#1E56E3] font-semibold flex items-center justify-between">
-                <span>💡 Verification Code:</span>
-                <span className="font-mono font-black text-slate-900 text-sm tracking-wider bg-white px-3 py-1 rounded-xl border border-blue-200 shadow-xs">
-                  {signUpDebugOtp}
-                </span>
-              </div>
-            )}
+            
 
             {signUpOtpErr && (
               <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold">{signUpOtpErr}</div>
@@ -1826,14 +1811,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
                   </p>
                 </div>
 
-                {googleDebugOtp && (
-                  <div className="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-100 text-xs text-[#1E56E3] font-semibold flex items-center justify-between">
-                    <span>💡 Verification Code:</span>
-                    <span className="font-mono font-black text-slate-900 text-sm tracking-wider bg-white px-3 py-1 rounded-xl border border-blue-200 shadow-xs">
-                      {googleDebugOtp}
-                    </span>
-                  </div>
-                )}
+                
 
                 {googleProfileErr && (
                   <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">

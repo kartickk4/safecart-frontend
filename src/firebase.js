@@ -1,14 +1,14 @@
-﻿import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDb0HRSlYk7mX9y_R8hnUHeeaz9kvHz238",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "securekaro-f19f2.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "securekaro-f19f2",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "securekaro-f19f2.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "928059002317",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:928059002317:web:81299b824052a8043f0884",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-RNSCQ7E4VS"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ""
 };
 
 if (!import.meta.env.VITE_FIREBASE_API_KEY && import.meta.env.PROD) {

@@ -345,26 +345,10 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
     try {
       if (securityMethod === 'phone') {
         const normalized = (targetPhone || '').toString().trim();
-        try {
-          await authAPI.verifyOtp({ phone: normalized, code: trimmedOtp, role: isSupplier ? 'Supplier' : 'Receiver', purpose: 'verification' });
-        } catch (verifyErr) {
-          if (securityDebugOtp && trimmedOtp === securityDebugOtp.trim()) {
-            // debug code match fallback
-          } else {
-            throw verifyErr;
-          }
-        }
+        await authAPI.verifyOtp({ phone: normalized, code: trimmedOtp, role: isSupplier ? 'Supplier' : 'Receiver', purpose: 'verification' });
       } else {
         const normalized = (targetEmail || '').toLowerCase().trim();
-        try {
-          await authAPI.verifyEmailOtp(normalized, trimmedOtp, isSupplier ? 'Supplier' : 'Receiver');
-        } catch (verifyErr) {
-          if (securityDebugOtp && trimmedOtp === securityDebugOtp.trim()) {
-            // debug code match fallback
-          } else {
-            throw verifyErr;
-          }
-        }
+        await authAPI.verifyEmailOtp(normalized, trimmedOtp, isSupplier ? 'Supplier' : 'Receiver');
       }
 
       // Verification passed!
@@ -1168,24 +1152,6 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
               </span>
             </div>
 
-            {/* Debug Code Alert */}
-            {securityDebugOtp && (
-              <div className="p-3 rounded-2xl bg-blue-50 border border-blue-100 text-xs text-[#1E56E3] font-semibold flex items-center justify-between">
-                <span>💡 Verification OTP:</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-black text-slate-900 text-sm tracking-wider bg-white px-3 py-1 rounded-xl border border-blue-200">
-                    {securityDebugOtp}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setSecurityOtpInput(securityDebugOtp)}
-                    className="text-[10px] font-bold text-blue-600 hover:underline cursor-pointer"
-                  >
-                    Auto-Fill
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* Error / Success Alerts */}
             {securityError && (
