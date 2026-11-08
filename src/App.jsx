@@ -736,8 +736,7 @@ export default function App() {
     user?.role === 'Admin' ||
     user?.role === 'super_admin' ||
     user?.isAdmin === true ||
-    user?.adminRole ||
-    user?.email?.toLowerCase().trim() === 'kartickdas6289@gmail.com'
+    user?.adminRole
   );
 
   if (currentTab === 'admin') {

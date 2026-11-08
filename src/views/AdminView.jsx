@@ -148,8 +148,7 @@ export default function AdminView({ user, onBackToApp }) {
     user.isAdmin === true ||
     user.role === 'Admin' ||
     user.role === 'super_admin' ||
-    user.adminRole ||
-    user.email === 'kartickdas6289@gmail.com'
+    user.adminRole
   );
 
   const showToast = (message, type = 'success') => {
@@ -1899,7 +1898,7 @@ export default function AdminView({ user, onBackToApp }) {
                               </button>
 
                               {/* Delete User */}
-                              {u.email !== 'kartickdas6289@gmail.com' && (
+                              {u._id !== user?._id && u.role !== 'super_admin' && (
                                 <button
                                   onClick={() => {
                                     setSelectedUser(u);

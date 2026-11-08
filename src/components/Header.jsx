@@ -10,8 +10,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
     user.isAdmin === true ||
     user.role === 'Admin' ||
     user.role === 'super_admin' ||
-    user.adminRole ||
-    user.email === 'kartickdas6289@gmail.com'
+    user.adminRole
   );
 
   const currentDate = new Date().toLocaleDateString('en-IN', {
