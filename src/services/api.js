@@ -195,8 +195,8 @@ export const authAPI = {
   verifyEmailOtp: (email, code, role) => api.post('/auth/verify-email-otp', typeof email === 'object' ? { ...email, role: email.role || role || 'Receiver' } : { email, code, role: role || 'Receiver' }),
   forgotPassword: (email, role) => api.post('/auth/forgot-password', typeof email === 'object' ? { ...email, role: email.role || role || 'Receiver' } : { email, role: role || 'Receiver' }),
   resetPassword: (email, code, newPassword, role) => api.post('/auth/reset-password', typeof email === 'object' ? { ...email, role: email.role || role || 'Receiver' } : { email, code, newPassword, role: role || 'Receiver' }),
-  googleLogin: (data) => api.post('/auth/google', data),
-  googleAuth: (data) => api.post('/auth/google', data),
+  googleLogin: (data, config = {}) => api.post('/auth/google', data, { timeout: 90000, ...config }),
+  googleAuth: (data, config = {}) => api.post('/auth/google', data, { timeout: 90000, ...config }),
   switchRole: (targetRole) => { clearApiCache(); return api.post('/auth/switch-role', { targetRole }); },
 };
 

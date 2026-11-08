@@ -77,6 +77,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
   const [googleProfileErr, setGoogleProfileErr] = useState('');
   const [googleProfileLoading, setGoogleProfileLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleLoadingMsg, setGoogleLoadingMsg] = useState('');
   const [googleResendTimer, setGoogleResendTimer] = useState(0);
   const [googleResending, setGoogleResending] = useState(false);
   const [googleResendMsg, setGoogleResendMsg] = useState('');
@@ -195,44 +196,41 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
   const handleGoogleSignIn = async () => {
     setError('');
     setGoogleLoading(true);
+    setGoogleLoadingMsg('Connecting with Google...');
     let googleUser = null;
-
-    // Safety timeout in case popup hangs or is hidden behind browser window
-    const popupTimeout = setTimeout(() => {
-      setGoogleLoading(false);
-      setError('Google Sign-In took too long or the popup was closed. Please try again.');
-    }, 35000);
+    let wakeTimer = null;
 
     try {
       try {
         const result = await signInWithPopup(auth, googleProvider);
         googleUser = result.user;
       } catch (fbErr) {
-        clearTimeout(popupTimeout);
         console.warn('Firebase Popup error:', fbErr);
         if (fbErr.code === 'auth/popup-closed-by-user' || fbErr.code === 'auth/cancelled-popup-request') {
-          // User intentionally closed the popup
+          // User intentionally closed or cancelled popup - do not treat as error
           setGoogleLoading(false);
+          setGoogleLoadingMsg('');
           return;
         }
         if (fbErr.code === 'auth/popup-blocked') {
           setError('Google Sign-In popup was blocked by your browser. Please allow popups for this site and try again.');
           setGoogleLoading(false);
+          setGoogleLoadingMsg('');
           return;
         }
         if (fbErr.code === 'auth/unauthorized-domain') {
           setError('Domain unauthorized in Firebase. Please add this domain to Firebase Console > Authentication > Settings > Authorized Domains.');
           setGoogleLoading(false);
+          setGoogleLoadingMsg('');
           return;
         }
-        // In local development or if Firebase keys are blocked/network fails, fallback for seamless testing
         if (window.location.hostname === 'localhost' && (fbErr.code === 'auth/configuration-not-found' || fbErr.code === 'auth/api-key-not-valid' || fbErr.code === 'auth/network-request-failed')) {
           console.warn('Local dev fallback: using demo Google user');
           googleUser = {
             email: email || 'google.user@example.com',
             displayName: fullName || 'Rahul Sharma',
             photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-            uid: `google-user-${Date.now()}`
+            uid: 'google-user-' + Date.now()
           };
         } else {
           throw new Error(fbErr.message || 'Google sign-in popup failed. Please try again.');
@@ -243,13 +241,35 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
         throw new Error('No email found from Google account.');
       }
 
-      const res = await authAPI.googleAuth({
+      setGoogleLoadingMsg('Connecting to SecureKaro server...');
+      wakeTimer = setTimeout(() => {
+        setGoogleLoadingMsg('Waking up secure server, please wait a moment...');
+      }, 3500);
+
+      const authPayload = {
         email: googleUser.email,
         fullName: googleUser.displayName || googleUser.email.split('@')[0],
         avatarUrl: googleUser.photoURL || '',
         googleId: googleUser.uid,
         referralCode: referralCode || undefined
-      });
+      };
+
+      // Auto-retry once if server was sleeping (Render cold-start)
+      let res;
+      try {
+        res = await authAPI.googleAuth(authPayload);
+      } catch (firstErr) {
+        if (firstErr.code === 'ECONNABORTED' || firstErr.code === 'ERR_NETWORK' || !firstErr.response) {
+          console.warn('Backend waking up, retrying Google auth...', firstErr.message);
+          setGoogleLoadingMsg('Server is starting up, finalizing sign-in...');
+          await new Promise((r) => setTimeout(r, 1500));
+          res = await authAPI.googleAuth(authPayload);
+        } else {
+          throw firstErr;
+        }
+      }
+
+      if (wakeTimer) clearTimeout(wakeTimer);
 
       const { accessToken, user, isNewUser } = res.data;
       if (accessToken) {
@@ -259,6 +279,7 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
       setPendingUser(user);
 
       setGoogleLoading(false);
+      setGoogleLoadingMsg('');
 
       // If user is newly created or missing phone number, prompt for SMS OTP Phone Verification
       if (isNewUser || !user.phone) {
@@ -270,7 +291,6 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
         setGoogleProfileErr('');
         setShowGoogleFirstTimeModal(true);
       } else if (isNewUser || !user.role || user.role === 'User') {
-        // Existing user without a role — show role identification
         triggerRoleModal(user, isNewUser);
       } else {
         onAuthSuccess(user, isNewUser);
@@ -279,8 +299,9 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
       console.error('Google Sign-In Error:', err);
       setError(err.response?.data?.error || err.message || 'Google Sign-In failed. Please try again.');
     } finally {
-      clearTimeout(popupTimeout);
+      if (wakeTimer) clearTimeout(wakeTimer);
       setGoogleLoading(false);
+      setGoogleLoadingMsg('');
     }
   };
 
@@ -951,17 +972,23 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={loading || googleLoading}
-              className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-3 disabled:opacity-50"
+              className="w-full py-3 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2.5 disabled:opacity-75 cursor-pointer"
             >
               {googleLoading ? (
-                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin shrink-0"></div>
+                  <span className="text-xs text-blue-700 font-semibold">{googleLoadingMsg || 'Connecting with Google...'}</span>
+                </div>
               ) : (
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
+                <>
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </>
               )}
             </button>
 

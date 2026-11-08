@@ -181,6 +181,10 @@ export default function App() {
 
 
   useEffect(() => {
+    // Silent backend pre-warming ping on initial mount to wake up Render container if sleeping
+    if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+      fetch('https://safecart-backend-1.onrender.com/health', { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+    }
     checkAuth();
   }, []);
 
