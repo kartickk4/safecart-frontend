@@ -20,6 +20,7 @@ const ReferralView = lazyWithRetry(() => import('./views/ReferralView'));
 const PublicQrConfirmView = lazyWithRetry(() => import('./views/PublicQrConfirmView'));
 const AdminView = lazyWithRetry(() => import('./views/AdminView'));
 const ROISavingsCalculatorView = lazyWithRetry(() => import('./views/ROISavingsCalculatorView'));
+const RateCalculatorWidget = lazyWithRetry(() => import('./components/RateCalculatorWidget'));
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -647,7 +648,7 @@ export default function App() {
                 currentTab === 'roi-calculator' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Calculator
+              Rate Calculator
             </button>
             <button
               onClick={() => setCurrentTab('support')}
