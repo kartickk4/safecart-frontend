@@ -9,7 +9,7 @@ import { shipmentAPI, profileAPI, agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
 import RechargeModal from './RechargeModal';
 
-export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData }) {
+export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData, onUpdateUser }) {
   // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection
   const [modalStep, setModalStep] = useState(1);
   const [showRechargeModal, setShowRechargeModal] = useState(false);
@@ -173,8 +173,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   }, [carrierQuotes, carrierTab, carrierSearch, carrierSort, onlyCloseToWeight, parcelWeight]);
 
   // Phone verification state for first shipment
-  const isUserPhoneVerified = Boolean(user?.phone && user?.isPhoneVerified);
-  const [phoneVerified, setPhoneVerified] = useState(isUserPhoneVerified);
+  const hasExistingProfilePhone = Boolean(user?.phone && String(user.phone).trim().replace(/\D/g, '').length >= 10);
+  const [phoneVerified, setPhoneVerified] = useState(hasExistingProfilePhone);
   const [verifyPhone, setVerifyPhone] = useState(user?.phone || '');
   const [phoneOtp, setPhoneOtp] = useState('');
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
@@ -212,9 +212,13 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       const res = await profileAPI.verifyPhoneOtp(verifyPhone, phoneOtp);
       setPhoneVerified(true);
       setPhoneSuccessMsg('Phone verified successfully!');
+      const updatedPhone = res.data?.phone || verifyPhone;
       if (user) {
-        user.phone = res.data?.phone || verifyPhone;
+        user.phone = updatedPhone;
         user.isPhoneVerified = true;
+      }
+      if (onUpdateUser) {
+        onUpdateUser(res.data?.user || { ...user, phone: updatedPhone, isPhoneVerified: true });
       }
     } catch (err) {
       setPhoneError(err.response?.data?.error || 'Invalid or expired OTP. Please try again.');
@@ -231,7 +235,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     setError('');
 
     if (!phoneVerified) {
-      setError('Mobile Number Verification Required! Suppliers must verify their mobile phone number via OTP before creating their first shipment.');
+      setError('Mobile Number Required: Please enter and verify your mobile number to link it to your profile and proceed with booking.');
       return;
     }
     if (!receiverName.trim()) {

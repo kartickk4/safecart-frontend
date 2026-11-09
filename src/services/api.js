@@ -207,8 +207,8 @@ export const profileAPI = {
   upgradeProPlan: () => api.post('/profile/upgrade-pro'),
   getReferralStats: () => api.get('/profile/referral-stats'),
   applyReferralCode: (code) => api.post('/profile/apply-referral', { code }),
-  sendPhoneOtp: (phone) => api.post('/profile/send-phone-otp', { phone }),
-  verifyPhoneOtp: (phone, otp) => api.post('/profile/verify-phone-otp', { phone, otp }),
+  sendPhoneOtp: (phone, isOldPhoneStep = false) => api.post('/profile/send-phone-otp', { phone, isOldPhoneStep }),
+  verifyPhoneOtp: (phone, otp, isOldPhoneStep = false) => api.post('/profile/verify-phone-otp', { phone, otp, isOldPhoneStep }),
   deleteAccount: (reason) => api.delete('/profile/account', { data: { reason } }),
 };
 

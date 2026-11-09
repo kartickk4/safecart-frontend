@@ -2,17 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, Store, Package, X, Sparkles, ChevronRight, MapPin, Truck, AlertCircle, Gift, Tag } from 'lucide-react';
 import { authAPI, profileAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
-import RateCalculatorWidget from '../components/RateCalculatorWidget';
-import { Calculator, Zap } from 'lucide-react';
 const LegalComplianceView = React.lazy(() => import('./LegalComplianceView'));
 import { auth, RecaptchaVerifier, signInWithPhoneNumber, googleProvider, signInWithPopup } from '../firebase';
 
 
 export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [activeAuthTab, setActiveAuthTab] = useState('auth'); // 'auth' | 'calculator'
-  const [lockedRateInfo, setLockedRateInfo] = useState(null);
-  const [desktopHeroTab, setDesktopHeroTab] = useState('calculator'); // 'calculator' | 'features'
   // Role is determined AFTER signup via the Role Identification Modal
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [roleModalStep, setRoleModalStep] = useState(1); // 1: who are you? 2: platform type? 3: pickup address?
@@ -710,77 +705,37 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             E-commerce Shipping Label & Parcel Tracking Tool with COD Protection. Multi-courier booking, live tracking, and digital doorstep sign-off protection.
           </p>
 
-          <div className="flex items-center gap-2 mb-4">
-            <button
-              type="button"
-              onClick={() => setDesktopHeroTab('calculator')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition cursor-pointer flex items-center gap-1.5 ${
-                desktopHeroTab === 'calculator' 
-                  ? 'bg-white text-[#1E56E3] shadow-md' 
-                  : 'bg-white/15 text-white hover:bg-white/20'
-              }`}
-            >
-              <Calculator className="w-3.5 h-3.5" />
-              Live Rate Calculator
-            </button>
-            <button
-              type="button"
-              onClick={() => setDesktopHeroTab('features')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition cursor-pointer flex items-center gap-1.5 ${
-                desktopHeroTab === 'features' 
-                  ? 'bg-white text-[#1E56E3] shadow-md' 
-                  : 'bg-white/15 text-white hover:bg-white/20'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Why SecureKaro
-            </button>
+          <div className="space-y-4">
+            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-4 transition hover:bg-white/15">
+              <div className="p-2.5 rounded-xl bg-white/15 text-white">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm text-white">Delivery Protection Suite</h3>
+                <p className="text-xs text-blue-100 mt-0.5">Shipments and COD values are safeguarded until verified delivery confirmation.</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-4 transition hover:bg-white/15">
+              <div className="p-2.5 rounded-xl bg-white/15 text-white">
+                <Box className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm text-white">Multi-Carrier Live Tracking</h3>
+                <p className="text-xs text-blue-100 mt-0.5">Integrate Delhivery, Blue Dart, DTDC, and Shadowfax with live parcel milestones.</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-4 transition hover:bg-white/15">
+              <div className="p-2.5 rounded-xl bg-white/15 text-white">
+                <RefreshCw className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm text-white">Prompt Courier Settlement</h3>
+                <p className="text-xs text-blue-100 mt-0.5">Fast automated settlement within 24 hours of confirmed delivery sign-off.</p>
+              </div>
+            </div>
           </div>
-
-          {desktopHeroTab === 'calculator' ? (
-            <div className="text-slate-900 animate-in fade-in duration-200">
-              <RateCalculatorWidget
-                variant="embedded"
-                onGetStarted={(data) => {
-                  setLockedRateInfo(data);
-                  setIsSignUp(true);
-                  setActiveAuthTab('auth');
-                }}
-              />
-            </div>
-          ) : (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-4 transition hover:bg-white/15">
-                <div className="p-2.5 rounded-xl bg-white/15 text-white">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-white">Delivery Protection Suite</h3>
-                  <p className="text-xs text-blue-100 mt-0.5">Shipments and COD values are safeguarded until verified delivery confirmation.</p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-4 transition hover:bg-white/15">
-                <div className="p-2.5 rounded-xl bg-white/15 text-white">
-                  <Box className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-white">Multi-Carrier Live Tracking</h3>
-                  <p className="text-xs text-blue-100 mt-0.5">Integrate Delhivery, Blue Dart, DTDC, and Shadowfax with live parcel milestones.</p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-4 transition hover:bg-white/15">
-                <div className="p-2.5 rounded-xl bg-white/15 text-white">
-                  <RefreshCw className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-white">Prompt Courier Settlement</h3>
-                  <p className="text-xs text-blue-100 mt-0.5">Fast automated settlement within 24 hours of confirmed delivery sign-off.</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Footer info */}
@@ -823,58 +778,21 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1 text-sm font-medium text-slate-600 w-full sm:w-auto">
               <button
                 type="button"
-                onClick={() => { setActiveAuthTab('auth'); setIsSignUp(false); }}
-                className={`flex-1 sm:flex-initial px-3.5 py-2 rounded-lg transition-all text-center text-xs font-bold ${activeAuthTab === 'auth' && !isSignUp ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'}`}
+                onClick={() => setIsSignUp(false)}
+                className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg transition-all text-center text-xs font-bold ${!isSignUp ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'}`}
               >
                 Sign In
               </button>
               <button
                 type="button"
-                onClick={() => { setActiveAuthTab('auth'); setIsSignUp(true); }}
-                className={`flex-1 sm:flex-initial px-3.5 py-2 rounded-lg transition-all text-center text-xs font-bold ${activeAuthTab === 'auth' && isSignUp ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'}`}
+                onClick={() => setIsSignUp(true)}
+                className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg transition-all text-center text-xs font-bold ${isSignUp ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'}`}
               >
                 Create Account
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveAuthTab('calculator')}
-                className={`flex-1 sm:flex-initial px-3 py-2 rounded-lg transition-all text-center text-xs font-bold flex items-center justify-center gap-1 ${activeAuthTab === 'calculator' ? 'bg-[#1E56E3] text-white shadow-sm' : 'text-blue-700 hover:text-blue-900 bg-blue-50'}`}
-              >
-                <Zap className="w-3.5 h-3.5" />
-                <span>Rate Calculator</span>
               </button>
             </div>
           </div>
 
-          {/* LOCKED RATE BANNER IF SELECTED FROM CALCULATOR */}
-          {lockedRateInfo && (
-            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-center justify-between gap-3 text-xs animate-in zoom-in-95 duration-200">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                <div>
-                  <p className="font-extrabold text-emerald-900">₹{lockedRateInfo.carrier?.totalRate || lockedRateInfo.carrier?.freightCharge || 34} Rate Selected!</p>
-                  <p className="text-[11px] text-emerald-700">Complete signup to book at this rate + ₹50 welcome discount applied.</p>
-                </div>
-              </div>
-              <span className="font-mono font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-[11px]">
-                {lockedRateInfo.fromPincode} → {lockedRateInfo.toPincode}
-              </span>
-            </div>
-          )}
-
-          {activeAuthTab === 'calculator' ? (
-            <div className="animate-in fade-in duration-200">
-              <RateCalculatorWidget
-                variant="embedded"
-                onGetStarted={(data) => {
-                  setLockedRateInfo(data);
-                  setIsSignUp(true);
-                  setActiveAuthTab('auth');
-                }}
-              />
-            </div>
-          ) : (
-            <>
           {/* Heading */}
           <div>
             <h2 className="text-2xl font-bold text-slate-900">
@@ -1165,8 +1083,6 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
               Products & Pricing (INR ₹)
             </a>
           </div>
-          </>
-          )}
         </div>
       </div>
 

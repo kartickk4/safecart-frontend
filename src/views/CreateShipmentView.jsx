@@ -243,8 +243,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   }, [paymentMode, senderPincode, receiverPincode, parcelWeight, parcelLength, parcelWidth, parcelHeight, carrierSlug, amount, user?.walletBalance]);
 
   // Phone verification state for mandatory first shipment phone check
-  const isUserPhoneVerified = Boolean(user?.phone && user?.isPhoneVerified);
-  const [phoneVerified, setPhoneVerified] = useState(isUserPhoneVerified);
+  const hasExistingProfilePhone = Boolean(user?.phone && String(user.phone).trim().replace(/\D/g, '').length >= 10);
+  const [phoneVerified, setPhoneVerified] = useState(hasExistingProfilePhone);
   const [verifyPhone, setVerifyPhone] = useState(user?.phone || '');
   const [phoneOtp, setPhoneOtp] = useState('');
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
@@ -293,9 +293,13 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       const res = await profileAPI.verifyPhoneOtp(verifyPhone, phoneOtp);
       setPhoneVerified(true);
       setPhoneSuccessMsg('Phone verified successfully! You can now book your shipment.');
+      const updatedPhone = res.data?.phone || verifyPhone;
       if (user) {
-        user.phone = res.data?.phone || verifyPhone;
+        user.phone = updatedPhone;
         user.isPhoneVerified = true;
+      }
+      if (onUpdateUser) {
+        onUpdateUser(res.data?.user || { ...user, phone: updatedPhone, isPhoneVerified: true });
       }
     } catch (err) {
       setPhoneError(err.response?.data?.error || 'Invalid or expired OTP. Please try again.');
@@ -405,7 +409,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
     // Mandatory check: Supplier phone must be verified before first shipment
     if (!phoneVerified) {
-      setError('Mobile Number Verification Required! Suppliers must verify their mobile phone number via OTP before creating their first shipment.');
+      setError('Mobile Number Required: Please enter and verify your mobile number above to link it to your profile and proceed with booking.');
       setPhoneError('Please verify your mobile number here before proceeding with your shipment booking.');
       return;
     }
@@ -626,13 +630,13 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-extrabold text-blue-950 text-sm">Mandatory Mobile Verification Required</h3>
+                        <h3 className="font-extrabold text-blue-950 text-sm">Mobile Phone Number Required</h3>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-200/80 text-blue-800">
-                          FIRST SHIPMENT
+                          PROFILE SETUP
                         </span>
                       </div>
                       <p className="text-xs text-blue-800 mt-1">
-                        To guarantee courier pickup coordination and prevent fraud, suppliers must verify their mobile phone number via 6-digit OTP before booking their first shipment.
+                        Your account does not have a registered mobile number yet. Please verify your 10-digit mobile number via OTP to receive courier pickup updates and book your shipment.
                       </p>
                     </div>
                   </div>

@@ -18,6 +18,18 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [newPhone, setNewPhone] = useState(user?.phone || '');
   const [phoneSaving, setPhoneSaving] = useState(false);
+
+  // Dual-OTP Phone Update Modal State (Old Phone OTP -> New Phone OTP)
+  const [showPhoneChangeModal, setShowPhoneChangeModal] = useState(false);
+  const [phoneChangeStep, setPhoneChangeStep] = useState(1); // 1 = old phone verify, 2 = new phone verify
+  const [oldPhoneOtp, setOldPhoneOtp] = useState('');
+  const [newPhoneInput, setNewPhoneInput] = useState('');
+  const [newPhoneOtp, setNewPhoneOtp] = useState('');
+  const [newPhoneOtpSent, setNewPhoneOtpSent] = useState(false);
+  const [phoneChangeLoading, setPhoneChangeLoading] = useState(false);
+  const [phoneChangeError, setPhoneChangeError] = useState('');
+  const [phoneChangeSuccess, setPhoneChangeSuccess] = useState('');
+  const [phoneResendTimer, setPhoneResendTimer] = useState(0);
   
   const [addressData, setAddressData] = useState({
     street: user?.pickupAddress?.street || user?.address || '',
@@ -205,6 +217,127 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
       setMsg(err.response?.data?.error || 'Failed to update email address.');
     } finally {
       setEmailSaving(false);
+    }
+  };
+
+    const startPhoneResendTimer = () => {
+    setPhoneResendTimer(60);
+    const interval = setInterval(() => {
+      setPhoneResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const openPhoneChangeModal = () => {
+    setPhoneChangeError('');
+    setPhoneChangeSuccess('');
+    setOldPhoneOtp('');
+    setNewPhoneInput('');
+    setNewPhoneOtp('');
+    setNewPhoneOtpSent(false);
+
+    const hasOld = Boolean((user?.phone || phone) && String(user?.phone || phone).trim().replace(/\D/g, '').length >= 10);
+    if (hasOld) {
+      setPhoneChangeStep(1);
+      setShowPhoneChangeModal(true);
+      sendOldPhoneOtp();
+    } else {
+      setPhoneChangeStep(2);
+      setShowPhoneChangeModal(true);
+    }
+  };
+
+  const sendOldPhoneOtp = async () => {
+    setPhoneChangeLoading(true);
+    setPhoneChangeError('');
+    setPhoneChangeSuccess('');
+    try {
+      const currentNumber = user?.phone || phone;
+      const res = await profileAPI.sendPhoneOtp(currentNumber, true);
+      setPhoneChangeSuccess(res.data?.message || 'Verification OTP sent to your currently registered mobile.');
+      startPhoneResendTimer();
+    } catch (err) {
+      setPhoneChangeError(err.response?.data?.error || 'Failed to send OTP to current mobile number.');
+    } finally {
+      setPhoneChangeLoading(false);
+    }
+  };
+
+  const handleVerifyOldPhoneOtp = async (e) => {
+    if (e) e.preventDefault();
+    if (!oldPhoneOtp || oldPhoneOtp.length < 4) {
+      setPhoneChangeError('Please enter the 6-digit OTP code sent to your current mobile.');
+      return;
+    }
+    setPhoneChangeLoading(true);
+    setPhoneChangeError('');
+    try {
+      const currentNumber = user?.phone || phone;
+      const res = await profileAPI.verifyPhoneOtp(currentNumber, oldPhoneOtp, true);
+      setPhoneChangeSuccess('Current phone verified! Now enter your new mobile number.');
+      setPhoneChangeStep(2);
+      setPhoneResendTimer(0);
+    } catch (err) {
+      setPhoneChangeError(err.response?.data?.error || 'Invalid or expired OTP code for current mobile.');
+    } finally {
+      setPhoneChangeLoading(false);
+    }
+  };
+
+  const handleSendNewPhoneOtp = async () => {
+    const clean = newPhoneInput.trim().replace(/\D/g, '');
+    if (clean.length < 10) {
+      setPhoneChangeError('Please enter a valid 10-digit new mobile number.');
+      return;
+    }
+    setPhoneChangeLoading(true);
+    setPhoneChangeError('');
+    setPhoneChangeSuccess('');
+    try {
+      const res = await profileAPI.sendPhoneOtp(newPhoneInput, false);
+      setNewPhoneOtpSent(true);
+      setPhoneChangeSuccess(res.data?.message || `Verification OTP sent to new mobile +91 ${clean}.`);
+      startPhoneResendTimer();
+    } catch (err) {
+      setPhoneChangeError(err.response?.data?.error || 'Failed to send OTP to new mobile number.');
+    } finally {
+      setPhoneChangeLoading(false);
+    }
+  };
+
+  const handleVerifyNewPhoneOtp = async (e) => {
+    if (e) e.preventDefault();
+    if (!newPhoneOtp || newPhoneOtp.length < 4) {
+      setPhoneChangeError('Please enter the 6-digit OTP sent to your new mobile number.');
+      return;
+    }
+    setPhoneChangeLoading(true);
+    setPhoneChangeError('');
+    try {
+      const res = await profileAPI.verifyPhoneOtp(newPhoneInput, newPhoneOtp, false);
+      const updatedPhone = res.data?.phone || newPhoneInput;
+      setPhone(updatedPhone);
+      setNewPhone(updatedPhone);
+      setIsPhoneVerifiedState(true);
+      if (user) {
+        user.phone = updatedPhone;
+        user.isPhoneVerified = true;
+      }
+      if (onUpdateUser) {
+        onUpdateUser(res.data?.user || { ...user, phone: updatedPhone, isPhoneVerified: true });
+      }
+      setShowPhoneChangeModal(false);
+      setMsg('Mobile number verified and updated successfully!');
+      setIsError(false);
+    } catch (err) {
+      setPhoneChangeError(err.response?.data?.error || 'Invalid or expired OTP for new mobile number.');
+    } finally {
+      setPhoneChangeLoading(false);
     }
   };
 
@@ -485,78 +618,39 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                   ) : (
                     <button
                       type="button"
-                      onClick={() => openSecurityModal('phone', phone)}
+                      onClick={openPhoneChangeModal}
                       className="text-[10px] font-extrabold text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1 cursor-pointer transition"
-                      title="Click to verify mobile number"
+                      title="Click to verify mobile number via OTP"
                     >
                       <AlertTriangle className="w-3 h-3 text-amber-600" />
                       <span>Unverified · Verify Now</span>
                     </button>
                   )}
                 </div>
-                {!isEditingPhone ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewPhone(phone);
-                      setIsEditingPhone(true);
-                    }}
-                    className="text-[11px] font-bold text-[#1E56E3] hover:underline inline-flex items-center gap-1 cursor-pointer"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                    <span>Edit</span>
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      disabled={phoneSaving}
-                      onClick={handleSavePhone}
-                      className="text-[10px] font-extrabold text-white bg-blue-600 hover:bg-blue-700 px-2 py-0.5 rounded-md transition inline-flex items-center gap-1 cursor-pointer shadow-2xs"
-                    >
-                      {phoneSaving ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                      <span>Save</span>
-                    </button>
-                    <button
-                      type="button"
-                      disabled={phoneSaving}
-                      onClick={() => {
-                        setNewPhone(phone);
-                        setIsEditingPhone(false);
-                      }}
-                      className="text-[10px] font-bold text-slate-500 hover:text-slate-800 transition cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={openPhoneChangeModal}
+                  className="text-[11px] font-bold text-[#1E56E3] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  <span>{phone ? 'Change Number' : 'Add Phone'}</span>
+                </button>
               </div>
               <div className="flex gap-2">
-                {isEditingPhone ? (
-                  <input
-                    type="tel"
-                    value={newPhone}
-                    onChange={(e) => setNewPhone(e.target.value)}
-                    placeholder="Enter 10-digit mobile number"
-                    className="flex-1 px-4 py-2.5 bg-white border-2 border-blue-500 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                  />
-                ) : (
-                  <input
-                    type="tel"
-                    disabled
-                    value={phone || 'No phone set'}
-                    className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium cursor-not-allowed"
-                  />
-                )}
-                {!isEditingPhone && !isPhoneVerifiedState && (
-                  <button
-                    type="button"
-                    onClick={() => openSecurityModal('phone_verification', phone)}
-                    className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shrink-0 cursor-pointer shadow-2xs"
-                  >
-                    Verify via OTP
-                  </button>
-                )}
+                <input
+                  type="tel"
+                  disabled
+                  value={phone || 'No phone set'}
+                  className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-bold cursor-not-allowed font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={openPhoneChangeModal}
+                  className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shrink-0 cursor-pointer shadow-2xs flex items-center gap-1.5"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>{phone ? 'Update (Dual OTP)' : 'Verify Phone'}</span>
+                </button>
               </div>
             </div>
 
@@ -1071,6 +1165,205 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
       )}
 
       {/* ── UNIFIED SECURITY VERIFICATION MODAL ── */}
+      {/* ── DUAL-OTP PHONE NUMBER CHANGE MODAL ── */}
+      {showPhoneChangeModal && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto select-none"
+          onClick={() => setShowPhoneChangeModal(false)}
+        >
+          <div 
+            className="bg-white p-6 sm:p-8 rounded-3xl max-w-md w-full border border-slate-100 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200 relative my-auto max-h-[92vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Close Button */}
+            <button
+              type="button"
+              onClick={() => setShowPhoneChangeModal(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition cursor-pointer"
+              title="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center mx-auto font-bold shadow-sm">
+              <Phone className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-wider mb-1">
+                {phoneChangeStep === 1 ? 'Step 1 of 2 · Verify Old Number' : 'Step 2 of 2 · Verify New Number'}
+              </div>
+              <h3 className="font-extrabold text-slate-900 text-lg">
+                {phoneChangeStep === 1 ? 'Verify Current Phone Number' : 'Enter & Verify New Mobile Number'}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {phoneChangeStep === 1
+                  ? `For your security, enter the 6-digit OTP code sent to your registered mobile number (${phone ? '+91 ••••••' + phone.slice(-4) : 'registered mobile'}).`
+                  : 'Enter your new 10-digit mobile number and verify via OTP code to commit the change to your profile.'}
+              </p>
+            </div>
+
+            {/* Error / Success Alerts */}
+            {phoneChangeError && (
+              <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold text-center border border-rose-200 flex items-center justify-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{phoneChangeError}</span>
+              </div>
+            )}
+            {phoneChangeSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-semibold text-center border border-emerald-200 flex items-center justify-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>{phoneChangeSuccess}</span>
+              </div>
+            )}
+
+            {/* STEP 1: VERIFY OLD PHONE */}
+            {phoneChangeStep === 1 && (
+              <form onSubmit={handleVerifyOldPhoneOtp} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 text-center mb-1">
+                    Enter 6-Digit OTP Sent to Current Number
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength="6"
+                    placeholder="------"
+                    value={oldPhoneOtp}
+                    onChange={(e) => setOldPhoneOtp(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl font-mono font-black text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-500 font-medium px-1">
+                  <span>
+                    Didn't get code?{' '}
+                    {phoneResendTimer > 0 && (
+                      <span className="font-mono font-bold text-slate-700">({phoneResendTimer}s)</span>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={phoneResendTimer > 0 || phoneChangeLoading}
+                    onClick={sendOldPhoneOtp}
+                    className={`font-bold transition cursor-pointer ${
+                      phoneResendTimer > 0 || phoneChangeLoading
+                        ? 'text-slate-300 cursor-not-allowed'
+                        : 'text-[#1E56E3] hover:underline'
+                    }`}
+                  >
+                    Resend Code
+                  </button>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={phoneChangeLoading || oldPhoneOtp.length < 4}
+                  className="w-full py-3 px-4 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  {phoneChangeLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  <span>Verify Current Phone & Continue →</span>
+                </button>
+              </form>
+            )}
+
+            {/* STEP 2: ENTER & VERIFY NEW PHONE */}
+            {phoneChangeStep === 2 && (
+              <form onSubmit={handleVerifyNewPhoneOtp} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    New Mobile Number (10 Digits) *
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 font-mono">+91</span>
+                      <input
+                        type="tel"
+                        value={newPhoneInput}
+                        onChange={(e) => setNewPhoneInput(e.target.value.replace(/\D/g, ''))}
+                        placeholder="9876543210"
+                        maxLength="10"
+                        disabled={newPhoneOtpSent}
+                        className="w-full pl-12 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono disabled:opacity-75"
+                      />
+                    </div>
+                    {!newPhoneOtpSent ? (
+                      <button
+                        type="button"
+                        onClick={handleSendNewPhoneOtp}
+                        disabled={phoneChangeLoading || newPhoneInput.length < 10}
+                        className="py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+                      >
+                        {phoneChangeLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                        <span>Send OTP</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { setNewPhoneOtpSent(false); setNewPhoneOtp(''); }}
+                        className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition cursor-pointer shrink-0"
+                      >
+                        Change
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {newPhoneOtpSent && (
+                  <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 text-center mb-1">
+                        Enter 6-Digit OTP Sent to +91 {newPhoneInput}
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        maxLength="6"
+                        placeholder="------"
+                        value={newPhoneOtp}
+                        onChange={(e) => setNewPhoneOtp(e.target.value.replace(/\D/g, ''))}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl font-mono font-black text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-slate-500 font-medium px-1">
+                      <span>
+                        Didn't get code?{' '}
+                        {phoneResendTimer > 0 && (
+                          <span className="font-mono font-bold text-slate-700">({phoneResendTimer}s)</span>
+                        )}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={phoneResendTimer > 0 || phoneChangeLoading}
+                        onClick={handleSendNewPhoneOtp}
+                        className={`font-bold transition cursor-pointer ${
+                          phoneResendTimer > 0 || phoneChangeLoading
+                            ? 'text-slate-300 cursor-not-allowed'
+                            : 'text-[#1E56E3] hover:underline'
+                        }`}
+                      >
+                        Resend OTP
+                      </button>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={phoneChangeLoading || newPhoneOtp.length < 4}
+                      className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-500/20 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                    >
+                      {phoneChangeLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      <span>Verify & Update Mobile Number</span>
+                    </button>
+                  </div>
+                )}
+              </form>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
+
       {showSecurityModal && typeof document !== 'undefined' && createPortal(
         <div 
           className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto select-none"

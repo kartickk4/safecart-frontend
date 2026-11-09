@@ -26,6 +26,17 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
         items: [
           { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
           {
+            id: 'rate-calculator',
+            label: 'Rate Calculator',
+            icon: Calculator,
+            color: 'text-[#1E56E3]',
+            customBadge: (
+              <span className="bg-blue-100 text-[#1E56E3] text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shadow-2xs">
+                LIVE
+              </span>
+            )
+          },
+          {
             id: 'roi-calculator',
             label: 'Savings Calculator',
             icon: Calculator,

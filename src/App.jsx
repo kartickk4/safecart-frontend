@@ -620,7 +620,7 @@ export default function App() {
   const isLegalTab = ['legal', 'contact', 'terms', 'privacy', 'shipping', 'refunds', 'services'].includes(currentTab);
 
   // Allow unauthenticated visitors to view standalone public pages (legal, support, roi-calculator)
-  if (!user && (isLegalTab || currentTab === 'support' || currentTab === 'roi-calculator')) {
+  if (!user && (isLegalTab || currentTab === 'support' || currentTab === 'roi-calculator' || currentTab === 'rate-calculator')) {
     return (
       <div className="min-h-screen bg-[#F7F9FC] flex flex-col text-slate-800">
         <header className="bg-white border-b border-slate-200/80 px-4 md:px-8 py-3.5 sticky top-0 z-30 shadow-xs flex items-center justify-between">
@@ -686,6 +686,15 @@ export default function App() {
               />
             )}
             {currentTab === 'support' && <SupportView />}
+            {currentTab === 'rate-calculator' && (
+              <div className="max-w-4xl mx-auto py-6">
+                <RateCalculatorWidget
+                  onSelectCarrier={() => setCurrentTab('dashboard')}
+                  onGetStarted={() => setCurrentTab('dashboard')}
+                />
+              </div>
+            )}
+
             {currentTab === 'roi-calculator' && (
               <ROISavingsCalculatorView
                 onNavigateCreateShipment={() => {
@@ -823,6 +832,20 @@ export default function App() {
               openNewShipmentModal={() => setCurrentTab('create-shipment')}
               onNavigateRefer={() => setCurrentTab('refer')}
             />
+          )}
+
+          {/* VIEW: RATE CALCULATOR */}
+          {currentTab === 'rate-calculator' && (
+            <div className="max-w-5xl mx-auto px-4 py-4 sm:py-6">
+              <RateCalculatorWidget
+                onSelectCarrier={() => {
+                  if (isSupplier) setCurrentTab('create-shipment');
+                }}
+                onGetStarted={() => {
+                  if (isSupplier) setCurrentTab('create-shipment');
+                }}
+              />
+            </div>
           )}
 
           {/* VIEW: ROI & TRANSPARENCY SAVINGS CALCULATOR */}
@@ -994,6 +1017,7 @@ export default function App() {
         {isCreateModalOpen && (
           <CreateShipmentModal
             user={user}
+            onUpdateUser={(updated) => setUser(prev => ({ ...prev, ...updated }))}
             isOpen={isCreateModalOpen}
             initialData={repeatShipmentData}
             onClose={() => {
