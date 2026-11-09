@@ -3,7 +3,7 @@ import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRigh
 import { authAPI, profileAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
 import RateCalculatorWidget from '../components/RateCalculatorWidget';
-import { Calculator } from 'lucide-react';
+import { Calculator, Zap } from 'lucide-react';
 const LegalComplianceView = React.lazy(() => import('./LegalComplianceView'));
 import { auth, RecaptchaVerifier, signInWithPhoneNumber, googleProvider, signInWithPopup } from '../firebase';
 
