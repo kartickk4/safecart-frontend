@@ -251,7 +251,6 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [phoneLoading, setPhoneLoading] = useState(false);
   const [phoneError, setPhoneError] = useState('');
   const [phoneSuccessMsg, setPhoneSuccessMsg] = useState('');
-  const [phoneDebugOtp, setPhoneDebugOtp] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
 
   const handleSendPhoneOtp = async () => {
@@ -266,9 +265,6 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       const res = await profileAPI.sendPhoneOtp(verifyPhone);
       setPhoneOtpSent(true);
       setPhoneSuccessMsg(res.data?.message || 'Verification code sent via SMS.');
-      if (res.data?.debugOtp) {
-        setPhoneDebugOtp(res.data.debugOtp);
-      }
       setResendTimer(60);
       const timer = setInterval(() => {
         setResendTimer((prev) => {
@@ -310,32 +306,6 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
   // Success state
   const [createdData, setCreatedData] = useState(null);
-  const [simulatingBuyerPay, setSimulatingBuyerPay] = useState(false);
-  const [simulationNotice, setSimulationNotice] = useState('');
-  const [simulateCarrier, setSimulateCarrier] = useState('delhivery'); // 'delhivery' | 'bluedart'
-
-  const handleSimulateBuyerPayment = async () => {
-    if (!createdData?.shipmentId) return;
-    setSimulatingBuyerPay(true);
-    setSimulationNotice('');
-    try {
-      const res = await shipmentAPI.publicPay(createdData.shipmentId, {
-        gateway: 'simulated_buyer_pay',
-        carrierSlug: simulateCarrier,
-        transactionRef: `SIM_PAY_${Date.now()}`
-      });
-      if (res.data && res.data.shipment) {
-        setCreatedData(res.data.shipment);
-        const bookedCarrier = res.data.shipment.pickupCarrier || (res.data.shipment.carrierSlug === 'bluedart' ? 'Blue Dart Express' : 'Delhivery Express');
-        setSimulationNotice(`🎉 Buyer payment received! Carrier Booked: ${bookedCarrier} (AWB: ${res.data.shipment.awbCode}). Pickup scheduled.`);
-      }
-    } catch (err) {
-      console.error('Simulate payment error:', err);
-      setSimulationNotice('Payment simulation failed: ' + (err.response?.data?.error || err.message));
-    } finally {
-      setSimulatingBuyerPay(false);
-    }
-  };
 
   const fetchQuotesForRoute = async (preferredSlug = null, targetMode = paymentMode) => {
     if (!senderPincode || senderPincode.length < 6) {
@@ -752,19 +722,6 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                           {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP'}
                         </button>
                       </div>
-
-                      {phoneDebugOtp && (
-                        <div className="p-2 rounded-lg bg-blue-100/70 border border-blue-200 text-blue-900 text-[11px] font-mono flex items-center justify-between">
-                          <span>Demo / Test OTP Code: <strong>{phoneDebugOtp}</strong></span>
-                          <button
-                            type="button"
-                            onClick={() => setPhoneOtp(phoneDebugOtp)}
-                            className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded font-bold hover:bg-blue-700 cursor-pointer"
-                          >
-                            Auto-fill
-                          </button>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
@@ -2319,13 +2276,6 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 )}
               </div>
             </div>
-
-            {simulationNotice && (
-              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold text-left max-w-md mx-auto flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>{simulationNotice}</span>
-              </div>
-            )}
 
             {/* Receipt Card */}
             <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 text-left max-w-md mx-auto space-y-3.5">

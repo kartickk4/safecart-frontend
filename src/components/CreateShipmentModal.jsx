@@ -181,7 +181,6 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   const [phoneLoading, setPhoneLoading] = useState(false);
   const [phoneError, setPhoneError] = useState('');
   const [phoneSuccessMsg, setPhoneSuccessMsg] = useState('');
-  const [phoneDebugOtp, setPhoneDebugOtp] = useState('');
 
   const handleSendPhoneOtp = async () => {
     if (!verifyPhone) {
@@ -195,9 +194,6 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       const res = await profileAPI.sendPhoneOtp(verifyPhone);
       setPhoneOtpSent(true);
       setPhoneSuccessMsg(res.data?.message || 'Verification code sent via SMS.');
-      if (res.data?.debugOtp) {
-        setPhoneDebugOtp(res.data.debugOtp);
-      }
     } catch (err) {
       setPhoneError(err.response?.data?.error || 'Failed to send OTP. Please check your phone number.');
     } finally {
@@ -509,9 +505,6 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                         {phoneLoading ? 'Verifying...' : 'Verify OTP'}
                       </button>
                     </div>
-                    {phoneDebugOtp && (
-                      <p className="text-[10px] text-blue-600 font-mono">Demo OTP: {phoneDebugOtp}</p>
-                    )}
                   </div>
                 )}
               </div>

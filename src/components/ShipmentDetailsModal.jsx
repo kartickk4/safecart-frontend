@@ -3,7 +3,6 @@ import { X, ShieldCheck, ShieldAlert, Gavel, Box, CheckCircle2, AlertTriangle, E
 import { QRCodeSVG } from 'qrcode.react';
 import { shipmentAPI, profileAPI, claimAPI } from '../services/api';
 import { uploadImageToHost } from '../services/imageUpload';
-import PaymentCheckoutModal from './PaymentCheckoutModal';
 import QrScannerModal from './QrScannerModal';
 import CameraCaptureModal from './CameraCaptureModal';
 
@@ -17,7 +16,6 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
   const [showAssignCourierModal, setShowAssignCourierModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedPickupToken, setCopiedPickupToken] = useState(false);
-  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
 
   // ── Mandatory Refund Bank Details State ──────────────────────
   const [refundBankDetails, setRefundBankDetails] = useState({
@@ -3535,18 +3533,6 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
           </div>
         )}
       </div>
-
-      <PaymentCheckoutModal
-        shipmentId={currentShipment.shipmentId}
-        amount={currentShipment.amount || 3420}
-        receiverName={currentShipment.receiverName || 'Kartick Das'}
-        isOpen={showCheckoutModal}
-        onClose={() => setShowCheckoutModal(false)}
-        onPaymentSuccess={() => {
-          onRefresh();
-          fetchFullDetails();
-        }}
-      />
 
       {/* 2-OPTION CONFIRMATION MODAL */}
       {showConfirmChoiceModal && (

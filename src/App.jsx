@@ -13,7 +13,6 @@ const ProfileView = lazyWithRetry(() => import('./views/ProfileView'));
 const SupportView = lazyWithRetry(() => import('./views/SupportView'));
 const LegalComplianceView = lazyWithRetry(() => import('./views/LegalComplianceView'));
 const ReturnOrdersView = lazyWithRetry(() => import('./views/ReturnOrdersView'));
-const PublicPayView = lazyWithRetry(() => import('./views/PublicPayView'));
 const PublicTrackingView = lazyWithRetry(() => import('./views/PublicTrackingView'));
 const AIAgentView = lazyWithRetry(() => import('./views/AIAgentView'));
 const PhotoReviewResponseView = lazyWithRetry(() => import('./views/PhotoReviewResponseView'));
@@ -573,12 +572,7 @@ export default function App() {
   if (publicPayShipmentId) {
     return (
       <Suspense fallback={<ViewLoadingFallback />}>
-        <PublicPayView
-          shipmentId={publicPayShipmentId}
-          onPaymentComplete={(paidShipment) => {
-            console.log('Public payment successfully processed for:', paidShipment?.shipmentId);
-          }}
-        />
+        <PublicTrackingView trackingId={publicPayShipmentId} />
       </Suspense>
     );
   }
