@@ -634,8 +634,8 @@ export default function RateCalculatorWidget({
             >
               <span>
                 {isReverseMode
-                  ? `Book Return at ₹${lowestRate} with ${selectedQuote ? getCleanCarrierName(selectedQuote) : 'Cheapest Carrier'}`
-                  : `Ship at ₹${lowestRate} with ${selectedQuote ? getCleanCarrierName(selectedQuote) : 'Cheapest Carrier'}`}
+                  ? `Book Return at ₹${selectedQuote ? (selectedQuote.exactRate || selectedQuote.price) : lowestRate} with ${selectedQuote ? getCleanCarrierName(selectedQuote) : 'Cheapest Carrier'}`
+                  : `Ship at ₹${selectedQuote ? (selectedQuote.exactRate || selectedQuote.price) : lowestRate} with ${selectedQuote ? getCleanCarrierName(selectedQuote) : 'Cheapest Carrier'}`}
               </span>
               <ArrowRight className="w-4 h-4" />
             </button>
