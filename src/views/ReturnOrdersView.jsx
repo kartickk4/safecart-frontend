@@ -81,9 +81,13 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
   const openAssignModal = (order, mode = 'return') => {
     setAssignModalOrder(order);
     setAssignMode(mode);
-    setCarrierSlug('delhivery');
-    setCarrierName('Delhivery Express');
-    const prefix = mode === 'replacement' ? 'REP-DEL' : 'REV-DEL';
+    const initialSlug = mode === 'replacement' ? 'xpressbees' : 'shadowfax';
+    const initialName = mode === 'replacement' ? 'Xpressbees Express' : 'Shadowfax Reverse 360 (Doorstep QC)';
+    setCarrierSlug(initialSlug);
+    setCarrierName(initialName);
+    const prefix = mode === 'replacement' 
+      ? `REP-${initialSlug.toUpperCase().substring(0, 3)}` 
+      : `REV-${initialSlug.toUpperCase().substring(0, 3)}`;
     setTrackingId(`${prefix}-${Math.floor(10000000 + Math.random() * 90000000)}`);
     setCourierNotes('');
   };
@@ -91,16 +95,18 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
   const handleCarrierChange = (slug) => {
     setCarrierSlug(slug);
     const names = {
-      delhivery: 'Delhivery Express',
-      bluedart: 'BlueDart Logistics',
+      shadowfax: assignMode === 'replacement' ? 'Shadowfax Express' : 'Shadowfax Reverse 360 (Doorstep QC)',
+      delhivery: assignMode === 'replacement' ? 'Delhivery Express' : 'Delhivery Reverse QC Express',
+      xpressbees: assignMode === 'replacement' ? 'Xpressbees Express' : 'Xpressbees Reverse Logistics',
+      ekart: assignMode === 'replacement' ? 'Ekart Logistics' : 'Ekart Doorstep Return & QC',
+      ecom_express: 'Ecom Express Reverse Pickup',
+      bluedart: assignMode === 'replacement' ? 'BlueDart Logistics' : 'BlueDart Apex Reverse',
       dtdc: 'DTDC Express',
-      ekart: 'Ekart Logistics',
-      shadowfax: 'Shadowfax',
       rapido: 'Rapido Parcel / Express',
       indiapost: 'India Post Speed Post',
       other: 'Custom Courier Partner'
     };
-    setCarrierName(names[slug] || 'Delhivery Express');
+    setCarrierName(names[slug] || 'Shadowfax Reverse 360');
     const prefix = assignMode === 'replacement' 
       ? `REP-${slug.toUpperCase().substring(0, 3)}` 
       : `REV-${slug.toUpperCase().substring(0, 3)}`;
@@ -1253,32 +1259,60 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
                 </button>
               </div>
 
-              {/* Courier Partner Selector */}
+              {/* Courier Partner Selector — dynamically customized for Reverse Pickup vs Forward Replacement */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Select Courier Partner
-                </label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {[
-                    { slug: 'delhivery', name: 'Delhivery' },
-                    { slug: 'rapido', name: 'Rapido' },
-                    { slug: 'bluedart', name: 'BlueDart' },
-                    { slug: 'dtdc', name: 'DTDC' },
-                    { slug: 'ekart', name: 'Ekart' },
-                    { slug: 'shadowfax', name: 'Shadowfax' },
-                    { slug: 'indiapost', name: 'India Post' },
-                  ].map(c => (
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700">
+                    {assignMode === 'replacement' ? 'Select Forward Replacement Courier' : 'Select Reverse Pickup & QC Courier'}
+                  </label>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                    {assignMode === 'replacement' ? 'Cheapest Outbound First' : 'Lowest Reverse Rate Suggested'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {(assignMode === 'replacement' ? [
+                    { slug: 'xpressbees', name: 'Xpressbees Air', rate: '₹39.60', isCheapest: true },
+                    { slug: 'ekart', name: 'Ekart Logistics', rate: '₹39.60' },
+                    { slug: 'delhivery', name: 'Delhivery Surface', rate: '₹44.56' },
+                    { slug: 'shadowfax', name: 'Shadowfax 360', rate: '₹46.54' },
+                    { slug: 'dtdc', name: 'DTDC Priority', rate: '₹69.00' },
+                    { slug: 'bluedart', name: 'BlueDart Air', rate: '₹85.00' },
+                  ] : [
+                    { slug: 'shadowfax', name: 'Shadowfax Reverse 360', rate: '₹50.72', isCheapest: true, note: '₹0 RTO' },
+                    { slug: 'xpressbees', name: 'Xpressbees Reverse', rate: '₹62.60', note: 'Doorstep QC' },
+                    { slug: 'ekart', name: 'Ekart Doorstep QC', rate: '₹62.60', note: 'Doorstep QC' },
+                    { slug: 'delhivery', name: 'Delhivery Reverse QC', rate: '₹67.56', note: 'Tag Verification' },
+                    { slug: 'ecom_express', name: 'Ecom Express Reverse', rate: '₹76.50', note: 'Reverse Bag' },
+                    { slug: 'bluedart', name: 'BlueDart Apex Reverse', rate: '₹116.28', note: 'High Value' },
+                  ]).map(c => (
                     <button
                       key={c.slug}
                       type="button"
                       onClick={() => handleCarrierChange(c.slug)}
-                      className={`p-2 rounded-xl border text-xs font-bold transition flex items-center justify-center cursor-pointer ${
+                      className={`p-2.5 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer relative ${
                         carrierSlug === c.slug
-                          ? 'bg-indigo-600 border-transparent text-white shadow-xs'
+                          ? 'bg-indigo-600 border-transparent text-white shadow-sm ring-2 ring-indigo-400/40'
                           : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                       }`}
                     >
-                      <span>{c.name}</span>
+                      {c.isCheapest && (
+                        <span className={`absolute -top-2 right-2 text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase shadow-xs ${
+                          carrierSlug === c.slug ? 'bg-amber-400 text-indigo-950 font-black' : 'bg-emerald-600 text-white font-extrabold'
+                        }`}>
+                          Lowest Rate
+                        </span>
+                      )}
+                      <span className="truncate w-full text-center">{c.name}</span>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className={`text-[11px] font-mono font-extrabold ${carrierSlug === c.slug ? 'text-amber-300' : 'text-emerald-700'}`}>
+                          {c.rate}
+                        </span>
+                        {c.note && (
+                          <span className={`text-[9px] px-1 rounded ${carrierSlug === c.slug ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-100 text-slate-500'}`}>
+                            {c.note}
+                          </span>
+                        )}
+                      </div>
                     </button>
                   ))}
                 </div>
