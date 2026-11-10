@@ -18,6 +18,26 @@ const POPULAR_DESTINATIONS = [
 
 const WEIGHT_PRESETS = [0.5, 1.0, 2.0, 3.0, 5.0];
 
+const getQuoteFinalRate = (q) => {
+  if (!q) return 0;
+  const rate = Number(q.exactRate ?? q.price ?? q.totalRate ?? q.totalCodRate ?? q.freightCharge ?? 0);
+  return isNaN(rate) ? 0 : rate;
+};
+
+const getCleanCarrierName = (q) => {
+  const raw = (q.carrierName || q.name || q.courierPartner || q.slug || '').toLowerCase();
+  if (raw.includes('shadowfax')) return 'Shadowfax 360 Express';
+  if (raw.includes('delhivery')) return 'Delhivery Express';
+  if (raw.includes('xpressbees')) return q.mode === 'Air' ? 'Xpressbees Air Express' : 'Xpressbees Surface';
+  if (raw.includes('ekart')) return 'Ekart Logistics';
+  if (raw.includes('bluedart') || raw.includes('blue dart')) return 'BlueDart Express';
+  if (raw.includes('dtdc')) return 'DTDC Priority Express';
+  if (raw.includes('rapido')) return 'Rapido Parcel Express';
+  if (raw.includes('ecom')) return 'Ecom Express';
+  if (raw.includes('post')) return 'India Post Speed Post';
+  return q.carrierName || q.name || q.courierPartner || 'Express Courier';
+};
+
 export default function RateCalculatorWidget({ 
   onSelectCarrier, 
   onGetStarted,
@@ -83,11 +103,9 @@ export default function RateCalculatorWidget({
       const res = await agentAPI.getCarrierRates(payload);
       const carrierQuotes = res.data?.quotes || [];
       
-      // Sort quotes ascending by total charge
+      // Sort quotes ascending by true total charge (exactRate / price)
       const sorted = [...carrierQuotes].sort((a, b) => {
-        const rateA = Number(paymentMode === 'cod' ? (a.totalCodRate || a.totalRate || a.freightCharge) : (a.totalRate || a.freightCharge || a.rate || 999));
-        const rateB = Number(paymentMode === 'cod' ? (b.totalCodRate || b.totalRate || b.freightCharge) : (b.totalRate || b.freightCharge || b.rate || 999));
-        return rateA - rateB;
+        return getQuoteFinalRate(a) - getQuoteFinalRate(b);
       });
 
       setQuotes(sorted);
@@ -110,11 +128,12 @@ export default function RateCalculatorWidget({
   }, []);
 
   const lowestRate = quotes.length > 0 
-    ? (paymentMode === 'cod' ? (quotes[0].totalCodRate || quotes[0].totalRate) : (quotes[0].totalRate || quotes[0].freightCharge || quotes[0].rate))
-    : 34;
+    ? getQuoteFinalRate(quotes[0]).toFixed(2)
+    : '34.00';
 
-  const standardCounterRate = Math.round(Number(lowestRate) * 2.2);
-  const potentialSavings = Math.max(30, standardCounterRate - Number(lowestRate));
+  const lowestRateNum = parseFloat(lowestRate) || 34;
+  const standardCounterRate = Math.round(lowestRateNum * 1.8);
+  const potentialSavings = Math.max(25, standardCounterRate - Math.round(lowestRateNum));
 
   return (
     <div className={`w-full bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden ${
@@ -414,11 +433,13 @@ export default function RateCalculatorWidget({
           <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
             {quotes.map((q, idx) => {
               const isCheapest = idx === 0;
-              const rateToDisplay = paymentMode === 'cod' 
-                ? (q.totalCodRate || q.totalRate || q.freightCharge) 
-                : (q.totalRate || q.freightCharge || q.rate);
-              const formattedRate = Number(rateToDisplay).toFixed(2);
+              const totalRate = getQuoteFinalRate(q);
+              const formattedRate = totalRate.toFixed(2);
+              const displayName = getCleanCarrierName(q);
               const isSelected = selectedQuote?.slug === q.slug;
+              const isCodMode = paymentMode === 'cod';
+              const codFee = Number(q.codCharge || 0);
+              const freightPart = isCodMode ? Math.max(0, totalRate - codFee) : totalRate;
 
               return (
                 <div
@@ -437,7 +458,7 @@ export default function RateCalculatorWidget({
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-xs font-black text-slate-900">
-                          {q.carrierName || q.name || q.slug}
+                          {displayName}
                         </span>
                         {isCheapest && (
                           <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded-md">
@@ -466,9 +487,15 @@ export default function RateCalculatorWidget({
                     <div className="text-sm sm:text-base font-black text-slate-900 font-mono">
                       ₹{formattedRate}
                     </div>
-                    <span className="text-[10px] text-slate-400 block -mt-0.5 font-medium">
-                      {paymentMode === 'cod' ? 'incl. COD fee' : 'all-inclusive'}
-                    </span>
+                    {isCodMode && codFee > 0 ? (
+                      <span className="text-[10px] text-amber-700 block -mt-0.5 font-bold">
+                        Freight ₹{freightPart.toFixed(0)} + COD ₹{codFee.toFixed(0)}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-emerald-600 block -mt-0.5 font-bold">
+                        All-inclusive (₹5 off)
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -500,7 +527,7 @@ export default function RateCalculatorWidget({
               }}
               className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white text-xs sm:text-sm font-extrabold rounded-2xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Ship at ₹{lowestRate} with {selectedQuote?.carrierName || selectedQuote?.name || 'Cheapest Carrier'}</span>
+              <span>Ship at ₹{lowestRate} with {selectedQuote ? getCleanCarrierName(selectedQuote) : 'Cheapest Carrier'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <p className="text-[11px] text-slate-500 text-center mt-2 flex items-center justify-center gap-1.5">
