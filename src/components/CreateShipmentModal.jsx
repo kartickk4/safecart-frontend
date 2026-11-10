@@ -549,7 +549,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 }}
                 className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   shipmentType === 'reverse'
-                    ? 'bg-purple-600 text-white shadow-xs'
+                    ? 'bg-white text-blue-600 shadow-xs border border-slate-200 ring-2 ring-blue-500/15'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -558,11 +558,11 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
             </div>
 
             {shipmentType === 'reverse' && (
-              <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 flex items-start gap-2.5 text-xs text-purple-900 mb-2">
+              <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 flex items-start gap-2.5 text-xs text-blue-900 mb-2">
                 <span className="text-sm">↩️</span>
                 <div>
                   <strong className="block font-bold">Reverse Logistics (Customer Return) Active</strong>
-                  <span className="text-[11px] text-purple-700">Courier executive will collect the parcel from customer doorstep with Doorstep QC verification and return to your seller hub.</span>
+                  <span className="text-[11px] text-blue-700">Courier executive will collect the parcel from customer doorstep with Doorstep QC verification and return to your seller hub.</span>
                 </div>
               </div>
             )}
@@ -677,12 +677,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
 
               {/* Payment Mode Selector */}
               {shipmentType === 'reverse' ? (
-                <div className="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
                   <div className="flex items-center gap-2">
                     <span className="text-base">↩️</span>
                     <div>
-                      <p className="text-xs font-bold text-purple-950">Reverse Freight (Seller Wallet Deducted)</p>
-                      <p className="text-[10px] text-purple-700">Customers do not pay for return pickups. Reverse freight is debited from your seller wallet balance upon booking.</p>
+                      <p className="text-xs font-bold text-blue-950">Reverse Freight (Seller Wallet Deducted)</p>
+                      <p className="text-[10px] text-blue-700">Customers do not pay for return pickups. Reverse freight is debited from your seller wallet balance upon booking.</p>
                     </div>
                   </div>
                 </div>

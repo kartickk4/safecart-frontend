@@ -672,37 +672,37 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 }}
                 className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
                   shipmentType === 'reverse'
-                    ? 'bg-purple-600 text-white shadow-sm ring-2 ring-purple-600/20'
+                    ? 'bg-white text-[#1E56E3] shadow-sm border border-slate-200/60 ring-2 ring-[#1E56E3]/15'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                 }`}
               >
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${shipmentType === 'reverse' ? 'bg-purple-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${shipmentType === 'reverse' ? 'bg-blue-50 text-[#1E56E3]' : 'bg-slate-200 text-slate-500'}`}>
                   <RotateCcw className="w-4 h-4" />
                 </div>
                 <div className="text-left">
                   <div className="flex items-center gap-1.5">
                     <span className="font-extrabold text-xs sm:text-sm">Reverse Pickup (RVP)</span>
-                    {shipmentType === 'reverse' && <span className="text-[9px] bg-purple-200 text-purple-900 font-black px-1.5 py-0.2 rounded-full">DOORSTEP QC</span>}
+                    {shipmentType === 'reverse' && <span className="text-[9px] bg-blue-100 text-[#1E56E3] font-black px-1.5 py-0.2 rounded-full">DOORSTEP QC</span>}
                   </div>
-                  <p className={`text-[10px] font-normal ${shipmentType === 'reverse' ? 'text-purple-200' : 'text-slate-400'}`}>Customer Doorstep → Seller Hub</p>
+                  <p className="text-[10px] text-slate-400 font-normal">Customer Doorstep → Seller Hub</p>
                 </div>
               </button>
             </div>
 
             {/* REVERSE LOGISTICS BANNER */}
             {shipmentType === 'reverse' && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50/60 to-purple-50 border border-purple-200/90 flex items-start gap-3.5 shadow-2xs">
-                <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-sm text-sm">
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200/90 flex items-start gap-3.5 shadow-2xs">
+                <div className="w-9 h-9 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center shrink-0 shadow-sm text-sm">
                   ↩️
                 </div>
                 <div className="text-xs space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-black text-purple-950">Reverse Logistics (Customer Return) Active</h4>
-                    <span className="text-[10px] font-extrabold bg-purple-200/80 text-purple-900 px-2 py-0.5 rounded-full">
+                    <h4 className="font-black text-slate-900">Reverse Logistics (Customer Return) Active</h4>
+                    <span className="text-[10px] font-extrabold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full border border-blue-200/80">
                       Doorstep QC Included
                     </span>
                   </div>
-                  <p className="text-purple-800 text-[11px] leading-relaxed">
+                  <p className="text-slate-600 text-[11px] leading-relaxed">
                     Courier executive will visit customer's doorstep, physically verify product condition, seal inside a tamper-evident flyer, and deliver back to your seller hub. Reverse freight is debited from your seller wallet balance.
                   </p>
                 </div>
@@ -827,7 +827,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
             {senderAddress ? (
               <div className="flex items-center justify-between text-xs py-2.5 px-4 bg-slate-50 border border-slate-200/90 rounded-2xl text-slate-600">
                 <div className="flex items-center gap-2.5 truncate">
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${shipmentType === 'reverse' ? 'bg-purple-100 text-purple-700' : 'bg-blue-50 text-[#1E56E3]'}`}>
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 bg-blue-50 text-[#1E56E3]">
                     <Building className="w-3.5 h-3.5" />
                   </div>
                   <span className="truncate text-xs">
@@ -1187,21 +1187,21 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     <label className="block text-xs font-bold text-slate-800">Reverse Logistics Freight Payment</label>
                     <p className="text-[11px] text-slate-500 -mt-0.5">Deducted from Seller Wallet (Zero Buyer Surcharges)</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-purple-50/80 border-2 border-purple-200 flex items-center justify-between shadow-2xs">
+                  <div className="p-4 rounded-2xl bg-blue-50/80 border-2 border-blue-200 flex items-center justify-between shadow-2xs">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-bold text-xl shrink-0 shadow-sm">
+                      <div className="w-11 h-11 rounded-2xl bg-[#1E56E3] text-white flex items-center justify-center font-bold text-xl shrink-0 shadow-sm">
                         ↩️
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-xs sm:text-sm font-black text-purple-950">
+                          <p className="text-xs sm:text-sm font-black text-blue-950">
                             Reverse Freight &amp; Doorstep QC (Deducted from Seller Wallet)
                           </p>
-                          <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-200 text-purple-900 border border-purple-300">
+                          <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
                             Seller Escrow Paid
                           </span>
                         </div>
-                        <p className="text-[11px] text-purple-800 mt-1 leading-relaxed">
+                        <p className="text-[11px] text-blue-800 mt-1 leading-relaxed">
                           Customers never pay courier charges on return pickups. The lowest reverse freight ({selectedQuote ? `₹${selectedQuote.price}` : 'calculated live'}) is deducted directly from your seller wallet balance upon pickup booking.
                         </p>
                       </div>
@@ -1508,21 +1508,21 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
             </>
           ) : (
             /* Reverse Mode: Doorstep Quality Check Card */
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50/70 to-purple-50 border border-purple-200/90 flex items-center justify-between shadow-2xs">
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50/70 border border-blue-200/90 flex items-center justify-between shadow-2xs">
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+                <div className="w-10 h-10 rounded-2xl bg-[#1E56E3] text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-xs sm:text-sm font-black text-purple-950">
+                    <p className="text-xs sm:text-sm font-black text-blue-950">
                       Doorstep QC &amp; Verification Protocol Included
                     </p>
-                    <span className="text-[10px] font-extrabold bg-purple-200/80 text-purple-900 px-2 py-0.5 rounded-full border border-purple-300">
+                    <span className="text-[10px] font-extrabold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full border border-blue-200">
                       Verified Return
                     </span>
                   </div>
-                  <p className="text-[11px] text-purple-800 mt-0.5 leading-relaxed">
+                  <p className="text-[11px] text-blue-800 mt-0.5 leading-relaxed">
                     Pickup courier executive will inspect the returned item at customer's doorstep, verify serial / seal integrity, and package it inside a tamper-evident flyer before dispatching to your seller warehouse.
                   </p>
                 </div>
@@ -1533,7 +1533,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
           <button
             type="submit"
             disabled={loading || fetchingQuotes}
-            className={`w-full py-4 px-6 ${shipmentType === 'reverse' ? 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/25' : 'bg-[#1E56E3] hover:bg-[#1649CC] shadow-blue-500/25'} text-white font-extrabold text-sm rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60`}
+            className="w-full py-4 px-6 bg-[#1E56E3] hover:bg-[#1649CC] shadow-blue-500/25 text-white font-extrabold text-sm rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
           >
             {loading || fetchingQuotes ? (
               <div className="flex items-center gap-2">
@@ -1593,7 +1593,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`w-8 h-8 rounded-xl ${shipmentType === 'reverse' ? 'bg-purple-600' : 'bg-blue-600'} text-white flex items-center justify-center shadow-xs`}>
+                          <span className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
                             {shipmentType === 'reverse' ? <RotateCcw className="w-4 h-4" /> : <Truck className="w-4 h-4" />}
                           </span>
                           <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
@@ -1638,7 +1638,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                           Weight: <strong className="text-slate-900 font-mono">{activeBillableWeight} kg</strong>
                         </span>
                         {shipmentType === 'reverse' ? (
-                          <span className="bg-purple-50 text-purple-800 border border-purple-200 px-2.5 py-1 rounded-lg font-bold">
+                          <span className="bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-lg font-bold">
                             ↩️ Reverse Pickup (Doorstep QC)
                           </span>
                         ) : paymentMode === 'cod' ? (
@@ -2482,12 +2482,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
             
             {/* Top Status Icon & Header */}
             <div className="space-y-3">
-              <div className={`w-16 h-16 rounded-3xl ${createdData.isReverse || createdData.shipmentType === 'reverse' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'} flex items-center justify-center mx-auto shadow-inner border`}>
+              <div className={`w-16 h-16 rounded-3xl ${createdData.isReverse || createdData.shipmentType === 'reverse' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'} flex items-center justify-center mx-auto shadow-inner border`}>
                 {createdData.isReverse || createdData.shipmentType === 'reverse' ? <RotateCcw className="w-9 h-9" /> : <CheckCircle2 className="w-9 h-9" />}
               </div>
               <div>
-                <span className={`${createdData.isReverse || createdData.shipmentType === 'reverse' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'} border text-xs font-bold px-3 py-1 rounded-full inline-flex items-center gap-1.5 mb-2`}>
-                  <span className={`w-2 h-2 rounded-full ${createdData.isReverse || createdData.shipmentType === 'reverse' ? 'bg-purple-500' : 'bg-emerald-500'}`}></span>
+                <span className={`${createdData.isReverse || createdData.shipmentType === 'reverse' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'} border text-xs font-bold px-3 py-1 rounded-full inline-flex items-center gap-1.5 mb-2`}>
+                  <span className={`w-2 h-2 rounded-full ${createdData.isReverse || createdData.shipmentType === 'reverse' ? 'bg-blue-500' : 'bg-emerald-500'}`}></span>
                   {createdData.isReverse || createdData.shipmentType === 'reverse' ? 'Reverse Pickup Booked & Scheduled' : 'Courier Shipment Booked & Pickup Scheduled'}
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
