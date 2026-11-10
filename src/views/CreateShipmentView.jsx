@@ -550,9 +550,18 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       const res = await shipmentAPI.createShipment(payload);
 
       setCreatedData(res.data);
-      setCashbackEarned(10); // ₹10 seller cashback credited per shipment
+      // Probabilistic Seller Cashback: 85% chance ₹7-8, 10% chance ₹8-9, 5% chance ₹10
+      const earned = res.data?.cashbackEarned !== undefined 
+        ? Number(res.data.cashbackEarned) 
+        : (() => {
+            const rand = Math.random() * 100;
+            if (rand < 85) return Math.random() < 0.5 ? 7 : 8;
+            if (rand < 95) return Math.random() < 0.5 ? 8 : 9;
+            return 10;
+          })();
+      setCashbackEarned(earned);
       if (res.data?.walletBalanceRemaining !== undefined && onUpdateUser) {
-        onUpdateUser({ ...user, walletBalance: (res.data.walletBalanceRemaining || 0) + 10 });
+        onUpdateUser({ ...user, walletBalance: Number(res.data.walletBalanceRemaining) });
       }
       setUserShipmentsCount(prev => prev + 1);
       if (onUpdateUser) {
