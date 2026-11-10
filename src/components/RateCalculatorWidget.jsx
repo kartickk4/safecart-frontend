@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Calculator, Truck, MapPin, Package, ArrowRight, Sparkles, 
   CheckCircle2, AlertCircle, RefreshCw, ChevronDown, ChevronUp, 
-  IndianRupee, ShieldCheck, Zap, Info, Clock, Star
+  IndianRupee, ShieldCheck, Zap, Info, Clock, Star, RotateCcw, ArrowLeftRight
 } from 'lucide-react';
 import { agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
@@ -26,16 +26,17 @@ const getQuoteFinalRate = (q) => {
 
 const getCleanCarrierName = (q) => {
   const raw = (q.carrierName || q.name || q.courierPartner || q.slug || '').toLowerCase();
-  if (raw.includes('shadowfax')) return 'Shadowfax 360 Express';
-  if (raw.includes('delhivery')) return 'Delhivery Express';
-  if (raw.includes('xpressbees')) return q.mode === 'Air' ? 'Xpressbees Air Express' : 'Xpressbees Surface';
-  if (raw.includes('ekart')) return 'Ekart Logistics';
-  if (raw.includes('bluedart') || raw.includes('blue dart')) return 'BlueDart Express';
+  const isRev = q.isReverse || raw.includes('reverse');
+  if (raw.includes('shadowfax')) return isRev ? 'Shadowfax Reverse 360 (QC)' : 'Shadowfax 360 Express';
+  if (raw.includes('delhivery')) return isRev ? 'Delhivery Reverse QC Express' : 'Delhivery Express';
+  if (raw.includes('xpressbees')) return isRev ? 'Xpressbees Reverse Logistics' : (q.mode === 'Air' ? 'Xpressbees Air Express' : 'Xpressbees Surface');
+  if (raw.includes('ekart')) return isRev ? 'Ekart Doorstep QC Return' : 'Ekart Logistics';
+  if (raw.includes('bluedart') || raw.includes('blue dart')) return isRev ? 'BlueDart Apex Reverse' : 'BlueDart Express';
   if (raw.includes('dtdc')) return 'DTDC Priority Express';
   if (raw.includes('rapido')) return 'Rapido Parcel Express';
-  if (raw.includes('ecom')) return 'Ecom Express';
+  if (raw.includes('ecom')) return isRev ? 'Ecom Express Reverse Pickup' : 'Ecom Express';
   if (raw.includes('post')) return 'India Post Speed Post';
-  return q.carrierName || q.name || q.courierPartner || 'Express Courier';
+  return q.carrierName || q.name || q.courierPartner || (isRev ? 'Reverse Courier' : 'Express Courier');
 };
 
 export default function RateCalculatorWidget({ 
@@ -45,6 +46,7 @@ export default function RateCalculatorWidget({
   defaultDelivery = '110001',
   variant = 'card' // 'card' | 'embedded' | 'standalone'
 }) {
+  const [freightType, setFreightType] = useState('forward'); // 'forward' | 'reverse'
   const [fromPincode, setFromPincode] = useState(defaultPickup);
   const [toPincode, setToPincode] = useState(defaultDelivery);
   const [weightKg, setWeightKg] = useState(0.5);
@@ -72,18 +74,21 @@ export default function RateCalculatorWidget({
     : 0;
   const chargeableWeight = Math.max(parseFloat(weightKg) || 0.5, volumetricWeight);
 
-  const handleCalculateRates = async (e) => {
+  const handleCalculateRates = async (e, forcedFreightType = null) => {
     if (e && e.preventDefault) e.preventDefault();
     setError('');
 
     if (!fromPincode || fromPincode.trim().length !== 6) {
-      setError('Please enter a valid 6-digit Pickup Pincode');
+      setError('Please enter a valid 6-digit Pincode');
       return;
     }
     if (!toPincode || toPincode.trim().length !== 6) {
-      setError('Please enter a valid 6-digit Delivery Pincode');
+      setError('Please enter a valid 6-digit Pincode');
       return;
     }
+
+    const currentFreight = forcedFreightType || freightType;
+    const isReverseFreight = currentFreight === 'reverse';
 
     setLoading(true);
     setHasCalculated(true);
@@ -93,11 +98,13 @@ export default function RateCalculatorWidget({
         fromPincode: fromPincode.trim(),
         toPincode: toPincode.trim(),
         weightKg: chargeableWeight,
-        paymentMode,
-        cod: paymentMode === 'cod' ? 1 : 0,
+        paymentMode: isReverseFreight ? 'prepaid' : paymentMode,
+        cod: isReverseFreight ? 0 : (paymentMode === 'cod' ? 1 : 0),
         declaredValue: parseFloat(declaredValue) || 1500,
         amount: parseFloat(declaredValue) || 1500,
-        dimensions: showDimensions ? { length: parseFloat(length), width: parseFloat(width), height: parseFloat(height) } : null
+        dimensions: showDimensions ? { length: parseFloat(length), width: parseFloat(width), height: parseFloat(height) } : null,
+        isReverse: isReverseFreight,
+        shipmentType: currentFreight
       };
 
       const res = await agentAPI.getCarrierRates(payload);
@@ -127,90 +134,164 @@ export default function RateCalculatorWidget({
     }
   }, []);
 
+  const isReverseMode = freightType === 'reverse';
+
   const lowestRate = quotes.length > 0 
     ? getQuoteFinalRate(quotes[0]).toFixed(2)
-    : '34.00';
+    : (isReverseMode ? '50.72' : '34.00');
 
   const lowestRateNum = parseFloat(lowestRate) || 34;
   const standardCounterRate = Math.round(lowestRateNum * 1.8);
   const potentialSavings = Math.max(25, standardCounterRate - Math.round(lowestRateNum));
+
+  const handleSwapPincodes = () => {
+    const temp = fromPincode;
+    setFromPincode(toPincode);
+    setToPincode(temp);
+  };
 
   return (
     <div className={`w-full bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden ${
       variant === 'embedded' ? 'p-4 sm:p-6' : 'p-5 sm:p-7'
     }`}>
       {/* HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-5 border-b border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-100">
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#1E56E3] text-[11px] font-extrabold uppercase tracking-wide">
             <Zap className="w-3.5 h-3.5 text-[#1E56E3]" />
             Live Courier Rate Calculator
           </div>
           <h3 className="text-lg sm:text-xl font-black text-slate-900 mt-1">
-            Compare Courier Rates Instantly
+            {isReverseMode ? 'Reverse Freight & QC Rate Calculator' : 'Compare Forward Courier Rates'}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Real-time rates from Delhivery, Shadowfax, Xpressbees & Ekart • Free Doorstep Pickup
+            {isReverseMode 
+              ? 'Real-time doorstep pickup & quality inspection rates from Delhivery, Shadowfax & Xpressbees'
+              : 'Real-time rates from Delhivery, Shadowfax, Xpressbees & Ekart • Free Doorstep Pickup'}
           </p>
         </div>
 
-        {/* Mode Selector Pill */}
-        <div className="flex items-center p-1 bg-slate-100 rounded-xl self-start sm:self-auto border border-slate-200/60">
+        {/* Forward Mode COD / Prepaid Toggle (Hidden for Reverse) */}
+        {!isReverseMode ? (
+          <div className="flex items-center p-1 bg-slate-100 rounded-xl self-start sm:self-auto border border-slate-200/60">
+            <button
+              type="button"
+              onClick={() => { setPaymentMode('prepaid'); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                paymentMode === 'prepaid'
+                  ? 'bg-white text-[#1E56E3] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Prepaid
+            </button>
+            <button
+              type="button"
+              onClick={() => { setPaymentMode('cod'); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                paymentMode === 'cod'
+                  ? 'bg-white text-amber-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              COD
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-extrabold self-start sm:self-auto">
+            <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Doorstep QC Included</span>
+          </div>
+        )}
+      </div>
+
+      {/* FREIGHT TYPE TOGGLE (FORWARD vs REVERSE FREIGHT) */}
+      <div className="pt-4 pb-1">
+        <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-2xl border border-slate-200/70 gap-1">
           <button
             type="button"
-            onClick={() => { setPaymentMode('prepaid'); }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-              paymentMode === 'prepaid'
-                ? 'bg-white text-[#1E56E3] shadow-xs'
+            onClick={() => {
+              setFreightType('forward');
+              handleCalculateRates(null, 'forward');
+            }}
+            className={`py-2 px-3 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              !isReverseMode
+                ? 'bg-white text-[#1E56E3] shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Prepaid
+            <Truck className="w-4 h-4" />
+            <span>📦 Forward Freight (Seller → Buyer)</span>
           </button>
           <button
             type="button"
-            onClick={() => { setPaymentMode('cod'); }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-              paymentMode === 'cod'
-                ? 'bg-white text-amber-700 shadow-xs'
+            onClick={() => {
+              setFreightType('reverse');
+              handleCalculateRates(null, 'reverse');
+            }}
+            className={`py-2 px-3 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              isReverseMode
+                ? 'bg-white text-indigo-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            COD
+            <RotateCcw className="w-4 h-4 text-indigo-600" />
+            <span>↩️ Reverse Freight (Customer Return)</span>
           </button>
         </div>
       </div>
 
+      {/* REVERSE FREIGHT INFORMATIONAL BANNER */}
+      {isReverseMode && (
+        <div className="mt-3 p-3 rounded-2xl bg-indigo-50/80 border border-indigo-200/70 flex items-start gap-2.5 text-indigo-950">
+          <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+          <div className="text-[11px] text-indigo-800 leading-snug">
+            <strong>Doorstep Quality Check (QC):</strong> Courier rider visits customer doorstep, checks intact tags & physical item condition, and packs in a tamper-evident return bag before bringing it back to your hub.
+          </div>
+        </div>
+      )}
+
       {/* INPUT FORM */}
-      <form onSubmit={handleCalculateRates} className="pt-5 space-y-4">
-        {/* PINCODES ROW */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+      <form onSubmit={handleCalculateRates} className="pt-4 space-y-4">
+        {/* PINCODES ROW WITH SWAP BUTTON */}
+        <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-end">
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-[#1E56E3]" />
-              Pickup Pincode (From)
+              {isReverseMode ? 'Customer Pickup Pincode (Return Origin)' : 'Pickup Pincode (Seller Hub)'}
             </label>
             <input
               type="text"
               maxLength={6}
               value={fromPincode}
               onChange={(e) => setFromPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="e.g. 700049"
+              placeholder={isReverseMode ? "Customer PIN e.g. 110001" : "Seller PIN e.g. 700049"}
               className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E56E3] transition"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-              Delivery Pincode (To)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                {isReverseMode ? 'Warehouse Return Pincode (Seller Hub)' : 'Delivery Pincode (Buyer Destination)'}
+              </label>
+              <button
+                type="button"
+                onClick={handleSwapPincodes}
+                className="text-[11px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer transition"
+                title="Swap origin and destination"
+              >
+                <ArrowLeftRight className="w-3 h-3" />
+                <span>Swap</span>
+              </button>
+            </div>
             <input
               type="text"
               maxLength={6}
               value={toPincode}
               onChange={(e) => setToPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="e.g. 110001"
+              placeholder={isReverseMode ? "Hub PIN e.g. 700049" : "Buyer PIN e.g. 110001"}
               className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E56E3] transition"
             />
           </div>
@@ -218,7 +299,9 @@ export default function RateCalculatorWidget({
 
         {/* POPULAR CITIES CHIPS */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] text-slate-500">
-          <span className="shrink-0 font-semibold text-slate-400">Quick Deliver To:</span>
+          <span className="shrink-0 font-semibold text-slate-400">
+            {isReverseMode ? 'Quick Return Destination:' : 'Quick Deliver To:'}
+          </span>
           {POPULAR_DESTINATIONS.map((dest) => (
             <button
               key={dest.pincode}
@@ -352,8 +435,8 @@ export default function RateCalculatorWidget({
           )}
         </div>
 
-        {/* COD VALUE (IF COD) */}
-        {paymentMode === 'cod' && (
+        {/* COD VALUE (IF COD AND FORWARD MODE) */}
+        {!isReverseMode && paymentMode === 'cod' && (
           <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between gap-3">
             <div>
               <span className="text-xs font-bold text-amber-900 block">COD Order Value</span>
@@ -387,7 +470,7 @@ export default function RateCalculatorWidget({
           ) : (
             <>
               <Calculator className="w-4 h-4" />
-              Check Available Courier Rates
+              {isReverseMode ? 'Check Reverse Pickup Rates' : 'Check Available Courier Rates'}
             </>
           )}
         </button>
@@ -406,7 +489,7 @@ export default function RateCalculatorWidget({
           <div className="flex items-center justify-between text-xs">
             <span className="font-extrabold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
               <Truck className="w-4 h-4 text-[#1E56E3]" />
-              {quotes.length} Couriers Available
+              {quotes.length} {isReverseMode ? 'Reverse Couriers Available' : 'Couriers Available'}
             </span>
             <span className="text-slate-500 font-semibold text-[11px]">
               Sorted by lowest rate
@@ -420,12 +503,20 @@ export default function RateCalculatorWidget({
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-extrabold">Save ~₹{potentialSavings} Per Parcel vs Courier Counter!</p>
-                <p className="text-[11px] text-emerald-700 leading-tight">Retail counters charge ₹{standardCounterRate}+. SecureKaro rates start at only ₹{lowestRate}.</p>
+                <p className="text-xs font-extrabold">
+                  {isReverseMode
+                    ? `Reverse Pickup & Doorstep QC Starting at ₹${lowestRate}!`
+                    : `Save ~₹${potentialSavings} Per Parcel vs Courier Counter!`}
+                </p>
+                <p className="text-[11px] text-emerald-700 leading-tight">
+                  {isReverseMode
+                    ? 'Verified return pickup with rider visual item check & tamper-proof pouch'
+                    : `Retail counters charge ₹${standardCounterRate}+. SecureKaro rates start at only ₹${lowestRate}.`}
+                </p>
               </div>
             </div>
             <span className="shrink-0 text-xs font-black text-emerald-600 bg-emerald-100/70 px-2 py-1 rounded-lg">
-              ~45% OFF
+              {isReverseMode ? 'QC Verified' : '~45% OFF'}
             </span>
           </div>
 
@@ -437,7 +528,7 @@ export default function RateCalculatorWidget({
               const formattedRate = totalRate.toFixed(2);
               const displayName = getCleanCarrierName(q);
               const isSelected = selectedQuote?.slug === q.slug;
-              const isCodMode = paymentMode === 'cod';
+              const isCodMode = !isReverseMode && paymentMode === 'cod';
               const codFee = Number(q.codCharge || 0);
               const freightPart = isCodMode ? Math.max(0, totalRate - codFee) : totalRate;
 
@@ -465,9 +556,15 @@ export default function RateCalculatorWidget({
                             Best Value
                           </span>
                         )}
-                        <span className="text-[10px] font-bold text-slate-500 bg-white px-1.5 py-0.2 rounded border border-slate-200">
-                          {q.mode || 'Surface'}
-                        </span>
+                        {isReverseMode ? (
+                          <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200">
+                            Doorstep QC
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-slate-500 bg-white px-1.5 py-0.2 rounded border border-slate-200">
+                            {q.mode || 'Surface'}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
                         <span className="flex items-center gap-0.5">
@@ -487,7 +584,11 @@ export default function RateCalculatorWidget({
                     <div className="text-sm sm:text-base font-black text-slate-900 font-mono">
                       ₹{formattedRate}
                     </div>
-                    {isCodMode && codFee > 0 ? (
+                    {isReverseMode ? (
+                      <span className="text-[10px] text-indigo-600 block -mt-0.5 font-bold">
+                        Doorstep QC &amp; Return
+                      </span>
+                    ) : isCodMode && codFee > 0 ? (
                       <span className="text-[10px] text-amber-700 block -mt-0.5 font-bold">
                         Freight ₹{freightPart.toFixed(0)} + COD ₹{codFee.toFixed(0)}
                       </span>
@@ -513,7 +614,9 @@ export default function RateCalculatorWidget({
                     fromPincode,
                     toPincode,
                     weightKg: chargeableWeight,
-                    paymentMode
+                    paymentMode: isReverseMode ? 'prepaid' : paymentMode,
+                    freightType,
+                    isReverse: isReverseMode
                   });
                 }
                 if (onGetStarted) {
@@ -521,18 +624,28 @@ export default function RateCalculatorWidget({
                     fromPincode,
                     toPincode,
                     weightKg: chargeableWeight,
-                    carrier: selectedQuote
+                    carrier: selectedQuote,
+                    freightType,
+                    isReverse: isReverseMode
                   });
                 }
               }}
               className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white text-xs sm:text-sm font-extrabold rounded-2xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Ship at ₹{lowestRate} with {selectedQuote ? getCleanCarrierName(selectedQuote) : 'Cheapest Carrier'}</span>
+              <span>
+                {isReverseMode
+                  ? `Book Return at ₹${lowestRate} with ${selectedQuote ? getCleanCarrierName(selectedQuote) : 'Cheapest Carrier'}`
+                  : `Ship at ₹${lowestRate} with ${selectedQuote ? getCleanCarrierName(selectedQuote) : 'Cheapest Carrier'}`}
+              </span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <p className="text-[11px] text-slate-500 text-center mt-2 flex items-center justify-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Free Doorstep Pickup • Instant AWB • ₹50 Welcome Discount Included</span>
+              <span>
+                {isReverseMode
+                  ? 'Buyer Doorstep Inspection • Tamper-proof Bag • Direct Warehouse Delivery'
+                  : 'Free Doorstep Pickup • Instant AWB • ₹50 Welcome Discount Included'}
+              </span>
             </p>
           </div>
         </div>

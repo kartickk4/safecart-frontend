@@ -5,7 +5,7 @@ import {
   Truck, ArrowLeft, Building, AlertTriangle, ExternalLink, Link as LinkIcon, 
   Check, RotateCcw, MessageSquare, Camera, Sparkles, Bot, MapPin, Edit3, 
   Phone, Send, RefreshCw, Wallet, CreditCard, QrCode, Landmark, Lock, X,
-  Star, ChevronRight, Zap, Award, Clock, Search, SlidersHorizontal, TrendingDown, Plane, Layers,
+  Star, ChevronRight, ChevronDown, ChevronUp, Zap, Award, Clock, Search, SlidersHorizontal, TrendingDown, Plane, Layers,
   LayoutGrid, List, Scale
 } from 'lucide-react';
 import { shipmentAPI, profileAPI, agentAPI } from '../services/api';
@@ -47,6 +47,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [copiedWhatsApp, setCopiedWhatsApp] = useState(false);
   const [copiedPickupToken, setCopiedPickupToken] = useState(false);
   const [showRechargeModal, setShowRechargeModal] = useState(false);
+  const [isPaymentDropdownOpen, setIsPaymentDropdownOpen] = useState(false);
 
   // Bank details are optional — users can withdraw on-demand via UPI or Bank transfer without adding bank info upfront.
 
@@ -1074,8 +1075,21 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
               {/* Payment Mode Selection */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-800">Payment Mode</label>
-                <p className="text-[11px] text-slate-500 -mt-1">How will the buyer pay for this shipment?</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800">Payment Mode</label>
+                    <p className="text-[11px] text-slate-500 -mt-0.5">How will the buyer pay for this shipment?</p>
+                  </div>
+                  {/* Dropdown chevron toggle button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsPaymentDropdownOpen(prev => !prev)}
+                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-[#1E56E3] hover:text-[#1649CC] bg-blue-50 hover:bg-blue-100 rounded-xl transition cursor-pointer border border-blue-200/60"
+                  >
+                    <span>{isPaymentDropdownOpen ? 'Hide Options' : 'Change Mode'}</span>
+                    {isPaymentDropdownOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
 
                 {/* Negative Wallet Balance Alert Banner */}
                 {(Number(user?.walletBalance) || 0) < 0 && (
@@ -1102,83 +1116,128 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Prepaid (Paid in Advance) */}
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if ((Number(user?.walletBalance) || 0) < 0) {
-                        alert(`🚫 Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab.`);
-                        return;
-                      }
-                      setPaymentMode('prepaid');
-                      if (senderPincode && receiverPincode && receiverPincode.length === 6) {
-                        await fetchQuotesForRoute(carrierSlug, 'prepaid');
-                      }
-                    }}
-                    className={`p-4 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
-                      (Number(user?.walletBalance) || 0) < 0
-                        ? 'border-slate-200 bg-slate-100/80 opacity-60 cursor-not-allowed'
-                        : paymentMode === 'prepaid'
-                        ? 'border-[#1E56E3] bg-blue-50/80 shadow-sm shadow-blue-200'
-                        : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
+                {/* If Collapsed: Sleek Selected Mode Summary Card under Dropdown Arrow */}
+                {!isPaymentDropdownOpen ? (
+                  <div
+                    onClick={() => setIsPaymentDropdownOpen(true)}
+                    className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-3 shadow-xs ${
+                      paymentMode === 'cod'
+                        ? 'bg-amber-50/70 border-amber-300 hover:border-amber-400'
+                        : 'bg-blue-50/70 border-blue-300 hover:border-blue-400'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xl">💳</span>
-                      {paymentMode === 'prepaid' && (
-                        <span className="w-5 h-5 rounded-full bg-[#1E56E3] flex items-center justify-center shadow-xs">
-                          <Check className="w-3 h-3 text-white" />
-                        </span>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${
+                        paymentMode === 'cod' ? 'bg-amber-100' : 'bg-blue-100'
+                      }`}>
+                        {paymentMode === 'cod' ? '🚚' : '💳'}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className={`text-xs sm:text-sm font-extrabold ${paymentMode === 'cod' ? 'text-amber-800' : 'text-[#1E56E3]'}`}>
+                            {paymentMode === 'cod' ? 'Cash on Delivery (COD)' : 'Prepaid (Paid in Advance)'}
+                          </p>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                            paymentMode === 'cod' ? 'bg-amber-200/80 text-amber-900' : 'bg-blue-200/80 text-blue-900'
+                          }`}>
+                            Selected
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          {paymentMode === 'cod'
+                            ? `Courier collects ${amount ? `₹${Number(amount).toLocaleString('en-IN')}` : 'cash'} at delivery • Remitted to seller wallet`
+                            : 'Buyer paid you directly • ₹0 collected at delivery • Freight fee deducted from wallet'}
+                        </p>
+                      </div>
                     </div>
-                    <p className={`text-sm font-extrabold ${ paymentMode === 'prepaid' ? 'text-[#1E56E3]' : 'text-slate-800'}`}>Prepaid (Paid in Advance)</p>
-                    <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                      Buyer already paid you directly (UPI, bank, store). Courier collects ₹0 from buyer. Courier freight fee deducted from your wallet.
-                    </p>
-                  </button>
 
-                  {/* Cash on Delivery (COD) */}
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if ((Number(user?.walletBalance) || 0) < 0) {
-                        alert(`🚫 COD Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab.`);
-                        return;
-                      }
-                      setPaymentMode('cod');
-                      if (senderPincode && receiverPincode && receiverPincode.length === 6) {
-                        await fetchQuotesForRoute(carrierSlug, 'cod');
-                      }
-                    }}
-                    className={`p-4 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
-                      (Number(user?.walletBalance) || 0) < 0
-                        ? 'border-slate-200 bg-slate-100/80 opacity-60 cursor-not-allowed'
-                        : paymentMode === 'cod'
-                        ? 'border-amber-500 bg-amber-50 shadow-sm shadow-amber-200'
-                        : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xl">🚚</span>
-                      {paymentMode === 'cod' && (
-                        <span className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center shadow-xs">
-                          <Check className="w-3 h-3 text-white" />
-                        </span>
-                      )}
+                    <div className="flex items-center gap-1 text-xs font-bold text-slate-500 shrink-0 bg-white px-2 py-1 rounded-lg border border-slate-200">
+                      <span className="hidden sm:inline">Change</span>
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-600" />
                     </div>
-                    <p className={`text-sm font-extrabold ${ paymentMode === 'cod' ? 'text-amber-700' : 'text-slate-800'}`}>Cash on Delivery (COD)</p>
-                    {(Number(user?.walletBalance) || 0) < 0 ? (
-                      <span className="inline-block mt-1 text-[9px] font-bold text-rose-700 bg-rose-100 border border-rose-200 px-1.5 py-0.5 rounded-full">
-                        Suspended (Negative Balance)
-                      </span>
-                    ) : (
+                  </div>
+                ) : (
+                  /* If Expanded: Both cards visible. Selecting either collapses back under the dropdown arrow */
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in duration-200">
+                    {/* Prepaid (Paid in Advance) */}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if ((Number(user?.walletBalance) || 0) < 0) {
+                          alert(`🚫 Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab.`);
+                          return;
+                        }
+                        setPaymentMode('prepaid');
+                        setIsPaymentDropdownOpen(false); // Collapses under dropdown arrow upon selecting!
+                        if (senderPincode && receiverPincode && receiverPincode.length === 6) {
+                          await fetchQuotesForRoute(carrierSlug, 'prepaid');
+                        }
+                      }}
+                      className={`p-4 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
+                        (Number(user?.walletBalance) || 0) < 0
+                          ? 'border-slate-200 bg-slate-100/80 opacity-60 cursor-not-allowed'
+                          : paymentMode === 'prepaid'
+                          ? 'border-[#1E56E3] bg-blue-50/80 shadow-sm shadow-blue-200'
+                          : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xl">💳</span>
+                        {paymentMode === 'prepaid' && (
+                          <span className="w-5 h-5 rounded-full bg-[#1E56E3] flex items-center justify-center shadow-xs">
+                            <Check className="w-3 h-3 text-white" />
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-sm font-extrabold ${ paymentMode === 'prepaid' ? 'text-[#1E56E3]' : 'text-slate-800'}`}>Prepaid (Paid in Advance)</p>
                       <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                        Courier collects parcel value ({amount ? `₹${Number(amount).toLocaleString('en-IN')}` : 'cash'}) at delivery. Money is remitted to your seller wallet for withdrawal.
+                        Buyer already paid you directly (UPI, bank, store). Courier collects ₹0 from buyer. Courier freight fee deducted from your wallet.
                       </p>
-                    )}
-                  </button>
-                </div>
+                    </button>
+
+                    {/* Cash on Delivery (COD) */}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if ((Number(user?.walletBalance) || 0) < 0) {
+                          alert(`🚫 COD Booking Suspended: Your seller wallet balance is negative (-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}). Please clear your balance in the Wallet tab.`);
+                          return;
+                        }
+                        setPaymentMode('cod');
+                        setIsPaymentDropdownOpen(false); // Collapses under dropdown arrow upon selecting!
+                        if (senderPincode && receiverPincode && receiverPincode.length === 6) {
+                          await fetchQuotesForRoute(carrierSlug, 'cod');
+                        }
+                      }}
+                      className={`p-4 rounded-2xl border-2 text-left transition-all duration-150 cursor-pointer ${
+                        (Number(user?.walletBalance) || 0) < 0
+                          ? 'border-slate-200 bg-slate-100/80 opacity-60 cursor-not-allowed'
+                          : paymentMode === 'cod'
+                          ? 'border-amber-500 bg-amber-50 shadow-sm shadow-amber-200'
+                          : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xl">🚚</span>
+                        {paymentMode === 'cod' && (
+                          <span className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center shadow-xs">
+                            <Check className="w-3 h-3 text-white" />
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-sm font-extrabold ${ paymentMode === 'cod' ? 'text-amber-700' : 'text-slate-800'}`}>Cash on Delivery (COD)</p>
+                      {(Number(user?.walletBalance) || 0) < 0 ? (
+                        <span className="inline-block mt-1 text-[9px] font-bold text-rose-700 bg-rose-100 border border-rose-200 px-1.5 py-0.5 rounded-full">
+                          Suspended (Negative Balance)
+                        </span>
+                      ) : (
+                        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                          Courier collects parcel value ({amount ? `₹${Number(amount).toLocaleString('en-IN')}` : 'cash'}) at delivery. Money is remitted to your seller wallet for withdrawal.
+                        </p>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Return Policy Selection */}
