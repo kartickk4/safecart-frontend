@@ -50,6 +50,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   const [cityRoute, setCityRoute] = useState('');
   const [fundImmediately, setFundImmediately] = useState(true);
   const [paymentMode, setPaymentMode] = useState('prepaid'); // 'prepaid' (PhonePe) | 'cod'
+  const [shipmentType, setShipmentType] = useState('forward'); // 'forward' | 'reverse'
   const [returnAllowed, setReturnAllowed] = useState(true);
   const [photoReviewEnabled, setPhotoReviewEnabled] = useState(false);
   const [rtoProtectionEnabled, setRtoProtectionEnabled] = useState(false);
@@ -239,41 +240,46 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       return;
     }
     if (!receiverName.trim()) {
-      setError('Please enter the Recipient Name.');
+      setError(shipmentType === 'reverse' ? 'Please enter the Customer Name.' : 'Please enter the Recipient Name.');
       return;
     }
     if (!receiverPhone.trim()) {
-      setError('Please enter the Recipient Phone Number.');
+      setError(shipmentType === 'reverse' ? 'Please enter the Customer Phone Number.' : 'Please enter the Recipient Phone Number.');
       return;
     }
     if (!receiverAddress.trim()) {
-      setError('Please enter the Recipient Delivery Address.');
+      setError(shipmentType === 'reverse' ? 'Please enter the Customer Pickup Address.' : 'Please enter the Recipient Delivery Address.');
       return;
     }
     if (!receiverPincode || receiverPincode.length < 6) {
-      setError('Please enter a valid 6-digit Receiver Delivery Pincode to view delivery rates.');
+      setError(shipmentType === 'reverse' ? 'Please enter a valid 6-digit Customer Pickup Pincode.' : 'Please enter a valid 6-digit Receiver Delivery Pincode to view delivery rates.');
       return;
     }
 
-    await fetchQuotes(paymentMode);
+    await fetchQuotes(shipmentType === 'reverse' ? 'prepaid' : paymentMode, secureShipmentEnabled, shipmentType);
     setModalStep(2);
   };
 
-  const fetchQuotes = async (targetMode = paymentMode, isSecure = secureShipmentEnabled) => {
+  const fetchQuotes = async (targetMode = paymentMode, isSecure = secureShipmentEnabled, forcedShipmentType = shipmentType) => {
     setFetchingQuotes(true);
     setError('');
+    const isReverse = forcedShipmentType === 'reverse';
+    const originPin = isReverse ? receiverPincode : senderPincode;
+    const destPin = isReverse ? senderPincode : receiverPincode;
+
     try {
-      const isCod = targetMode === 'cod';
+      const isCod = !isReverse && targetMode === 'cod';
       const decVal = parseFloat(amount) || 2500;
       const res = await agentAPI.getCarrierRates({
-        fromPincode: senderPincode,
-        toPincode: receiverPincode,
+        fromPincode: originPin,
+        toPincode: destPin,
         weightKg: parseFloat(parcelWeight) || 0.5,
-        paymentMode: targetMode,
+        paymentMode: isReverse ? 'prepaid' : targetMode,
         cod: isCod ? 1 : 0,
         amount: decVal,
         declaredValue: decVal,
-        isSecureShipment: isSecure
+        isSecureShipment: isSecure,
+        isReverse: isReverse
       });
 
       // Backend already applies the exact platform ₹5 discount from the wallet charge
@@ -328,13 +334,15 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         senderPincode,
         carrierSlug: selectedQuote.baseSlug || selectedQuote.slug,
         deliveryCharge: selectedQuote.exactRate || selectedQuote.price,
-        paymentMode,
-        isPrepaid: !isCod,
-        codCharge: isCod ? (selectedQuote.codCharge || 52) : 0,
+        paymentMode: shipmentType === 'reverse' ? 'prepaid' : paymentMode,
+        isPrepaid: shipmentType === 'reverse' ? true : !isCod,
+        codCharge: shipmentType === 'reverse' ? 0 : (isCod ? (selectedQuote.codCharge || 52) : 0),
         fundEscrow: false,
-        returnAllowed,
-        photoReviewEnabled: Boolean(photoReviewEnabled),
-        rtoProtectionEnabled
+        returnAllowed: shipmentType === 'reverse' ? false : returnAllowed,
+        photoReviewEnabled: shipmentType === 'reverse' ? false : Boolean(photoReviewEnabled),
+        rtoProtectionEnabled: shipmentType === 'reverse' ? false : rtoProtectionEnabled,
+        shipmentType,
+        isReverse: shipmentType === 'reverse'
       };
 
       const res = await shipmentAPI.createShipment(payload);
@@ -514,14 +522,61 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               </div>
             )}
 
+            {/* Shipment Type Selector: Forward Delivery vs Reverse Pickup */}
+            <div className="p-1 bg-slate-100 rounded-xl border border-slate-200 flex gap-1 mb-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShipmentType('forward');
+                  setCarrierQuotes([]);
+                  setSelectedQuote(null);
+                }}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  shipmentType === 'forward'
+                    ? 'bg-white text-blue-600 shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>📦 Forward Delivery</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShipmentType('reverse');
+                  setPaymentMode('prepaid');
+                  setCarrierQuotes([]);
+                  setSelectedQuote(null);
+                }}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  shipmentType === 'reverse'
+                    ? 'bg-purple-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>↩️ Reverse Pickup (RVP)</span>
+              </button>
+            </div>
+
+            {shipmentType === 'reverse' && (
+              <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 flex items-start gap-2.5 text-xs text-purple-900 mb-2">
+                <span className="text-sm">↩️</span>
+                <div>
+                  <strong className="block font-bold">Reverse Logistics (Customer Return) Active</strong>
+                  <span className="text-[11px] text-purple-700">Courier executive will collect the parcel from customer doorstep with Doorstep QC verification and return to your seller hub.</span>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleProceedToCouriers} className="space-y-3.5">
               <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Recipient Name *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    {shipmentType === 'reverse' ? 'Customer Name (Pickup Origin) *' : 'Recipient Name *'}
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Priya Nair"
+                    placeholder={shipmentType === 'reverse' ? 'e.g. Rahul Sharma (Customer)' : 'e.g. Priya Nair'}
                     value={receiverName}
                     onChange={(e) => setReceiverName(e.target.value)}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
@@ -529,7 +584,9 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Recipient Phone *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    {shipmentType === 'reverse' ? 'Customer Phone (Pickup OTP) *' : 'Recipient Phone *'}
+                  </label>
                   <input
                     type="tel"
                     required
@@ -543,12 +600,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Recipient Street / Delivery Address *
+                  {shipmentType === 'reverse' ? 'Customer Pickup Address (Doorstep) *' : 'Recipient Street / Delivery Address *'}
                 </label>
                 <textarea
                   rows="2"
                   required
-                  placeholder="e.g. Flat 402, Sunshine Heights, Near Dadar Station"
+                  placeholder={shipmentType === 'reverse' ? 'e.g. House 42, Green Park Avenue, Near Metro Station' : 'e.g. Flat 402, Sunshine Heights, Near Dadar Station'}
                   value={receiverAddress}
                   onChange={(e) => setReceiverAddress(e.target.value)}
                   className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
@@ -558,13 +615,13 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               <div className="grid grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Receiver Delivery Pincode *
+                    {shipmentType === 'reverse' ? 'Customer Pickup Pincode *' : 'Receiver Delivery Pincode *'}
                   </label>
                   <input
                     type="text"
                     maxLength={6}
                     required
-                    placeholder="e.g. 400001 (Mumbai)"
+                    placeholder={shipmentType === 'reverse' ? 'e.g. 560001 (Customer Pincode)' : 'e.g. 400001 (Mumbai)'}
                     value={receiverPincode}
                     onChange={(e) => setReceiverPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
@@ -619,41 +676,53 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               </div>
 
               {/* Payment Mode Selector */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Payment Mode *</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMode('prepaid')}
-                    className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
-                      paymentMode === 'prepaid'
-                        ? 'bg-blue-50 border-[#1E56E3] text-[#1E56E3] shadow-xs ring-1 ring-[#1E56E3]'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <CreditCard className="w-4 h-4 text-[#1E56E3]" />
-                      <span>Prepaid (Advance)</span>
+              {shipmentType === 'reverse' ? (
+                <div className="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">↩️</span>
+                    <div>
+                      <p className="text-xs font-bold text-purple-950">Reverse Freight (Seller Wallet Deducted)</p>
+                      <p className="text-[10px] text-purple-700">Customers do not pay for return pickups. Reverse freight is debited from your seller wallet balance upon booking.</p>
                     </div>
-                    <span className="text-[10px] text-slate-500 font-normal">Buyer paid directly</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMode('cod')}
-                    className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
-                      paymentMode === 'cod'
-                        ? 'bg-amber-50 border-amber-600 text-amber-800 shadow-xs ring-1 ring-amber-500'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Truck className="w-4 h-4 text-amber-600" />
-                      <span>Cash on Delivery</span>
-                    </div>
-                    <span className="text-[10px] text-slate-500 font-normal">Courier collects cash</span>
-                  </button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Payment Mode *</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMode('prepaid')}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                        paymentMode === 'prepaid'
+                          ? 'bg-blue-50 border-[#1E56E3] text-[#1E56E3] shadow-xs ring-1 ring-[#1E56E3]'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <CreditCard className="w-4 h-4 text-[#1E56E3]" />
+                        <span>Prepaid (Advance)</span>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-normal">Buyer paid directly</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMode('cod')}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                        paymentMode === 'cod'
+                          ? 'bg-amber-50 border-amber-600 text-amber-800 shadow-xs ring-1 ring-amber-500'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Truck className="w-4 h-4 text-amber-600" />
+                        <span>Cash on Delivery</span>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-normal">Courier collects cash</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Parcel Description *</label>
@@ -746,12 +815,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-blue-200/90 shadow-2xs font-mono text-xs font-bold text-slate-800">
                   <span className="flex items-center gap-1.5 text-slate-700">
                     <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-                    <span>{senderPincode}</span>
+                    <span>{shipmentType === 'reverse' ? receiverPincode : senderPincode}</span>
                   </span>
                   <ArrowRight className="w-3.5 h-3.5 text-blue-500" />
                   <span className="flex items-center gap-1.5 text-blue-700 font-extrabold">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span>{receiverPincode}</span>
+                    <span>{shipmentType === 'reverse' ? senderPincode : receiverPincode}</span>
                   </span>
                 </div>
 
