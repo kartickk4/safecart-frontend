@@ -10,8 +10,17 @@ import {
 import BulkUploadPanel from "../components/BulkUploadPanel";
 import { useVoiceAgent } from "../utils/useVoiceAgent";
 
-const rawApi = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-const API_BASE = rawApi.replace(/\/api\/v1\/?$/, "").replace(/\/+$/, "");
+const getApiBase = () => {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host.includes('securekaro.in') || host.includes('onrender.com')) {
+      return 'https://safecart-backend-1.onrender.com';
+    }
+  }
+  const rawApi = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+  return rawApi.replace(/\/api\/v1\/?$/, "").replace(/\/+$/, "");
+};
+const API_BASE = getApiBase();
 const SESSION_KEY = "sk_agent_session";
 const SK_LOGO = "/logo.jpg";
 
