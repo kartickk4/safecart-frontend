@@ -1374,8 +1374,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                             Hybrid Rate Engine
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500">Destination: <strong className="text-slate-900 font-mono">{receiverPincode}</strong> • Weight: <strong className="text-slate-900 font-mono">{activeBillableWeight} kg</strong> • <strong className={paymentMode === 'cod' ? 'text-amber-700' : 'text-emerald-700'}>{paymentMode === 'cod' ? 'Cash on Delivery (COD)' : 'Prepaid Delivery'}</strong></p>
-                      </div>
+                                              </div>
 
                       <button
                         type="button"
