@@ -636,22 +636,12 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                   <span>{phone ? 'Change Number' : 'Add Phone'}</span>
                 </button>
               </div>
-              <div className="flex gap-2">
-                <input
-                  type="tel"
-                  disabled
-                  value={phone || 'No phone set'}
-                  className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-bold cursor-not-allowed font-mono"
-                />
-                <button
-                  type="button"
-                  onClick={openPhoneChangeModal}
-                  className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shrink-0 cursor-pointer shadow-2xs flex items-center gap-1.5"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>{phone ? 'Update (Dual OTP)' : 'Verify Phone'}</span>
-                </button>
-              </div>
+              <input
+                type="tel"
+                disabled
+                value={phone || 'No phone set'}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-bold cursor-not-allowed font-mono"
+              />
             </div>
 
             <div className="md:col-span-2 space-y-3 pt-2">
