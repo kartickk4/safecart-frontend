@@ -831,6 +831,7 @@ export default function App() {
               onSelectShipment={(shipment) => setSelectedShipment(shipment)}
               openNewShipmentModal={() => setCurrentTab('create-shipment')}
               onNavigateRefer={() => setCurrentTab('refer')}
+              onNavigateRateCalc={() => setCurrentTab('rate-calculator')}
             />
           )}
 

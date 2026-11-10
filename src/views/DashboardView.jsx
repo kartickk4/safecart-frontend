@@ -5,7 +5,7 @@ import {
   Search, Filter, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, 
   ArrowUpRight, ArrowDownRight, Eye, Truck, RotateCcw, Zap, Target,
   DollarSign, Activity, Calendar, Download, RefreshCw, ChevronDown, Check,
-  Percent, ShieldAlert, Sparkles, Gift, ArrowRight, FileSpreadsheet, X
+  Percent, ShieldAlert, Sparkles, Gift, ArrowRight, FileSpreadsheet, X, Calculator
 } from 'lucide-react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import TaxStatementModal from '../components/TaxStatementModal';
@@ -38,7 +38,7 @@ ChartJS.register(
   Filler
 );
 
-export default function DashboardView({ onSelectShipment, openNewShipmentModal, onNavigateRefer }) {
+export default function DashboardView({ onSelectShipment, openNewShipmentModal, onNavigateRefer, onNavigateRateCalc }) {
   const [shipments, setShipments] = useState(() => {
     try {
       const role = localStorage.getItem('securekaro_active_role') || 'Supplier';
@@ -450,6 +450,18 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
 
         {/* Quick Actions */}
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          {onNavigateRateCalc && (
+            <button
+              onClick={onNavigateRateCalc}
+              title="Compare live carrier shipping rates"
+              className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-[#1E56E3] transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-black cursor-pointer"
+            >
+              <Calculator className="w-3.5 h-3.5 text-[#1E56E3]" />
+              <span>Rate Calculator</span>
+              <span className="bg-blue-100 text-[#1E56E3] text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shadow-2xs">LIVE</span>
+            </button>
+          )}
+
           <button
             onClick={() => setIsTaxModalOpen(true)}
             title="Open CA-Ready Tax & P&L Statement"

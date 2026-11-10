@@ -17,7 +17,8 @@ import {
   ArrowUpRight,
   SlidersHorizontal,
   Compass,
-  HelpCircle
+  HelpCircle,
+  Calculator
 } from 'lucide-react';
 
 export const NAV_AVAILABLE_OPTIONS = [
@@ -32,6 +33,29 @@ export const NAV_AVAILABLE_OPTIONS = [
     desc: 'Overview and order pipeline',
     color: 'text-[#1E56E3]',
     bg: 'bg-blue-50'
+  },
+  {
+    id: 'rate-calculator',
+    labelSupplier: 'Rate Calculator',
+    labelReceiver: 'Rate Calculator',
+    shortLabelSupplier: 'Rates',
+    shortLabelReceiver: 'Rates',
+    icon: Calculator,
+    desc: 'Live multi-courier shipping rates',
+    color: 'text-[#1E56E3]',
+    bg: 'bg-blue-50'
+  },
+  {
+    id: 'roi-calculator',
+    labelSupplier: 'Savings Calculator',
+    labelReceiver: 'Savings Calculator',
+    shortLabelSupplier: 'Savings',
+    shortLabelReceiver: 'Savings',
+    icon: Calculator,
+    desc: 'COD vs shipping savings calculator',
+    color: 'text-emerald-600',
+    bg: 'bg-emerald-50',
+    supplierOnly: true
   },
   {
     id: 'ai-agent',
