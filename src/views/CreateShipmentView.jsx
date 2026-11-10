@@ -104,8 +104,14 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     const sorted = [...activePool].sort((a, b) => a.price - b.price);
     const cheapest = sorted[0];
     const highest = sorted[sorted.length - 1];
-    const nimbusCount = activePool.filter(q => (q.aggregator || '').toLowerCase().includes('nimbus') || (q.slug || '').startsWith('nimbus')).length;
-    const srCount = activePool.filter(q => (q.aggregator || '').toLowerCase().includes('shiprocket') || !(q.slug || '').startsWith('nimbus')).length;
+    const isSfxDirect = (q) => Boolean(q.isDirectShadowfax || q.aggregator === 'shadowfax_direct' || q.aggregator === 'direct' || ((q.baseSlug === 'shadowfax' || q.slug === 'shadowfax') && !(q.slug || '').startsWith('nimbus') && !(q.aggregator || '').toLowerCase().includes('nimbus')));
+    const isDelDirect = (q) => Boolean(q.isDirectDelhivery || q.aggregator === 'delhivery_direct');
+    const isNim = (q) => Boolean(!isSfxDirect(q) && !isDelDirect(q) && ((q.aggregator || '').toLowerCase().includes('nimbus') || (q.slug || '').startsWith('nimbus')));
+    const isSr = (q) => Boolean(!isSfxDirect(q) && !isDelDirect(q) && !isNim(q));
+
+    const nimbusCount = activePool.filter(isNim).length;
+    const srCount = activePool.filter(isSr).length;
+    const directCount = activePool.filter(q => isSfxDirect(q) || isDelDirect(q)).length;
     const airCount = activePool.filter(q => (q.mode || '').toLowerCase().includes('air') || (q.name || '').toLowerCase().includes('air')).length;
     const surfaceCount = activePool.filter(q => (q.mode || '').toLowerCase().includes('surface') || !(q.mode || '').toLowerCase().includes('air')).length;
     const savings = Math.max(0, (highest ? highest.price : 0) - (cheapest ? cheapest.price : 0));
@@ -115,6 +121,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       heavyCount: heavyQuotes.length,
       nimbusCount,
       srCount,
+      directCount,
       airCount,
       surfaceCount,
       cheapest,
@@ -1884,7 +1891,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                               )}
                             </div>
                             <p className="text-xs text-slate-600 mt-1">
-                              <strong>{carrierStats.cheapest.name || carrierStats.cheapest.courierPartner}</strong> via <strong className="text-slate-900 font-bold">{carrierStats.cheapest.aggregatorName || (carrierStats.cheapest.slug.startsWith('nimbus') ? 'NimbusPost' : 'Shiprocket')}</strong> offers the lowest delivery rate at only <strong className="text-emerald-800 font-mono font-black text-sm">₹{carrierStats.cheapest.price}</strong> ({carrierStats.cheapest.eta}).
+                              <strong>{carrierStats.cheapest.name || carrierStats.cheapest.courierPartner}</strong> via <strong className="text-slate-900 font-bold">{carrierStats.cheapest.aggregatorName || (carrierStats.cheapest.isDirectShadowfax || carrierStats.cheapest.aggregator === 'shadowfax_direct' || carrierStats.cheapest.baseSlug === 'shadowfax' ? 'Shadowfax Direct' : carrierStats.cheapest.slug.startsWith('nimbus') ? 'NimbusPost' : 'Shiprocket')}</strong> offers the lowest delivery rate at only <strong className="text-emerald-800 font-mono font-black text-sm">₹{carrierStats.cheapest.price}</strong> ({carrierStats.cheapest.eta}).
                             </p>
                           </div>
                         </div>
@@ -2014,7 +2021,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                           <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
                                           Delhivery Direct
                                         </span>
-                                      ) : quote.isDirectShadowfax || quote.aggregator === 'shadowfax_direct' ? (
+                                      ) : quote.isDirectShadowfax || quote.aggregator === 'shadowfax_direct' || quote.aggregator === 'direct' || ((quote.baseSlug === 'shadowfax' || quote.slug === 'shadowfax') && !quote.slug.startsWith('nimbus') && !(quote.aggregator || '').toLowerCase().includes('nimbus')) ? (
                                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
                                           <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
                                           Shadowfax Direct
@@ -2148,7 +2155,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                             <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
                                             Delhivery Direct
                                           </span>
-                                        ) : quote.isDirectShadowfax ? (
+                                        ) : quote.isDirectShadowfax || quote.aggregator === 'shadowfax_direct' || quote.aggregator === 'direct' || ((quote.baseSlug === 'shadowfax' || quote.slug === 'shadowfax') && !quote.slug.startsWith('nimbus') && !(quote.aggregator || '').toLowerCase().includes('nimbus')) ? (
                                           <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.2 rounded-full">
                                             <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
                                             Shadowfax Direct
@@ -2263,7 +2270,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-slate-500 font-medium">Selected Courier:</span>
                               <strong className="text-sm font-black text-slate-900">{selectedQuote.courierPartner || selectedQuote.name}</strong>
-                              {selectedQuote.isDirectShadowfax || selectedQuote.aggregator === 'shadowfax_direct' ? (
+                              {selectedQuote.isDirectShadowfax || selectedQuote.aggregator === 'shadowfax_direct' || selectedQuote.aggregator === 'direct' || ((selectedQuote.baseSlug === 'shadowfax' || selectedQuote.slug === 'shadowfax') && !selectedQuote.slug.startsWith('nimbus') && !(selectedQuote.aggregator || '').toLowerCase().includes('nimbus')) ? (
                                 <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
                                   via Shadowfax Direct
                                 </span>
