@@ -436,46 +436,41 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
             <span className="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wide border border-blue-200/60">
               Supplier Command Center
             </span>
-            <span className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-emerald-600">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Sync
-            </span>
           </div>
           <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight mt-1 flex items-center gap-2">
-            Business Performance & Logistics Analytics
+            Business Performance &amp; Logistics Analytics
           </h1>
           <p className="text-xs text-slate-500 font-medium">
             Monitor real-time cash flow, delivery fulfillment efficiency, order velocity, and customer dispute health.
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        {/* Quick Actions — Single Row on all screens */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap overflow-x-auto pb-0.5 pt-1 lg:pt-0">
           {onNavigateRateCalc && (
             <button
               onClick={onNavigateRateCalc}
               title="Compare live carrier shipping rates"
-              className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-[#1E56E3] transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-black cursor-pointer"
+              className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-[#1E56E3] transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-black cursor-pointer shrink-0"
             >
               <Calculator className="w-3.5 h-3.5 text-[#1E56E3]" />
               <span>Rate Calculator</span>
-              <span className="bg-blue-100 text-[#1E56E3] text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shadow-2xs">LIVE</span>
             </button>
           )}
 
           <button
             onClick={() => setIsTaxModalOpen(true)}
             title="Open CA-Ready Tax & P&L Statement"
-            className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-blue-800 transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-black cursor-pointer"
+            className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-blue-800 transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-black cursor-pointer shrink-0"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
             <span>Tax &amp; P&amp;L</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
           </button>
 
           <button
             onClick={fetchData}
             title="Refresh Live Analytics Data"
-            className="px-3 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold cursor-pointer shrink-0"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin text-blue-600' : ''}`} />
             <span>Sync</span>
