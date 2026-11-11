@@ -817,12 +817,12 @@ export default function App() {
 
         {/* SUSPENSE FOR ALL ROUTE VIEWS */}
         <Suspense fallback={<ViewLoadingFallback />}>
-        {/* AI AGENT: Full-screen, no padding, no extra scroll */}
-        {currentTab === 'ai-agent' ? (
-          <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
-            <AIAgentView onBack={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')} />
-          </div>
-        ) : (
+        {/* AI AGENT: Full-screen, no padding, no extra scroll. Kept mounted so tab switching never erases chat */}
+        <div className={currentTab === 'ai-agent' ? "flex-1 overflow-hidden min-h-0 flex flex-col" : "hidden"}>
+          <AIAgentView onBack={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')} />
+        </div>
+
+        {currentTab !== 'ai-agent' && (
         <main className="flex-1 pb-28 md:pb-12 overflow-y-auto overflow-x-hidden w-full min-w-0">
           <div key={`${currentTab}_${isSupplier ? 'Supplier' : 'Receiver'}`} className="view-enter min-h-full">
           {/* VIEW 1: DASHBOARD */}

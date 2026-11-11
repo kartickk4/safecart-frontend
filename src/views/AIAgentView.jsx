@@ -22,6 +22,7 @@ const getApiBase = () => {
 };
 const API_BASE = getApiBase();
 const SESSION_KEY = "sk_agent_session";
+const CHAT_CACHE_KEY = "sk_agent_messages_cache";
 const SK_LOGO = "/logo.jpg";
 
 const escapeHtml = (str) => {
@@ -427,7 +428,14 @@ const CapCard = ({ icon: Icon, title, desc, gradient, iconColor }) => (
 );
 
 export default function AIAgentView({ onBack }) {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem(CHAT_CACHE_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch (_) {
+      return [];
+    }
+  });
   const [input, setInput] = useState("");
   const [sessionId, setSessionId] = useState(() => localStorage.getItem(SESSION_KEY) || "");
   const [isLoading, setIsLoading] = useState(false);
@@ -540,14 +548,23 @@ export default function AIAgentView({ onBack }) {
 
   useEffect(() => { 
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
+    if (messages && messages.length > 0) {
+      try {
+        sessionStorage.setItem(CHAT_CACHE_KEY, JSON.stringify(messages));
+      } catch (_) {}
+    }
   }, [messages]);
 
   useEffect(() => { 
     if (!initialized) { 
       setInitialized(true); 
-      sendMessage("", true); 
+      // Only send initial greeting if there are no existing restored messages
+      const hasCached = messages && messages.length > 0;
+      if (!hasCached) {
+        sendMessage("", true); 
+      }
     } 
-  }, []);
+  }, [initialized, messages]);
 
   const getToken = () => localStorage.getItem("securekaro_token") || localStorage.getItem("skToken") || localStorage.getItem("token") || "";
 
@@ -666,6 +683,7 @@ export default function AIAgentView({ onBack }) {
     setSelectedCarrier(null); 
     setStep(0);
     localStorage.removeItem(SESSION_KEY); 
+    try { sessionStorage.removeItem(CHAT_CACHE_KEY); } catch(_) {}
     setInitialized(false);
     setTimeout(() => { 
       setInitialized(true); 
