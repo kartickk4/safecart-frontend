@@ -65,7 +65,19 @@ const CarrierComparisonCard = ({ quotes = [], selectedSlug, onSelect }) => {
                     <span style={{ color: '#1e293b', fontSize: '13px', fontWeight: '700' }}>
                       {q.name}
                     </span>
-                    {q.aggregator === 'nimbuspost' || (q.slug && q.slug.startsWith('nimbus')) ? (
+                    {(q.isDirectShadowfax || q.isDirectDelhivery || q.aggregator === 'shadowfax_direct' || q.aggregator === 'delhivery_direct') ? (
+                      <span style={{
+                        background: '#dbeafe',
+                        color: '#1e40af',
+                        fontSize: '9.5px',
+                        fontWeight: '800',
+                        padding: '2px 7px',
+                        borderRadius: '8px',
+                        border: '1px solid #bfdbfe'
+                      }}>
+                        Direct
+                      </span>
+                    ) : (q.aggregator === 'nimbuspost' || (q.slug && q.slug.startsWith('nimbus'))) ? (
                       <span style={{
                         background: '#f3e8ff',
                         color: '#7e22ce',
@@ -79,15 +91,15 @@ const CarrierComparisonCard = ({ quotes = [], selectedSlug, onSelect }) => {
                       </span>
                     ) : (
                       <span style={{
-                        background: '#e0e7ff',
-                        color: '#3730a3',
+                        background: '#f1f5f9',
+                        color: '#475569',
                         fontSize: '9.5px',
                         fontWeight: '800',
                         padding: '2px 7px',
                         borderRadius: '8px',
-                        border: '1px solid #c7d2fe'
+                        border: '1px solid #e2e8f0'
                       }}>
-                        Shiprocket
+                        {q.aggregatorName || q.mode || 'Express'}
                       </span>
                     )}
                     {isLowest && (

@@ -8,6 +8,7 @@ import {
   Lock, ArrowLeft
 } from "lucide-react";
 import BulkUploadPanel from "../components/BulkUploadPanel";
+import CarrierLogo from "../components/CarrierLogo";
 import { useVoiceAgent } from "../utils/useVoiceAgent";
 
 const getApiBase = () => {
@@ -50,81 +51,125 @@ const TypingDots = () => (
   </div>
 );
 
+const formatCleanCarrierName = (q) => {
+  const raw = q?.name || q?.rawName || q?.courierPartner || '';
+  let clean = String(raw)
+    .replace(/\s*\(via\s+nimbus(?:post)?\)/gi, '')
+    .replace(/_stressed/gi, '')
+    .replace(/\bDS\b/g, '')
+    .replace(/\b\d+(?:\.\d+)?\s*(?:k\.?g\.?|kg|gms?|g)\b/gi, '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  if (!clean) {
+    const slugFallback = String(q?.baseSlug || q?.slug || '').replace(/^(nimbus_|direct_|shiprocket_)/, '').replace(/_/g, ' ').trim();
+    clean = slugFallback ? slugFallback.replace(/\b\w/g, c => c.toUpperCase()) : 'Express Courier';
+  }
+  if (/^ekart$/i.test(clean)) return 'Ekart Logistics';
+  if (/^amazon/i.test(clean) && !/shipping/i.test(clean)) return clean.replace(/^amazon/i, 'Amazon');
+  return clean;
+};
+
+const formatCarrierPrice = (price) => {
+  const num = Number(price || 0);
+  if (Number.isInteger(num)) return num.toLocaleString("en-IN");
+  return num.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+const formatCarrierEta = (eta) => {
+  if (!eta) return "2–4 Days";
+  return String(eta).replace(/^Delivery by\s+/i, "Est. ");
+};
+
 const CarrierCard = ({ quotes, selectedSlug, onSelect }) => {
   if (!quotes?.length) return null;
   return (
-    <div className="bg-gradient-to-b from-indigo-50/70 via-white to-white border border-indigo-100 rounded-2xl p-4 mt-3 shadow-xs">
-      <div className="flex items-center justify-between mb-3 pb-2 border-b border-indigo-100/70">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs">
-            <Truck size={13} />
-          </div>
-          <span className="text-xs font-black uppercase tracking-wider text-indigo-950">
-            Available Courier Partners
+    <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden mt-3 shadow-xs">
+      <div className="px-3.5 py-2.5 bg-slate-50/90 border-b border-slate-200/80 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 truncate">
+            Select Courier Partner
+          </span>
+          <span className="text-[10px] font-semibold text-slate-400">
+            ({quotes.length})
           </span>
         </div>
-        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/60">
-          Shiprocket Engine
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          Live Rates
         </span>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="p-2.5 flex flex-col gap-2">
         {quotes.map((q, i) => {
           const isSelected = selectedSlug === q.slug;
+          const displayName = formatCleanCarrierName(q);
+          const isDirect = Boolean(
+            q.isDirectShadowfax ||
+            q.isDirectDelhivery ||
+            q.aggregator === "shadowfax_direct" ||
+            q.aggregator === "delhivery_direct"
+          );
+          const isNimbus = q.aggregator === "nimbuspost" || String(q.slug || "").startsWith("nimbus_");
+          const sourceLabel = isDirect ? "Direct" : (isNimbus ? "NimbusPost" : (q.mode || ""));
+
           return (
             <button
               key={q.slug || i}
               type="button"
               onClick={() => onSelect(q)}
-              className={`flex items-center justify-between p-3 rounded-xl border text-left transition-all duration-150 ${
+              className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border text-left transition-all duration-150 cursor-pointer ${
                 isSelected
-                  ? "bg-indigo-50/90 border-indigo-500 ring-2 ring-indigo-500/20 shadow-sm"
-                  : "bg-white hover:bg-slate-50 border-slate-200/90 hover:border-slate-300 shadow-2xs"
+                  ? "bg-blue-50/60 border-[#1E56E3] ring-1 ring-[#1E56E3]/25 shadow-2xs"
+                  : "bg-white hover:bg-slate-50/80 border-slate-200/90 hover:border-slate-300"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                  isSelected ? "bg-indigo-600 text-white shadow-xs" : "bg-slate-100 text-slate-600"
-                }`}>
-                  <Truck size={17} />
-                </div>
-                <div>
-                  <div className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-                    {q.name}
-                    {q.isCostToDeliverWinner && (
-                      <span className="bg-blue-100 text-[#1E56E3] text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-blue-200">
-                        ⭐ Best Total Cost
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <CarrierLogo slug={q.baseSlug || q.slug} name={displayName} size="md" />
+
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-bold text-slate-900 truncate leading-snug">
+                    {displayName}
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
+                    <span className="inline-flex items-center gap-1 font-medium text-slate-500">
+                      <Clock size={11} className="text-slate-400 shrink-0" />
+                      <span>{formatCarrierEta(q.eta)}</span>
+                    </span>
+                    {sourceLabel && (
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${
+                        isDirect
+                          ? "bg-blue-50 text-[#1E56E3] border-blue-200/80"
+                          : "bg-slate-100 text-slate-600 border-slate-200/80"
+                      }`}>
+                        {sourceLabel}
                       </span>
                     )}
-                    {q.isLowest && !q.isCostToDeliverWinner && (
-                      <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-emerald-200">
+                    {q.isLowest && (
+                      <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-emerald-200/80">
                         Lowest Rate
                       </span>
                     )}
-                  </div>
-                  <div className="text-[11px] text-slate-500 font-medium mt-0.5 flex flex-wrap items-center gap-2">
-                    <span className="flex items-center gap-1">
-                      <Clock size={11} className="text-slate-400" />
-                      <span>{q.eta || "2-4 Days"}</span>
-                    </span>
-                    {q.deliverySuccessRate && (
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200/80">
-                        🏆 {q.deliverySuccessRate}% Delivery Success
+                    {!q.isLowest && q.isCostToDeliverWinner && (
+                      <span className="bg-indigo-50 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-indigo-200/80">
+                        Best Value
                       </span>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 shrink-0">
                 <div className="text-right">
-                  <div className="text-sm font-black font-mono text-slate-900">
-                    ₹{q.price?.toLocaleString("en-IN") || q.price}
+                  <div className="text-sm font-extrabold font-mono text-slate-900 tabular-nums">
+                    ₹{formatCarrierPrice(q.price)}
                   </div>
-                  <div className="text-[10px] text-slate-400 font-medium">Protection Included</div>
+                  {q.isDirectShadowfax && q.isCod && (
+                    <div className="text-[10px] font-semibold text-emerald-600">₹0 COD Fee</div>
+                  )}
                 </div>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                  isSelected ? "bg-indigo-600 text-white" : "border-2 border-slate-300"
+                <div className={`w-5 h-5 shrink-0 rounded-full flex items-center justify-center transition-colors ${
+                  isSelected ? "bg-[#1E56E3] text-white" : "border-2 border-slate-300 bg-white"
                 }`}>
                   {isSelected && <Check size={12} strokeWidth={3} />}
                 </div>

@@ -7,7 +7,7 @@ import { Truck } from 'lucide-react';
  * as seen on official carrier websites and Shiprocket checkout.
  */
 export default function CarrierLogo({ slug = '', name = '', size = 'md', className = '' }) {
-  const normalized = (slug || name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const normalized = `${slug} ${name}`.toLowerCase().replace(/[^a-z0-9]/g, '');
 
   // Dimensions designed for horizontal brand cards (like Shiprocket courier selection)
   const sizeMap = {
@@ -443,13 +443,18 @@ export default function CarrierLogo({ slug = '', name = '', size = 'md', classNa
     );
   }
 
-  // Fallback
+  // Fallback: crisp 2-letter courier monogram badge
+  const words = String(name || slug || 'EC').replace(/[^a-zA-Z\s]/g, ' ').trim().split(/\s+/).filter(Boolean);
+  const initials = words.length >= 2
+    ? (words[0][0] + words[1][0]).toUpperCase()
+    : (words[0] || 'EC').slice(0, 2).toUpperCase();
+
   return (
-    <div 
-      className={`${containerClass} bg-slate-100 rounded-lg border border-slate-200 p-1 flex items-center justify-center shrink-0 shadow-2xs ${className}`}
+    <div
+      className={`${containerClass} bg-slate-50 rounded-lg border border-slate-200/90 px-1.5 flex items-center justify-center shrink-0 shadow-2xs ${className}`}
       title={name || 'Express Courier'}
     >
-      <Truck className="w-5 h-5 text-slate-600" />
+      <span className="text-[11px] font-black tracking-tight text-slate-700">{initials}</span>
     </div>
   );
 }
