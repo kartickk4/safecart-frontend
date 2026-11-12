@@ -291,9 +291,10 @@ export default function App() {
     }
   };
 
+  const clearAgentSessionData = () => { try { localStorage.removeItem('sk_agent_session'); sessionStorage.removeItem('sk_agent_session'); sessionStorage.removeItem('sk_agent_messages_cache'); } catch (_) {} };
   const checkAuth = async () => {
     const token = localStorage.getItem('securekaro_token');
-    if (!token) {
+    if (!token) { clearAgentSessionData();
       setLoading(false);
       setUser(null);
       localStorage.removeItem('securekaro_user');
@@ -318,7 +319,7 @@ export default function App() {
     } catch (err) {
       console.warn('Backend profile API check notice:', err.message);
       // Only clear credentials if explicitly rejected as 401/403 Unauthorized
-      if (err.response?.status === 401 || err.response?.status === 403) {
+      if (err.response?.status === 401 || err.response?.status === 403) { clearAgentSessionData();
         localStorage.removeItem('securekaro_token');
         localStorage.removeItem('securekaro_user');
         setUser(null);
@@ -330,6 +331,7 @@ export default function App() {
   };
 
   const handleAuthSuccess = async (userData, newUserFlag) => {
+    clearAgentSessionData();
     const savedRole = localStorage.getItem('securekaro_active_role');
     if (savedRole && (savedRole === 'Supplier' || savedRole === 'Receiver')) {
       userData.activeRole = savedRole;
@@ -480,7 +482,7 @@ export default function App() {
       localStorage.removeItem('securekaro_active_role');
       localStorage.removeItem('securekaro_user');
       setUser(null);
-      setCurrentTab('dashboard'); // Reset tab so next login starts fresh
+      clearAgentSessionData(); clearApiCache(); try { sessionStorage.removeItem('securekaro_role_user_Supplier'); sessionStorage.removeItem('securekaro_role_user_Receiver'); sessionStorage.removeItem('securekaro_role_token_Supplier'); sessionStorage.removeItem('securekaro_role_token_Receiver'); } catch (_) {} setCurrentTab('dashboard'); // Reset tab so next login starts fresh
       setIsSigningOut(false);
       setSignOutStep('');
     }, 1200);
@@ -819,7 +821,7 @@ export default function App() {
         <Suspense fallback={<ViewLoadingFallback />}>
         {/* AI AGENT: Full-screen, no padding, no extra scroll. Kept mounted so tab switching never erases chat */}
         <div className={currentTab === 'ai-agent' ? "flex-1 overflow-hidden min-h-0 flex flex-col" : "hidden"}>
-          <AIAgentView onBack={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')} />
+          <AIAgentView key={user?._id || 'user'} onBack={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')} />
         </div>
 
         {currentTab !== 'ai-agent' && (
@@ -1064,7 +1066,7 @@ export default function App() {
       {/* FLOATING AI AGENT WIDGET (Available for suppliers on desktop when not in full-screen ai-agent view and no modal/drawer is active) */}
       {isSupplier && currentTab !== 'ai-agent' && !selectedShipment && !isCreateModalOpen && (
         <div className="hidden md:block">
-          <AgentWidget onNavigate={(tab) => setCurrentTab(tab || 'ai-agent')} />
+          <AgentWidget key={user?._id || 'user'} onNavigate={(tab) => setCurrentTab(tab || 'ai-agent')} />
         </div>
       )}
 

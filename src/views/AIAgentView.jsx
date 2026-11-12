@@ -437,7 +437,7 @@ export default function AIAgentView({ onBack }) {
     }
   });
   const [input, setInput] = useState("");
-  const [sessionId, setSessionId] = useState(() => localStorage.getItem(SESSION_KEY) || "");
+  const [sessionId, setSessionId] = useState(() => { try { localStorage.removeItem(SESSION_KEY); return sessionStorage.getItem(SESSION_KEY) || ""; } catch (_) { return ""; } });
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCarrier, setSelectedCarrier] = useState(null);
   const [step, setStep] = useState(0);
@@ -624,7 +624,7 @@ export default function AIAgentView({ onBack }) {
       const data = await res.json();
       if (data.sessionId) { 
         setSessionId(data.sessionId); 
-        localStorage.setItem(SESSION_KEY, data.sessionId); 
+        try { sessionStorage.setItem(SESSION_KEY, data.sessionId); } catch (_) {} 
       }
       setStep(data.step || 0);
       if (data.selectedCarrier?.slug) {
@@ -650,7 +650,7 @@ export default function AIAgentView({ onBack }) {
       }
     } catch (err) {
       if (sessionId) {
-        localStorage.removeItem(SESSION_KEY);
+        try { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); } catch (_) {}
         setSessionId("");
       }
       const isNetworkErr = err?.message?.includes("Failed to fetch") || err?.name === "TypeError";
@@ -682,7 +682,7 @@ export default function AIAgentView({ onBack }) {
     setSessionId(""); 
     setSelectedCarrier(null); 
     setStep(0);
-    localStorage.removeItem(SESSION_KEY); 
+    try { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); } catch (_) {} 
     try { sessionStorage.removeItem(CHAT_CACHE_KEY); } catch(_) {}
     setInitialized(false);
     setTimeout(() => { 
@@ -707,7 +707,7 @@ export default function AIAgentView({ onBack }) {
       .then(r => r.json().then(d => ({ ok: r.ok, d })))
       .then(({ ok, d }) => {
         if (!ok) throw new Error(d.error || "Agent error");
-        if (d.sessionId) { setSessionId(d.sessionId); localStorage.setItem(SESSION_KEY, d.sessionId); }
+        if (d.sessionId) { setSessionId(d.sessionId); try { sessionStorage.setItem(SESSION_KEY, d.sessionId); } catch (_) {} }
         setStep(d.step || 0);
         if (d.selectedCarrier?.slug) setSelectedCarrier(d.selectedCarrier);
         setMessages(prev => [...prev, {

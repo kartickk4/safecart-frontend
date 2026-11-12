@@ -18,7 +18,7 @@ const AgentWidget = ({ onNavigate }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [messages, setMessages]         = useState([]);
   const [input, setInput]           = useState('');
-  const [sessionId, setSessionId]   = useState(() => localStorage.getItem(SESSION_KEY) || '');
+  const [sessionId, setSessionId]   = useState(() => { try { localStorage.removeItem(SESSION_KEY); return sessionStorage.getItem(SESSION_KEY) || ''; } catch (_) { return ''; } });
   const [isLoading, setIsLoading]   = useState(false);
   const [selectedCarrier, setSelectedCarrier] = useState(null);
   const [step, setStep]             = useState(0);
@@ -173,7 +173,7 @@ const AgentWidget = ({ onNavigate }) => {
 
       if (data.sessionId) {
         setSessionId(data.sessionId);
-        localStorage.setItem(SESSION_KEY, data.sessionId);
+        try { sessionStorage.setItem(SESSION_KEY, data.sessionId); } catch (_) {}
       }
       setStep(data.step || 0);
 
@@ -220,7 +220,7 @@ const AgentWidget = ({ onNavigate }) => {
     setSessionId('');
     setSelectedCarrier(null);
     setStep(0);
-    localStorage.removeItem(SESSION_KEY);
+    try { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); } catch (_) {}
     setTimeout(() => sendMessage('', true), 100);
   };
 
