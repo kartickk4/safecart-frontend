@@ -502,7 +502,6 @@ export default function AIAgentView({ onBack }) {
   const [step, setStep] = useState(0);
   const [collectedData, setCollectedData] = useState(null);
   const [showBulk, setShowBulk] = useState(false);
-  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [showMicHelp, setShowMicHelp] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const messagesEndRef = useRef(null);
@@ -579,23 +578,13 @@ export default function AIAgentView({ onBack }) {
   }, []);
 
   const {
-    isSupported: isVoiceSupported,
     isListening,
     liveTranscript,
-    isSpeaking,
-    voiceEnabled,
     micError,
     clearMicError,
     audioLevel,
-    availableVoices,
-    selectedVoiceName,
-    changeVoice,
-    testVoice,
-    toggleVoiceEnabled,
     startListening,
-    stopListening,
-    speak,
-    stopSpeaking
+    stopListening
   } = useVoiceAgent({
     onFinalTranscript: handleVoiceFinal
   });
@@ -707,10 +696,6 @@ export default function AIAgentView({ onBack }) {
           showSupport: !!data.showSupport
         }
       ]);
-
-      if (data.reply) {
-        speak(data.reply);
-      }
     } catch (err) {
       if (sessionId) {
         try { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); } catch (_) {}
@@ -733,7 +718,7 @@ export default function AIAgentView({ onBack }) {
       setIsLoading(false);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [sessionId, isLoading, speak]);
+  }, [sessionId, isLoading]);
 
   const handleCarrierSelect = (c) => { 
     setSelectedCarrier(c); 
@@ -780,7 +765,6 @@ export default function AIAgentView({ onBack }) {
           showCarriers: !!d.carrierQuotes?.length, carrierQuotes: d.carrierQuotes,
           selectedCarrier: d.selectedCarrier, shipmentId: d.createdShipmentId
         }]);
-        if (d.reply) speak(d.reply);
       })
       .catch(err => {
         setMessages(prev => [...prev, { role: "agent", content: `Error: ${err.message}`, timestamp: new Date(), isError: true }]);
@@ -789,7 +773,7 @@ export default function AIAgentView({ onBack }) {
         setIsLoading(false);
         setTimeout(() => inputRef.current?.focus(), 100);
       });
-  }, [sessionId, isLoading, speak]);
+  }, [sessionId, isLoading]);
 
   const handleMicClick = () => {
     if (isListening) {
@@ -905,8 +889,8 @@ export default function AIAgentView({ onBack }) {
               />
               <CapCard
                 icon={Zap}
-                title="Payment Dispatch"
-                desc="Auto-sends WhatsApp & SMS payment links to buyer"
+                title="Instant Dispatch"
+                desc="Wallet-settled Prepaid & COD booking with immediate pickup"
                 gradient="bg-amber-50"
                 iconColor="text-amber-600"
               />
@@ -944,171 +928,52 @@ export default function AIAgentView({ onBack }) {
       {/* ── MAIN CHAT VIEW ── */}
       <main className="flex-1 flex flex-col min-w-0 bg-white relative">
         
-        {/* ── REDESIGNED UPPER HEADER & BUTTONS ── */}
-        <header className="px-3 sm:px-6 py-2.5 sm:py-3.5 border-b border-slate-200/80 bg-white/95 backdrop-blur-md flex items-center justify-between shrink-0 z-20 shadow-xs">
+        {/* ── UPPER HEADER ── */}
+        <header className="px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-slate-200/80 bg-white/95 backdrop-blur-md flex items-center justify-between gap-3 shrink-0 z-20">
           
-          {/* Left Title & Status */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* Left Identity & Live Status */}
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             {onBack && (
               <button
                 type="button"
                 onClick={onBack}
-                className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-600 flex items-center justify-center shrink-0 transition active:scale-95 cursor-pointer shadow-2xs"
+                className="w-9 h-9 rounded-xl border border-slate-200/90 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 flex items-center justify-center shrink-0 transition-all press-spring cursor-pointer"
                 title="Back to Previous View"
               >
-                <ArrowLeft size={15} />
+                <ArrowLeft size={16} />
               </button>
             )}
 
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-[#1E56E3] to-indigo-700 p-0.5 shadow-sm shadow-indigo-500/20 overflow-hidden shrink-0 flex items-center justify-center">
-              <img src={SK_LOGO} alt="SecureKaro" className="w-full h-full object-cover rounded-[14px]" />
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-slate-200/90 bg-white p-0.5 shadow-2xs shrink-0">
+              <img src={SK_LOGO} alt="SecureKaro" className="w-full h-full object-cover rounded-[10px]" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
             </div>
+
             <div className="min-w-0">
-              <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5 truncate">
+              <div className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5 truncate">
                 <span className="truncate">SecureKaro Copilot</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-50 text-[#1E56E3] border border-blue-200/70 shrink-0">
+                  AI
+                </span>
               </div>
-              <div className="text-[10px] sm:text-xs text-slate-500 font-medium flex items-center gap-1.5 truncate">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <span className="truncate">1.2s Fast Neural Dispatch</span>
+              <div className="text-[11px] text-slate-500 font-medium truncate">
+                {step > 0 && step < 12
+                  ? "Booking in progress • Multi-carrier rates"
+                  : "29,000+ Pincodes • Instant Booking"}
               </div>
             </div>
           </div>
 
-          {/* Right Polished Action Button Group */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            
-            {/* Voice Response Toggle Pill */}
-            <button
-              type="button"
-              onClick={toggleVoiceEnabled}
-              title={voiceEnabled ? "Voice Speech: Active (Click to mute)" : "Voice Speech: Inactive (Click to hear voice aloud)"}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer border ${
-                voiceEnabled
-                  ? "bg-emerald-500 text-white border-emerald-600 shadow-sm shadow-emerald-500/25 ring-2 ring-emerald-400/30 active:scale-95"
-                  : "bg-slate-100 hover:bg-slate-200/80 text-slate-700 border-slate-200/90 active:scale-95"
-              }`}
-            >
-              {voiceEnabled ? (
-                <>
-                  <Volume2 size={13} className="animate-pulse" />
-                  <span className="hidden sm:inline">Voice: ON</span>
-                </>
-              ) : (
-                <>
-                  <VolumeX size={13} className="text-slate-400" />
-                  <span className="hidden sm:inline">Voice: OFF</span>
-                </>
-              )}
-            </button>
-
-            {/* Speaking Stop Pill (Only when speaking) */}
-            {isSpeaking && (
-              <button
-                type="button"
-                onClick={stopSpeaking}
-                title="Stop current speech playback"
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-rose-500 text-white text-xs font-bold shadow-sm shadow-rose-500/30 cursor-pointer transition animate-pulse active:scale-95"
-              >
-                <Radio size={12} />
-                <span>Stop</span>
-              </button>
-            )}
-
-            {/* Voice Audio Settings Button */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowVoiceSettings(!showVoiceSettings)}
-                title="Voice & Audio Settings (Gemini / ChatGPT Voice)"
-                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full border flex items-center justify-center transition-all cursor-pointer ${
-                  showVoiceSettings
-                    ? "bg-indigo-50 border-indigo-400 text-indigo-700 shadow-sm"
-                    : "border-slate-200/90 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 shadow-2xs active:scale-95"
-                }`}
-              >
-                <Sliders size={14} />
-              </button>
-
-              {/* Voice Settings Dropdown */}
-              {showVoiceSettings && (
-                <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl border border-slate-200/90 shadow-xl p-3 z-30 animate-fade-in text-left">
-                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-                    <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-                      <Sparkles size={13} className="text-indigo-600" />
-                      Voice Assistant Engine
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowVoiceSettings(false)}
-                      className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
-                    >
-                      <X size={13} />
-                    </button>
-                  </div>
-
-                  <p className="text-[11px] text-slate-500 mb-2.5 leading-snug">
-                    Natural Neural voice tuned for warm conversational cadence like ChatGPT & Gemini.
-                  </p>
-
-                  <div className="space-y-1.5 mb-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        changeVoice("");
-                        testVoice("");
-                      }}
-                      className="w-full flex items-center justify-between p-2 rounded-xl border text-left text-xs font-bold transition hover:bg-indigo-50/50 border-slate-200"
-                    >
-                      <div>
-                        <div className="text-slate-800">Auto Neural (Recommended)</div>
-                        <div className="text-[10px] text-slate-400 font-normal">Gemini/ChatGPT style warmth</div>
-                      </div>
-                      <Play size={12} className="text-indigo-600 shrink-0" />
-                    </button>
-
-                    {availableVoices.slice(0, 5).map((v) => (
-                      <button
-                        key={v.name}
-                        type="button"
-                        onClick={() => {
-                          changeVoice(v.name);
-                          testVoice(v.name);
-                        }}
-                        className={`w-full flex items-center justify-between p-2 rounded-xl border text-left text-xs transition ${
-                          selectedVoiceName === v.name
-                            ? "bg-indigo-50 border-indigo-300 font-bold text-indigo-900"
-                            : "hover:bg-slate-50 border-slate-100 text-slate-700"
-                        }`}
-                      >
-                        <div className="truncate mr-2">
-                          <div className="truncate font-medium">{v.name}</div>
-                          <div className="text-[10px] text-slate-400">{v.lang}</div>
-                        </div>
-                        <Play size={11} className="text-slate-400 shrink-0" />
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => testVoice(selectedVoiceName)}
-                    className="w-full py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-xs font-bold shadow-xs hover:opacity-95 transition flex items-center justify-center gap-1.5"
-                  >
-                    <Play size={12} fill="white" />
-                    <span>Test Voice Speech</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Reset Button */}
+          {/* Right Action */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={handleReset}
               title="Start fresh conversation"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-slate-200/90 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95"
+              className="group h-9 px-3 rounded-xl border border-slate-200/90 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-semibold flex items-center gap-1.5 transition-all press-spring cursor-pointer"
             >
-              <RotateCcw size={14} />
+              <RotateCcw size={14} className="transition-transform duration-200 group-hover:-rotate-45" />
+              <span className="hidden sm:inline">New Chat</span>
             </button>
           </div>
         </header>
