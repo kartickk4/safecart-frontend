@@ -414,8 +414,8 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
 };
 
 const QUICK_REPLIES = {
-  0: ["Book Shipment", "Track Order", "My Wallet", "Weight Shield", "NDR Alerts", "RTO Rules"],
-  1: ["Cancel Booking", "Delivery Protection", "Replacement Guide"],
+  0: ["📦 Book Shipment", "🚚 Track Order", "💰 My Wallet", "🔄 Replacement Guide", "🛡️ RTO Rules", "✨ Defect Discount"],
+  1: ["Cancel Booking", "How does Delivery Protection work?", "Replacement Guide"],
   7: ["Prepaid Order", "Cash on Delivery (COD)"],
   8: ["Yes, Enable RTO Protection", "No, Skip RTO"],
   9: ["Yes, Allow Returns", "No, Final Sale"],
@@ -1224,26 +1224,24 @@ export default function AIAgentView({ onBack }) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* ── CONTEXTUAL ACTION STRIP (Single crisp rail, never double-stacked) ── */}
+        {/* ── QUICK SUGGESTION PILLS ── */}
         {currentQR.length > 0 && !isLoading && (
-          <div className="px-3.5 sm:px-6 py-2 bg-slate-50/95 border-t border-slate-200/75 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 animate-dock-reveal">
-            <span className="text-[10px] font-bold text-slate-400 mr-1 flex items-center gap-1 shrink-0 uppercase tracking-wider font-mono">
-              {step === 11 ? 'Actions' : 'Quick'}
+          <div className="px-4 sm:px-6 py-2 bg-slate-50/90 border-t border-slate-200/70 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+            <span className="text-[10px] font-bold text-slate-400 mr-1 flex items-center gap-1 shrink-0 uppercase tracking-wider">
+              <Sparkles size={11} className="text-indigo-500" />
+              Suggested:
             </span>
             {currentQR.map(qr => {
-              const isPrimary = qr === "Confirm & Book" || qr === "Confirm Courier" || qr === "Book Shipment";
               const isActiveToggle = qr === "Disable RTO" || qr === "Disable Return";
               return (
                 <button
                   key={qr}
                   type="button"
                   onClick={() => handleQuickReply(qr)}
-                  className={`shrink-0 px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold transition-all duration-150 press-spring cursor-pointer inline-flex items-center gap-1.5 whitespace-nowrap ${
-                    isPrimary
-                      ? "bg-[#1E56E3] hover:bg-[#1646C2] text-white border border-[#1E56E3] shadow-xs"
-                      : isActiveToggle
-                        ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200"
-                        : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/90 hover:border-slate-300"
+                  className={`shrink-0 px-3.5 py-1.5 rounded-full border text-xs font-bold transition-all duration-150 shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer inline-flex items-center gap-1.5 ${
+                    isActiveToggle
+                      ? "bg-emerald-50 hover:bg-emerald-600 border-emerald-300 hover:border-emerald-600 text-emerald-700 hover:text-white"
+                      : "bg-white hover:bg-indigo-600 border-slate-300 hover:border-indigo-600 text-slate-700 hover:text-white"
                   }`}
                 >
                   {isActiveToggle && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />}
@@ -1254,27 +1252,45 @@ export default function AIAgentView({ onBack }) {
           </div>
         )}
 
-        {/* ── PRO COMPOSER DOCK ── */}
-        <footer className="px-3 sm:px-6 pt-2.5 pb-24 md:pb-5 border-t border-slate-200/80 bg-white shrink-0">
+        {/* ── BOTTOM COMMAND DOCK (Single-row floating pill + pro button micro-animations) ── */}
+        <footer className="p-3 sm:p-5 pb-24 md:pb-6 border-t border-slate-200/80 bg-white/95 backdrop-blur-md shrink-0">
+          
+          {/* Quick Action Capsule Row */}
+          <div className="max-w-4xl mx-auto mb-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            {[
+              { label: '📦 Book Shipment', query: 'Book shipment' },
+              { label: '🛡️ Weight Shield', query: 'How does Weight Shield work?' },
+              { label: '🚨 NDR Alerts', query: 'Show active NDR shipments' },
+              { label: '📊 Shipping Rates', query: 'Cost to deliver' },
+              { label: '💰 My Wallet', query: 'What is my wallet balance?' },
+              { label: '🔍 Track Order', query: 'Track my recent order' }
+            ].map((qp, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => sendMessage(qp.query)}
+                className="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-200/80 hover:border-indigo-200 transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs"
+              >
+                {qp.label}
+              </button>
+            ))}
+          </div>
 
           {/* Active Voice Waveform Indicator */}
           {isListening && (
-            <div className="max-w-4xl mx-auto mb-2.5 flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-rose-50/90 border border-rose-200 rounded-2xl animate-dock-reveal">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="relative w-7 h-7 rounded-full bg-rose-600 text-white flex items-center justify-center shrink-0">
-                  <span className="absolute inset-0 rounded-full bg-rose-500 mic-ripple" />
-                  <Mic size={13} className="relative z-10" />
-                </div>
+            <div className="max-w-4xl mx-auto mb-3 flex items-center justify-between p-3 bg-rose-50/95 border border-rose-200 rounded-2xl animate-dock-reveal shadow-xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping shrink-0" />
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-rose-950 flex items-center gap-2">
-                    <span>Listening</span>
-                    <div className="flex items-center gap-0.5 h-4">
+                  <div className="text-xs font-bold text-rose-900 flex items-center gap-2">
+                    <span>Listening to your voice...</span>
+                    <div className="flex items-end gap-1 h-5">
                       {[1, 2, 3, 4, 5, 6, 7].map((barIdx) => {
-                        const dynamicHeight = Math.max(4, Math.min(18, Math.round((audioLevel / 100) * 18 * (0.45 + (barIdx % 3) * 0.28))));
+                        const dynamicHeight = Math.max(6, Math.min(24, Math.round((audioLevel / 100) * 24 * (0.5 + (barIdx % 3) * 0.3))));
                         return (
-                          <span
+                          <div
                             key={barIdx}
-                            className="w-[3px] bg-rose-500 rounded-full transition-all duration-75"
+                            className="w-1 bg-rose-500 rounded-full transition-all duration-75"
                             style={{ height: `${dynamicHeight}px` }}
                           />
                         );
@@ -1282,17 +1298,17 @@ export default function AIAgentView({ onBack }) {
                     </div>
                   </div>
                   {liveTranscript && (
-                    <div className="text-[11px] text-rose-700 font-medium truncate max-w-[200px] sm:max-w-sm">
+                    <div className="text-[11px] text-rose-700 font-medium truncate max-w-xs mt-0.5">
                       "{liveTranscript}"
                     </div>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={stopListening}
-                  className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition press-spring cursor-pointer"
+                  className="px-3 py-1 rounded-full text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-100 transition cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1302,9 +1318,9 @@ export default function AIAgentView({ onBack }) {
                     stopListening();
                     if (input.trim()) sendMessage(input);
                   }}
-                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-rose-600 text-white hover:bg-rose-700 transition press-spring cursor-pointer shadow-xs"
+                  className="px-3.5 py-1 rounded-full text-xs font-bold bg-rose-600 text-white shadow-xs hover:bg-rose-700 transition cursor-pointer"
                 >
-                  Send Voice
+                  Done & Send
                 </button>
               </div>
             </div>
@@ -1312,196 +1328,190 @@ export default function AIAgentView({ onBack }) {
 
           {/* Selected Screenshot / Photo OCR Preview */}
           {selectedImage && (
-            <div className="max-w-4xl mx-auto mb-2.5 flex items-center gap-3 p-2 bg-slate-50 border border-slate-200 rounded-2xl animate-dock-reveal">
-              <div className="relative w-11 h-11 rounded-xl overflow-hidden border border-slate-300 shrink-0 bg-white">
+            <div className="max-w-4xl mx-auto mb-2 flex items-center gap-3 p-2.5 bg-gradient-to-r from-indigo-50/95 to-blue-50/90 border border-indigo-200/90 rounded-2xl shadow-xs animate-dock-reveal">
+              <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-indigo-200 shrink-0 bg-white shadow-xs">
                 <img src={selectedImage.previewUrl} alt="Order preview" className="w-full h-full object-cover" />
-                <div className="absolute inset-x-0 h-1 bg-blue-500/80 shadow-[0_0_8px_rgba(30,86,227,0.8)] scan-sweep-line pointer-events-none" />
+                <div className="absolute inset-x-0 h-1 bg-indigo-500/80 shadow-[0_0_8px_rgba(79,70,229,0.8)] scan-sweep-line pointer-events-none" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse shrink-0" />
-                  <span className="truncate">Order Photo Attached</span>
+                <div className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                  <Sparkles size={13} className="text-indigo-600 shrink-0" />
+                  <span className="truncate">Order Screenshot Attached</span>
                 </div>
-                <div className="text-[11px] text-slate-500 truncate">
-                  Press Send to extract address & ask only missing fields
+                <div className="text-[11px] text-indigo-600/90 truncate">
+                  Ready to scan with Gemini Vision • Press Send or type note
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedImage(null)}
-                className="w-8 h-8 rounded-lg bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 flex items-center justify-center transition press-spring cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 flex items-center justify-center transition cursor-pointer"
                 title="Remove image"
               >
-                <X size={14} />
+                <X size={15} />
               </button>
             </div>
           )}
 
-          {/* Hidden file input for camera / image selection */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files?.[0]) {
-                processImageFile(e.target.files[0]);
-                e.target.value = '';
-              }
-            }}
-          />
-
-          {/* Tactile 2-Tier Composer Shell (Full-width typing + Precision Utility Rail) */}
-          <div className="max-w-4xl mx-auto rounded-2xl bg-slate-50/70 focus-within:bg-white border border-slate-200/95 focus-within:border-slate-400 focus-within:shadow-[0_8px_24px_-8px_rgba(15,23,42,0.12)] transition-all duration-200">
-            <div className="px-3.5 pt-2.5 pb-1">
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage(input);
-                  }
-                }}
-                placeholder={
-                  isLoading
-                    ? "Thinking..."
-                    : isListening
-                      ? "Listening — speak recipient details..."
-                      : "Paste WhatsApp order, address, or ask a question..."
+          {/* Elevated Floating Single-Row Command Dock */}
+          <div className="relative max-w-4xl mx-auto flex items-center gap-1.5 sm:gap-2 bg-slate-50 focus-within:bg-white border border-slate-300/90 focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/10 rounded-full p-2 pl-4 sm:pl-5 transition-all duration-200 shadow-sm shadow-slate-200/60">
+            
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage(input);
                 }
-                disabled={isLoading}
-                className="w-full bg-transparent border-none text-[13px] sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none py-1 font-medium"
-              />
-            </div>
+              }}
+              placeholder={
+                isLoading 
+                  ? "AI thinking (1.2s)..." 
+                  : isListening 
+                    ? "Listening to voice..." 
+                    : "Paste WhatsApp order, ask in English/Hindi, or track..."
+              }
+              disabled={isLoading}
+              className="flex-1 min-w-0 bg-transparent border-none text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none py-1.5 font-medium"
+            />
 
-            <div className="px-2.5 pb-2 pt-1 flex items-center justify-between gap-2">
-              {/* Left Utility Cluster: Mic, Scan Camera, Excel Sheet */}
-              <div className="flex items-center gap-1.5">
-                {/* Voice Input Button */}
-                <button
-                  type="button"
-                  onClick={handleMicClick}
-                  title={isListening ? "Stop voice listening" : "Speak order details"}
-                  className={`group relative h-9 px-2.5 sm:px-3 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition-all duration-200 press-spring cursor-pointer ${
-                    isListening
-                      ? "bg-rose-600 text-white border border-rose-600 shadow-xs"
-                      : "bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/90"
+            {/* Tactile Microphone Button with Concentric Ripple Animation */}
+            <button
+              type="button"
+              onClick={handleMicClick}
+              title={isListening ? "Stop voice listening" : "Speak to AI Agent (Microphone)"}
+              className={`group relative w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 press-spring cursor-pointer ${
+                isListening
+                  ? "bg-gradient-to-tr from-rose-500 to-pink-600 text-white shadow-md shadow-rose-500/35 ring-4 ring-rose-200"
+                  : "bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border border-slate-200/90 hover:border-indigo-200 shadow-2xs"
+              }`}
+            >
+              {isListening && (
+                <span className="absolute inset-0 rounded-full bg-rose-500/50 mic-ripple pointer-events-none" />
+              )}
+              <span className={`relative z-10 transition-transform duration-200 ${!isListening ? "group-hover:scale-110" : ""}`}>
+                {isListening ? <MicOff size={17} /> : <Mic size={17} />}
+              </span>
+            </button>
+
+            {/* Hidden file input for camera / image selection */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  processImageFile(e.target.files[0]);
+                  e.target.value = '';
+                }
+              }}
+            />
+
+            {/* Scan Order Screenshot / Photo OCR Button with Lens Tilt */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              title="Upload order photo or chit (Ctrl+V paste supported)"
+              className={`group relative w-10 h-10 rounded-full border flex items-center justify-center shrink-0 transition-all duration-200 press-spring cursor-pointer ${
+                selectedImage
+                  ? "bg-indigo-600 text-white border-indigo-700 shadow-sm ring-2 ring-indigo-200"
+                  : "bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border-slate-200/90 hover:border-indigo-200 shadow-2xs"
+              }`}
+            >
+              <span className="relative flex items-center justify-center transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-6">
+                <Camera size={17} />
+                {selectedImage && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-indigo-600 animate-pulse" />
+                )}
+              </span>
+            </button>
+
+            {/* Bulk Upload Sheet Button with Float Lift */}
+            <button
+              type="button"
+              onClick={() => setShowBulk(true)}
+              title="Bulk Excel Upload (100+ Orders)"
+              className="group w-10 h-10 rounded-full bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 border border-slate-200/90 hover:border-emerald-200 flex items-center justify-center shrink-0 transition-all duration-200 press-spring cursor-pointer shadow-2xs"
+            >
+              <span className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-105">
+                <FileSpreadsheet size={17} />
+              </span>
+            </button>
+
+            {/* Send Button with Launch Glide & Loading Spin */}
+            <button
+              type="button"
+              onClick={() => sendMessage(input)}
+              disabled={isLoading || (!input.trim() && !selectedImage)}
+              className={`group w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 press-spring ${
+                isLoading
+                  ? "bg-[#1E56E3] text-white cursor-wait shadow-md shadow-indigo-500/30"
+                  : (input.trim() || selectedImage)
+                    ? "bg-gradient-to-r from-[#1E56E3] via-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/30 hover:shadow-indigo-500/45 cursor-pointer"
+                    : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-60"
+              }`}
+            >
+              {isLoading ? (
+                <RefreshCw size={16} className="animate-spin" />
+              ) : (
+                <Send
+                  size={16}
+                  className={`transition-transform duration-200 ${
+                    (input.trim() || selectedImage)
+                      ? "group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105"
+                      : ""
                   }`}
-                >
-                  {isListening && (
-                    <span className="absolute inset-0 rounded-xl bg-rose-500/40 mic-ripple pointer-events-none" />
-                  )}
-                  <span className={`relative z-10 flex items-center justify-center transition-transform duration-200 ${!isListening ? "group-hover:scale-110" : ""}`}>
-                    {isListening ? <MicOff size={15} /> : <Mic size={15} />}
-                  </span>
-                  <span className="relative z-10 hidden sm:inline">
-                    {isListening ? "Stop" : "Voice"}
-                  </span>
-                </button>
-
-                {/* Camera / Scan Screenshot Button */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  title="Scan order photo or WhatsApp screenshot (Ctrl+V)"
-                  className={`group relative h-9 px-2.5 sm:px-3 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition-all duration-200 press-spring cursor-pointer ${
-                    selectedImage
-                      ? "bg-slate-900 text-white border border-slate-900 shadow-xs"
-                      : "bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/90"
-                  }`}
-                >
-                  <span className="relative flex items-center justify-center transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
-                    <Camera size={15} />
-                    {selectedImage && (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
-                    )}
-                  </span>
-                  <span className="hidden sm:inline">Scan</span>
-                </button>
-
-                {/* Bulk Excel Sheet Button */}
-                <button
-                  type="button"
-                  onClick={() => setShowBulk(true)}
-                  title="Bulk Excel / CSV Upload"
-                  className="group h-9 px-2.5 sm:px-3 rounded-xl bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border border-slate-200/90 hover:border-emerald-200 flex items-center gap-1.5 text-xs font-semibold transition-all duration-200 press-spring cursor-pointer"
-                >
-                  <span className="transition-transform duration-200 group-hover:-translate-y-0.5">
-                    <FileSpreadsheet size={15} />
-                  </span>
-                  <span className="hidden sm:inline">Sheet</span>
-                </button>
-              </div>
-
-              {/* Right Side: Subtle Shortcut + Morphing Send Button */}
-              <div className="flex items-center gap-2">
-                <span className="hidden md:inline text-[10px] font-mono text-slate-400 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200/70">
-                  Enter ↵
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() => sendMessage(input)}
-                  disabled={isLoading || (!input.trim() && !selectedImage)}
-                  aria-label="Send message"
-                  className={`group h-9 min-w-[40px] px-3.5 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                    isLoading
-                      ? "bg-[#1E56E3] text-white cursor-wait opacity-90"
-                      : (input.trim() || selectedImage)
-                        ? "bg-[#1E56E3] hover:bg-[#1646C2] text-white shadow-[0_4px_12px_-2px_rgba(30,86,227,0.4)] hover:shadow-[0_6px_16px_-2px_rgba(30,86,227,0.5)] press-spring cursor-pointer"
-                        : "bg-slate-200/80 text-slate-400 cursor-not-allowed"
-                  }`}
-                >
-                  {isLoading ? (
-                    <>
-                      <RefreshCw size={14} className="animate-spin" />
-                      <span className="hidden sm:inline">Sending</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send
-                        size={14}
-                        className={`transition-transform duration-200 ${
-                          (input.trim() || selectedImage)
-                            ? "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                            : ""
-                        }`}
-                      />
-                      <span className="hidden sm:inline">Send</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+                />
+              )}
+            </button>
           </div>
 
-          {/* Ultra-clean Quick Prompt Hints */}
-          <div className="max-w-4xl mx-auto flex items-center justify-center gap-2 mt-2 text-[10px] sm:text-[11px] text-slate-400 flex-wrap">
+          {/* Quick Prompts Footnote */}
+          <div className="flex items-center justify-center gap-2 mt-2.5 text-[10px] sm:text-[11px] text-slate-400 flex-wrap">
+            <span className="font-semibold text-slate-500">Quick:</span>
             <button
               type="button"
               onClick={() => sendMessage("Rajesh Kumar, 9876543210, House 42 Green Park Extension, New Delhi 110016, 1 Denim Jacket, COD Rs 1800, 900g")}
-              className="font-semibold text-slate-600 hover:text-[#1E56E3] hover:bg-slate-100 px-2 py-0.5 rounded-md cursor-pointer transition"
+              className="font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50/80 px-2.5 py-0.5 rounded-full cursor-pointer hover:bg-indigo-100 transition"
             >
-              Try 1-Click Sample Order
+              ⚡ 1-Click WhatsApp Order
             </button>
-            <span className="text-slate-300">•</span>
+            <span>•</span>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50/80 px-2.5 py-0.5 rounded-full cursor-pointer hover:bg-indigo-100 transition flex items-center gap-1"
+            >
+              <Camera size={12} />
+              📸 Scan Chit
+            </button>
+            <span>•</span>
             <button
               type="button"
               onClick={() => sendMessage("Mera wallet balance kitna hai?")}
-              className="hover:text-slate-700 transition cursor-pointer"
+              className="hover:text-indigo-600 hover:underline cursor-pointer"
             >
-              Mera wallet balance?
+              "Mera balance?"
             </button>
-            <span className="text-slate-300">•</span>
+            <span>•</span>
             <button
               type="button"
-              onClick={() => sendMessage("How many pincodes does SecureKaro cover?")}
-              className="hover:text-slate-700 transition cursor-pointer"
+              onClick={() => sendMessage("Book a new shipment")}
+              className="hover:text-indigo-600 hover:underline cursor-pointer"
             >
-              Pincode coverage?
+              "Book shipment"
+            </button>
+            <span>•</span>
+            <button
+              type="button"
+              onClick={() => sendMessage("Track my recent order")}
+              className="hover:text-indigo-600 hover:underline cursor-pointer"
+            >
+              "Track order"
             </button>
           </div>
         </footer>
