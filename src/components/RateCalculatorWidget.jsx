@@ -221,7 +221,7 @@ export default function RateCalculatorWidget({
             }`}
           >
             <Truck className="w-4 h-4" />
-            <span>📦 Forward Freight (Seller → Buyer)</span>
+            <span>Forward Freight</span>
           </button>
           <button
             type="button"
@@ -236,7 +236,7 @@ export default function RateCalculatorWidget({
             }`}
           >
             <RotateCcw className="w-4 h-4 text-indigo-600" />
-            <span>↩️ Reverse Freight (Customer Return)</span>
+            <span>Reverse Freight</span>
           </button>
         </div>
       </div>
@@ -258,14 +258,14 @@ export default function RateCalculatorWidget({
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-[#1E56E3]" />
-              {isReverseMode ? 'Customer Pickup Pincode (Return Origin)' : 'Pickup Pincode (Seller Hub)'}
+              {isReverseMode ? 'Return Pickup Pincode' : 'Pickup Pincode'}
             </label>
             <input
               type="text"
               maxLength={6}
               value={fromPincode}
               onChange={(e) => setFromPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder={isReverseMode ? "Customer PIN e.g. 110001" : "Seller PIN e.g. 700049"}
+              placeholder={isReverseMode ? "e.g. 110001" : "e.g. 700049"}
               className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E56E3] transition"
             />
           </div>
@@ -274,7 +274,7 @@ export default function RateCalculatorWidget({
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                {isReverseMode ? 'Warehouse Return Pincode (Seller Hub)' : 'Delivery Pincode (Buyer Destination)'}
+                {isReverseMode ? 'Return Destination Pincode' : 'Delivery Pincode'}
               </label>
               <button
                 type="button"
@@ -291,7 +291,7 @@ export default function RateCalculatorWidget({
               maxLength={6}
               value={toPincode}
               onChange={(e) => setToPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder={isReverseMode ? "Hub PIN e.g. 700049" : "Buyer PIN e.g. 110001"}
+              placeholder={isReverseMode ? "e.g. 700049" : "e.g. 110001"}
               className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E56E3] transition"
             />
           </div>
