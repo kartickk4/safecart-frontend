@@ -810,12 +810,7 @@ export default function App() {
           />
         )}
 
-        {/* TOP OF SCREEN AD BANNER (Hidden on AI Agent and transaction forms) */}
-        {currentTab !== 'ai-agent' && currentTab !== 'create-shipment' && currentTab !== 'delivery-confirm' && (
-          <div className="px-4 md:px-8 pt-2 pb-2 max-w-7xl mx-auto w-full">
-            <AdBanner onNavigateTrack={() => setCurrentTab('track')} />
-          </div>
-        )}
+        
 
         {/* SUSPENSE FOR ALL ROUTE VIEWS */}
         <Suspense fallback={<ViewLoadingFallback />}>
@@ -826,6 +821,12 @@ export default function App() {
 
         {currentTab !== 'ai-agent' && (
         <main className="flex-1 pb-28 md:pb-12 overflow-y-auto overflow-x-hidden w-full min-w-0">
+          {/* TOP AD BANNER (Shown for suppliers on portal views; scrolls cleanly with content) */}
+          {isSupplier && currentTab !== 'create-shipment' && currentTab !== 'delivery-confirm' && (
+            <div className="px-4 md:px-8 pt-3 pb-1 max-w-7xl mx-auto w-full">
+              <AdBanner onNavigateTrack={() => setCurrentTab('track')} />
+            </div>
+          )}
           <div key={`${currentTab}_${isSupplier ? 'Supplier' : 'Receiver'}`} className="view-enter min-h-full">
           {/* VIEW 1: DASHBOARD */}
           {currentTab === 'dashboard' && (

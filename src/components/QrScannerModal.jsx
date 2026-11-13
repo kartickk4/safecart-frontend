@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import {
   QrCode, Camera, Upload, X, AlertCircle, CheckCircle2,
@@ -361,26 +362,26 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }) {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200">
+  const modalNode = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
       <div 
-        className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden flex flex-col relative"
+        className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden flex flex-col relative max-h-[92dvh] my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 via-teal-50/20 to-blue-50/30">
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 via-teal-50/20 to-blue-50/30 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
               <QrCode className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Scan In-Box QR Code</span>
-                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full shrink-0">
                   Receiver Sign-Off
                 </span>
               </h2>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs text-slate-500 font-medium truncate">
                 Verify parcel inside the box to confirm delivery
               </p>
             </div>
@@ -390,14 +391,14 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }) {
               stopScanner();
               if (onClose) onClose();
             }}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition cursor-pointer"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition cursor-pointer shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Tab Selection */}
-        <div className="flex border-b border-slate-100 bg-slate-50/80 p-1.5 gap-1 text-xs font-bold text-slate-600">
+        <div className="flex border-b border-slate-100 bg-slate-50/80 p-1.5 gap-1 text-xs font-bold text-slate-600 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('camera')}
@@ -437,7 +438,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }) {
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 space-y-4">
+        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
           {/* TAB 1: LIVE CAMERA SCANNER */}
           {activeTab === 'camera' && (
             <div className="space-y-3">
@@ -670,7 +671,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }) {
         <div id="qr-file-dummy-container" style={{ display: 'none' }} />
 
         {/* Footer info banner */}
-        <div className="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-semibold px-5">
+        <div className="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-semibold px-5 shrink-0">
           <span className="flex items-center gap-1.5 text-emerald-600 font-bold">
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>Delivery 100% Protected</span>
@@ -680,4 +681,6 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }) {
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalNode, document.body) : modalNode;
 }
