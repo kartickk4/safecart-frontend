@@ -43,6 +43,7 @@ import AgentWidget from './components/AgentWidget';
 import SplashScreen from './components/SplashScreen';
 import AdBanner from './components/AdBanner';
 import BottomNav from './components/BottomNav';
+import { TopProgressBar, FullScreenLoader, PullToRefresh } from './components/Loaders';
 import { profileAPI, authAPI, notificationAPI, clearApiCache, rewardAPI, walletAPI, shipmentAPI } from './services/api';
 import { LayoutDashboard, Navigation, PlusCircle, CheckCircle2, User, Bell, ShieldCheck, Wallet, Truck, ShoppingBag, ArrowLeftRight, Crown, Sparkles } from 'lucide-react';
 
@@ -100,6 +101,7 @@ export default function App() {
   const [signOutStep, setSignOutStep] = useState('');
   const [currentTab, _setCurrentTab] = useState(() => getTabFromLocation());
   const [roleNotification, setRoleNotification] = useState(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     if (!loading) return;
@@ -108,6 +110,22 @@ export default function App() {
     }, 3500);
     return () => clearTimeout(timer);
   }, [loading]);
+
+  useEffect(() => {
+    setIsNavigating(true);
+    const timer = setTimeout(() => setIsNavigating(false), 450);
+    return () => clearTimeout(timer);
+  }, [currentTab]);
+
+  const handlePullRefresh = async () => {
+    try {
+      await refreshCounts();
+      if (user) {
+        await prefetchWalletInBackground(user);
+      }
+      window.dispatchEvent(new CustomEvent('refresh-view-data'));
+    } catch (_) {}
+  };
 
   // Central navigation dispatcher that updates React state, URL path in history, and page title
   const setCurrentTab = (nextTab, options = {}) => {
@@ -249,6 +267,7 @@ export default function App() {
       if (walletRes.status === 'fulfilled' && walletRes.value?.data) {
         const wData = walletRes.value.data;
         if (wData.walletBalance !== undefined) updatedBalances.walletBalance = wData.walletBalance;
+        if (wData.totalWalletBalance !== undefined) updatedBalances.totalWalletBalance = wData.totalWalletBalance;
         if (wData.withdrawableBalance !== undefined) updatedBalances.withdrawableBalance = wData.withdrawableBalance;
         if (wData.securityReserve !== undefined) updatedBalances.securityReserve = wData.securityReserve;
         if (wData.activeShipmentsCount !== undefined) updatedBalances.activeShipmentsCount = wData.activeShipmentsCount;
@@ -680,6 +699,7 @@ export default function App() {
         </header>
 
         <main className="flex-1 pb-16 overflow-y-auto">
+          <PullToRefresh onRefresh={handlePullRefresh}>
           <Suspense fallback={<ViewLoadingFallback />}>
             {isLegalTab && (
               <LegalComplianceView 
@@ -705,6 +725,7 @@ export default function App() {
               />
             )}
           </Suspense>
+          </PullToRefresh>
         </main>
 
         <footer className="bg-white border-t border-slate-200 py-8 px-4 md:px-8 text-xs text-slate-500">
@@ -781,6 +802,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] flex text-slate-800 selection:bg-blue-500 selection:text-white relative">
+      <TopProgressBar active={isNavigating || loading} />
       
       {/* Left Sidebar */}
       <Sidebar
@@ -821,6 +843,7 @@ export default function App() {
 
         {currentTab !== 'ai-agent' && (
         <main className="flex-1 pb-28 md:pb-12 overflow-y-auto overflow-x-hidden w-full min-w-0">
+          <PullToRefresh onRefresh={handlePullRefresh}>
           {/* TOP AD BANNER (Shown for suppliers on portal views; scrolls cleanly with content) */}
           {isSupplier && currentTab !== 'create-shipment' && currentTab !== 'delivery-confirm' && (
             <div className="px-4 md:px-8 pt-3 pb-1 max-w-7xl mx-auto w-full">
@@ -1011,6 +1034,7 @@ export default function App() {
             />
           )}
           </div>
+          </PullToRefresh>
         </main>
         )}
         </Suspense>
@@ -1131,8 +1155,14 @@ export default function App() {
         </div>
       )}
 
-      {/* SIGN OUT ANIMATED LOADING OVERLAY */}
-      {isSigningOut && (
+      {/* SIGN OUT / FULL SCREEN LOADER */}
+      <FullScreenLoader
+        show={isSigningOut}
+        title="Signing Out Safely"
+        subtitle={signOutStep || 'Clearing authentication tokens and active session...'}
+        step="Secure Session Disposal"
+      />
+      {false && (
         <div className="fixed inset-0 z-50 bg-blue-950/25 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-300 select-none">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-slate-100 text-center space-y-6 animate-in zoom-in-95 duration-200">
             <div className="relative w-16 h-16 mx-auto flex items-center justify-center">

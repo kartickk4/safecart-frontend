@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
+import { SkeletonLoader, ButtonLoader, PulsingBeacon } from './Loaders';
 
 const POPULAR_DESTINATIONS = [
   { name: 'Delhi', pincode: '110001' },
@@ -457,23 +458,15 @@ export default function RateCalculatorWidget({
         )}
 
         {/* SUBMIT BUTTON */}
-        <button
+        <ButtonLoader
           type="submit"
-          disabled={loading}
-          className="w-full py-3 bg-[#1E56E3] hover:bg-[#1649CC] active:scale-[0.99] text-white text-sm font-extrabold rounded-2xl shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+          loading={loading}
+          loadingText="Calculating Live Rates..."
+          icon={<Calculator className="w-4 h-4" />}
+          className="w-full py-3.5 rounded-2xl text-sm font-extrabold"
         >
-          {loading ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              Calculating Live Rates...
-            </>
-          ) : (
-            <>
-              <Calculator className="w-4 h-4" />
-              {isReverseMode ? 'Check Reverse Pickup Rates' : 'Check Available Courier Rates'}
-            </>
-          )}
-        </button>
+          {isReverseMode ? 'Check Reverse Pickup Rates' : 'Check Available Courier Rates'}
+        </ButtonLoader>
 
         {error && (
           <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
@@ -483,8 +476,22 @@ export default function RateCalculatorWidget({
         )}
       </form>
 
+      {/* LOADING SKELETON DISPLAY */}
+      {loading && (
+        <div className="mt-6 pt-5 border-t border-slate-100 space-y-3.5 animate-in fade-in duration-200">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-extrabold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+              <PulsingBeacon color="blue" />
+              <span>Fetching Real-Time Courier Rates...</span>
+            </span>
+            <span className="text-slate-400 font-semibold text-[11px]">Delhivery · Shadowfax · Xpressbees</span>
+          </div>
+          <SkeletonLoader type="carrier" count={3} />
+        </div>
+      )}
+
       {/* RESULTS DISPLAY */}
-      {quotes.length > 0 && (
+      {!loading && quotes.length > 0 && (
         <div className="mt-6 pt-5 border-t border-slate-100 space-y-3.5 animate-in fade-in duration-300">
           <div className="flex items-center justify-between text-xs">
             <span className="font-extrabold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">

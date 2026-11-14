@@ -751,7 +751,8 @@ const AgentWidget = ({ onNavigate }) => {
                   </div>
                   <div style={{
                     background: '#ffffff', borderRadius: '4px 16px 16px 16px',
-                    padding: '10px 16px', border: '1.5px solid #e2e8f0'
+                    padding: '9px 14px', border: '1.5px solid #e2e8f0',
+                    display: 'flex', alignItems: 'center', gap: '8px'
                   }}>
                     <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                       {[0, 1, 2].map(i => (
@@ -761,6 +762,7 @@ const AgentWidget = ({ onNavigate }) => {
                         }}/>
                       ))}
                     </div>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#6366f1' }}>AI agent thinking...</span>
                   </div>
                 </div>
               )}
@@ -883,7 +885,7 @@ const AgentWidget = ({ onNavigate }) => {
                     transition: 'all 0.15s ease'
                   }}
                 >
-                  <Send size={15} />
+                  {isLoading ? <RefreshCw size={14} className="animate-spin" /> : <Send size={15} />}
                 </button>
               </div>
 

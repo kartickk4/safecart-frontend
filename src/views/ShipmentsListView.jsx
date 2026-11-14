@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Filter, Eye, ChevronLeft, ChevronRight, Download, Plus, Box, CheckCircle2, Clock, AlertTriangle, QrCode, Camera, RotateCcw } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
 import QrScannerModal from '../components/QrScannerModal';
+import { SkeletonLoader } from '../components/Loaders';
 
 export default function ShipmentsListView({ onSelectShipment, openNewShipmentModal, user, currentRole, isSupplier, onRepeatShipment }) {
   const isMerchant = isSupplier !== undefined 
@@ -176,7 +177,9 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
 
         {/* ── MOBILE CARD LIST VIEW (block md:hidden) ── */}
         <div className="block md:hidden space-y-3">
-          {paginated.length === 0 ? (
+          {loading && shipments.length === 0 ? (
+            <SkeletonLoader type="shipment" count={3} />
+          ) : paginated.length === 0 ? (
             <div className="py-10 text-center text-slate-400">
               <Box className="w-8 h-8 text-slate-300 mx-auto mb-2" />
               <p className="font-bold text-slate-600 text-sm">
@@ -280,7 +283,20 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
-              {paginated.length === 0 ? (
+              {loading && shipments.length === 0 ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td className="py-4 px-4"><div className="w-24 h-4 bg-slate-100 skeleton-shimmer rounded-md" /></td>
+                    <td className="py-4 px-4"><div className="w-28 h-4 bg-slate-100 skeleton-shimmer rounded-md" /></td>
+                    <td className="py-4 px-4"><div className="w-36 h-4 bg-slate-100 skeleton-shimmer rounded-md" /></td>
+                    <td className="py-4 px-4"><div className="w-20 h-4 bg-slate-100 skeleton-shimmer rounded-md" /></td>
+                    <td className="py-4 px-4"><div className="w-16 h-4 bg-slate-100 skeleton-shimmer rounded-md" /></td>
+                    <td className="py-4 px-4"><div className="w-20 h-6 bg-slate-100 skeleton-shimmer rounded-full" /></td>
+                    <td className="py-4 px-4"><div className="w-20 h-6 bg-slate-100 skeleton-shimmer rounded-full" /></td>
+                    <td className="py-4 px-4 text-right"><div className="w-12 h-6 bg-slate-100 skeleton-shimmer rounded-lg ml-auto" /></td>
+                  </tr>
+                ))
+              ) : paginated.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="py-12 text-center text-slate-400">
                     <Box className="w-8 h-8 text-slate-300 mx-auto mb-2" />

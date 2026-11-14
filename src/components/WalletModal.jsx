@@ -249,18 +249,27 @@ export default function WalletModal({ user, onUpdateUser }) {
         if (res.data.withdrawableBalance !== undefined) {
           setWithdrawableBalance(Number(res.data.withdrawableBalance));
         }
+        if (res.data.totalWalletBalance !== undefined) {
+          setTotalWalletBalance(Number(res.data.totalWalletBalance));
+        }
         if (res.data.cashbackBalance !== undefined) {
           setCashbackBalance(Number(res.data.cashbackBalance));
         }
         if (onUpdateUser && res.data.walletBalance !== undefined) {
-          onUpdateUser({
+          const syncedUser = {
             ...user,
             walletBalance: res.data.walletBalance,
+            totalWalletBalance: res.data.totalWalletBalance,
             withdrawableBalance: res.data.withdrawableBalance,
             securityReserve: res.data.securityReserve,
             activeShipmentsCount: res.data.activeShipmentsCount,
             cashbackBalance: res.data.cashbackBalance
-          });
+          };
+          onUpdateUser(syncedUser);
+          try {
+            const cached = JSON.parse(localStorage.getItem('securekaro_user') || '{}');
+            localStorage.setItem('securekaro_user', JSON.stringify({ ...cached, ...syncedUser }));
+          } catch (_) {}
         }
       }
     } catch (e) {
@@ -284,6 +293,23 @@ export default function WalletModal({ user, onUpdateUser }) {
         }
         setConfirmationPipeline(res.data.confirmationPipeline || []);
         setRewardHistory(res.data.history || []);
+
+        if (onUpdateUser && res.data.walletBalance !== undefined) {
+          const syncedUser = {
+            ...user,
+            walletBalance: res.data.walletBalance,
+            totalWalletBalance: res.data.totalWalletBalance,
+            withdrawableBalance: res.data.withdrawableBalance,
+            securityReserve: res.data.securityReserve,
+            activeShipmentsCount: res.data.activeShipmentsCount,
+            cashbackBalance: res.data.cashbackBalance
+          };
+          onUpdateUser(syncedUser);
+          try {
+            const cached = JSON.parse(localStorage.getItem('securekaro_user') || '{}');
+            localStorage.setItem('securekaro_user', JSON.stringify({ ...cached, ...syncedUser }));
+          } catch (_) {}
+        }
       }
     } catch (e) {}
   };
@@ -297,12 +323,18 @@ export default function WalletModal({ user, onUpdateUser }) {
   const displayPendingConfirmation = Number(pendingConfirmationBalance) || 0;
   const displayWithdrawable = withdrawableBalance !== undefined && withdrawableBalance !== null
     ? Number(withdrawableBalance)
-    : (isSupplier ? Math.max(0, ((Number(cashbackBalance) || 0) + supplierDirectWallet) - (securityReserve || 0)) : (Number(user?.walletBalance) || 0));
+    : (user?.withdrawableBalance !== undefined && user?.withdrawableBalance !== null
+        ? Number(user.withdrawableBalance)
+        : (isSupplier 
+            ? Math.max(0, ((Number(cashbackBalance) || 0) + supplierDirectWallet) - (securityReserve || 0)) 
+            : (Number(user?.walletBalance) || 0)));
 
   const displayUnwithdrawable = displayPendingConfirmation;
   const displayTotalWallet = totalWalletBalance !== undefined && totalWalletBalance !== null
     ? Number(totalWalletBalance)
-    : (displayWithdrawable + displayUnwithdrawable);
+    : (user?.totalWalletBalance !== undefined && user?.totalWalletBalance !== null
+        ? Number(user.totalWalletBalance)
+        : (displayWithdrawable + displayUnwithdrawable));
 
   const activePipelineBalance = shipments
     .filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit')
