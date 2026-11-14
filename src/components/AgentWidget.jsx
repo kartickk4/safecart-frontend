@@ -18,7 +18,7 @@ const AgentWidget = ({ onNavigate }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [messages, setMessages]         = useState([]);
   const [input, setInput]           = useState('');
-  const [sessionId, setSessionId]   = useState(() => { try { localStorage.removeItem(SESSION_KEY); return sessionStorage.getItem(SESSION_KEY) || ''; } catch (_) { return ''; } });
+  const [sessionId, setSessionId]   = useState('');
   const [isLoading, setIsLoading]   = useState(false);
   const [selectedCarrier, setSelectedCarrier] = useState(null);
   const [step, setStep]             = useState(0);

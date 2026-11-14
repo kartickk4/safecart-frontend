@@ -487,16 +487,18 @@ const CapCard = ({ icon: Icon, title, desc, gradient, iconColor }) => (
 );
 
 export default function AIAgentView({ onBack }) {
-  const [messages, setMessages] = useState(() => {
-    try {
-      const cached = sessionStorage.getItem(CHAT_CACHE_KEY);
-      return cached ? JSON.parse(cached) : [];
-    } catch (_) {
-      return [];
-    }
-  });
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [sessionId, setSessionId] = useState(() => { try { localStorage.removeItem(SESSION_KEY); return sessionStorage.getItem(SESSION_KEY) || ""; } catch (_) { return ""; } });
+  const [sessionId, setSessionId] = useState("");
+
+  // Clear any legacy stored agent chat on startup so sessions always start fresh
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem(CHAT_CACHE_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(SESSION_KEY);
+    } catch (_) {}
+  }, []);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCarrier, setSelectedCarrier] = useState(null);
   const [step, setStep] = useState(0);
@@ -597,23 +599,31 @@ export default function AIAgentView({ onBack }) {
 
   useEffect(() => { 
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
-    if (messages && messages.length > 0) {
-      try {
-        sessionStorage.setItem(CHAT_CACHE_KEY, JSON.stringify(messages));
-      } catch (_) {}
-    }
   }, [messages]);
 
   useEffect(() => { 
     if (!initialized) { 
       setInitialized(true); 
-      // Only send initial greeting if there are no existing restored messages
-      const hasCached = messages && messages.length > 0;
-      if (!hasCached) {
-        sendMessage("", true); 
-      }
+      sendMessage("", true); 
     } 
-  }, [initialized, messages]);
+  }, [initialized]);
+
+  // Restart chat fresh if the user suspended their phone/tab for >15 minutes
+  useEffect(() => {
+    let lastActive = Date.now();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        const awayTimeMs = Date.now() - lastActive;
+        if (awayTimeMs > 15 * 60 * 1000) {
+          handleReset();
+        }
+      } else {
+        lastActive = Date.now();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   const getToken = () => localStorage.getItem("securekaro_token") || localStorage.getItem("skToken") || localStorage.getItem("token") || "";
 
