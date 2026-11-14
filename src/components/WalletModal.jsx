@@ -135,11 +135,25 @@ export default function WalletModal({ user, onUpdateUser }) {
     // prop already carries (the cached role snapshot). This eliminates the
     // 1-2s flash of stale previous-role balances.
     if (didRoleChange && user) {
-      setCashbackBalance(user.cashbackBalance !== undefined ? Number(user.cashbackBalance) : 0);
-      setWithdrawableBalance(user.withdrawableBalance !== undefined ? Number(user.withdrawableBalance) : null);
-      setPendingConfirmationBalance(user.pendingConfirmationBalance !== undefined ? Number(user.pendingConfirmationBalance) : 0);
-      setTotalWalletBalance(user.totalWalletBalance !== undefined ? Number(user.totalWalletBalance) : null);
-      setShipments([]);
+      const isSuppRole = currentRole === 'Supplier';
+      const initialCashback = user.cashbackBalance !== undefined ? Number(user.cashbackBalance) : 0;
+      setCashbackBalance(initialCashback);
+      setWithdrawableBalance(isSuppRole ? (user.withdrawableBalance !== undefined ? Number(user.withdrawableBalance) : null) : initialCashback);
+      setPendingConfirmationBalance(isSuppRole ? (user.pendingConfirmationBalance !== undefined ? Number(user.pendingConfirmationBalance) : 0) : 0);
+      setTotalWalletBalance(isSuppRole ? (user.totalWalletBalance !== undefined ? Number(user.totalWalletBalance) : null) : initialCashback);
+      setSecurityReserve(isSuppRole ? (Number(user.securityReserve) || 0) : 0);
+      setActiveShipmentsCount(isSuppRole ? (Number(user.activeShipmentsCount) || 0) : 0);
+      
+      try {
+        const cachedShipments = localStorage.getItem('securekaro_dashboard_shipments_' + currentRole);
+        if (cachedShipments) {
+          setShipments(JSON.parse(cachedShipments));
+        } else {
+          setShipments([]);
+        }
+      } catch (_) {
+        setShipments([]);
+      }
       setWalletTransactions([]);
       setConfirmationPipeline([]);
     }
@@ -240,36 +254,64 @@ export default function WalletModal({ user, onUpdateUser }) {
     try {
       const res = await walletAPI.getBalance();
       if (res.data) {
-        if (res.data.securityReserve !== undefined) {
-          setSecurityReserve(Number(res.data.securityReserve));
-        }
-        if (res.data.activeShipmentsCount !== undefined) {
-          setActiveShipmentsCount(Number(res.data.activeShipmentsCount));
-        }
-        if (res.data.withdrawableBalance !== undefined) {
-          setWithdrawableBalance(Number(res.data.withdrawableBalance));
-        }
-        if (res.data.totalWalletBalance !== undefined) {
-          setTotalWalletBalance(Number(res.data.totalWalletBalance));
-        }
-        if (res.data.cashbackBalance !== undefined) {
-          setCashbackBalance(Number(res.data.cashbackBalance));
-        }
-        if (onUpdateUser && res.data.walletBalance !== undefined) {
-          const syncedUser = {
-            ...user,
-            walletBalance: res.data.walletBalance,
-            totalWalletBalance: res.data.totalWalletBalance,
-            withdrawableBalance: res.data.withdrawableBalance,
-            securityReserve: res.data.securityReserve,
-            activeShipmentsCount: res.data.activeShipmentsCount,
-            cashbackBalance: res.data.cashbackBalance
-          };
-          onUpdateUser(syncedUser);
-          try {
-            const cached = JSON.parse(localStorage.getItem('securekaro_user') || '{}');
-            localStorage.setItem('securekaro_user', JSON.stringify({ ...cached, ...syncedUser }));
-          } catch (_) {}
+        if (isSupplier) {
+          if (res.data.securityReserve !== undefined) {
+            setSecurityReserve(Number(res.data.securityReserve));
+          }
+          if (res.data.activeShipmentsCount !== undefined) {
+            setActiveShipmentsCount(Number(res.data.activeShipmentsCount));
+          }
+          if (res.data.withdrawableBalance !== undefined) {
+            setWithdrawableBalance(Number(res.data.withdrawableBalance));
+          }
+          if (res.data.totalWalletBalance !== undefined) {
+            setTotalWalletBalance(Number(res.data.totalWalletBalance));
+          }
+          if (res.data.cashbackBalance !== undefined) {
+            setCashbackBalance(Number(res.data.cashbackBalance));
+          }
+          if (onUpdateUser && res.data.walletBalance !== undefined) {
+            const syncedUser = {
+              ...user,
+              walletBalance: res.data.walletBalance,
+              totalWalletBalance: res.data.totalWalletBalance,
+              withdrawableBalance: res.data.withdrawableBalance,
+              securityReserve: res.data.securityReserve,
+              activeShipmentsCount: res.data.activeShipmentsCount,
+              cashbackBalance: res.data.cashbackBalance
+            };
+            onUpdateUser(syncedUser);
+            try {
+              const cached = JSON.parse(localStorage.getItem('securekaro_user') || '{}');
+              localStorage.setItem('securekaro_user', JSON.stringify({ ...cached, ...syncedUser }));
+            } catch (_) {}
+          }
+        } else {
+          // Buyer: strictly use buyerWallet numbers
+          const buyerBal = res.data.buyerWallet?.withdrawableBalance !== undefined
+            ? Number(res.data.buyerWallet.withdrawableBalance)
+            : (res.data.cashbackBalance !== undefined ? Number(res.data.cashbackBalance) : 0);
+          setSecurityReserve(0);
+          setActiveShipmentsCount(0);
+          setWithdrawableBalance(buyerBal);
+          setTotalWalletBalance(buyerBal);
+          setCashbackBalance(buyerBal);
+          if (onUpdateUser) {
+            const syncedUser = {
+              ...user,
+              walletBalance: buyerBal,
+              totalWalletBalance: buyerBal,
+              withdrawableBalance: buyerBal,
+              securityReserve: 0,
+              activeShipmentsCount: 0,
+              cashbackBalance: buyerBal
+            };
+            onUpdateUser(syncedUser);
+            try {
+              const cached = JSON.parse(localStorage.getItem('securekaro_user') || '{}');
+              localStorage.setItem('securekaro_user', JSON.stringify({ ...cached, ...syncedUser }));
+            } catch (_) {}
+          }
         }
       }
     } catch (e) {
@@ -294,8 +336,8 @@ export default function WalletModal({ user, onUpdateUser }) {
         setConfirmationPipeline(res.data.confirmationPipeline || []);
         setRewardHistory(res.data.history || []);
 
-        if (onUpdateUser && res.data.walletBalance !== undefined) {
-          const syncedUser = {
+        if (onUpdateUser) {
+          const syncedUser = isSupplier ? {
             ...user,
             walletBalance: res.data.walletBalance,
             totalWalletBalance: res.data.totalWalletBalance,
@@ -303,6 +345,14 @@ export default function WalletModal({ user, onUpdateUser }) {
             securityReserve: res.data.securityReserve,
             activeShipmentsCount: res.data.activeShipmentsCount,
             cashbackBalance: res.data.cashbackBalance
+          } : {
+            ...user,
+            walletBalance: res.data.cashbackBalance || 0,
+            totalWalletBalance: res.data.cashbackBalance || 0,
+            withdrawableBalance: res.data.cashbackBalance || 0,
+            securityReserve: 0,
+            activeShipmentsCount: 0,
+            cashbackBalance: res.data.cashbackBalance || 0
           };
           onUpdateUser(syncedUser);
           try {
@@ -323,11 +373,11 @@ export default function WalletModal({ user, onUpdateUser }) {
   const displayPendingConfirmation = Number(pendingConfirmationBalance) || 0;
   const displayWithdrawable = withdrawableBalance !== undefined && withdrawableBalance !== null
     ? Number(withdrawableBalance)
-    : (user?.withdrawableBalance !== undefined && user?.withdrawableBalance !== null
+    : (user?.withdrawableBalance !== undefined && user?.withdrawableBalance !== null && isSupplier
         ? Number(user.withdrawableBalance)
         : (isSupplier 
             ? Math.max(0, ((Number(cashbackBalance) || 0) + supplierDirectWallet) - (securityReserve || 0)) 
-            : (Number(user?.walletBalance) || 0)));
+            : (Number(cashbackBalance) || 0)));
 
   const displayUnwithdrawable = displayPendingConfirmation;
   const displayTotalWallet = totalWalletBalance !== undefined && totalWalletBalance !== null

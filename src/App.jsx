@@ -266,32 +266,56 @@ export default function App() {
       let updatedBalances = {};
       if (walletRes.status === 'fulfilled' && walletRes.value?.data) {
         const wData = walletRes.value.data;
-        if (wData.walletBalance !== undefined) updatedBalances.walletBalance = wData.walletBalance;
-        if (wData.totalWalletBalance !== undefined) updatedBalances.totalWalletBalance = wData.totalWalletBalance;
-        if (wData.withdrawableBalance !== undefined) updatedBalances.withdrawableBalance = wData.withdrawableBalance;
-        if (wData.securityReserve !== undefined) updatedBalances.securityReserve = wData.securityReserve;
-        if (wData.activeShipmentsCount !== undefined) updatedBalances.activeShipmentsCount = wData.activeShipmentsCount;
-        if (wData.cashbackBalance !== undefined) updatedBalances.cashbackBalance = wData.cashbackBalance;
+        if (isSupp) {
+          if (wData.walletBalance !== undefined) updatedBalances.walletBalance = wData.walletBalance;
+          if (wData.totalWalletBalance !== undefined) updatedBalances.totalWalletBalance = wData.totalWalletBalance;
+          if (wData.withdrawableBalance !== undefined) updatedBalances.withdrawableBalance = wData.withdrawableBalance;
+          if (wData.securityReserve !== undefined) updatedBalances.securityReserve = wData.securityReserve;
+          if (wData.activeShipmentsCount !== undefined) updatedBalances.activeShipmentsCount = wData.activeShipmentsCount;
+          if (wData.cashbackBalance !== undefined) updatedBalances.cashbackBalance = wData.cashbackBalance;
+        } else {
+          const buyerBal = wData.buyerWallet?.withdrawableBalance !== undefined
+            ? wData.buyerWallet.withdrawableBalance
+            : (wData.cashbackBalance !== undefined ? wData.cashbackBalance : 0);
+          updatedBalances.cashbackBalance = buyerBal;
+          updatedBalances.withdrawableBalance = buyerBal;
+          updatedBalances.totalWalletBalance = buyerBal;
+          updatedBalances.walletBalance = buyerBal;
+          updatedBalances.securityReserve = 0;
+          updatedBalances.activeShipmentsCount = 0;
+          updatedBalances.pendingConfirmationBalance = 0;
+        }
       }
 
       if (rewardRes.status === 'fulfilled' && rewardRes.value?.data) {
         const rData = rewardRes.value.data;
-        if (rData.totalWalletBalance !== undefined) updatedBalances.totalWalletBalance = rData.totalWalletBalance;
-        if (updatedBalances.withdrawableBalance === undefined && rData.withdrawableBalance !== undefined) {
-          updatedBalances.withdrawableBalance = rData.withdrawableBalance;
-        }
-        if (rData.pendingConfirmationBalance !== undefined) updatedBalances.pendingConfirmationBalance = rData.pendingConfirmationBalance;
-        if (updatedBalances.cashbackBalance === undefined && rData.cashbackBalance !== undefined) {
-          updatedBalances.cashbackBalance = rData.cashbackBalance;
-        }
-        if (updatedBalances.walletBalance === undefined && rData.walletBalance !== undefined) {
-          updatedBalances.walletBalance = rData.walletBalance;
-        }
-        if (updatedBalances.securityReserve === undefined && rData.securityReserve !== undefined) {
-          updatedBalances.securityReserve = rData.securityReserve;
-        }
-        if (updatedBalances.activeShipmentsCount === undefined && rData.activeShipmentsCount !== undefined) {
-          updatedBalances.activeShipmentsCount = rData.activeShipmentsCount;
+        if (isSupp) {
+          if (rData.totalWalletBalance !== undefined) updatedBalances.totalWalletBalance = rData.totalWalletBalance;
+          if (updatedBalances.withdrawableBalance === undefined && rData.withdrawableBalance !== undefined) {
+            updatedBalances.withdrawableBalance = rData.withdrawableBalance;
+          }
+          if (rData.pendingConfirmationBalance !== undefined) updatedBalances.pendingConfirmationBalance = rData.pendingConfirmationBalance;
+          if (updatedBalances.cashbackBalance === undefined && rData.cashbackBalance !== undefined) {
+            updatedBalances.cashbackBalance = rData.cashbackBalance;
+          }
+          if (updatedBalances.walletBalance === undefined && rData.walletBalance !== undefined) {
+            updatedBalances.walletBalance = rData.walletBalance;
+          }
+          if (updatedBalances.securityReserve === undefined && rData.securityReserve !== undefined) {
+            updatedBalances.securityReserve = rData.securityReserve;
+          }
+          if (updatedBalances.activeShipmentsCount === undefined && rData.activeShipmentsCount !== undefined) {
+            updatedBalances.activeShipmentsCount = rData.activeShipmentsCount;
+          }
+        } else {
+          const buyerCashback = rData.cashbackBalance !== undefined ? rData.cashbackBalance : 0;
+          updatedBalances.cashbackBalance = buyerCashback;
+          updatedBalances.withdrawableBalance = buyerCashback;
+          updatedBalances.totalWalletBalance = buyerCashback;
+          updatedBalances.walletBalance = buyerCashback;
+          updatedBalances.securityReserve = 0;
+          updatedBalances.activeShipmentsCount = 0;
+          updatedBalances.pendingConfirmationBalance = 0;
         }
       }
 
