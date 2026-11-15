@@ -9,10 +9,11 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
     ? isSupplier 
     : (currentRole ? currentRole === 'Supplier' : (user?.role === 'Supplier' || user?.activeRole === 'Supplier'));
 
-  const cacheKey = `securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`;
+  const userScope = user?._id || user?.id || user?.email || 'anon';
+  const cacheKey = `securekaro_shipments_${userScope}_${isMerchant ? 'supplier' : 'receiver'}`;
   const [shipments, setShipments] = useState(() => {
     try {
-      const key = `securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`;
+      const key = `securekaro_shipments_${userScope}_${isMerchant ? 'supplier' : 'receiver'}`;
       const cached = localStorage.getItem(key) || sessionStorage.getItem(key);
       return cached ? JSON.parse(cached) : [];
     } catch (_) {
@@ -21,7 +22,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
   });
   const [loading, setLoading] = useState(() => {
     try {
-      const key = `securekaro_shipments_${isMerchant ? 'supplier' : 'receiver'}`;
+      const key = `securekaro_shipments_${userScope}_${isMerchant ? 'supplier' : 'receiver'}`;
       const hasCache = localStorage.getItem(key) || sessionStorage.getItem(key);
       return !hasCache;
     } catch (_) {
@@ -61,7 +62,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
 
   useEffect(() => {
     fetchShipments();
-  }, [isMerchant]); // re-fetch whenever role changes
+  }, [userScope, isMerchant]); // re-fetch whenever user or role changes
 
   const fetchShipments = async (silent = false) => {
     const hasCache = localStorage.getItem(cacheKey) || sessionStorage.getItem(cacheKey);

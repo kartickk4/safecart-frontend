@@ -358,6 +358,23 @@ export default function App() {
 
   const handleAuthSuccess = async (userData, newUserFlag) => {
     clearAgentSessionData();
+    try {
+      const prevUserRaw = localStorage.getItem('securekaro_user');
+      if (prevUserRaw) {
+        const prev = JSON.parse(prevUserRaw);
+        if (prev?.email && userData?.email && prev.email.toLowerCase() !== userData.email.toLowerCase()) {
+          const keys = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && (k.startsWith('securekaro_shipments') || k.startsWith('securekaro_dashboard_'))) {
+              keys.push(k);
+            }
+          }
+          keys.forEach(k => localStorage.removeItem(k));
+          sessionStorage.clear();
+        }
+      }
+    } catch (_) {}
     const savedRole = localStorage.getItem('securekaro_active_role');
     if (savedRole && (savedRole === 'Supplier' || savedRole === 'Receiver')) {
       userData.activeRole = savedRole;
@@ -504,14 +521,26 @@ export default function App() {
     }, 500);
 
     setTimeout(() => {
-      localStorage.removeItem('securekaro_token');
-      localStorage.removeItem('securekaro_active_role');
-      localStorage.removeItem('securekaro_user');
-      setUser(null);
-      clearAgentSessionData(); clearApiCache(); try { sessionStorage.removeItem('securekaro_role_user_Supplier'); sessionStorage.removeItem('securekaro_role_user_Receiver'); sessionStorage.removeItem('securekaro_role_token_Supplier'); sessionStorage.removeItem('securekaro_role_token_Receiver'); } catch (_) {} setCurrentTab('dashboard'); // Reset tab so next login starts fresh
-      setIsSigningOut(false);
-      setSignOutStep('');
-    }, 1200);
+        try {
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('securekaro_') || key.startsWith('sk_'))) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(k => localStorage.removeItem(k));
+          sessionStorage.clear();
+        } catch (_) {
+          localStorage.clear();
+          sessionStorage.clear();
+        }
+        setUser(null);
+        clearApiCache();
+        setCurrentTab('dashboard');
+        setIsSigningOut(false);
+        setSignOutStep('');
+      }, 1200);
   };
 
 
