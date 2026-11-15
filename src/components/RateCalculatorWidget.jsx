@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Calculator, Truck, MapPin, Package, ArrowRight, Sparkles, 
   CheckCircle2, AlertCircle, RefreshCw, ChevronDown, ChevronUp, 
-  IndianRupee, ShieldCheck, Zap, Info, Clock, Star, RotateCcw, ArrowLeftRight
+  IndianRupee, ShieldCheck, Zap, Info, Clock, Star, RotateCcw, ArrowLeftRight, X
 } from 'lucide-react';
 import { agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
@@ -75,29 +75,32 @@ export default function RateCalculatorWidget({
     : 0;
   const chargeableWeight = Math.max(parseFloat(weightKg) || 0.5, volumetricWeight);
 
-  const handleCalculateRates = async (e, forcedFreightType = null) => {
+  const handleCalculateRates = async (e, forcedFreightType = null, forcedFromPin = null, forcedToPin = null) => {
     if (e && e.preventDefault) e.preventDefault();
     setError('');
 
-    if (!fromPincode || fromPincode.trim().length !== 6) {
-      setError('Please enter a valid 6-digit Pincode');
-      return;
-    }
-    if (!toPincode || toPincode.trim().length !== 6) {
-      setError('Please enter a valid 6-digit Pincode');
-      return;
-    }
+    const effectiveFrom = (forcedFromPin !== null ? forcedFromPin : fromPincode || '').trim();
+    const effectiveTo = (forcedToPin !== null ? forcedToPin : toPincode || '').trim();
 
     const currentFreight = forcedFreightType || freightType;
     const isReverseFreight = currentFreight === 'reverse';
+
+    if (!effectiveFrom || effectiveFrom.length !== 6) {
+      setError(isReverseFreight ? 'Please enter a valid 6-digit Return Pickup Pincode' : 'Please enter a valid 6-digit Pickup Pincode');
+      return;
+    }
+    if (!effectiveTo || effectiveTo.length !== 6) {
+      setError(isReverseFreight ? 'Please enter a valid 6-digit Return Destination Pincode' : 'Please enter a valid 6-digit Delivery Pincode');
+      return;
+    }
 
     setLoading(true);
     setHasCalculated(true);
 
     try {
       const payload = {
-        fromPincode: fromPincode.trim(),
-        toPincode: toPincode.trim(),
+        fromPincode: effectiveFrom,
+        toPincode: effectiveTo,
         weightKg: chargeableWeight,
         paymentMode: isReverseFreight ? 'prepaid' : paymentMode,
         cod: isReverseFreight ? 0 : (paymentMode === 'cod' ? 1 : 0),
@@ -149,6 +152,10 @@ export default function RateCalculatorWidget({
     const temp = fromPincode;
     setFromPincode(toPincode);
     setToPincode(temp);
+    setError('');
+    if (toPincode && temp && toPincode.length === 6 && temp.length === 6) {
+      handleCalculateRates(null, freightType, toPincode, temp);
+    }
   };
 
   return (
@@ -265,7 +272,14 @@ export default function RateCalculatorWidget({
               type="text"
               maxLength={6}
               value={fromPincode}
-              onChange={(e) => setFromPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={(e) => {
+                const pin = e.target.value.replace(/\D/g, '').slice(0, 6);
+                setFromPincode(pin);
+                if (error) setError('');
+                if (pin.length === 6 && toPincode && toPincode.length === 6) {
+                  handleCalculateRates(null, freightType, pin, toPincode);
+                }
+              }}
               placeholder={isReverseMode ? "e.g. 110001" : "e.g. 700049"}
               className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E56E3] transition"
             />
@@ -291,7 +305,14 @@ export default function RateCalculatorWidget({
               type="text"
               maxLength={6}
               value={toPincode}
-              onChange={(e) => setToPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={(e) => {
+                const pin = e.target.value.replace(/\D/g, '').slice(0, 6);
+                setToPincode(pin);
+                if (error) setError('');
+                if (pin.length === 6 && fromPincode && fromPincode.length === 6) {
+                  handleCalculateRates(null, freightType, fromPincode, pin);
+                }
+              }}
               placeholder={isReverseMode ? "e.g. 700049" : "e.g. 110001"}
               className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E56E3] transition"
             />
@@ -309,6 +330,10 @@ export default function RateCalculatorWidget({
               type="button"
               onClick={() => {
                 setToPincode(dest.pincode);
+                if (error) setError('');
+                if (fromPincode && fromPincode.length === 6) {
+                  handleCalculateRates(null, freightType, fromPincode, dest.pincode);
+                }
               }}
               className={`shrink-0 px-2 py-0.5 rounded-md font-semibold transition border cursor-pointer ${
                 toPincode === dest.pincode
@@ -469,9 +494,19 @@ export default function RateCalculatorWidget({
         </ButtonLoader>
 
         {error && (
-          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-            <span>{error}</span>
+          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+              <span>{error}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setError('')}
+              className="text-rose-500 hover:text-rose-800 p-0.5 rounded cursor-pointer"
+              title="Dismiss"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
       </form>
