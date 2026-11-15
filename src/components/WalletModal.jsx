@@ -319,52 +319,19 @@ export default function WalletModal({ user, onUpdateUser }) {
     }
   };
 
+  // Authoritative pipeline and rewards ledger history only;
+  // Wallet balances are owned strictly by fetchWalletBalance to eliminate race conditions.
   const fetchRewardWallet = async () => {
     try {
       const res = await rewardAPI.getRewardWallet();
       if (res.data) {
-        setCashbackBalance(res.data.cashbackBalance || 0);
-        setWithdrawableBalance(res.data.withdrawableBalance !== undefined ? res.data.withdrawableBalance : (res.data.cashbackBalance || 0));
         setPendingConfirmationBalance(res.data.pendingConfirmationBalance || 0);
-        setTotalWalletBalance(res.data.totalWalletBalance !== undefined ? res.data.totalWalletBalance : (res.data.cashbackBalance || 0));
-        if (res.data.securityReserve !== undefined) {
-          setSecurityReserve(Number(res.data.securityReserve));
-        }
-        if (res.data.activeShipmentsCount !== undefined) {
-          setActiveShipmentsCount(Number(res.data.activeShipmentsCount));
-        }
         setConfirmationPipeline(res.data.confirmationPipeline || []);
         setRewardHistory(res.data.history || []);
-
-        if (onUpdateUser) {
-          const syncedUser = isSupplier ? {
-            ...user,
-            walletBalance: res.data.walletBalance,
-            totalWalletBalance: res.data.totalWalletBalance,
-            withdrawableBalance: res.data.withdrawableBalance,
-            securityReserve: res.data.securityReserve,
-            activeShipmentsCount: res.data.activeShipmentsCount,
-            cashbackBalance: res.data.cashbackBalance
-          } : {
-            ...user,
-            walletBalance: res.data.cashbackBalance || 0,
-            totalWalletBalance: res.data.cashbackBalance || 0,
-            withdrawableBalance: res.data.cashbackBalance || 0,
-            securityReserve: 0,
-            activeShipmentsCount: 0,
-            cashbackBalance: res.data.cashbackBalance || 0
-          };
-          onUpdateUser(syncedUser);
-          try {
-            const cached = JSON.parse(localStorage.getItem('securekaro_user') || '{}');
-            localStorage.setItem('securekaro_user', JSON.stringify({ ...cached, ...syncedUser }));
-          } catch (_) {}
-        }
       }
     } catch (e) {}
   };
 
-  // Authoritative 24h Confirmation Window Pipeline items directly from backend
   const activePipelineItems = confirmationPipeline || [];
 
   const supplierDirectWallet = Math.max(0, Number(user?.walletBalance) || 0);
@@ -380,11 +347,13 @@ export default function WalletModal({ user, onUpdateUser }) {
             : (Number(cashbackBalance) || 0)));
 
   const displayUnwithdrawable = displayPendingConfirmation;
-  const displayTotalWallet = totalWalletBalance !== undefined && totalWalletBalance !== null
-    ? Number(totalWalletBalance)
-    : (user?.totalWalletBalance !== undefined && user?.totalWalletBalance !== null
-        ? Number(user.totalWalletBalance)
-        : (displayWithdrawable + displayUnwithdrawable));
+  const displayTotalWallet = isSupplier
+    ? (totalWalletBalance !== undefined && totalWalletBalance !== null
+        ? Number(totalWalletBalance)
+        : (user?.totalWalletBalance !== undefined && user?.totalWalletBalance !== null
+            ? Number(user.totalWalletBalance)
+            : (displayWithdrawable + displayUnwithdrawable)))
+    : displayWithdrawable;
 
   const activePipelineBalance = shipments
     .filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit')
