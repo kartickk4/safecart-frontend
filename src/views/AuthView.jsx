@@ -3,7 +3,7 @@ import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRigh
 import { authAPI, profileAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
 const LegalComplianceView = React.lazy(() => import('./LegalComplianceView'));
-import { auth, RecaptchaVerifier, signInWithPhoneNumber, googleProvider, signInWithPopup } from '../firebase';
+import { auth, RecaptchaVerifier, signInWithPhoneNumber, googleProvider, signInWithPopup, GoogleAuthProvider } from '../firebase';
 
 
 export default function AuthView({ initialMode = 'login', onModeChange, onAuthSuccess, onOpenPublicTrack }) {
@@ -217,6 +217,13 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
       try {
         const result = await signInWithPopup(auth, googleProvider);
         googleUser = result.user;
+        let oAuthIdToken = '';
+        try {
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          if (credential?.idToken) {
+            oAuthIdToken = credential.idToken;
+          }
+        } catch (_) {}
       } catch (fbErr) {
         console.warn('Firebase Popup error:', fbErr);
         if (fbErr.code === 'auth/popup-closed-by-user' || fbErr.code === 'auth/cancelled-popup-request') {
@@ -259,17 +266,22 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
         setGoogleLoadingMsg('Waking up secure server, please wait a moment...');
       }, 3500);
 
-      let idToken = '';
+      let firebaseToken = '';
       if (typeof googleUser.getIdToken === 'function') {
         try {
-          idToken = await googleUser.getIdToken();
+          firebaseToken = await googleUser.getIdToken();
         } catch (tokenErr) {
           console.warn('Could not fetch idToken from googleUser:', tokenErr);
         }
       }
 
+      // Send Google OAuth token if available, or Firebase ID token
+      const idToken = oAuthIdToken || firebaseToken;
+
       const authPayload = {
         idToken,
+        googleOAuthIdToken: oAuthIdToken || undefined,
+        firebaseIdToken: firebaseToken || undefined,
         email: googleUser.email,
         fullName: googleUser.displayName || googleUser.email.split('@')[0],
         avatarUrl: googleUser.photoURL || '',
