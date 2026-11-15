@@ -295,28 +295,85 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
 
   // Trend line chart dynamic configuration
   const lineChartData = useMemo(() => {
-    // Generate dates based on timeframe
-    const pointsCount = chartTimeframe === '7d' ? 7 : chartTimeframe === '14d' ? 7 : chartTimeframe === '90d' ? 6 : 6;
-    const labels = chartTimeframe === '7d'
-      ? ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Today']
-      : chartTimeframe === '14d'
-        ? ['Week 1', 'Day 8', 'Day 9', 'Day 10', 'Day 11', 'Day 12', 'Today']
-        : chartTimeframe === '90d'
-          ? ['Month 1', 'Mid Q', 'Month 2', 'Mid Q2', 'Month 3', 'Current']
-          : ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Last 7d', 'Today'];
+    // Generate dates dynamically based on timeframe
+    const now = new Date();
+    let numPoints = 7;
+    let stepDays = 1;
 
-    // Real dynamic scale proportional to actual data
-    const baseHeld = analytics.activePipelineHeld > 0 ? analytics.activePipelineHeld : 120000;
-    const baseReleased = analytics.totalReleasedRevenue > 0 ? analytics.totalReleasedRevenue : 65000;
+    if (chartTimeframe === '7d') {
+      numPoints = 7;
+      stepDays = 1;
+    } else if (chartTimeframe === '14d') {
+      numPoints = 7;
+      stepDays = 2;
+    } else if (chartTimeframe === '30d') {
+      numPoints = 6;
+      stepDays = 5;
+    } else if (chartTimeframe === '90d') {
+      numPoints = 6;
+      stepDays = 15;
+    }
 
-    const heldPoints = labels.map((_, i) => Math.round(baseHeld * (0.7 + (i * 0.06))));
-    const releasedPoints = labels.map((_, i) => Math.round(baseReleased * (0.5 + (i * 0.1))));
+    const intervals = [];
+    for (let i = numPoints - 1; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * stepDays * 24 * 60 * 60 * 1000);
+      intervals.push(d);
+    }
+
+    const labels = intervals.map((d, index) => {
+      if (index === intervals.length - 1) return 'Today';
+      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    });
+
+    // Calculate actual running cumulative or bucket points based on real shipments
+    const hasData = (analytics.totalGrossRevenue || 0) > 0 || (analytics.totalOrders || 0) > 0;
+
+    let heldPoints = [];
+    let releasedPoints = [];
+
+    if (!hasData) {
+      heldPoints = labels.map(() => 0);
+      releasedPoints = labels.map(() => 0);
+    } else {
+      // Calculate real volume for each interval point
+      heldPoints = intervals.map((intervalDate) => {
+        const endOfDay = new Date(intervalDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        const endTs = endOfDay.getTime();
+
+        // Orders created on or before this date that were in delivery pipeline
+        const activeOrders = shipments.filter(s => {
+          const sTime = new Date(s.createdAt || s.updatedAt || Date.now()).getTime();
+          return sTime <= endTs && (
+            s.status === 'Awaiting Payment' ||
+            s.status === 'Pending Pickup' ||
+            s.status === 'In Transit' ||
+            s.status === 'Out for Delivery' ||
+            s.status === 'Delivered'
+          );
+        });
+        return activeOrders.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+      });
+
+      releasedPoints = intervals.map((intervalDate) => {
+        const endOfDay = new Date(intervalDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        const endTs = endOfDay.getTime();
+
+        const settledOrders = shipments.filter(s => {
+          const sTime = new Date(s.createdAt || s.updatedAt || Date.now()).getTime();
+          return sTime <= endTs && s.status === 'Released';
+        });
+        return settledOrders.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+      });
+    }
 
     return {
+      hasData,
       labels,
       datasets: [
         {
-          label: 'Money in Hold (In Delivery)',
+          label: 'In Transit (Protected Funds)',
           data: heldPoints,
           borderColor: '#1E56E3',
           backgroundColor: 'rgba(30, 86, 227, 0.08)',
@@ -327,7 +384,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           pointHoverRadius: 6,
         },
         {
-          label: 'Money Paid to Bank (Completed)',
+          label: 'Paid to Bank (Settled)',
           data: releasedPoints,
           borderColor: '#10B981',
           backgroundColor: 'rgba(16, 185, 129, 0.08)',
@@ -339,7 +396,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
         }
       ]
     };
-  }, [chartTimeframe, analytics]);
+  }, [chartTimeframe, analytics, shipments]);
 
   const lineChartOptions = {
     responsive: true,
@@ -363,13 +420,20 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
       }
     },
     scales: {
-      x: { grid: { display: false } },
+      x: { 
+        grid: { display: false },
+        ticks: { font: { size: 11, weight: 'bold' }, color: '#64748B' }
+      },
       y: {
+        beginAtZero: true,
         grid: { color: '#F1F5F9' },
         ticks: {
+          font: { size: 10 },
+          color: '#64748B',
           callback: (value) => {
             if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
-            return `₹${Math.round(value / 1000)}k`;
+            if (value >= 1000) return `₹${Math.round(value / 1000)}k`;
+            return `₹${value}`;
           }
         }
       }
@@ -755,12 +819,18 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-extrabold text-slate-900 text-base">Sales &amp; Bank Payouts</h3>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold border border-emerald-200">
-                  +18.4% This Month
-                </span>
+                {analytics.totalOrders > 0 ? (
+                  <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-extrabold border border-blue-200">
+                    {analytics.totalOrders} Active Orders
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-extrabold border border-slate-200">
+                    Live Cash Flow
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                See your total sales orders vs money safely transferred to your bank account.
+                Track money safely held during courier transit vs payouts settled directly to your bank.
               </p>
             </div>
 
@@ -783,21 +853,44 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           </div>
 
           <div className="h-72 w-full pt-2">
-            <Line data={lineChartData} options={lineChartOptions} />
+            {!lineChartData.hasData ? (
+              <div className="h-full flex flex-col items-center justify-center rounded-2xl bg-slate-50/70 border border-dashed border-slate-200 p-6 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center mb-3">
+                  <TrendingUp className="w-6 h-6" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-800">No Sales or Payouts Recorded Yet</h4>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                  Once you book courier shipments, your active transit protection (blue) and bank transfers (green) will plot here in real time.
+                </p>
+                {openNewShipmentModal && (
+                  <button
+                    onClick={openNewShipmentModal}
+                    className="mt-3.5 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#1E56E3] text-white text-xs font-bold hover:bg-[#1644B8] transition shadow-xs"
+                  >
+                    <Package className="w-3.5 h-3.5" /> Book Your First Shipment
+                  </button>
+                )}
+              </div>
+            ) : (
+              <Line data={lineChartData} options={lineChartOptions} />
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-2 pt-4 mt-2 border-t border-slate-100 text-center">
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">Total Sales</p>
-              <p className="text-xs font-extrabold text-slate-800 mt-0.5">₹{(analytics.totalGrossRevenue || 0).toLocaleString('en-IN')}</p>
+            <div className="p-2 rounded-xl bg-blue-50/50 border border-blue-100/60">
+              <p className="text-[10px] font-bold text-blue-600 uppercase">In Transit (Protected)</p>
+              <p className="text-sm font-black text-slate-900 mt-0.5">₹{(analytics.activePipelineHeld || 0).toLocaleString('en-IN')}</p>
+              <p className="text-[10px] text-slate-500 font-medium">Safe in delivery</p>
             </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">Returns (RTO)</p>
-              <p className="text-xs font-extrabold text-amber-700 mt-0.5">₹{(analytics.returnAmount || 0).toLocaleString('en-IN')}</p>
+            <div className="p-2 rounded-xl bg-emerald-50/50 border border-emerald-100/60">
+              <p className="text-[10px] font-bold text-emerald-600 uppercase">Paid to Bank (Settled)</p>
+              <p className="text-sm font-black text-slate-900 mt-0.5">₹{(analytics.totalReleasedRevenue || 0).toLocaleString('en-IN')}</p>
+              <p className="text-[10px] text-slate-500 font-medium">Transferred</p>
             </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">Estimated 30 Days</p>
-              <p className="text-xs font-extrabold text-[#1E56E3] mt-0.5">₹{((analytics.totalGrossRevenue || 0) * 1.2).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</p>
+            <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/60">
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Total Sales (Gross)</p>
+              <p className="text-sm font-black text-slate-900 mt-0.5">₹{(analytics.totalGrossRevenue || 0).toLocaleString('en-IN')}</p>
+              <p className="text-[10px] text-slate-500 font-medium">{analytics.totalOrders} total orders</p>
             </div>
           </div>
         </div>
