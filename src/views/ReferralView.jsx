@@ -74,8 +74,8 @@ export default function ReferralView({ user, isSupplier: propIsSupplier, onUpdat
   const totalReferred = Number(stats?.totalReferred || 0);
   const earnedReferrals = Number(stats?.earnedReferrals || 0);
   const pendingReferrals = Number(stats?.pendingReferrals || Math.max(0, totalReferred - earnedReferrals));
-  const totalEarnedCash = earnedReferrals * 30;
-  const currentWalletBalance = Number(stats?.walletBalance ?? user?.walletBalance ?? 0);
+  const totalEarnedCash = Number(stats?.totalReferralEarned ?? (earnedReferrals * 30));
+  const availableReferralCash = Math.max(0, totalEarnedCash - Number(stats?.referralCreditUsed || 0));
 
   const handleCopyCode = async () => {
     try {
@@ -379,7 +379,7 @@ export default function ReferralView({ user, isSupplier: propIsSupplier, onUpdat
           </div>
           <div className="relative z-10">
             <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
-              Balance: <strong className="text-slate-900 font-bold">₹{currentWalletBalance.toLocaleString('en-IN')}</strong>
+              {availableReferralCash > 0 ? `Withdrawable: ₹${availableReferralCash}` : 'Earn ₹30 per delivery'}
             </p>
           </div>
         </div>
@@ -540,13 +540,13 @@ export default function ReferralView({ user, isSupplier: propIsSupplier, onUpdat
             </div>
             <div className="flex items-center justify-between pt-1">
               <div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Available Wallet Balance</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Available Referral Balance</span>
                 <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900">
-                  ₹{currentWalletBalance.toLocaleString('en-IN')}
+                  ₹{availableReferralCash.toLocaleString('en-IN')}
                 </span>
               </div>
               <span className="text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">
-                Ready to Use ✓
+                {availableReferralCash > 0 ? 'Ready to Use ✓' : '₹0 Earned Yet'}
               </span>
             </div>
           </div>
