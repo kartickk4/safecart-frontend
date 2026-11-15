@@ -732,7 +732,7 @@ const AgentWidget = ({ onNavigate }) => {
                         ID: <strong style={{ color: '#0f172a' }}>{msg.shipmentId}</strong>
                       </p>
                       <p style={{ color: '#059669', margin: '4px 0 0', fontSize: '11px', fontWeight: '600' }}>
-                        Payment link dispatched via WhatsApp & SMS
+                        Tracking details dispatched via WhatsApp & SMS
                       </p>
                     </div>
                   )}

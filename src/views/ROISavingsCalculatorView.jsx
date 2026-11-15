@@ -554,7 +554,7 @@ export default function ROISavingsCalculatorView({ onNavigateCreateShipment }) {
 
             {/* Quick Summary Note */}
             <div className="p-3 bg-blue-50/70 border border-blue-200/60 rounded-xl text-[11px] text-blue-900 leading-snug">
-              💡 <strong>Simple Tip:</strong> Just share your SecureKaro payment link with customers on WhatsApp or Instagram before shipping. You get peace of mind and zero fake rejections.
+              💡 <strong>Simple Tip:</strong> Just share verified SecureKaro tracking with customers on WhatsApp or Instagram before shipping. You get peace of mind and zero fake rejections.
             </div>
 
           </div>

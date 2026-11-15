@@ -26,7 +26,7 @@ const getToken = () =>
 
 const REQUIRED_SCHEMA = [
   { col: 'receiver_name',        colLetter: 'A', label: 'Receiver Name',        required: true,  example: 'Priya Nair',                         tip: 'Full name of the buyer/receiver (min 2 characters)' },
-  { col: 'receiver_phone',       colLetter: 'B', label: 'Receiver Phone',       required: true,  example: '9876543210',                         tip: '10-digit Indian mobile number. Payment link sent via WhatsApp & SMS' },
+  { col: 'receiver_phone',       colLetter: 'B', label: 'Receiver Phone',       required: true,  example: '9876543210',                         tip: '10-digit Indian mobile number. Tracking & delivery updates sent via WhatsApp & SMS' },
   { col: 'receiver_address',     colLetter: 'C', label: 'Receiver Address',     required: true,  example: '12 MG Road, Koramangala, Bengaluru',   tip: 'Full delivery address with street, area & city (min 8 chars)' },
   { col: 'pincode',              colLetter: 'D', label: 'Pincode',              required: true,  example: '560001',                             tip: '6-digit valid Indian delivery pincode' },
   { col: 'weight_kg',            colLetter: 'E', label: 'Weight (kg)',          required: true,  example: '1.2',                                tip: 'Parcel weight in kilograms (e.g. 0.5, 1.2, 5.0)' },
@@ -39,7 +39,7 @@ const OPTIONAL_SCHEMA = [
   { col: 'height_cm',            colLetter: 'H', label: 'Height (cm)',          required: false, example: '25',                     defaultVal: '15',      tip: 'Parcel height in cm' },
   { col: 'width_cm',             colLetter: 'I', label: 'Width (cm)',           required: false, example: '15',                     defaultVal: '15',      tip: 'Parcel width in cm' },
   { col: 'length_cm',            colLetter: 'J', label: 'Length (cm)',          required: false, example: '10',                     defaultVal: '15',      tip: 'Parcel length in cm' },
-  { col: 'payment_mode',         colLetter: 'K', label: 'Payment Mode',         required: false, example: 'prepaid',                defaultVal: 'prepaid', tip: 'prepaid (online payment link) OR cod (cash on delivery)' },
+  { col: 'payment_mode',         colLetter: 'K', label: 'Payment Mode',         required: false, example: 'prepaid',                defaultVal: 'prepaid', tip: 'prepaid (merchant prepaid) OR cod (cash on delivery)' },
   { col: 'return_allowed',       colLetter: 'L', label: 'Return Allowed',       required: false, example: 'yes',                    defaultVal: 'yes',     tip: 'yes / no — Permit 24h buyer verification return' },
 
   // ── Remaining Columns (Col M to V) ──
@@ -957,7 +957,7 @@ const BulkUploadPanel = ({ onUpload, onClose }) => {
                   <Package size={14} />
                   <span>
                     <strong>{(uploadResult.parsedRows || []).filter(r => r.paymentMode === 'cod' && r.isValid).length} COD shipments</strong>
-                    {' '}— Receiver SMS notifications will be sent. No payment link generated for COD rows.
+                    {' '}— Receiver notifications will be sent with cash-on-delivery collection instructions.
                   </span>
                 </div>
               )}

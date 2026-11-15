@@ -1214,7 +1214,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                             Reverse Freight &amp; Doorstep QC (Deducted from Seller Wallet)
                           </p>
                           <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-                            Seller Escrow Paid
+                            Seller Wallet Paid
                           </span>
                         </div>
                         <p className="text-[11px] text-blue-800 mt-1 leading-relaxed">
@@ -1403,7 +1403,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 mt-0.5">
-                      When enabled, buyer can inspect and request a return within 24 hours of delivery. Mentioned in the buyer's payment link SMS. You can also change this later.
+                      When enabled, buyer can inspect and request a return within 24 hours of delivery. Included in tracking and courier notifications. You can also change this later.
                     </p>
                   </div>
                 </div>
