@@ -211,13 +211,13 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
     setGoogleLoading(true);
     setGoogleLoadingMsg('Connecting with Google...');
     let googleUser = null;
+    let oAuthIdToken = '';
     let wakeTimer = null;
 
     try {
       try {
         const result = await signInWithPopup(auth, googleProvider);
         googleUser = result.user;
-        let oAuthIdToken = '';
         try {
           const credential = GoogleAuthProvider.credentialFromResult(result);
           if (credential?.idToken) {
