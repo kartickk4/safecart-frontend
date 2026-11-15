@@ -963,7 +963,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Recipient</span>
                 <span className="text-sm font-bold text-slate-900 block truncate">{currentShipment.receiverName || 'Buyer'}</span>
-                <span className="text-[11px] text-slate-500">{currentShipment.receiverPhone || '+919876543210'}</span>
+                <span className="text-[11px] text-slate-500">{currentShipment.receiverPhone || ''}</span>
                 {currentShipment.city && (
                   <span className="text-[10px] text-slate-400 font-semibold block truncate mt-1">{currentShipment.city}</span>
                 )}

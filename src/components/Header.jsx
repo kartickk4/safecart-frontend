@@ -33,15 +33,7 @@ export default function Header({ user, currentRole, onSwitchRole, onRefresh, ope
           data = res.data;
         }
       } catch (e) {
-        console.warn('API error during export, using sample shipment data:', e);
-      }
-
-      if (data.length === 0) {
-        data = [
-          { shipmentId: 'PSF-2026-00841', receiverName: 'Priya Nair', receiverPhone: '+919876543210', city: 'Mumbai -> Bengaluru', carrierSlug: 'Delhivery', amount: 3420, status: 'In Transit', createdAt: new Date().toISOString() },
-          { shipmentId: 'PSF-2026-00840', receiverName: 'Aarav Sharma', receiverPhone: '+919812345678', city: 'Delhi -> Mumbai', carrierSlug: 'BlueDart', amount: 1890, status: 'Pending Pickup', createdAt: new Date().toISOString() },
-          { shipmentId: 'PSF-2026-00839', receiverName: 'Ananya Iyer', receiverPhone: '+919765432109', city: 'Chennai -> Hyderabad', carrierSlug: 'DTDC', amount: 7650, status: 'Released', createdAt: new Date().toISOString() }
-        ];
+        console.warn('API error during export:', e);
       }
 
       const headers = ['Tracking ID', 'Recipient Name', 'Recipient Phone', 'Route', 'Carrier', 'Parcel Value (INR)', 'Status', 'Date Created'];

@@ -11,11 +11,29 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
 
   const userScope = user?._id || user?.id || user?.email || 'anon';
   const cacheKey = `securekaro_shipments_${userScope}_${isMerchant ? 'supplier' : 'receiver'}`;
+  
+  // Legacy dummy / mock tracking IDs blacklist
+  const isDummyShipment = (s) => {
+    if (!s) return true;
+    const dummySet = new Set([
+      'SPL-1404-M', 'SPL-3809-Y', 'SPL-6119-I', 'SPL-9912-N', 'SPL-4257-Z',
+      'SPL-5856-B', 'SPL-2808-B', 'SPL-3461-L', 'SPL-6587-P', 'SPL-5402-V',
+      'SPL-4318-N', 'SPL-2055-C', 'SPL-5396-U', 'SPL-6386-T', 'SPL-4433-J',
+      'SPL-6186-E', 'SPL-3158-U', 'SPL-4327-Z', 'SPL-3243-U', 'SPL-4285-D',
+      'SPL-6284-R', 'SPL-7845-D', 'SPL-3146-B'
+    ]);
+    if (s.shipmentId && dummySet.has(s.shipmentId.toUpperCase())) return true;
+    if (s.isDemo || s.demo || s.isSample) return true;
+    return false;
+  };
+
   const [shipments, setShipments] = useState(() => {
     try {
       const key = `securekaro_shipments_${userScope}_${isMerchant ? 'supplier' : 'receiver'}`;
       const cached = localStorage.getItem(key) || sessionStorage.getItem(key);
-      return cached ? JSON.parse(cached) : [];
+      if (!cached) return [];
+      const parsed = JSON.parse(cached);
+      return Array.isArray(parsed) ? parsed.filter(s => !isDummyShipment(s)) : [];
     } catch (_) {
       return [];
     }
@@ -75,10 +93,11 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
       const role = isMerchant ? 'Supplier' : 'Receiver';
       const res = await shipmentAPI.getShipments(role);
       if (Array.isArray(res.data)) {
-        setShipments(res.data);
-        sessionStorage.setItem(cacheKey, JSON.stringify(res.data));
+        const cleanList = res.data.filter(s => !isDummyShipment(s));
+        setShipments(cleanList);
+        sessionStorage.setItem(cacheKey, JSON.stringify(cleanList));
         try {
-          localStorage.setItem(cacheKey, JSON.stringify(res.data));
+          localStorage.setItem(cacheKey, JSON.stringify(cleanList));
         } catch (_) {}
       } else {
         setShipments([]);
