@@ -183,7 +183,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   }, [carrierQuotes, carrierTab, carrierSearch, carrierSort, onlyCloseToWeight, parcelWeight]);
 
   // Phone verification state for first shipment
-  const hasExistingProfilePhone = Boolean(user?.phone && String(user.phone).trim().replace(/\D/g, '').length >= 10);
+  const hasExistingProfilePhone = Boolean((user?.phone && String(user.phone).trim().replace(/\D/g, '').length >= 10) || user?.isPhoneVerified);
   const [phoneVerified, setPhoneVerified] = useState(hasExistingProfilePhone);
   const [verifyPhone, setVerifyPhone] = useState(user?.phone || '');
   const [phoneOtp, setPhoneOtp] = useState('');
@@ -363,11 +363,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         receiverAddress,
         receiverPincode,
         parcelWeight: parseFloat(parcelWeight) || 0.5,
-        description,
+        description: description?.trim() || 'General Merchandise Parcel',
         amount: Number(amount),
         city: cityRoute,
         senderAddress,
         senderPincode,
+        senderPhone: user?.phone || verifyPhone || '',
         carrierSlug: selectedQuote.baseSlug || selectedQuote.slug,
         deliveryCharge: selectedQuote.exactRate || selectedQuote.price,
         paymentMode: shipmentType === 'reverse' ? 'prepaid' : paymentMode,

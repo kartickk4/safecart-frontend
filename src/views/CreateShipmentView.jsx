@@ -263,7 +263,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   }, [paymentMode, senderPincode, receiverPincode, parcelWeight, parcelLength, parcelWidth, parcelHeight, carrierSlug, amount, user?.walletBalance]);
 
   // Phone verification state for mandatory first shipment phone check
-  const hasExistingProfilePhone = Boolean(user?.phone && String(user.phone).trim().replace(/\D/g, '').length >= 10);
+  const hasExistingProfilePhone = Boolean((user?.phone && String(user.phone).trim().replace(/\D/g, '').length >= 10) || user?.isPhoneVerified);
   const [phoneVerified, setPhoneVerified] = useState(hasExistingProfilePhone);
   const [verifyPhone, setVerifyPhone] = useState(user?.phone || '');
   const [phoneOtp, setPhoneOtp] = useState('');
@@ -472,6 +472,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     const quotes = await fetchQuotesForRoute(carrierSlug, shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType);
     if (quotes && quotes.length > 0) {
       setShowCarrierModal(true);
+    } else {
+      setError('Unable to fetch live courier rates for this route. Please verify that both pickup and delivery pincodes are correct.');
     }
   };
 
@@ -556,11 +558,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         parcelLength: parseFloat(parcelLength) || 15,
         parcelWidth: parseFloat(parcelWidth) || 10,
         parcelHeight: parseFloat(parcelHeight) || 5,
-        description,
+        description: description?.trim() || 'General Merchandise Parcel',
         amount: Number(amount),
         city: cityRoute,
         senderAddress,
         senderPincode,
+        senderPhone: user?.phone || verifyPhone || '',
         carrierSlug: targetCarrierSlug,
         fundEscrow: false,
         paymentMode: shipmentType === 'reverse' ? 'prepaid' : paymentMode,
@@ -640,7 +643,11 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await handleOpenCourierModal(e);
+    if (selectedQuote) {
+      await handleFinalizeWithCourier(selectedQuote);
+    } else {
+      await handleOpenCourierModal(e);
+    }
   };
 
   const handleCodUpfrontPay = async (e) => {
