@@ -424,25 +424,18 @@ export default function WalletModal({ user, onUpdateUser }) {
 
     try {
       if (methodToUse === 'phone') {
-        const targetPhone = user?.phone || '+919876543210';
-        const res = await authAPI.sendOtp(targetPhone, isSupplier ? 'Supplier' : 'Receiver');
-        if (res.data?.debugCode) {
-          setOtpDebug(res.data.debugCode);
-        } else {
-          setOtpDebug('');
+        const targetPhone = user?.phone || '';
+        if (targetPhone) {
+          await authAPI.sendOtp(targetPhone, isSupplier ? 'Supplier' : 'Receiver');
         }
       } else {
-        const targetEmail = user?.email || 'merchant@example.com';
-        const res = await authAPI.sendEmailOtp(targetEmail, isSupplier ? 'Supplier' : 'Receiver');
-        if (res.data?.debugCode) {
-          setOtpDebug(res.data.debugCode);
-        } else {
-          setOtpDebug('');
+        const targetEmail = user?.email || '';
+        if (targetEmail) {
+          await authAPI.sendEmailOtp(targetEmail, isSupplier ? 'Supplier' : 'Receiver');
         }
       }
     } catch (e) {
-      const fallbackCode = Math.floor(100000 + Math.random() * 900000).toString();
-      setOtpDebug(fallbackCode);
+      setOtpError(e.response?.data?.error || 'Failed to deliver OTP code.');
     }
   };
 
@@ -469,21 +462,15 @@ export default function WalletModal({ user, onUpdateUser }) {
 
     try {
       if (otpMethod === 'phone') {
-        await authAPI.verifyOtp(user?.phone || '+919876543210', otpInput, isSupplier ? 'Supplier' : 'Receiver');
+        await authAPI.verifyOtp(user?.phone, otpInput, isSupplier ? 'Supplier' : 'Receiver');
       } else {
-        await authAPI.verifyEmailOtp(user?.email || 'merchant@example.com', otpInput, isSupplier ? 'Supplier' : 'Receiver');
+        await authAPI.verifyEmailOtp(user?.email, otpInput, isSupplier ? 'Supplier' : 'Receiver');
       }
       setOtpVerified(true);
       setEditing(true);
       setShowOtpModal(false);
     } catch (err) {
-      if (otpDebug && otpInput.trim() === otpDebug.trim()) {
-        setOtpVerified(true);
-        setEditing(true);
-        setShowOtpModal(false);
-      } else {
-        setOtpError(err.response?.data?.error || 'Invalid or expired OTP code.');
-      }
+      setOtpError(err.response?.data?.error || 'Invalid or expired OTP code.');
     }
   };
 
@@ -1783,28 +1770,10 @@ export default function WalletModal({ user, onUpdateUser }) {
             {/* Target Display */}
             <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-center justify-between text-xs">
               <span className="text-slate-500 font-medium">Sending OTP code to:</span>
-              <span className="font-mono font-bold text-slate-800">
-                {otpMethod === 'phone' ? (user?.phone || '+91 98765 43210') : (user?.email || 'Registered Email')}
+              <span className="font-bold text-slate-800">
+                {otpMethod === 'phone' ? (user?.phone || 'Your Phone Number') : (user?.email || 'Your Email Address')}
               </span>
             </div>
-
-            {otpDebug && (
-              <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-100 text-xs text-[#1E56E3] font-semibold flex items-center justify-between">
-                <span>💡 Verification OTP Code:</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-black text-slate-900 text-sm tracking-wider bg-white px-3 py-1 rounded-xl border border-blue-200">
-                    {otpDebug}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setOtpInput(otpDebug)}
-                    className="text-[10px] font-bold text-blue-600 hover:underline cursor-pointer"
-                  >
-                    Auto-Fill
-                  </button>
-                </div>
-              </div>
-            )}
 
             <div className="space-y-3">
               <label className="block text-xs font-semibold text-slate-700 text-center">Enter 6-Digit OTP Code</label>
