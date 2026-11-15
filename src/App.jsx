@@ -837,7 +837,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC] flex text-slate-800 selection:bg-blue-500 selection:text-white relative">
+    <div className={`min-h-screen bg-[#F7F9FC] flex text-slate-800 selection:bg-blue-500 selection:text-white relative ${currentTab === 'ai-agent' ? 'h-screen max-h-screen overflow-hidden' : ''}`}>
       <TopProgressBar active={isNavigating || loading} />
       
       {/* Left Sidebar */}
@@ -853,7 +853,7 @@ export default function App() {
       />
 
       {/* Main Content Workspace */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className={`flex-1 flex flex-col min-w-0 ${currentTab === 'ai-agent' ? 'h-screen max-h-screen overflow-hidden' : ''}`}>
         {currentTab !== 'ai-agent' && (
           <Header
             user={user}
@@ -873,7 +873,7 @@ export default function App() {
         {/* SUSPENSE FOR ALL ROUTE VIEWS */}
         <Suspense fallback={<ViewLoadingFallback />}>
         {/* AI AGENT: Full-screen, no padding, no extra scroll. Kept mounted so tab switching never erases chat */}
-        <div className={currentTab === 'ai-agent' ? "flex-1 overflow-hidden min-h-0 flex flex-col" : "hidden"}>
+        <div className={currentTab === 'ai-agent' ? "flex-1 overflow-hidden min-h-0 h-full max-h-screen flex flex-col" : "hidden"}>
           <AIAgentView key={user?._id || 'user'} onBack={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')} />
         </div>
 

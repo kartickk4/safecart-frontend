@@ -506,7 +506,7 @@ export default function AIAgentView({ onBack }) {
   const [showBulk, setShowBulk] = useState(false);
   const [showMicHelp, setShowMicHelp] = useState(false);
   const initRef = useRef(false);
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -598,7 +598,12 @@ export default function AIAgentView({ onBack }) {
   }, [isListening, liveTranscript]);
 
   useEffect(() => { 
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   }, [messages]);
 
   useEffect(() => { 
@@ -831,10 +836,10 @@ export default function AIAgentView({ onBack }) {
     : (QUICK_REPLIES[step] || []);
 
   return (
-    <div className="flex h-full min-h-0 bg-slate-50 font-sans overflow-hidden select-none">
+    <div className="flex h-full max-h-screen w-full min-h-0 bg-slate-50 font-sans overflow-hidden select-none">
       
-      {/* ── LEFT DESKTOP SIDEBAR ── */}
-      <aside className="w-80 shrink-0 border-r border-slate-200/80 bg-white flex flex-col overflow-hidden hidden lg:flex shadow-2xs">
+      {/* ── LEFT DESKTOP SIDEBAR (Stationary & Fixed) ── */}
+      <aside className="w-80 shrink-0 border-r border-slate-200/80 bg-white flex flex-col h-full max-h-screen overflow-hidden hidden lg:flex shadow-2xs">
         
         {/* Header Banner */}
         <div className="relative p-6 pb-5 bg-gradient-to-br from-[#1E56E3] via-indigo-600 to-indigo-800 text-white overflow-hidden">
@@ -960,7 +965,7 @@ export default function AIAgentView({ onBack }) {
       </aside>
 
       {/* ── MAIN CHAT VIEW ── */}
-      <main className="flex-1 flex flex-col min-w-0 bg-white relative">
+      <main className="flex-1 flex flex-col min-w-0 h-full max-h-screen bg-white relative overflow-hidden">
         
         {/* ── UPPER HEADER ── */}
         <header className="px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-slate-200/80 bg-white/95 backdrop-blur-md flex items-center justify-between gap-3 shrink-0 z-20">
@@ -1012,8 +1017,11 @@ export default function AIAgentView({ onBack }) {
           </div>
         </header>
 
-        {/* ── MESSAGES CHAT STREAM ── */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-4 bg-gradient-to-b from-slate-50/50 via-white to-indigo-50/20">
+        {/* ── MESSAGES CHAT STREAM (Strictly Scoped Scroll) ── */}
+        <div
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-4 bg-gradient-to-b from-slate-50/50 via-white to-indigo-50/20"
+        >
           
           {/* Empty State Hero Prompt Starter */}
           {messages.length === 0 && !isLoading && (
@@ -1119,8 +1127,6 @@ export default function AIAgentView({ onBack }) {
               </div>
             </div>
           )}
-          
-          <div ref={messagesEndRef} />
         </div>
 
         {/* ── QUICK SUGGESTION PILLS ── */}
