@@ -76,7 +76,7 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
   const fetchMyIncomingShipments = async () => {
     setLoadingShipments(true);
     try {
-      const res = await shipmentAPI.getShipments();
+      const res = await shipmentAPI.getShipments('Receiver');
       if (Array.isArray(res.data)) {
         // Filter for deliverable / eligible shipments
         const incoming = res.data.filter(s =>

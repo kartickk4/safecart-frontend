@@ -56,7 +56,7 @@ export default function ReturnOrdersView({ onSelectShipment, user, isSupplier = 
     } catch (err) {
       console.warn('Failed to load return orders via dedicated route, falling back:', err);
       try {
-        const fallbackRes = await shipmentAPI.getShipments();
+        const fallbackRes = await shipmentAPI.getShipments(isSupplier ? 'Supplier' : 'Receiver');
         const shipments = fallbackRes.data || [];
         const returns = shipments.filter(s => 
           (s.returnStatus && s.returnStatus !== 'None') || 

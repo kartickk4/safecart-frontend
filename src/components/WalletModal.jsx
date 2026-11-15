@@ -243,9 +243,13 @@ export default function WalletModal({ user, onUpdateUser }) {
 
   const fetchShipments = async () => {
     try {
-      const res = await shipmentAPI.getShipments();
+      const targetRole = isSupplier ? 'Supplier' : 'Receiver';
+      const res = await shipmentAPI.getShipments(targetRole);
       if (Array.isArray(res.data)) {
         setShipments(res.data);
+        try {
+          localStorage.setItem('securekaro_dashboard_shipments_' + targetRole, JSON.stringify(res.data));
+        } catch (_) {}
       }
     } catch (e) {}
   };
