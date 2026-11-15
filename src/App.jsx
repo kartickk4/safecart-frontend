@@ -164,15 +164,28 @@ export default function App() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Ensure the browser address bar immediately reflects the full clean route on initial load (e.g. /dashboard)
+    // Check if token exists and determine clean initial tab
+    const token = localStorage.getItem('securekaro_token');
+    const isPublic = [
+      'login', 'register', 'support', 'roi-calculator', 'rate-calculator', 'track', 'delivery-confirm',
+      'legal', 'contact', 'terms', 'privacy', 'shipping', 'refunds', 'services'
+    ].includes(currentTab);
+
+    let activeTab = currentTab;
+    if (!token && !isPublic) {
+      activeTab = 'login';
+      _setCurrentTab('login');
+    }
+
+    // Ensure the browser address bar immediately reflects the full clean route on initial load (e.g. /login or /dashboard)
     const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
-    const targetRoute = TAB_ROUTES[currentTab] || `/${currentTab}`;
+    const targetRoute = TAB_ROUTES[activeTab] || `/${activeTab}`;
     if (currentPath === '/' || currentPath !== targetRoute) {
-      window.history.replaceState({ tab: currentTab }, '', targetRoute);
+      window.history.replaceState({ tab: activeTab }, '', targetRoute);
     }
 
     // Set initial title based on initial route
-    document.title = TAB_TITLES[currentTab] || 'SecureKaro — Logistics Aggregator & Shipping Software';
+    document.title = TAB_TITLES[activeTab] || 'SecureKaro — Logistics Aggregator & Shipping Software';
 
     const handlePopState = () => {
       const tab = getTabFromLocation();
@@ -363,6 +376,7 @@ export default function App() {
         localStorage.removeItem('securekaro_token');
         localStorage.removeItem('securekaro_user');
         setUser(null);
+        setCurrentTab('login', { replace: true });
       }
       // If network timeout or cold start, keep the cached user so dashboard stays functional
     } finally {
@@ -397,6 +411,16 @@ export default function App() {
     localStorage.setItem('securekaro_user', JSON.stringify(userData));
     setIsNewUser(!!newUserFlag);
     setShowWelcomeModal(true);
+
+    // Navigate to appropriate landing tab on successful login
+    const activeRole = savedRole || userData.activeRole || userData.role || 'Supplier';
+    const isSupp = activeRole === 'Supplier';
+    const lastTab = localStorage.getItem('securekaro_last_tab');
+    const destinationTab = (lastTab && lastTab !== 'login' && lastTab !== 'register' && TAB_ROUTES[lastTab])
+      ? (isSupp || (lastTab !== 'dashboard' && lastTab !== 'create-shipment' && lastTab !== 'return-orders' && lastTab !== 'ai-agent') ? lastTab : 'shipments-list')
+      : (isSupp ? 'dashboard' : 'shipments-list');
+
+    setCurrentTab(destinationTab, { replace: true });
 
     // Refresh complete profile in background to guarantee isPro and balances are in sync
     try {
@@ -563,7 +587,7 @@ export default function App() {
         }
         setUser(null);
         clearApiCache();
-        setCurrentTab('dashboard');
+        setCurrentTab('login', { replace: true });
         setIsSigningOut(false);
         setSignOutStep('');
       }, 1200);
@@ -693,7 +717,7 @@ export default function App() {
           initialPhone={publicTrackParams?.phone || ''}
           onBackToAuth={() => {
             setIsPublicTrackingActive(false);
-            setCurrentTab('dashboard');
+            setCurrentTab('login');
           }}
         />
       </Suspense>
@@ -709,7 +733,7 @@ export default function App() {
         <header className="bg-white border-b border-slate-200/80 px-4 md:px-8 py-3.5 sticky top-0 z-30 shadow-xs flex items-center justify-between">
           <button
             onClick={() => {
-              setCurrentTab('dashboard');
+              setCurrentTab(user ? 'dashboard' : 'login');
             }}
             className="flex items-center gap-2.5 text-left group cursor-pointer"
           >
@@ -751,7 +775,7 @@ export default function App() {
             </button>
             <button
               onClick={() => {
-                setCurrentTab('dashboard');
+                setCurrentTab('login');
               }}
               className="px-4 py-2 bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition flex items-center gap-1.5 cursor-pointer"
             >
@@ -773,8 +797,8 @@ export default function App() {
             {currentTab === 'rate-calculator' && (
               <div className="max-w-4xl mx-auto py-6">
                 <RateCalculatorWidget
-                  onSelectCarrier={() => setCurrentTab('dashboard')}
-                  onGetStarted={() => setCurrentTab('dashboard')}
+                  onSelectCarrier={() => setCurrentTab(user ? 'dashboard' : 'login')}
+                  onGetStarted={() => setCurrentTab(user ? 'dashboard' : 'login')}
                 />
               </div>
             )}
@@ -782,7 +806,7 @@ export default function App() {
             {currentTab === 'roi-calculator' && (
               <ROISavingsCalculatorView
                 onNavigateCreateShipment={() => {
-                  setCurrentTab('dashboard');
+                  setCurrentTab(user ? (isSupplier ? 'dashboard' : 'shipments-list') : 'login');
                 }}
               />
             )}
@@ -818,8 +842,13 @@ export default function App() {
   if (!user) {
     return (
       <AuthView
+        initialMode={currentTab === 'register' ? 'register' : 'login'}
         onAuthSuccess={handleAuthSuccess}
         onOpenPublicTrack={() => setIsPublicTrackingActive(true)}
+        onModeChange={(mode) => {
+          const nextTab = mode === 'register' ? 'register' : 'login';
+          setCurrentTab(nextTab, { replace: true });
+        }}
       />
     );
   }

@@ -1,4 +1,6 @@
 export const TAB_ROUTES = {
+  'login': '/login',
+  'register': '/register',
   'dashboard': '/dashboard',
   'shipments-list': '/orders',
   'create-shipment': '/create-shipment',
@@ -27,6 +29,13 @@ export const TAB_ROUTES = {
 export const ROUTE_TABS = {
   '': 'dashboard',
   '/': 'dashboard',
+  '/login': 'login',
+  '/signin': 'login',
+  '/sign-in': 'login',
+  '/auth': 'login',
+  '/signup': 'register',
+  '/register': 'register',
+  '/create-account': 'register',
   '/dashboard': 'dashboard',
   '/orders': 'shipments-list',
   '/shipments': 'shipments-list',
@@ -76,6 +85,8 @@ export const ROUTE_TABS = {
 };
 
 export const TAB_TITLES = {
+  'login': 'Sign In | SecureKaro — Logistics & Shipping Software',
+  'register': 'Create Account | SecureKaro — Logistics & Shipping Software',
   'dashboard': 'Dashboard | SecureKaro — Logistics & Shipping Software',
   'shipments-list': 'Orders & Shipments | SecureKaro Courier Platform',
   'create-shipment': 'Book Courier Shipment | SecureKaro Shipping Software',
@@ -101,16 +112,25 @@ export const TAB_TITLES = {
   'admin': 'Executive Admin Console | SecureKaro'
 };
 
+const PUBLIC_TABS = [
+  'login', 'register', 'track', 'delivery-confirm', 'support', 'legal', 'contact',
+  'terms', 'privacy', 'shipping', 'refunds', 'services', 'rate-calculator', 'roi-calculator'
+];
+
 export function getTabFromLocation() {
   if (typeof window === 'undefined') return 'dashboard';
 
   const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
+  const hasToken = typeof window !== 'undefined' ? Boolean(localStorage.getItem('securekaro_token')) : false;
 
-  // If user visits root '/' or empty path, restore the last active tab and role
+  // If user visits root '/' or empty path
   if (pathname === '' || pathname === '/') {
+    if (!hasToken) {
+      return 'login';
+    }
     try {
       const lastTab = localStorage.getItem('securekaro_last_tab');
-      if (lastTab && TAB_ROUTES[lastTab]) {
+      if (lastTab && lastTab !== 'login' && lastTab !== 'register' && TAB_ROUTES[lastTab]) {
         const savedRole = localStorage.getItem('securekaro_active_role');
         const isSupp = savedRole === 'Supplier';
         if (!isSupp && (lastTab === 'dashboard' || lastTab === 'create-shipment' || lastTab === 'return-orders' || lastTab === 'ai-agent')) {
@@ -124,24 +144,41 @@ export function getTabFromLocation() {
   }
 
   if (ROUTE_TABS[pathname]) {
-    return ROUTE_TABS[pathname];
+    const matchedTab = ROUTE_TABS[pathname];
+    if (!hasToken && !PUBLIC_TABS.includes(matchedTab)) {
+      return 'login';
+    }
+    return matchedTab;
   }
 
   const searchParams = new URLSearchParams(window.location.search);
   const tabParam = searchParams.get('tab');
   if (tabParam && (TAB_ROUTES[tabParam] || ROUTE_TABS['/' + tabParam])) {
-    return TAB_ROUTES[tabParam] ? tabParam : ROUTE_TABS['/' + tabParam];
+    const found = TAB_ROUTES[tabParam] ? tabParam : ROUTE_TABS['/' + tabParam];
+    if (!hasToken && !PUBLIC_TABS.includes(found)) {
+      return 'login';
+    }
+    return found;
   }
 
   const hash = window.location.hash.replace(/^#/, '');
   if (hash && ROUTE_TABS['/' + hash]) {
-    return ROUTE_TABS['/' + hash];
+    const found = ROUTE_TABS['/' + hash];
+    if (!hasToken && !PUBLIC_TABS.includes(found)) {
+      return 'login';
+    }
+    return found;
   }
 
   try {
     const lastTab = localStorage.getItem('securekaro_last_tab');
-    if (lastTab && TAB_ROUTES[lastTab]) return lastTab;
+    if (lastTab && lastTab !== 'login' && lastTab !== 'register' && TAB_ROUTES[lastTab]) {
+      if (!hasToken && !PUBLIC_TABS.includes(lastTab)) {
+        return 'login';
+      }
+      return lastTab;
+    }
   } catch (_) {}
 
-  return 'dashboard';
+  return hasToken ? 'dashboard' : 'login';
 }

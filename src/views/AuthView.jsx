@@ -6,8 +6,21 @@ const LegalComplianceView = React.lazy(() => import('./LegalComplianceView'));
 import { auth, RecaptchaVerifier, signInWithPhoneNumber, googleProvider, signInWithPopup } from '../firebase';
 
 
-export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
-  const [isSignUp, setIsSignUp] = useState(false);
+export default function AuthView({ initialMode = 'login', onModeChange, onAuthSuccess, onOpenPublicTrack }) {
+  const [isSignUp, setIsSignUp] = useState(() => {
+    if (initialMode === 'register') return true;
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname.toLowerCase();
+    return path.includes('register') || path.includes('signup');
+  });
+
+  useEffect(() => {
+    if (initialMode === 'register' && !isSignUp) {
+      setIsSignUp(true);
+    } else if (initialMode === 'login' && isSignUp) {
+      setIsSignUp(false);
+    }
+  }, [initialMode]);
   // Role is determined AFTER signup via the Role Identification Modal
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [roleModalStep, setRoleModalStep] = useState(1); // 1: who are you? 2: platform type? 3: pickup address?
@@ -788,14 +801,20 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
             <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1 text-sm font-medium text-slate-600 w-full sm:w-auto">
               <button
                 type="button"
-                onClick={() => setIsSignUp(false)}
+                onClick={() => {
+                  setIsSignUp(false);
+                  onModeChange?.('login');
+                }}
                 className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg transition-all text-center text-xs font-bold ${!isSignUp ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'}`}
               >
                 Sign In
               </button>
               <button
                 type="button"
-                onClick={() => setIsSignUp(true)}
+                onClick={() => {
+                  setIsSignUp(true);
+                  onModeChange?.('register');
+                }}
                 className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg transition-all text-center text-xs font-bold ${isSignUp ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'}`}
               >
                 Create Account
