@@ -74,7 +74,7 @@ export default function WalletModal({ user, onUpdateUser }) {
     accountHolderName: user?.bankDetails?.accountHolderName || user?.fullName || '',
     accountNumber: user?.bankDetails?.accountNumber || '',
     ifscCode: user?.bankDetails?.ifscCode || '',
-    bankName: user?.bankDetails?.bankName || 'HDFC Bank',
+    bankName: user?.bankDetails?.bankName || '',
     upiId: user?.bankDetails?.upiId || ''
   });
   const [editing, setEditing] = useState(false);
@@ -117,7 +117,7 @@ export default function WalletModal({ user, onUpdateUser }) {
   const [withdrawAccountHolder, setWithdrawAccountHolder] = useState(user?.bankDetails?.accountHolderName || user?.fullName || '');
   const [withdrawAccountNumber, setWithdrawAccountNumber] = useState(user?.bankDetails?.accountNumber || '');
   const [withdrawIfsc, setWithdrawIfsc] = useState(user?.bankDetails?.ifscCode || '');
-  const [withdrawBankName, setWithdrawBankName] = useState(user?.bankDetails?.bankName || 'HDFC Bank');
+  const [withdrawBankName, setWithdrawBankName] = useState(user?.bankDetails?.bankName || '');
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [withdrawError, setWithdrawError] = useState('');
   const [withdrawSuccess, setWithdrawSuccess] = useState('');
@@ -215,7 +215,7 @@ export default function WalletModal({ user, onUpdateUser }) {
         accountHolderName: user?.bankDetails?.accountHolderName || user?.fullName || '',
         accountNumber: user?.bankDetails?.accountNumber || '',
         ifscCode: user?.bankDetails?.ifscCode || '',
-        bankName: user?.bankDetails?.bankName || 'HDFC Bank',
+        bankName: user?.bankDetails?.bankName || '',
         upiId: user?.bankDetails?.upiId || ''
       });
       // Sync all balance fields from user prop — this fires when the background
@@ -1005,7 +1005,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-extrabold text-slate-700 transition flex items-center justify-center gap-1.5 self-start sm:self-auto"
           >
             {editing ? <Edit className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5 text-[#1E56E3]" />}
-            <span>{editing ? 'Cancel' : 'Edit Payout Details (OTP Required)'}</span>
+            <span>{editing ? 'Cancel' : ((bankDetails.accountNumber || bankDetails.upiId) ? 'Edit Payout Details (OTP Required)' : '+ Add Payout Details')}</span>
           </button>
         </div>
 
@@ -1013,42 +1013,56 @@ export default function WalletModal({ user, onUpdateUser }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 relative group">
               <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Account Holder</span>
-              <span className="text-sm font-bold text-slate-900 block truncate">{bankDetails.accountHolderName}</span>
-              <button 
-                onClick={() => handleCopy(bankDetails.accountHolderName, 'holder')}
-                className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 transition"
-              >
-                {copiedField === 'holder' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
+              <span className="text-sm font-bold text-slate-900 block truncate">
+                {bankDetails.accountHolderName || <span className="text-slate-400 font-semibold text-xs">Not Configured</span>}
+              </span>
+              {bankDetails.accountHolderName && (
+                <button 
+                  onClick={() => handleCopy(bankDetails.accountHolderName, 'holder')}
+                  className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 transition"
+                >
+                  {copiedField === 'holder' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              )}
             </div>
 
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 relative group">
               <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Account Number</span>
-              <span className="text-sm font-bold text-slate-900 font-mono block">•••• •••• {bankDetails.accountNumber?.slice(-4) || '9878'}</span>
-              <button 
-                onClick={() => handleCopy(bankDetails.accountNumber, 'acc')}
-                className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 transition"
-              >
-                {copiedField === 'acc' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
+              <span className="text-sm font-bold text-slate-900 block">
+                {bankDetails.accountNumber ? `•••• •••• ${bankDetails.accountNumber.slice(-4)}` : <span className="text-slate-400 font-semibold text-xs">Not Configured</span>}
+              </span>
+              {bankDetails.accountNumber && (
+                <button 
+                  onClick={() => handleCopy(bankDetails.accountNumber, 'acc')}
+                  className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 transition"
+                >
+                  {copiedField === 'acc' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              )}
             </div>
 
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 relative group">
               <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">IFSC Code</span>
-              <span className="text-sm font-bold text-slate-900 font-mono block">{bankDetails.ifscCode || 'HDFC0001234'}</span>
-              <button 
-                onClick={() => handleCopy(bankDetails.ifscCode, 'ifsc')}
-                className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 transition"
-              >
-                {copiedField === 'ifsc' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
+              <span className="text-sm font-bold text-slate-900 block">
+                {bankDetails.ifscCode ? bankDetails.ifscCode : <span className="text-slate-400 font-semibold text-xs">Not Configured</span>}
+              </span>
+              {bankDetails.ifscCode && (
+                <button 
+                  onClick={() => handleCopy(bankDetails.ifscCode, 'ifsc')}
+                  className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 transition"
+                >
+                  {copiedField === 'ifsc' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              )}
             </div>
 
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 relative group">
               <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Bank Name / UPI ID</span>
-              <span className="text-sm font-bold text-slate-900 block truncate">{bankDetails.bankName || 'HDFC Bank'}</span>
+              <span className="text-sm font-bold text-slate-900 block truncate">
+                {bankDetails.bankName ? bankDetails.bankName : (bankDetails.upiId ? 'UPI Direct Payout' : <span className="text-slate-400 font-semibold text-xs">Not Configured</span>)}
+              </span>
               {bankDetails.upiId ? (
-                <span className="text-xs font-mono font-bold text-emerald-600 block mt-0.5">{bankDetails.upiId}</span>
+                <span className="text-xs font-bold text-emerald-600 block mt-0.5">{bankDetails.upiId}</span>
               ) : (
                 <span className="text-[11px] text-slate-400 block mt-0.5">UPI ID Not Set</span>
               )}
