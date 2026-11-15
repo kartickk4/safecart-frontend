@@ -200,12 +200,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   // COD Upfront Fees & Settlement State
   const [codQuote, setCodQuote] = useState({
     deliveryCharge: 40,
-    codCharge: 40,
-    totalCharge: 80,
+    codCharge: 0,
+    totalCharge: 40,
     walletBalance: Number(user?.walletBalance) || 0,
-    canAdjustWallet: (Number(user?.walletBalance) || 0) >= 80,
-    shortfall: Math.max(0, 80 - (Number(user?.walletBalance) || 0)),
-    carrierName: 'Delhivery Express'
+    canAdjustWallet: (Number(user?.walletBalance) || 0) >= 40,
+    shortfall: Math.max(0, 40 - (Number(user?.walletBalance) || 0)),
+    carrierName: 'Shadowfax Express'
   });
   const [fetchingCodQuote, setFetchingCodQuote] = useState(false);
   const [showCodPaymentModal, setShowCodPaymentModal] = useState(false);
@@ -234,8 +234,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
           setCodQuote(res.data);
         }
       } catch (e) {
+        const isShadowfax = /shadowfax/i.test(carrierSlug || '');
         const delCharge = 40;
-        const cCharge = 40;
+        const cCharge = isShadowfax ? 0 : 45;
         const tot = delCharge + cCharge;
         const wb = Number(user?.walletBalance) || 0;
         if (isMounted) {
@@ -246,7 +247,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
             walletBalance: wb,
             canAdjustWallet: wb >= tot,
             shortfall: Math.max(0, tot - wb),
-            carrierName: 'Delhivery Express'
+            carrierName: isShadowfax ? 'Shadowfax Direct' : 'Delhivery Express'
           });
         }
       } finally {
