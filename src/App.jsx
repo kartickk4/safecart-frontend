@@ -53,7 +53,13 @@ export default function App() {
   const [user, setUser] = useState(() => {
     try {
       const cached = localStorage.getItem('securekaro_user');
-      return cached ? JSON.parse(cached) : null;
+      const parsed = cached ? JSON.parse(cached) : null;
+      const savedRole = localStorage.getItem('securekaro_active_role');
+      if (parsed && savedRole && (savedRole === 'Supplier' || savedRole === 'Receiver')) {
+        parsed.activeRole = savedRole;
+        parsed.role = savedRole;
+      }
+      return parsed;
     } catch (e) {
       return null;
     }
@@ -137,6 +143,10 @@ export default function App() {
     });
 
     if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('securekaro_last_tab', targetTab);
+      } catch (_) {}
+
       const targetRoute = TAB_ROUTES[targetTab] || `/${targetTab}`;
       const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
 
@@ -206,7 +216,10 @@ export default function App() {
     checkAuth();
   }, []);
 
-  const isSupplier = user?.role === 'Supplier' || user?.activeRole === 'Supplier';
+  const savedActiveRole = typeof window !== 'undefined' ? localStorage.getItem('securekaro_active_role') : null;
+  const isSupplier = savedActiveRole 
+    ? savedActiveRole === 'Supplier' 
+    : (user?.role === 'Supplier' || user?.activeRole === 'Supplier');
 
   const refreshCounts = async () => {
     if (!localStorage.getItem('securekaro_token')) return;
@@ -338,6 +351,7 @@ export default function App() {
       const loadedUser = res.data;
       if (savedRole && (savedRole === 'Supplier' || savedRole === 'Receiver')) {
         loadedUser.activeRole = savedRole;
+        loadedUser.role = savedRole;
       }
       setUser(loadedUser);
       localStorage.setItem('securekaro_user', JSON.stringify(loadedUser));
@@ -464,19 +478,29 @@ export default function App() {
     } catch (_) {}
 
     if (cachedUser) {
-      setUser({ ...cachedUser, role: nextRole, activeRole: nextRole });
+      const updated = { ...cachedUser, role: nextRole, activeRole: nextRole };
+      setUser(updated);
+      try {
+        localStorage.setItem('securekaro_user', JSON.stringify(updated));
+      } catch (_) {}
     } else {
       // If first time switching, clean reset balances for the target role
-      setUser(prev => ({
-        ...prev,
-        role: nextRole,
-        activeRole: nextRole,
-        walletBalance: 0,
-        cashbackBalance: 0,
-        totalWalletBalance: 0,
-        withdrawableBalance: 0,
-        pendingConfirmationBalance: 0
-      }));
+      setUser(prev => {
+        const updated = {
+          ...prev,
+          role: nextRole,
+          activeRole: nextRole,
+          walletBalance: 0,
+          cashbackBalance: 0,
+          totalWalletBalance: 0,
+          withdrawableBalance: 0,
+          pendingConfirmationBalance: 0
+        };
+        try {
+          localStorage.setItem('securekaro_user', JSON.stringify(updated));
+        } catch (_) {}
+        return updated;
+      });
     }
 
     // 6. Sync with backend in background without blocking UI
@@ -491,10 +515,12 @@ export default function App() {
         if (res.data?.user) {
           const syncedUser = {
             ...res.data.user,
+            role: nextRole,
             activeRole: nextRole
           };
           setUser(syncedUser);
           try {
+            localStorage.setItem('securekaro_user', JSON.stringify(syncedUser));
             sessionStorage.setItem('securekaro_role_user_' + nextRole, JSON.stringify(syncedUser));
           } catch (_) {}
           prefetchWalletInBackground(syncedUser);

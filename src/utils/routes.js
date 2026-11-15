@@ -105,6 +105,24 @@ export function getTabFromLocation() {
   if (typeof window === 'undefined') return 'dashboard';
 
   const pathname = window.location.pathname.replace(/\/+$/, '') || '/';
+
+  // If user visits root '/' or empty path, restore the last active tab and role
+  if (pathname === '' || pathname === '/') {
+    try {
+      const lastTab = localStorage.getItem('securekaro_last_tab');
+      if (lastTab && TAB_ROUTES[lastTab]) {
+        const savedRole = localStorage.getItem('securekaro_active_role');
+        const isSupp = savedRole === 'Supplier';
+        if (!isSupp && (lastTab === 'dashboard' || lastTab === 'create-shipment' || lastTab === 'return-orders' || lastTab === 'ai-agent')) {
+          return 'shipments-list';
+        }
+        return lastTab;
+      }
+    } catch (_) {}
+    const savedRole = typeof window !== 'undefined' ? localStorage.getItem('securekaro_active_role') : null;
+    return savedRole === 'Receiver' ? 'shipments-list' : 'dashboard';
+  }
+
   if (ROUTE_TABS[pathname]) {
     return ROUTE_TABS[pathname];
   }
@@ -119,6 +137,11 @@ export function getTabFromLocation() {
   if (hash && ROUTE_TABS['/' + hash]) {
     return ROUTE_TABS['/' + hash];
   }
+
+  try {
+    const lastTab = localStorage.getItem('securekaro_last_tab');
+    if (lastTab && TAB_ROUTES[lastTab]) return lastTab;
+  } catch (_) {}
 
   return 'dashboard';
 }
