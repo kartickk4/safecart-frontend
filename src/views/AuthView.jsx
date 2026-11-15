@@ -246,7 +246,17 @@ export default function AuthView({ onAuthSuccess, onOpenPublicTrack }) {
         setGoogleLoadingMsg('Waking up secure server, please wait a moment...');
       }, 3500);
 
+      let idToken = '';
+      if (typeof googleUser.getIdToken === 'function') {
+        try {
+          idToken = await googleUser.getIdToken();
+        } catch (tokenErr) {
+          console.warn('Could not fetch idToken from googleUser:', tokenErr);
+        }
+      }
+
       const authPayload = {
+        idToken,
         email: googleUser.email,
         fullName: googleUser.displayName || googleUser.email.split('@')[0],
         avatarUrl: googleUser.photoURL || '',
