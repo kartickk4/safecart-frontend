@@ -8,11 +8,20 @@ import {
 import { shipmentAPI, profileAPI, agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
 import RechargeModal from './RechargeModal';
+import PaymentCheckoutModal from './PaymentCheckoutModal';
 
 export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData, onUpdateUser }) {
   // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection
   const [modalStep, setModalStep] = useState(1);
   const [showRechargeModal, setShowRechargeModal] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [checkoutModalData, setCheckoutModalData] = useState({
+    amount: 0,
+    routeFrom: '',
+    routeTo: '',
+    courierName: '',
+    breakdown: null
+  });
   const [shortfallAmount, setShortfallAmount] = useState(0);
   // Rewards & Pricing System: Hide welcome offer if user has completed at least 1 order
   const [modalShipmentsCount, setModalShipmentsCount] = useState(() => {
@@ -314,10 +323,37 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   };
 
   // Step 2 Submit: Finalize booking with selected courier
-  const handleFinalizeBooking = async () => {
+  const handleFinalizeBooking = async (overrideParams = null) => {
     if (!selectedQuote) return;
     setLoading(true);
     setError('');
+
+    const isCod = paymentMode === 'cod';
+    const deliveryFee = Number(selectedQuote.exactRate || selectedQuote.price || 0);
+    const codFee = isCod ? (selectedQuote.codCharge || 52) : 0;
+    const totalShippingCharge = deliveryFee;
+    const currentWallet = Number(user?.walletBalance) || 0;
+    const activeCount = Number(user?.activeShipmentsCount) || 0;
+    const requiredReserve = Math.min(1000, (activeCount + 1) * 100);
+    const totalRequired = totalShippingCharge + requiredReserve;
+
+    // Check if seller has sufficient balance before creating
+    if (!overrideParams?.paidUpfront && currentWallet < totalRequired) {
+      setCheckoutModalData({
+        amount: totalShippingCharge,
+        routeFrom: senderPincode || 'Origin',
+        routeTo: receiverPincode || 'Destination',
+        courierName: selectedQuote?.courierPartner || selectedQuote?.name || 'Courier Partner',
+        breakdown: {
+          freight: deliveryFee - codFee,
+          codFee: codFee,
+          requiredReserve
+        }
+      });
+      setShowCheckoutModal(true);
+      setLoading(false);
+      return;
+    }
 
     try {
       const isCod = paymentMode === 'cod';
@@ -356,10 +392,25 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         setError('Phone verification required before your first shipment. Please verify your mobile number above.');
         return;
       }
-      if (err.response?.data?.code === 'COD_PAYMENT_REQUIRED' || err.response?.data?.code === 'SECURITY_BUFFER_REQUIRED') {
-        setError(err.response.data.message);
-        setShortfallAmount(err.response.data.shortfall || 100);
-        setShowRechargeModal(true);
+      if (err.response?.status === 402 || 
+          err.response?.data?.code === 'INSUFFICIENT_WALLET_BALANCE' || 
+          err.response?.data?.code === 'COD_PAYMENT_REQUIRED' || 
+          err.response?.data?.code === 'SECURITY_BUFFER_REQUIRED') {
+        const data = err.response?.data || {};
+        const fee = data.totalCharge || Number(selectedQuote?.price || 0);
+        setCheckoutModalData({
+          amount: fee,
+          routeFrom: senderPincode || 'Origin',
+          routeTo: receiverPincode || 'Destination',
+          courierName: selectedQuote?.courierPartner || selectedQuote?.name || 'Courier Partner',
+          breakdown: {
+            freight: data.deliveryCharge || fee,
+            codFee: data.codCharge || 0,
+            requiredReserve: data.requiredReserve || 100
+          }
+        });
+        setShowCheckoutModal(true);
+        setError(data.message || 'Please complete payment via PhonePe.');
         return;
       }
       setError(err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to create shipment. Please verify details and try again.');
@@ -1454,6 +1505,28 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
             </div>
           </div>
         )}
+
+        {/* PhonePe "Make Payment" Checkout Modal */}
+        <PaymentCheckoutModal
+          isOpen={showCheckoutModal}
+          onClose={() => setShowCheckoutModal(false)}
+          routeFrom={checkoutModalData.routeFrom || senderPincode || 'Origin'}
+          routeTo={checkoutModalData.routeTo || receiverPincode || 'Destination'}
+          amount={checkoutModalData.amount || selectedQuote?.price || 0}
+          discountPercent={3}
+          walletBalance={user?.walletBalance || 0}
+          courierName={checkoutModalData.courierName || selectedQuote?.name || 'Courier Partner'}
+          breakdown={checkoutModalData.breakdown}
+          user={user}
+          onUpdateUser={onUpdateUser}
+          onPaymentSuccess={async (paymentResult) => {
+            setShowCheckoutModal(false);
+            await handleFinalizeBooking({
+              paidUpfront: paymentResult?.paidUpfront || false,
+              txnId: paymentResult?.txnId
+            });
+          }}
+        />
 
         {/* Dynamic Reserve Buffer Recharge Modal */}
         <RechargeModal

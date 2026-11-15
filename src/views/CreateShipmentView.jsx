@@ -11,6 +11,7 @@ import {
 import { shipmentAPI, profileAPI, agentAPI } from '../services/api';
 import RechargeModal from '../components/RechargeModal';
 import CarrierLogo from '../components/CarrierLogo';
+import PaymentCheckoutModal from '../components/PaymentCheckoutModal';
 
 
 
@@ -47,6 +48,15 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [copiedWhatsApp, setCopiedWhatsApp] = useState(false);
   const [copiedPickupToken, setCopiedPickupToken] = useState(false);
   const [showRechargeModal, setShowRechargeModal] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [checkoutModalData, setCheckoutModalData] = useState({
+    amount: 0,
+    routeFrom: '',
+    routeTo: '',
+    courierName: '',
+    breakdown: null,
+    quote: null
+  });
   const [isPaymentDropdownOpen, setIsPaymentDropdownOpen] = useState(false);
   const [shipmentType, setShipmentType] = useState('forward'); // 'forward' | 'reverse'
 
@@ -462,36 +472,49 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     setSelectedQuote(quote);
     setShowCarrierModal(false);
 
-    // If COD, verify wallet sufficiency with this courier's live rate & live COD fee
-    if (paymentMode === 'cod') {
-      const requiredDelivery = Number(quote.freightCharge || (quote.price - (quote.codCharge || 0)));
-      const requiredCodFee = Number(quote.codCharge || 0);
-      const totalFee = Number(quote.exactRate || quote.price || (requiredDelivery + requiredCodFee));
-      const currentWallet = Number(user?.walletBalance) || 0;
-      const activeCount = codQuote?.activeShipmentsCount !== undefined ? codQuote.activeShipmentsCount : (user?.activeShipmentsCount || 0);
-      const requiredReserve = codQuote?.requiredReserve || Math.min(1000, (activeCount + 1) * 100);
-      const totalRequired = totalFee + requiredReserve;
+    const isCod = paymentMode === 'cod';
+    const deliveryFee = Number(quote.freightCharge || (isCod ? quote.price - (quote.codCharge || 0) : quote.price) || quote.exactRate || 0);
+    const codFee = isCod ? Number(quote.codCharge || 0) : 0;
+    const totalShippingCharge = Number(quote.exactRate || quote.price || (deliveryFee + codFee));
+    const currentWallet = Number(user?.walletBalance) || 0;
+    const activeCount = user?.activeShipmentsCount !== undefined ? user.activeShipmentsCount : (codQuote?.activeShipmentsCount || 0);
+    const requiredReserve = Math.min(1000, (activeCount + 1) * 100);
+    const totalRequired = totalShippingCharge + requiredReserve;
 
-      setCodQuote(prev => ({
-        ...prev,
-        deliveryCharge: requiredDelivery,
-        codCharge: requiredCodFee,
-        totalCharge: totalFee,
-        totalRequired,
-        requiredReserve,
-        activeShipmentsCount: activeCount,
-        carrierName: quote.courierPartner || quote.name,
-        walletBalance: currentWallet,
-        canAdjustWallet: currentWallet >= totalRequired,
-        shortfall: Math.max(0, totalRequired - currentWallet)
-      }));
+    setCodQuote(prev => ({
+      ...prev,
+      deliveryCharge: deliveryFee,
+      codCharge: codFee,
+      totalCharge: totalShippingCharge,
+      totalRequired,
+      requiredReserve,
+      activeShipmentsCount: activeCount,
+      carrierName: quote.courierPartner || quote.name,
+      walletBalance: currentWallet,
+      canAdjustWallet: currentWallet >= totalRequired,
+      shortfall: Math.max(0, totalRequired - currentWallet)
+    }));
 
-      if (currentWallet < totalRequired) {
-        setShowCodPaymentModal(true);
-        return;
-      }
+    // If seller wallet does NOT have sufficient balance (fee + security reserve):
+    // Show official PhonePe "Make Payment" checkout screen
+    if (currentWallet < totalRequired) {
+      setCheckoutModalData({
+        amount: totalShippingCharge,
+        routeFrom: senderPincode || defaultPickupCity || 'Origin',
+        routeTo: receiverPincode || 'Destination',
+        courierName: quote.courierPartner || quote.name || 'Courier Partner',
+        breakdown: {
+          freight: deliveryFee,
+          codFee: codFee,
+          requiredReserve
+        },
+        quote
+      });
+      setShowCheckoutModal(true);
+      return;
     }
 
+    // Has sufficient balance: deduct directly from seller wallet
     await executeBooking({
       carrierSlug: quote.slug,
       deliveryCharge: quote.price
@@ -570,12 +593,27 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       setStep(2); // Move to Shipment Success Confirmation view (do not auto-popup details modal)
     } catch (err) {
       console.error('Create Shipment API Error:', err);
-      if (err.response?.data?.code === 'COD_PAYMENT_REQUIRED') {
-        setShowCodPaymentModal(true);
-        setError(err.response.data.message);
-      } else if (err.response?.data?.code === 'SECURITY_BUFFER_REQUIRED') {
-        setError(err.response.data.message);
-        setShowRechargeModal(true);
+      if (err.response?.status === 402 || 
+          err.response?.data?.code === 'INSUFFICIENT_WALLET_BALANCE' || 
+          err.response?.data?.code === 'COD_PAYMENT_REQUIRED' || 
+          err.response?.data?.code === 'PREPAID_SHIPPING_PAYMENT_REQUIRED' ||
+          err.response?.data?.code === 'SECURITY_BUFFER_REQUIRED') {
+        const data = err.response?.data || {};
+        const fee = data.totalCharge || targetDeliveryCharge;
+        setCheckoutModalData({
+          amount: fee,
+          routeFrom: senderPincode || defaultPickupCity || 'Origin',
+          routeTo: receiverPincode || 'Destination',
+          courierName: selectedQuote?.courierPartner || selectedQuote?.name || 'Courier Partner',
+          breakdown: {
+            freight: data.deliveryCharge || fee,
+            codFee: data.codCharge || 0,
+            requiredReserve: data.requiredReserve || 100
+          },
+          quote: selectedQuote
+        });
+        setShowCheckoutModal(true);
+        setError(data.message || 'Please complete shipping payment via PhonePe.');
       } else {
         const msg = err.response?.data?.message || err.response?.data?.error || 'Failed to create shipment. Please verify bank details and recipient info.';
         setError(msg);
@@ -2667,6 +2705,30 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
           </div>
         );
       })()}
+
+      {/* PhonePe "Make Payment" Checkout Modal */}
+      <PaymentCheckoutModal
+        isOpen={showCheckoutModal}
+        onClose={() => setShowCheckoutModal(false)}
+        routeFrom={checkoutModalData.routeFrom || senderPincode || 'Origin'}
+        routeTo={checkoutModalData.routeTo || receiverPincode || 'Destination'}
+        amount={checkoutModalData.amount || selectedQuote?.price || 0}
+        discountPercent={3}
+        walletBalance={user?.walletBalance || 0}
+        courierName={checkoutModalData.courierName || selectedQuote?.name || 'Courier Partner'}
+        breakdown={checkoutModalData.breakdown}
+        user={user}
+        onUpdateUser={onUpdateUser}
+        onPaymentSuccess={async (paymentResult) => {
+          setShowCheckoutModal(false);
+          await executeBooking({
+            carrierSlug: checkoutModalData?.quote?.slug || selectedQuote?.slug || carrierSlug,
+            deliveryCharge: checkoutModalData?.amount || selectedQuote?.price || codQuote.deliveryCharge,
+            paidUpfront: paymentResult?.paidUpfront || false,
+            txnId: paymentResult?.txnId
+          });
+        }}
+      />
 
       {/* Wallet Recharge Modal */}
       <RechargeModal
