@@ -405,9 +405,13 @@ export default function ReferralView({ user, isSupplier: propIsSupplier, onUpdat
             <div className="w-12 h-12 rounded-2xl bg-[#1E56E3] text-white flex items-center justify-center font-black text-base shadow-md shadow-blue-500/20">
               1
             </div>
-            <h3 className="text-sm font-extrabold text-slate-900">Invite a Merchant Friend</h3>
+            <h3 className="text-sm font-extrabold text-slate-900">
+              {isSupplier ? 'Invite a Merchant or Seller' : 'Invite a Friend or Shopper'}
+            </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Share your referral link or custom promo code with suppliers, D2C brand owners, or boutique sellers on WhatsApp.
+              {isSupplier 
+                ? 'Share your seller invite link with suppliers, D2C brand owners, or boutique sellers on WhatsApp.'
+                : 'Share your personal invite link with friends, family, or online shoppers on WhatsApp or Instagram.'}
             </p>
             <div className="pt-2 text-[11px] font-bold text-[#1E56E3] flex items-center gap-1">
               <span>Code auto-applied on signup</span>
@@ -420,9 +424,13 @@ export default function ReferralView({ user, isSupplier: propIsSupplier, onUpdat
             <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-base shadow-md shadow-indigo-500/20">
               2
             </div>
-            <h3 className="text-sm font-extrabold text-slate-900">They Ship an Order</h3>
+            <h3 className="text-sm font-extrabold text-slate-900">
+              {isSupplier ? 'They Ship Their First Order' : 'They Receive Their First Parcel'}
+            </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Your referred friend creates and dispatches their first parcel shipment with SecureKaro delivery verification.
+              {isSupplier
+                ? 'Your referred friend creates and dispatches their first parcel shipment with SecureKaro delivery verification.'
+                : 'Your referred friend completes their first verified delivery through SecureKaro delivery protection.'}
             </p>
             <div className="pt-2 text-[11px] font-bold text-indigo-600 flex items-center gap-1">
               <span>Zero risk for both parties</span>
@@ -435,9 +443,13 @@ export default function ReferralView({ user, isSupplier: propIsSupplier, onUpdat
             <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-base shadow-md shadow-emerald-500/20">
               3
             </div>
-            <h3 className="text-sm font-extrabold text-slate-900">Instant ₹30 Wallet Cash</h3>
+            <h3 className="text-sm font-extrabold text-slate-900">
+              {isSupplier ? 'Instant ₹30 Shipping / Bank Cash' : 'Instant ₹30 Direct UPI Cash'}
+            </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Upon confirmed delivery at destination, ₹30 is instantly added to your withdrawable Wallet balance.
+              {isSupplier
+                ? 'Upon verified delivery, ₹30 is credited to your shipping wallet to pay for courier fees or withdraw.'
+                : 'Upon verified delivery, ₹30 is credited straight to your account, ready for instant UPI withdrawal.'}
             </p>
             <div className="pt-2 text-[11px] font-bold text-emerald-600 flex items-center gap-1">
               <span>{isSupplier ? 'Withdraw to Bank or Pay Shipping' : 'Instant Bank / UPI Withdrawal'}</span>
@@ -526,10 +538,16 @@ export default function ReferralView({ user, isSupplier: propIsSupplier, onUpdat
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
               <Wallet className="w-3.5 h-3.5 text-emerald-700" />
-              <span>YOUR WALLET HUB</span>
+              <span>{isSupplier ? 'SELLER REFERRAL REWARDS' : 'BUYER CASH REWARDS'}</span>
             </div>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">Your Referral Wallet Cash</h2>
-            <p className="text-xs text-slate-500">Every ₹30 earned is added directly to your withdrawable balance with 0 lock-in.</p>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              {isSupplier ? 'Your Merchant Freight & Referral Cash' : 'Your Referral Cash Rewards'}
+            </h2>
+            <p className="text-xs text-slate-500">
+              {isSupplier 
+                ? 'Every ₹30 earned is added to your merchant wallet — use it to pay for courier freight or withdraw to your bank.' 
+                : 'Every ₹30 earned is 100% withdrawable to your UPI or Bank account with zero lock-in.'}
+            </p>
           </div>
 
           {/* Balance Showcase Card */}
