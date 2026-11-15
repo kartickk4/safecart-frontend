@@ -66,11 +66,15 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to attach JWT bearer token
+// Request interceptor to attach JWT bearer token & active role header
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('securekaro_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  const activeRole = localStorage.getItem('securekaro_active_role');
+  if (activeRole) {
+    config.headers['X-Active-Role'] = activeRole;
   }
   return config;
 }, (error) => {

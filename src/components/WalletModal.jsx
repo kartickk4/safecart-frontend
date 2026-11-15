@@ -82,12 +82,21 @@ export default function WalletModal({ user, onUpdateUser }) {
   const [copiedField, setCopiedField] = useState(null);
 
   // Cash Reward & Supplier 24h Confirmation Window State
+  const initialBuyerBal = parseFloat(((Number(user?.walletBalance) || 0) + (Number(user?.cashbackBalance) || 0)).toFixed(2));
   const [cashbackBalance, setCashbackBalance] = useState(user?.cashbackBalance || 0);
   const [securityReserve, setSecurityReserve] = useState(user?.securityReserve || 0);
   const [activeShipmentsCount, setActiveShipmentsCount] = useState(user?.activeShipmentsCount || 0);
-  const [withdrawableBalance, setWithdrawableBalance] = useState(user?.withdrawableBalance !== undefined ? user.withdrawableBalance : (user?.cashbackBalance || null));
+  const [withdrawableBalance, setWithdrawableBalance] = useState(
+    user?.withdrawableBalance !== undefined && user?.withdrawableBalance !== null && user?.withdrawableBalance > 0
+      ? user.withdrawableBalance
+      : (isSupplier ? (user?.cashbackBalance || null) : initialBuyerBal)
+  );
   const [pendingConfirmationBalance, setPendingConfirmationBalance] = useState(user?.pendingConfirmationBalance || 0);
-  const [totalWalletBalance, setTotalWalletBalance] = useState(user?.totalWalletBalance !== undefined ? user.totalWalletBalance : null);
+  const [totalWalletBalance, setTotalWalletBalance] = useState(
+    user?.totalWalletBalance !== undefined && user?.totalWalletBalance !== null && user?.totalWalletBalance > 0
+      ? user.totalWalletBalance
+      : (isSupplier ? null : initialBuyerBal)
+  );
   const [confirmationPipeline, setConfirmationPipeline] = useState([]);
   const [rewardHistory, setRewardHistory] = useState([]);
   const [historyFilter, setHistoryFilter] = useState('ALL'); // 'ALL' | 'EARNED' | 'WITHDRAWN'
@@ -137,10 +146,11 @@ export default function WalletModal({ user, onUpdateUser }) {
     if (didRoleChange && user) {
       const isSuppRole = currentRole === 'Supplier';
       const initialCashback = user.cashbackBalance !== undefined ? Number(user.cashbackBalance) : 0;
+      const initialBuyerRoleBal = parseFloat(((Number(user.walletBalance) || 0) + initialCashback).toFixed(2));
       setCashbackBalance(initialCashback);
-      setWithdrawableBalance(isSuppRole ? (user.withdrawableBalance !== undefined ? Number(user.withdrawableBalance) : null) : initialCashback);
+      setWithdrawableBalance(isSuppRole ? (user.withdrawableBalance !== undefined ? Number(user.withdrawableBalance) : null) : initialBuyerRoleBal);
       setPendingConfirmationBalance(isSuppRole ? (user.pendingConfirmationBalance !== undefined ? Number(user.pendingConfirmationBalance) : 0) : 0);
-      setTotalWalletBalance(isSuppRole ? (user.totalWalletBalance !== undefined ? Number(user.totalWalletBalance) : null) : initialCashback);
+      setTotalWalletBalance(isSuppRole ? (user.totalWalletBalance !== undefined ? Number(user.totalWalletBalance) : null) : initialBuyerRoleBal);
       setSecurityReserve(isSuppRole ? (Number(user.securityReserve) || 0) : 0);
       setActiveShipmentsCount(isSuppRole ? (Number(user.activeShipmentsCount) || 0) : 0);
       
@@ -211,17 +221,27 @@ export default function WalletModal({ user, onUpdateUser }) {
       // Sync all balance fields from user prop — this fires when the background
       // switchRole response arrives with the definitive synced user, making
       // numbers update instantly without waiting for fetchRewardWallet().
-      if (user.cashbackBalance !== undefined) {
-        setCashbackBalance(Number(user.cashbackBalance));
-      }
-      if (user.withdrawableBalance !== undefined) {
-        setWithdrawableBalance(Number(user.withdrawableBalance));
-      }
-      if (user.pendingConfirmationBalance !== undefined) {
-        setPendingConfirmationBalance(Number(user.pendingConfirmationBalance));
-      }
-      if (user.totalWalletBalance !== undefined) {
-        setTotalWalletBalance(Number(user.totalWalletBalance));
+      if (isSupplier) {
+        if (user.cashbackBalance !== undefined) {
+          setCashbackBalance(Number(user.cashbackBalance));
+        }
+        if (user.withdrawableBalance !== undefined) {
+          setWithdrawableBalance(Number(user.withdrawableBalance));
+        }
+        if (user.pendingConfirmationBalance !== undefined) {
+          setPendingConfirmationBalance(Number(user.pendingConfirmationBalance));
+        }
+        if (user.totalWalletBalance !== undefined) {
+          setTotalWalletBalance(Number(user.totalWalletBalance));
+        }
+      } else {
+        const buyerTotal = parseFloat(((Number(user.walletBalance) || 0) + (Number(user.cashbackBalance) || 0)).toFixed(2));
+        setCashbackBalance(Number(user.cashbackBalance || 0));
+        setWithdrawableBalance(buyerTotal);
+        setTotalWalletBalance(buyerTotal);
+        setPendingConfirmationBalance(0);
+        setSecurityReserve(0);
+        setActiveShipmentsCount(0);
       }
       if (user.bankDetails?.upiId) {
         setWithdrawUpiId(user.bankDetails.upiId);
@@ -348,13 +368,16 @@ export default function WalletModal({ user, onUpdateUser }) {
 
   // Authoritative balance from backend (no rogue client-side guesswork)
   const displayPendingConfirmation = Number(pendingConfirmationBalance) || 0;
-  const displayWithdrawable = withdrawableBalance !== undefined && withdrawableBalance !== null
-    ? Number(withdrawableBalance)
-    : (user?.withdrawableBalance !== undefined && user?.withdrawableBalance !== null && isSupplier
-        ? Number(user.withdrawableBalance)
-        : (isSupplier 
-            ? Math.max(0, ((Number(cashbackBalance) || 0) + supplierDirectWallet) - (securityReserve || 0)) 
-            : ((Number(cashbackBalance) || 0) + supplierDirectWallet)));
+  const buyerLiveBalance = parseFloat(((Number(user?.walletBalance) || 0) + (Number(cashbackBalance || user?.cashbackBalance) || 0)).toFixed(2));
+  const displayWithdrawable = isSupplier
+    ? (withdrawableBalance !== undefined && withdrawableBalance !== null
+        ? Number(withdrawableBalance)
+        : (user?.withdrawableBalance !== undefined && user?.withdrawableBalance !== null
+            ? Number(user.withdrawableBalance)
+            : Math.max(0, ((Number(cashbackBalance) || 0) + supplierDirectWallet) - (securityReserve || 0))))
+    : (withdrawableBalance !== undefined && withdrawableBalance !== null && withdrawableBalance > 0
+        ? Number(withdrawableBalance)
+        : buyerLiveBalance);
 
   const displayUnwithdrawable = displayPendingConfirmation;
   const displayTotalWallet = isSupplier
@@ -738,7 +761,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">
                     ₹{activePipelineBalance.toLocaleString('en-IN')}
                   </h2>
-                <p className="text-[11px] text-slate-500 mt-1 font-medium">Held safely across {shipments.length} in-delivery orders</p>
+                <p className="text-[11px] text-slate-500 mt-1 font-medium">Held safely across {shipments.filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit').length} in-delivery orders</p>
               </div>
 
               <div className="pt-4 border-t border-slate-100 mt-4 flex items-center gap-1.5 text-[11px] text-[#1E56E3] font-semibold">
@@ -829,7 +852,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <h2 className="text-3xl font-black text-white tracking-tight">
                     ₹{activePipelineBalance.toLocaleString('en-IN')}
                   </h2>
-                <p className="text-[11px] text-blue-100 mt-1 font-medium">Locked in {shipments.length} active orders</p>
+                <p className="text-[11px] text-blue-100 mt-1 font-medium">Locked in {shipments.filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit').length} active orders</p>
               </div>
 
               <div className="pt-4 border-t border-blue-400/30 mt-4 flex items-center gap-1.5 text-[11px] text-blue-100 font-medium">
