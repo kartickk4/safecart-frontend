@@ -945,6 +945,8 @@ export default function App() {
           {/* VIEW 1: DASHBOARD */}
           {currentTab === 'dashboard' && (
             <DashboardView
+              currentRole={isSupplier ? 'Supplier' : 'Receiver'}
+              user={user}
               onSelectShipment={(shipment) => setSelectedShipment(shipment)}
               openNewShipmentModal={() => setCurrentTab('create-shipment')}
               onNavigateRefer={() => setCurrentTab('refer')}

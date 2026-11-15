@@ -129,6 +129,13 @@ export const clearApiCache = (urlFilter = '') => {
       if (key.includes(urlFilter)) getResponseCache.delete(key);
     }
   }
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.removeItem('securekaro_dashboard_shipments');
+      sessionStorage.removeItem('securekaro_dashboard_shipments_Supplier');
+      sessionStorage.removeItem('securekaro_dashboard_shipments_Receiver');
+    } catch (_) {}
+  }
 };
 
 // Automatic cache invalidation on mutations (POST, PUT, DELETE, PATCH)

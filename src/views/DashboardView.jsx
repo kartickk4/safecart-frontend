@@ -38,11 +38,19 @@ ChartJS.register(
   Filler
 );
 
-export default function DashboardView({ onSelectShipment, openNewShipmentModal, onNavigateRefer, onNavigateRateCalc }) {
+export default function DashboardView({ 
+  currentRole,
+  user,
+  onSelectShipment, 
+  openNewShipmentModal, 
+  onNavigateRefer, 
+  onNavigateRateCalc 
+}) {
+  const activeRole = currentRole || user?.activeRole || user?.role || localStorage.getItem('securekaro_active_role') || 'Supplier';
+
   const [shipments, setShipments] = useState(() => {
     try {
-      const role = localStorage.getItem('securekaro_active_role') || 'Supplier';
-      const cached = localStorage.getItem('securekaro_dashboard_shipments_' + role) || sessionStorage.getItem('securekaro_dashboard_shipments');
+      const cached = localStorage.getItem('securekaro_dashboard_shipments_' + activeRole);
       return cached ? JSON.parse(cached) : [];
     } catch (_) { return []; }
   });
@@ -54,8 +62,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
   });
   const [loading, setLoading] = useState(() => {
     try {
-      const role = localStorage.getItem('securekaro_active_role') || 'Supplier';
-      const hasCache = localStorage.getItem('securekaro_dashboard_shipments_' + role) || sessionStorage.getItem('securekaro_dashboard_shipments');
+      const hasCache = localStorage.getItem('securekaro_dashboard_shipments_' + activeRole);
       return !hasCache;
     } catch (_) { return false; }
   });
@@ -103,31 +110,42 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
   const rowsPerPage = 6;
 
   useEffect(() => {
+    // Purge any legacy un-namespaced cache that might mix up roles
+    try {
+      sessionStorage.removeItem('securekaro_dashboard_shipments');
+    } catch (_) {}
     fetchData();
-  }, []);
+  }, [activeRole]);
 
-  const fetchData = async () => {
-    const role = localStorage.getItem('securekaro_active_role') || 'Supplier';
-    const hasCache = localStorage.getItem('securekaro_dashboard_shipments_' + role) || sessionStorage.getItem('securekaro_dashboard_shipments');
-    if (!hasCache) {
+  const fetchData = async (forceBustCache = false) => {
+    const roleKey = activeRole;
+    if (forceBustCache) {
       setLoading(true);
+      try {
+        localStorage.removeItem('securekaro_dashboard_shipments_' + roleKey);
+        sessionStorage.removeItem('securekaro_dashboard_shipments_' + roleKey);
+      } catch (_) {}
     } else {
-      setIsBackgroundSyncing(true);
+      const hasCache = localStorage.getItem('securekaro_dashboard_shipments_' + roleKey);
+      if (!hasCache) {
+        setLoading(true);
+      } else {
+        setIsBackgroundSyncing(true);
+      }
     }
 
     try {
-      const role = localStorage.getItem('securekaro_active_role') || 'Supplier';
       const [shipRes, notifRes, quotaRes] = await Promise.allSettled([
-        shipmentAPI.getShipments(role),
+        shipmentAPI.getShipments(roleKey),
         notificationAPI.getNotifications(),
         shipmentAPI.getGatewayFeeStatus()
       ]);
 
       if (shipRes.status === 'fulfilled' && Array.isArray(shipRes.value.data)) {
         setShipments(shipRes.value.data);
-        sessionStorage.setItem('securekaro_dashboard_shipments', JSON.stringify(shipRes.value.data));
         try {
-          localStorage.setItem('securekaro_dashboard_shipments_' + role, JSON.stringify(shipRes.value.data));
+          sessionStorage.setItem('securekaro_dashboard_shipments_' + roleKey, JSON.stringify(shipRes.value.data));
+          localStorage.setItem('securekaro_dashboard_shipments_' + roleKey, JSON.stringify(shipRes.value.data));
         } catch (_) {}
       }
 
@@ -532,7 +550,7 @@ export default function DashboardView({ onSelectShipment, openNewShipmentModal, 
           </button>
 
           <button
-            onClick={fetchData}
+            onClick={() => fetchData(true)}
             title="Refresh Live Analytics Data"
             className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold cursor-pointer shrink-0"
           >
