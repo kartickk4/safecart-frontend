@@ -505,7 +505,7 @@ export default function AIAgentView({ onBack }) {
   const [collectedData, setCollectedData] = useState(null);
   const [showBulk, setShowBulk] = useState(false);
   const [showMicHelp, setShowMicHelp] = useState(false);
-  const [initialized, setInitialized] = useState(false);
+  const initRef = useRef(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -602,11 +602,11 @@ export default function AIAgentView({ onBack }) {
   }, [messages]);
 
   useEffect(() => { 
-    if (!initialized) { 
-      setInitialized(true); 
-      sendMessage("", true); 
+    if (!initRef.current) { 
+      initRef.current = true; 
+      sendMessage("", true, ""); 
     } 
-  }, [initialized]);
+  }, []);
 
   // Restart chat fresh if the user suspended their phone/tab for >15 minutes
   useEffect(() => {
@@ -627,7 +627,7 @@ export default function AIAgentView({ onBack }) {
 
   const getToken = () => localStorage.getItem("securekaro_token") || localStorage.getItem("skToken") || localStorage.getItem("token") || "";
 
-  const sendMessage = useCallback(async (userText = "", isInit = false) => {
+  const sendMessage = useCallback(async (userText = "", isInit = false, forcedSessionId = null) => {
     if (!userText.trim() && !isInit && !selectedImageRef.current) return;
     if (isLoading) return;
 
@@ -665,10 +665,20 @@ export default function AIAgentView({ onBack }) {
     setIsLoading(true);
 
     try {
+      // Force empty/undefined sessionId on initialization or explicit fresh reset
+      const targetSessionId = isInit
+        ? undefined
+        : (forcedSessionId !== null ? (forcedSessionId || undefined) : (sessionId || undefined));
+
       const res = await fetch(`${API_BASE}/api/v1/agent/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ message: userText.trim(), sessionId: sessionId || undefined, imageBase64: activeImage?.base64, imageMimeType: activeImage?.mimeType })
+        body: JSON.stringify({
+          message: userText.trim(),
+          sessionId: targetSessionId,
+          imageBase64: activeImage?.base64,
+          imageMimeType: activeImage?.mimeType
+        })
       });
 
       if (!res.ok) {
@@ -693,19 +703,23 @@ export default function AIAgentView({ onBack }) {
         setSelectedCarrier(data.selectedCarrier);
       }
 
-      setMessages(prev => [
-        ...prev, 
-        { 
-          role: "agent", 
-          content: data.reply || "Ready for next step.", 
-          timestamp: new Date(), 
-          showCarriers: !!data.carrierQuotes?.length, 
-          carrierQuotes: data.carrierQuotes, 
-          selectedCarrier: data.selectedCarrier, 
-          shipmentId: data.createdShipmentId,
-          showSupport: !!data.showSupport
-        }
-      ]);
+      const agentMessage = { 
+        role: "agent", 
+        content: data.reply || "Ready for next step.", 
+        timestamp: new Date(), 
+        showCarriers: !!data.carrierQuotes?.length, 
+        carrierQuotes: data.carrierQuotes, 
+        selectedCarrier: data.selectedCarrier, 
+        shipmentId: data.createdShipmentId,
+        showSupport: !!data.showSupport
+      };
+
+      if (isInit) {
+        // Replace previous messages entirely with the single fresh greeting
+        setMessages([agentMessage]);
+      } else {
+        setMessages(prev => [...prev, agentMessage]);
+      }
     } catch (err) {
       if (sessionId) {
         try { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); } catch (_) {}
@@ -736,6 +750,7 @@ export default function AIAgentView({ onBack }) {
   };
 
   const handleReset = () => {
+    const oldSessionId = sessionId;
     setMessages([]); 
     setSessionId(""); 
     setSelectedCarrier(null); 
@@ -743,11 +758,20 @@ export default function AIAgentView({ onBack }) {
     setStep(0);
     try { sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_KEY); } catch (_) {} 
     try { sessionStorage.removeItem(CHAT_CACHE_KEY); } catch(_) {}
-    setInitialized(false);
-    setTimeout(() => { 
-      setInitialized(true); 
-      sendMessage("", true); 
-    }, 100);
+    
+    // Purge previous session from backend if existing
+    if (oldSessionId) {
+      const token = getToken();
+      if (token) {
+        fetch(`${API_BASE}/api/v1/agent/session/${oldSessionId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => {});
+      }
+    }
+
+    // Immediately start fresh conversation with 1 greeting message
+    sendMessage("", true, "");
   };
 
   const handleQuickReply = useCallback((label) => {
