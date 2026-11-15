@@ -275,16 +275,20 @@ export default function App() {
           if (wData.activeShipmentsCount !== undefined) updatedBalances.activeShipmentsCount = wData.activeShipmentsCount;
           if (wData.cashbackBalance !== undefined) updatedBalances.cashbackBalance = wData.cashbackBalance;
         } else {
-          // Buyer: strictly use buyerWallet numbers (cashback only, never seller shipping balance)
+          // Buyer: strictly use buyerWallet numbers (walletBalance + cashbackBalance)
           const buyerBal = wData.buyerWallet?.withdrawableBalance !== undefined
             ? Number(wData.buyerWallet.withdrawableBalance)
-            : (wData.cashbackBalance !== undefined ? Number(wData.cashbackBalance) : 0);
-          updatedBalances.walletBalance = buyerBal;
+            : parseFloat(((Number(wData.walletBalance) || 0) + (Number(wData.cashbackBalance) || 0)).toFixed(2));
+          updatedBalances.walletBalance = wData.buyerWallet?.walletBalance !== undefined
+            ? Number(wData.buyerWallet.walletBalance)
+            : (Number(wData.walletBalance) || 0);
           updatedBalances.totalWalletBalance = buyerBal;
           updatedBalances.withdrawableBalance = buyerBal;
           updatedBalances.securityReserve = 0;
           updatedBalances.activeShipmentsCount = 0;
-          updatedBalances.cashbackBalance = buyerBal;
+          updatedBalances.cashbackBalance = wData.buyerWallet?.cashbackBalance !== undefined
+            ? Number(wData.buyerWallet.cashbackBalance)
+            : (Number(wData.cashbackBalance) || 0);
         }
       }
 

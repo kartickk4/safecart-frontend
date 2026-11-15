@@ -287,15 +287,21 @@ export default function WalletModal({ user, onUpdateUser }) {
             } catch (_) {}
           }
         } else {
-          // Buyer: strictly use buyerWallet numbers
+          // Buyer: strictly use buyerWallet numbers (walletBalance + cashback)
           const buyerBal = res.data.buyerWallet?.withdrawableBalance !== undefined
             ? Number(res.data.buyerWallet.withdrawableBalance)
-            : (res.data.cashbackBalance !== undefined ? Number(res.data.cashbackBalance) : 0);
+            : parseFloat(((Number(res.data.walletBalance) || 0) + (Number(res.data.cashbackBalance) || 0)).toFixed(2));
+          const buyerWalletBal = res.data.buyerWallet?.walletBalance !== undefined
+            ? Number(res.data.buyerWallet.walletBalance)
+            : (Number(res.data.walletBalance) || 0);
+          const buyerCashback = res.data.buyerWallet?.cashbackBalance !== undefined
+            ? Number(res.data.buyerWallet.cashbackBalance)
+            : (Number(res.data.cashbackBalance) || 0);
           setSecurityReserve(0);
           setActiveShipmentsCount(0);
           setWithdrawableBalance(buyerBal);
           setTotalWalletBalance(buyerBal);
-          setCashbackBalance(buyerBal);
+          setCashbackBalance(buyerCashback);
           if (onUpdateUser) {
             const syncedUser = {
               ...user,
@@ -344,7 +350,7 @@ export default function WalletModal({ user, onUpdateUser }) {
         ? Number(user.withdrawableBalance)
         : (isSupplier 
             ? Math.max(0, ((Number(cashbackBalance) || 0) + supplierDirectWallet) - (securityReserve || 0)) 
-            : (Number(cashbackBalance) || 0)));
+            : ((Number(cashbackBalance) || 0) + supplierDirectWallet)));
 
   const displayUnwithdrawable = displayPendingConfirmation;
   const displayTotalWallet = isSupplier
