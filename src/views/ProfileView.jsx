@@ -45,7 +45,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
     accountHolderName: user?.bankDetails?.accountHolderName || user?.fullName || '',
     accountNumber: user?.bankDetails?.accountNumber || '',
     ifscCode: user?.bankDetails?.ifscCode || '',
-    bankName: user?.bankDetails?.bankName || 'HDFC Bank',
+    bankName: user?.bankDetails?.bankName || '',
     upiId: user?.bankDetails?.upiId || ''
   });
 
@@ -189,7 +189,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
         accountHolderName: user.bankDetails?.accountHolderName || user.fullName || '',
         accountNumber: user.bankDetails?.accountNumber || '',
         ifscCode: user.bankDetails?.ifscCode || '',
-        bankName: user.bankDetails?.bankName || 'HDFC Bank',
+        bankName: user.bankDetails?.bankName || '',
         upiId: user.bankDetails?.upiId || ''
       });
     }

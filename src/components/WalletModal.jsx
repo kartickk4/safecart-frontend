@@ -121,6 +121,7 @@ export default function WalletModal({ user, onUpdateUser }) {
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [withdrawError, setWithdrawError] = useState('');
   const [withdrawSuccess, setWithdrawSuccess] = useState('');
+  const [useCustomDestination, setUseCustomDestination] = useState(false);
 
   // OTP Verification States
   const [showOtpModal, setShowOtpModal] = useState(false);
@@ -489,6 +490,43 @@ export default function WalletModal({ user, onUpdateUser }) {
     }
   };
 
+  const savedUpi = (bankDetails?.upiId || user?.bankDetails?.upiId || '').trim();
+  const hasSavedUpi = Boolean(savedUpi);
+  const savedAcc = (bankDetails?.accountNumber || user?.bankDetails?.accountNumber || '').trim();
+  const hasSavedBank = Boolean(savedAcc);
+  const savedIfsc = (bankDetails?.ifscCode || user?.bankDetails?.ifscCode || '').trim();
+  const savedHolder = (bankDetails?.accountHolderName || user?.bankDetails?.accountHolderName || user?.fullName || '').trim();
+  const savedBankName = (bankDetails?.bankName || user?.bankDetails?.bankName || '').trim();
+
+  const openWithdrawModal = () => {
+    // If saved details exist, automatically select and populate the saved method
+    if (hasSavedUpi) {
+      setWithdrawMethod('UPI');
+      setWithdrawUpiId(savedUpi);
+    } else if (hasSavedBank) {
+      setWithdrawMethod('BANK');
+      setWithdrawAccountNumber(savedAcc);
+      setWithdrawIfsc(savedIfsc);
+      setWithdrawAccountHolder(savedHolder);
+      setWithdrawBankName(savedBankName);
+    } else {
+      setWithdrawMethod('UPI');
+    }
+
+    if (savedUpi) setWithdrawUpiId(savedUpi);
+    if (savedAcc) {
+      setWithdrawAccountNumber(savedAcc);
+      setWithdrawIfsc(savedIfsc);
+      setWithdrawAccountHolder(savedHolder);
+      setWithdrawBankName(savedBankName);
+    }
+
+    setUseCustomDestination(false);
+    setWithdrawError('');
+    setWithdrawSuccess('');
+    setShowWithdrawModal(true);
+  };
+
   const handleWithdrawSubmit = async (e) => {
     e.preventDefault();
     setWithdrawError('');
@@ -506,12 +544,18 @@ export default function WalletModal({ user, onUpdateUser }) {
       return;
     }
 
-    if (withdrawMethod === 'UPI' && (!withdrawUpiId || !withdrawUpiId.includes('@'))) {
+    const effectiveUpi = (withdrawUpiId || savedUpi || '').trim();
+    if (withdrawMethod === 'UPI' && (!effectiveUpi || !effectiveUpi.includes('@'))) {
       setWithdrawError('Please enter a valid UPI ID (e.g. name@upi)');
       return;
     }
 
-    if (withdrawMethod === 'BANK' && (!withdrawAccountNumber || !withdrawIfsc || !withdrawAccountHolder)) {
+    const effectiveAcc = (withdrawAccountNumber || savedAcc || '').trim();
+    const effectiveIfsc = (withdrawIfsc || savedIfsc || '').trim();
+    const effectiveHolder = (withdrawAccountHolder || savedHolder || user?.fullName || '').trim();
+    const effectiveBankName = (withdrawBankName || savedBankName || '').trim();
+
+    if (withdrawMethod === 'BANK' && (!effectiveAcc || !effectiveIfsc || !effectiveHolder)) {
       setWithdrawError('Please complete all bank account details.');
       return;
     }
@@ -528,11 +572,11 @@ export default function WalletModal({ user, onUpdateUser }) {
     try {
       const payload = {
         amount: amt,
-        upiId: withdrawMethod === 'UPI' ? withdrawUpiId : undefined,
-        accountHolderName: withdrawMethod === 'BANK' ? withdrawAccountHolder : undefined,
-        accountNumber: withdrawMethod === 'BANK' ? withdrawAccountNumber : undefined,
-        ifscCode: withdrawMethod === 'BANK' ? withdrawIfsc : undefined,
-        bankName: withdrawMethod === 'BANK' ? withdrawBankName : undefined,
+        upiId: withdrawMethod === 'UPI' ? effectiveUpi : undefined,
+        accountHolderName: withdrawMethod === 'BANK' ? effectiveHolder : undefined,
+        accountNumber: withdrawMethod === 'BANK' ? effectiveAcc : undefined,
+        ifscCode: withdrawMethod === 'BANK' ? effectiveIfsc : undefined,
+        bankName: withdrawMethod === 'BANK' ? effectiveBankName : undefined,
       };
 
       let res;
@@ -563,7 +607,7 @@ export default function WalletModal({ user, onUpdateUser }) {
         }
       }
 
-      const methodLabel = withdrawMethod === 'UPI' ? `UPI (${withdrawUpiId})` : 'Bank Account';
+      const methodLabel = withdrawMethod === 'UPI' ? `UPI (${effectiveUpi})` : `Bank Account ending in ${effectiveAcc.slice(-4)}`;
       const feeNote = fee > 0 ? ` (₹${fee} processing fee deducted)` : '';
       setWithdrawSuccess(res.data?.message || `✅ ₹${netTransfer.toFixed(2)} will be transferred to your ${methodLabel}${feeNote}`);
       setWithdrawAmount('');
@@ -721,11 +765,7 @@ export default function WalletModal({ user, onUpdateUser }) {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowWithdrawModal(true);
-                      setWithdrawError('');
-                      setWithdrawSuccess('');
-                    }}
+                    onClick={openWithdrawModal}
                     className="px-4 py-2 rounded-xl bg-white hover:bg-blue-50 text-[#1E56E3] text-xs font-black transition shadow-md flex items-center gap-1 cursor-pointer"
                   >
                     <span>Withdraw</span>
@@ -815,11 +855,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </span>
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowWithdrawModal(true);
-                    setWithdrawError('');
-                    setWithdrawSuccess('');
-                  }}
+                  onClick={openWithdrawModal}
                   className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-blue-50 text-[#1E56E3] text-xs font-black transition shadow-md flex items-center gap-1 cursor-pointer"
                 >
                   <span>Withdraw</span>
@@ -1236,11 +1272,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 ) : (Number(user?.walletBalance) || 0) > 0 ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowWithdrawModal(true);
-                      setWithdrawError('');
-                      setWithdrawSuccess('');
-                    }}
+                    onClick={openWithdrawModal}
                     className="px-4 py-2 rounded-xl bg-[#1E56E3] text-white text-xs font-bold shadow-sm inline-flex items-center gap-1.5 cursor-pointer"
                   >
                     <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1531,7 +1563,11 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setWithdrawMethod('UPI')}
+                    onClick={() => {
+                      setWithdrawMethod('UPI');
+                      setUseCustomDestination(false);
+                      if (hasSavedUpi) setWithdrawUpiId(savedUpi);
+                    }}
                     className={`p-3.5 rounded-2xl border flex items-center justify-center gap-2 text-xs transition cursor-pointer ${
                       withdrawMethod === 'UPI'
                         ? 'border-[#1E56E3] bg-blue-50/70 text-[#1E56E3] font-bold ring-2 ring-blue-500/20 shadow-xs'
@@ -1539,12 +1575,28 @@ export default function WalletModal({ user, onUpdateUser }) {
                     }`}
                   >
                     <QrCode className="w-4 h-4 text-[#1E56E3]" />
-                    <span>Instant UPI ID</span>
+                    <span className="flex items-center gap-1.5">
+                      <span>Instant UPI ID</span>
+                      {hasSavedUpi && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
+                          Saved ✓
+                        </span>
+                      )}
+                    </span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setWithdrawMethod('BANK')}
+                    onClick={() => {
+                      setWithdrawMethod('BANK');
+                      setUseCustomDestination(false);
+                      if (hasSavedBank) {
+                        setWithdrawAccountNumber(savedAcc);
+                        setWithdrawIfsc(savedIfsc);
+                        setWithdrawAccountHolder(savedHolder);
+                        setWithdrawBankName(savedBankName);
+                      }
+                    }}
                     className={`p-3.5 rounded-2xl border flex items-center justify-center gap-2 text-xs transition cursor-pointer ${
                       withdrawMethod === 'BANK'
                         ? 'border-[#1E56E3] bg-blue-50/70 text-[#1E56E3] font-bold ring-2 ring-blue-500/20 shadow-xs'
@@ -1552,7 +1604,14 @@ export default function WalletModal({ user, onUpdateUser }) {
                     }`}
                   >
                     <Building className="w-4 h-4 text-[#1E56E3]" />
-                    <span>Bank Transfer (IMPS)</span>
+                    <span className="flex items-center gap-1.5">
+                      <span>Bank Transfer (IMPS)</span>
+                      {hasSavedBank && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
+                          Saved ✓
+                        </span>
+                      )}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -1615,69 +1674,179 @@ export default function WalletModal({ user, onUpdateUser }) {
 
               {/* Dynamic Destination Form */}
               {withdrawMethod === 'UPI' ? (
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">UPI VPA / ID</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="user@upi or 9876543210@paytm"
-                    value={withdrawUpiId}
-                    onChange={(e) => setWithdrawUpiId(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
-                  />
-                  {/* Quick UPI Handle suggestions */}
-                  <div className="flex gap-2 mt-2">
-                    {['@okaxis', '@okicici', '@paytm', '@ybl'].map(handle => (
+                hasSavedUpi && !useCustomDestination ? (
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-blue-50/60 border border-emerald-200/90 shadow-xs space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        <span>Registered UPI Payout (Auto-Filled)</span>
+                      </span>
                       <button
-                        key={handle}
                         type="button"
-                        onClick={() => {
-                          const base = withdrawUpiId.split('@')[0] || 'user';
-                          setWithdrawUpiId(`${base}${handle}`);
-                        }}
-                        className="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-[#1E56E3] hover:border-blue-200 border border-slate-200/60 rounded-lg text-[10px] font-mono font-bold text-slate-600 transition cursor-pointer"
+                        onClick={() => setUseCustomDestination(true)}
+                        className="text-[11px] font-bold text-[#1E56E3] hover:underline cursor-pointer"
                       >
-                        {handle}
+                        Change / Use Different UPI
                       </button>
-                    ))}
+                    </div>
+
+                    <div className="flex items-center justify-between bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">UPI ID / VPA</span>
+                        <span className="text-sm font-black font-mono text-slate-900 block mt-0.5">{withdrawUpiId || savedUpi}</span>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold flex items-center gap-1 shrink-0">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        Verified
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Instant disbursal directly to your verified UPI ID via PhonePe / IMPS gateway.</span>
+                    </p>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Instant 24/7 payout to Google Pay, PhonePe, Paytm, or BHIM.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
+                ) : (
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Account Holder Name</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-slate-700">UPI VPA / ID</label>
+                      {hasSavedUpi && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWithdrawUpiId(savedUpi);
+                            setUseCustomDestination(false);
+                          }}
+                          className="text-[11px] font-bold text-[#1E56E3] hover:underline cursor-pointer"
+                        >
+                          ← Revert to Saved UPI ({savedUpi})
+                        </button>
+                      )}
+                    </div>
                     <input
                       type="text"
                       required
-                      value={withdrawAccountHolder}
-                      onChange={(e) => setWithdrawAccountHolder(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
+                      placeholder="user@upi or 9876543210@paytm"
+                      value={withdrawUpiId}
+                      onChange={(e) => setWithdrawUpiId(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
                     />
+                    {/* Quick UPI Handle suggestions */}
+                    <div className="flex gap-2 mt-2">
+                      {['@okaxis', '@okicici', '@paytm', '@ybl'].map(handle => (
+                        <button
+                          key={handle}
+                          type="button"
+                          onClick={() => {
+                            const base = withdrawUpiId.split('@')[0] || 'user';
+                            setWithdrawUpiId(`${base}${handle}`);
+                          }}
+                          className="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-[#1E56E3] hover:border-blue-200 border border-slate-200/60 rounded-lg text-[10px] font-mono font-bold text-slate-600 transition cursor-pointer"
+                        >
+                          {handle}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Instant 24/7 payout to Google Pay, PhonePe, Paytm, or BHIM.</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                )
+              ) : (
+                hasSavedBank && !useCustomDestination ? (
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-blue-50/60 border border-emerald-200/90 shadow-xs space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        <span>Registered Bank Account (Auto-Filled)</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setUseCustomDestination(true)}
+                        className="text-[11px] font-bold text-[#1E56E3] hover:underline cursor-pointer"
+                      >
+                        Change / Use Different Bank
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Account Holder</span>
+                        <span className="text-xs font-black text-slate-900 truncate block mt-0.5">{withdrawAccountHolder || savedHolder}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Bank Name</span>
+                        <span className="text-xs font-black text-slate-900 truncate block mt-0.5">{withdrawBankName || savedBankName || 'Registered Bank'}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Account Number</span>
+                        <span className="text-xs font-black font-mono text-slate-900 block mt-0.5">
+                          {(withdrawAccountNumber || savedAcc) ? `•••• •••• ${(withdrawAccountNumber || savedAcc).slice(-4)}` : '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">IFSC Code</span>
+                        <span className="text-xs font-black font-mono text-slate-900 block mt-0.5">{withdrawIfsc || savedIfsc}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Instant 24/7 direct IMPS disbursal to your registered bank account.</span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700">Bank Transfer Details</span>
+                      {hasSavedBank && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWithdrawAccountNumber(savedAcc);
+                            setWithdrawIfsc(savedIfsc);
+                            setWithdrawAccountHolder(savedHolder);
+                            setWithdrawBankName(savedBankName);
+                            setUseCustomDestination(false);
+                          }}
+                          className="text-[11px] font-bold text-[#1E56E3] hover:underline cursor-pointer"
+                        >
+                          ← Revert to Saved Bank Details
+                        </button>
+                      )}
+                    </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Account Number</label>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Account Holder Name</label>
                       <input
                         type="text"
                         required
-                        value={withdrawAccountNumber}
-                        onChange={(e) => setWithdrawAccountNumber(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
+                        value={withdrawAccountHolder}
+                        onChange={(e) => setWithdrawAccountHolder(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">IFSC Code</label>
-                      <input
-                        type="text"
-                        required
-                        value={withdrawIfsc}
-                        onChange={(e) => setWithdrawIfsc(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
-                      />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Account Number</label>
+                        <input
+                          type="text"
+                          required
+                          value={withdrawAccountNumber}
+                          onChange={(e) => setWithdrawAccountNumber(e.target.value)}
+                          className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">IFSC Code</label>
+                        <input
+                          type="text"
+                          required
+                          value={withdrawIfsc}
+                          onChange={(e) => setWithdrawIfsc(e.target.value.toUpperCase())}
+                          className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none uppercase"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )
               )}
             </form>
 
