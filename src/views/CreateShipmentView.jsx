@@ -331,10 +331,18 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   // Success state
   const [createdData, setCreatedData] = useState(null);
 
-  const fetchQuotesForRoute = async (preferredSlug = null, targetMode = paymentMode, forcedShipmentType = shipmentType) => {
+  const fetchQuotesForRoute = async (
+    preferredSlug = null, 
+    targetMode = paymentMode, 
+    forcedShipmentType = shipmentType,
+    forcedReceiverPin = null,
+    forcedSenderPin = null
+  ) => {
     const isReverse = forcedShipmentType === 'reverse';
-    const originPin = isReverse ? receiverPincode : senderPincode;
-    const destPin = isReverse ? senderPincode : receiverPincode;
+    const effectiveReceiverPin = forcedReceiverPin !== null ? forcedReceiverPin : receiverPincode;
+    const effectiveSenderPin = forcedSenderPin !== null ? forcedSenderPin : senderPincode;
+    const originPin = isReverse ? effectiveReceiverPin : effectiveSenderPin;
+    const destPin = isReverse ? effectiveSenderPin : effectiveReceiverPin;
 
     if (!originPin || originPin.length < 6) {
       setError(isReverse ? 'Please enter a valid 6-digit Customer Pickup Pincode.' : 'Please provide a valid 6-digit Pickup Pincode.');
@@ -345,6 +353,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       return null;
     }
 
+    // Both pincodes are valid 6-digit codes; clear any previous validation alert
+    setError('');
     setFetchingQuotes(true);
     setCarrierQuotesError('');
 
@@ -678,9 +688,19 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
           <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm space-y-5 sm:space-y-6">
             {error && (
-              <div className="p-3.5 rounded-xl bg-red-50 text-red-700 text-xs font-medium border border-red-200 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
-                <span>{error}</span>
+              <div className="p-3.5 rounded-xl bg-red-50 text-red-700 text-xs font-medium border border-red-200 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{error}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setError('')}
+                  className="text-red-500 hover:text-red-800 p-0.5 rounded cursor-pointer"
+                  title="Dismiss"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             )}
 
@@ -962,7 +982,16 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       maxLength={6}
                       placeholder="e.g. 560001"
                       value={senderPincode}
-                      onChange={(e) => setSenderPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      onChange={(e) => {
+                        const pin = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        setSenderPincode(pin);
+                        if (error && error.toLowerCase().includes('pincode')) {
+                          setError('');
+                        }
+                        if (pin.length === 6 && receiverPincode && receiverPincode.length === 6) {
+                          fetchQuotesForRoute(carrierSlug, shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType, receiverPincode, pin);
+                        }
+                      }}
                       className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-blue-500 focus:bg-white"
                     />
                   </div>
@@ -1003,7 +1032,10 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     required
                     placeholder={shipmentType === 'reverse' ? 'e.g. Rahul Sharma (Customer)' : 'e.g. Priya Nair'}
                     value={receiverName}
-                    onChange={(e) => setReceiverName(e.target.value)}
+                    onChange={(e) => {
+                      setReceiverName(e.target.value);
+                      if (error && error.includes('Name')) setError('');
+                    }}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white"
                   />
                 </div>
@@ -1017,7 +1049,10 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     required
                     placeholder="e.g. +91 98765 43210"
                     value={receiverPhone}
-                    onChange={(e) => setReceiverPhone(e.target.value)}
+                    onChange={(e) => {
+                      setReceiverPhone(e.target.value);
+                      if (error && error.includes('Phone')) setError('');
+                    }}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white"
                   />
                 </div>
@@ -1110,7 +1145,10 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   required
                   placeholder={shipmentType === 'reverse' ? 'e.g. House 42, Green Park Avenue, Near Metro Station' : 'e.g. Flat 402, Sunshine Heights, Near Shivaji Park, Dadar West'}
                   value={receiverAddress}
-                  onChange={(e) => setReceiverAddress(e.target.value)}
+                  onChange={(e) => {
+                    setReceiverAddress(e.target.value);
+                    if (error && error.includes('Address')) setError('');
+                  }}
                   className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white"
                 ></textarea>
               </div>
@@ -1132,8 +1170,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     onChange={(e) => {
                       const pin = e.target.value.replace(/\D/g, '').slice(0, 6);
                       setReceiverPincode(pin);
+                      if (error && error.toLowerCase().includes('pincode')) {
+                        setError('');
+                      }
                       if (pin.length === 6 && senderPincode && senderPincode.length === 6) {
-                        fetchQuotesForRoute(carrierSlug, shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType);
+                        setError('');
+                        fetchQuotesForRoute(carrierSlug, shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType, pin, senderPincode);
                       }
                     }}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:bg-white"

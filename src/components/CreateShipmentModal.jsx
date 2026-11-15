@@ -674,7 +674,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     required
                     placeholder={shipmentType === 'reverse' ? 'e.g. 560001 (Customer Pincode)' : 'e.g. 400001 (Mumbai)'}
                     value={receiverPincode}
-                    onChange={(e) => setReceiverPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    onChange={(e) => {
+                      setReceiverPincode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                      if (error) setError('');
+                    }}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
                   />
                 </div>
