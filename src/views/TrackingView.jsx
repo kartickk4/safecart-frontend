@@ -123,10 +123,12 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
   const [returnReason, setReturnReason] = useState('');
   const [defectPhoto, setDefectPhoto] = useState('');
   const [defectDescription, setDefectDescription] = useState('');
-  const [bankName, setBankName] = useState('');
-  const [accountNumber, setAccountNumber] = useState('');
-  const [ifscCode, setIfscCode] = useState('');
-  const [accountHolderName, setAccountHolderName] = useState('');
+  const [payoutMethod, setPayoutMethod] = useState(user?.bankDetails?.upiId && !user?.bankDetails?.accountNumber ? 'upi' : 'bank');
+  const [upiId, setUpiId] = useState(user?.bankDetails?.upiId || '');
+  const [bankName, setBankName] = useState(user?.bankDetails?.bankName || '');
+  const [accountNumber, setAccountNumber] = useState(user?.bankDetails?.accountNumber || '');
+  const [ifscCode, setIfscCode] = useState(user?.bankDetails?.ifscCode || '');
+  const [accountHolderName, setAccountHolderName] = useState(user?.bankDetails?.accountHolderName || user?.fullName || '');
   const [returnSubmitting, setReturnSubmitting] = useState(false);
   const [returnMsg, setReturnMsg] = useState('');
   const [returnErr, setReturnErr] = useState('');
@@ -545,27 +547,44 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
       setReturnErr('Uploading photo proof of the package/item is mandatory for refund, partial return, and replacement requests.');
       return;
     }
-    if (returnTypeChoice === 'full_refund') {
-      if (!bankName.trim() || !accountNumber.trim() || !ifscCode.trim() || !accountHolderName.trim()) {
-        setReturnErr('Please fill in all bank account details for the full refund.');
-        return;
+    const isRefundChoice = returnTypeChoice === 'full_refund' || returnTypeChoice === 'partial_discount';
+    if (isRefundChoice) {
+      if (payoutMethod === 'upi') {
+        if (!upiId.trim() || !upiId.includes('@')) {
+          setReturnErr('Please enter a valid UPI ID (e.g. mobile@upi or name@okhdfcbank) to receive your refund.');
+          return;
+        }
+      } else {
+        if (!accountNumber.trim() || !ifscCode.trim() || !accountHolderName.trim()) {
+          setReturnErr('Please fill in your Bank Account Number, IFSC, and Account Holder Name to receive your refund.');
+          return;
+        }
       }
     }
 
     setReturnSubmitting(true);
     const targetId = trackingResult?.shipmentId || searchId;
     try {
+      const bankPayload = isRefundChoice ? (
+        payoutMethod === 'upi' ? {
+          upiId: upiId.trim(),
+          accountHolderName: (accountHolderName.trim() || user?.fullName || '').trim(),
+          payoutMethod: 'upi'
+        } : {
+          bankName: bankName.trim(),
+          accountNumber: accountNumber.trim(),
+          ifscCode: ifscCode.trim().toUpperCase(),
+          accountHolderName: accountHolderName.trim(),
+          payoutMethod: 'bank'
+        }
+      ) : null;
+
       await shipmentAPI.requestReturn(targetId, {
         returnType: returnTypeChoice,
         returnReason: returnReason.trim(),
         defectPhotoUrl: defectPhoto || '',
         defectDescription: defectDescription.trim(),
-        ...(returnTypeChoice === 'full_refund' ? {
-          bankName: bankName.trim(),
-          accountNumber: accountNumber.trim(),
-          ifscCode: ifscCode.trim(),
-          accountHolderName: accountHolderName.trim(),
-        } : {}),
+        bankDetails: bankPayload
       });
       setReturnMsg('Return request submitted! Redirecting to return tracking...');
       setShowReturnForm(false);
@@ -1411,31 +1430,79 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                     />
                   </div>
 
-                  {/* Bank Details — shown only for full_refund */}
-                  {returnTypeChoice === 'full_refund' && (
+                  {/* Bank / UPI Details — required for full_refund & partial_discount */}
+                  {(returnTypeChoice === 'full_refund' || returnTypeChoice === 'partial_discount') && (
                     <div className="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200 space-y-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <CreditCard className="w-4 h-4 text-emerald-700" />
-                        <p className="text-xs font-bold text-emerald-900">Bank Account for Refund</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 text-emerald-700" />
+                          <p className="text-xs font-bold text-emerald-900">Refund Payout Destination (Mandatory)</p>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          Required for Refund
+                        </span>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-[10px] font-bold text-slate-600 block mb-1">Account Holder Name *</label>
-                          <input value={accountHolderName} onChange={e => setAccountHolderName(e.target.value)} placeholder="Full name as on bank account" className="w-full text-xs border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white" required />
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-bold text-slate-600 block mb-1">Bank Name *</label>
-                          <input value={bankName} onChange={e => setBankName(e.target.value)} placeholder="e.g. HDFC Bank" className="w-full text-xs border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white" required />
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-bold text-slate-600 block mb-1">Account Number *</label>
-                          <input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="Account number" className="w-full text-xs border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white" required />
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-bold text-slate-600 block mb-1">IFSC Code *</label>
-                          <input value={ifscCode} onChange={e => setIfscCode(e.target.value.toUpperCase())} placeholder="e.g. HDFC0001234" className="w-full text-xs border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white font-mono" required />
-                        </div>
+                      <p className="text-[11px] text-slate-500">
+                        Refund funds (full or partial return) will be transferred directly to this destination once approved.
+                      </p>
+
+                      {/* Method Selector */}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPayoutMethod('upi')}
+                          className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                            payoutMethod === 'upi'
+                              ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-xs'
+                              : 'bg-white border-slate-200 text-slate-600'
+                          }`}
+                        >
+                          UPI ID
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPayoutMethod('bank')}
+                          className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                            payoutMethod === 'bank'
+                              ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-xs'
+                              : 'bg-white border-slate-200 text-slate-600'
+                          }`}
+                        >
+                          Bank Account (IMPS)
+                        </button>
                       </div>
+
+                      {payoutMethod === 'upi' ? (
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-600 block mb-1">UPI VPA / ID *</label>
+                          <input
+                            value={upiId}
+                            onChange={e => setUpiId(e.target.value)}
+                            placeholder="e.g. 9876543210@paytm or user@okaxis"
+                            className="w-full text-xs border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white font-mono"
+                            required
+                          />
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-600 block mb-1">Account Holder Name *</label>
+                            <input value={accountHolderName} onChange={e => setAccountHolderName(e.target.value)} placeholder="Full name as on bank account" className="w-full text-xs border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white" required />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-600 block mb-1">Bank Name (Optional)</label>
+                            <input value={bankName} onChange={e => setBankName(e.target.value)} placeholder="e.g. State Bank of India" className="w-full text-xs border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white" />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-600 block mb-1">Account Number *</label>
+                            <input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="Account number" className="w-full text-xs border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white font-mono" required />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-600 block mb-1">IFSC Code *</label>
+                            <input value={ifscCode} onChange={e => setIfscCode(e.target.value.toUpperCase())} placeholder="e.g. SBIN0001234" className="w-full text-xs border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white font-mono" required />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 

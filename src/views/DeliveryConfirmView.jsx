@@ -34,14 +34,14 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
   const [defectDescription, setDefectDescription] = useState('');
   const [defectPhotoUrl, setDefectPhotoUrl] = useState('');
 
-  // Refund Bank Details State (Mandatory when applying for full refund)
+  // Refund Bank Details State (Mandatory when applying for full refund or partial return refund)
   const [refundBankDetails, setRefundBankDetails] = useState({
-    payoutMethod: 'bank',
+    payoutMethod: (user?.bankDetails?.upiId && !user?.bankDetails?.accountNumber) ? 'upi' : 'bank',
     accountHolderName: user?.bankDetails?.accountHolderName || user?.fullName || '',
     accountNumber: user?.bankDetails?.accountNumber || '',
     confirmAccountNumber: user?.bankDetails?.accountNumber || '',
     ifscCode: user?.bankDetails?.ifscCode || '',
-    bankName: user?.bankDetails?.bankName || 'HDFC Bank',
+    bankName: user?.bankDetails?.bankName || '',
     upiId: user?.bankDetails?.upiId || ''
   });
   const [isEditingRefundBank, setIsEditingRefundBank] = useState(false);
@@ -240,7 +240,8 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
     );
 
     let bankPayload = null;
-    if (returnType === 'full_refund') {
+    const isRefundChoice = returnType === 'full_refund' || returnType === 'partial_discount';
+    if (isRefundChoice) {
       if (!hasExistingBank || isEditingRefundBank) {
         if (refundBankDetails.payoutMethod === 'bank') {
           const acc = (refundBankDetails.accountNumber || '').trim();
@@ -1039,8 +1040,8 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                   ></textarea>
                 </div>
 
-                {/* Mandatory Refund Bank Details Section (When full_refund selected) */}
-                {returnType === 'full_refund' && (
+                {/* Mandatory Refund Bank Details Section (When full_refund or partial_discount selected) */}
+                {(returnType === 'full_refund' || returnType === 'partial_discount') && (
                   <div className="space-y-3 pt-1">
                     {Boolean((user?.bankDetails?.accountNumber && user.bankDetails.accountNumber.trim().length >= 6) || (user?.bankDetails?.upiId && user.bankDetails.upiId.trim().includes('@'))) && !isEditingRefundBank ? (
                       <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs">

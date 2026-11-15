@@ -19,12 +19,12 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
   // ── Mandatory Refund Bank Details State ──────────────────────
   const [refundBankDetails, setRefundBankDetails] = useState({
-    payoutMethod: 'bank',
+    payoutMethod: (user?.bankDetails?.upiId && !user?.bankDetails?.accountNumber) ? 'upi' : 'bank',
     accountHolderName: user?.bankDetails?.accountHolderName || user?.fullName || '',
     accountNumber: user?.bankDetails?.accountNumber || '',
     confirmAccountNumber: user?.bankDetails?.accountNumber || '',
     ifscCode: user?.bankDetails?.ifscCode || '',
-    bankName: user?.bankDetails?.bankName || 'HDFC Bank',
+    bankName: user?.bankDetails?.bankName || '',
     upiId: user?.bankDetails?.upiId || ''
   });
   const [isEditingRefundBank, setIsEditingRefundBank] = useState(false);
@@ -427,7 +427,8 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
     );
 
     let bankPayload = null;
-    if (returnTypeChoice === 'full_refund') {
+    const isRefundChoice = returnTypeChoice === 'full_refund' || returnTypeChoice === 'partial_discount';
+    if (isRefundChoice) {
       if (!hasExistingBank || isEditingRefundBank) {
         if (refundBankDetails.payoutMethod === 'bank') {
           const acc = (refundBankDetails.accountNumber || '').trim();
@@ -461,7 +462,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
           const upi = (refundBankDetails.upiId || '').trim();
           const holder = (refundBankDetails.accountHolderName || user?.fullName || '').trim();
           if (!upi || !upi.includes('@')) {
-            alert('Please enter a valid UPI ID (e.g., yourname@okhdfcbank).');
+            alert('Please enter a valid UPI ID (e.g., yourname@okhdfcbank or 9876543210@paytm).');
             return;
           }
           bankPayload = {
@@ -3250,8 +3251,8 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   </select>
                 </div>
 
-                {/* Mandatory Refund Bank Details Form (When full_refund is selected) */}
-                {returnTypeChoice === 'full_refund' && (
+                {/* Mandatory Refund Bank Details Form (When full_refund or partial_discount is selected) */}
+                {(returnTypeChoice === 'full_refund' || returnTypeChoice === 'partial_discount') && (
                   <div className="space-y-2.5 pt-1">
                     {Boolean((user?.bankDetails?.accountNumber && user.bankDetails.accountNumber.trim().length >= 6) || (user?.bankDetails?.upiId && user.bankDetails.upiId.trim().includes('@'))) && !isEditingRefundBank ? (
                       <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
@@ -3286,7 +3287,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-600">
-                          Order funds will be transferred directly to this account once your return is approved.
+                          Refund funds (full or partial return) will be transferred directly to this account once approved.
                         </p>
 
                         {/* Payout method toggle */}
