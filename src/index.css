@@ -9,6 +9,17 @@
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
+
+  /* Clean, rounded modern numbers everywhere (no dotted or slashed zeros) */
+  .font-mono,
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-variant-numeric: normal;
+    font-feature-settings: normal;
+  }
 }
 
 /* Tactile Spring Press for Native Mobile Feel */
