@@ -10,6 +10,7 @@ import CarrierLogo from './CarrierLogo';
 import RechargeModal from './RechargeModal';
 import PaymentCheckoutModal from './PaymentCheckoutModal';
 import { getSafeCarrierRates } from '../utils/carrierRateFallback';
+import { formatCarrierName } from '../utils/formatters';
 
 export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData, onUpdateUser }) {
   // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection
@@ -893,12 +894,53 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
 
               {/* Mode Selector & Secure Cover Toggle */}
               <div className="flex items-center gap-2 flex-wrap justify-between md:justify-end">
-                <div className="inline-flex items-center p-1 bg-white rounded-xl border border-slate-200 shadow-2xs">
-                  <span className="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-amber-600 text-white shadow-xs">
-                    <Banknote className="w-3.5 h-3.5" />
-                    <span>Cash on Delivery (COD)</span>
-                  </span>
-                </div>
+                {shipmentType === 'reverse' ? (
+                  <div className="inline-flex items-center p-1 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-blue-600 text-white shadow-xs">
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Reverse Pickup (RVP)</span>
+                    </span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center p-0.5 bg-white rounded-xl border border-slate-200 shadow-2xs gap-1">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (paymentMode !== 'prepaid') {
+                          setPaymentMode('prepaid');
+                          await fetchQuotes('prepaid', secureShipmentEnabled);
+                        }
+                      }}
+                      disabled={fetchingQuotes}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                        paymentMode === 'prepaid'
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>Prepaid</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (paymentMode !== 'cod') {
+                          setPaymentMode('cod');
+                          await fetchQuotes('cod', secureShipmentEnabled);
+                        }
+                      }}
+                      disabled={fetchingQuotes}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                        paymentMode === 'cod'
+                          ? 'bg-amber-600 text-white shadow-xs'
+                          : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <Banknote className="w-3.5 h-3.5" />
+                      <span>Cash on Delivery (COD)</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Secure Cover (Default OFF) */}
                 <button
@@ -1225,7 +1267,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                                 />
                                 <div className="min-w-0">
                                   <div className="font-extrabold text-slate-900 truncate">
-                                    {quote.courierPartner || quote.name}
+                                    {formatCarrierName(quote.courierPartner || quote.name)}
                                   </div>
                                   {quote.badges && quote.badges.length > 0 ? (
                                     <div className="flex items-center gap-1 mt-0.5 flex-wrap">
@@ -1374,7 +1416,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                             />
                             <div className="min-w-0">
                               <h4 className="text-sm font-extrabold text-slate-900 truncate leading-snug">
-                                {quote.courierPartner || quote.name}
+                                {formatCarrierName(quote.courierPartner || quote.name)}
                               </h4>
                               
                               <div className="flex items-center gap-1.5 mt-1 flex-wrap">
