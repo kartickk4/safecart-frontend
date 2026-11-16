@@ -90,6 +90,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [cityRoute, setCityRoute] = useState('');
   const [carrierSlug, setCarrierSlug] = useState('manual'); // 'manual' = user compares and selects from live rates by default
   const [showCarrierModal, setShowCarrierModal] = useState(false);
+  const [userConfirmedCourier, setUserConfirmedCourier] = useState(false);
   const [carrierQuotes, setCarrierQuotes] = useState([]);
   const [smartRecommendation, setSmartRecommendation] = useState(null);
   const [selectedQuote, setSelectedQuote] = useState(null);
@@ -389,7 +390,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       });
 
       let chosen = null;
-      const isManualMode = (preferredSlug === 'manual' || (!preferredSlug && carrierSlug === 'manual'));
+      const isManualMode = (preferredSlug === 'manual' || carrierSlug === 'manual');
       if (preferredSlug && preferredSlug !== 'auto' && preferredSlug !== 'manual') {
         chosen = quotes.find(q => q.slug === preferredSlug);
       }
@@ -403,12 +404,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         if (!chosen && quotes.length > 0) {
           chosen = quotes[0]; // Lowest price quote
         }
-      } else if (selectedQuote) {
+      } else if (selectedQuote && userConfirmedCourier) {
         // In manual mode, maintain the user's previously picked courier quote
         chosen = quotes.find(q => q.slug === selectedQuote.slug);
       }
 
-      if (chosen) {
+      if (chosen && (!isManualMode || userConfirmedCourier)) {
         setSelectedQuote(chosen);
         setCarrierSlug(chosen.slug);
 
@@ -476,13 +477,11 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       return;
     }
 
-    const quotes = await fetchQuotesForRoute(carrierSlug, shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType);
+    setShowCarrierModal(true);
+    setError('');
+    const quotes = await fetchQuotesForRoute(carrierSlug === 'manual' ? 'auto' : carrierSlug, shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType);
     if (quotes && quotes.length > 0) {
-      setShowCarrierModal(true);
-      setError('');
-    } else {
-      setShowCarrierModal(true);
-      setError('');
+      setCarrierQuotes(quotes);
     }
   };
 
@@ -490,6 +489,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     const quote = quoteToUse || selectedQuote;
     if (!quote) return;
 
+    setUserConfirmedCourier(true);
     setCarrierSlug(quote.slug);
     setSelectedQuote(quote);
     setShowCarrierModal(false);
@@ -682,34 +682,17 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       return;
     }
 
-    if (carrierSlug === 'manual' && !selectedQuote) {
+    // If user is in manual mode or has not explicitly chosen & confirmed their courier from the rates modal:
+    // ALWAYS open the live courier rates comparison modal so user can view all options and pick!
+    if (carrierSlug === 'manual' || !userConfirmedCourier || !selectedQuote) {
       await handleOpenCourierModal();
       return;
     }
 
-    let quoteToUse = selectedQuote;
-    if (!quoteToUse) {
-      setLoading(true);
-      try {
-        const quotes = await fetchQuotesForRoute(carrierSlug === 'manual' ? 'auto' : carrierSlug, shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType);
-        if (quotes && quotes.length > 0) {
-          quoteToUse = quotes.find(q => q.slug === carrierSlug) || quotes[0];
-          if (quoteToUse) {
-            setSelectedQuote(quoteToUse);
-            setCarrierSlug(quoteToUse.slug);
-          }
-        }
-      } catch (err) {
-        console.error('Submit quote resolution error:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (quoteToUse) {
-      await handleFinalizeWithCourier(quoteToUse);
+    if (selectedQuote) {
+      await handleFinalizeWithCourier(selectedQuote);
     } else {
-      setError('Unable to fetch live courier rates for this route. Please verify pincodes and try again.');
+      await handleOpenCourierModal();
     }
   };
 
@@ -1181,11 +1164,17 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         onChange={(e) => {
                           const val = e.target.value;
                           setCarrierSlug(val);
+                          setUserConfirmedCourier(false);
                           if (val === 'manual') {
                             handleOpenCourierModal();
                           } else if (val !== 'auto' && carrierQuotes.length > 0) {
                             const found = carrierQuotes.find(q => q.slug === val);
-                            if (found) setSelectedQuote(found);
+                            if (found) {
+                              setSelectedQuote(found);
+                              setUserConfirmedCourier(true);
+                            }
+                          } else if (val === 'auto') {
+                            setSelectedQuote(null);
                           }
                         }}
                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white cursor-pointer"
@@ -1737,7 +1726,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </>
               )
-            ) : selectedQuote ? (
+            ) : userConfirmedCourier && selectedQuote ? (
               paymentMode === 'cod' ? (
                 codQuote.canAdjustWallet ? (
                   <>
@@ -1756,16 +1745,10 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   <ArrowRight className="w-4 h-4" />
                 </>
               )
-            ) : carrierSlug === 'manual' ? (
+            ) : (
               <>
                 <Search className="w-5 h-5" />
                 <span>Compare Rates &amp; Select Courier</span>
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </>
-            ) : (
-              <>
-                <Truck className="w-5 h-5" />
-                <span>Create Shipment</span>
                 <ArrowRight className="w-4 h-4 ml-1" />
               </>
             )}
