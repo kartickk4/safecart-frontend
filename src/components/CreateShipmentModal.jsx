@@ -9,6 +9,7 @@ import { shipmentAPI, profileAPI, agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
 import RechargeModal from './RechargeModal';
 import PaymentCheckoutModal from './PaymentCheckoutModal';
+import { getSafeCarrierRates } from '../utils/carrierRateFallback';
 
 export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData, onUpdateUser }) {
   // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection
@@ -279,7 +280,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     try {
       const isCod = !isReverse && targetMode === 'cod';
       const decVal = parseFloat(amount) || 2500;
-      const res = await agentAPI.getCarrierRates({
+      const resData = await getSafeCarrierRates({
         fromPincode: originPin,
         toPincode: destPin,
         weightKg: parseFloat(parcelWeight) || 0.5,
@@ -292,13 +293,13 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       });
 
       // Backend already applies the exact platform ₹5 discount from the wallet charge
-      const quotes = res.data?.quotes || [];
-      const smartRec = res.data?.smartRecommendation || null;
+      const quotes = resData?.quotes || [];
+      const smartRec = resData?.smartRecommendation || null;
       setCarrierQuotes(quotes);
       setSmartRecommendation(smartRec);
       setRouteInfo({
-        fromZone: res.data?.fromZone,
-        toZone: res.data?.toZone
+        fromZone: resData?.fromZone,
+        toZone: resData?.toZone
       });
 
       if (quotes.length > 0) {
@@ -314,9 +315,9 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
           return quotes[0];
         });
       }
+      setError('');
     } catch (err) {
       console.error('Failed to fetch carrier quotes in modal:', err);
-      setError(err.response?.data?.error || 'Could not fetch live rates for this pincode. Please verify the pincode.');
     } finally {
       setFetchingQuotes(false);
     }
