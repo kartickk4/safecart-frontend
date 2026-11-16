@@ -88,7 +88,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('3420');
   const [cityRoute, setCityRoute] = useState('');
-  const [carrierSlug, setCarrierSlug] = useState('auto'); // 'auto' = pick cheapest by pincode zone
+  const [carrierSlug, setCarrierSlug] = useState('manual'); // 'manual' = user compares and selects from live rates by default
   const [showCarrierModal, setShowCarrierModal] = useState(false);
   const [carrierQuotes, setCarrierQuotes] = useState([]);
   const [smartRecommendation, setSmartRecommendation] = useState(null);
@@ -389,17 +389,23 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       });
 
       let chosen = null;
-      if (preferredSlug && preferredSlug !== 'auto') {
+      const isManualMode = (preferredSlug === 'manual' || (!preferredSlug && carrierSlug === 'manual'));
+      if (preferredSlug && preferredSlug !== 'auto' && preferredSlug !== 'manual') {
         chosen = quotes.find(q => q.slug === preferredSlug);
       }
-      if (!chosen && smartRec?.carrier) {
-        chosen = quotes.find(q => q.slug === smartRec.carrier || q.baseSlug === smartRec.carrier);
-      }
-      if (!chosen && selectedQuote) {
+      if (!isManualMode) {
+        if (!chosen && smartRec?.carrier) {
+          chosen = quotes.find(q => q.slug === smartRec.carrier || q.baseSlug === smartRec.carrier);
+        }
+        if (!chosen && selectedQuote) {
+          chosen = quotes.find(q => q.slug === selectedQuote.slug);
+        }
+        if (!chosen && quotes.length > 0) {
+          chosen = quotes[0]; // Lowest price quote
+        }
+      } else if (selectedQuote) {
+        // In manual mode, maintain the user's previously picked courier quote
         chosen = quotes.find(q => q.slug === selectedQuote.slug);
-      }
-      if (!chosen && quotes.length > 0) {
-        chosen = quotes[0]; // Lowest price quote
       }
 
       if (chosen) {
@@ -1184,8 +1190,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         }}
                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white cursor-pointer"
                       >
-                        <option value="auto">Auto-Select Cheapest Courier</option>
                         <option value="manual">🔍 Manually Select Courier (Compare All Live Rates)</option>
+                        <option value="auto">Auto-Select Cheapest Courier</option>
                         <option value="delhivery">Delhivery Express</option>
                         <option value="rapido">Rapido Parcel / Express (Hyperlocal & Surface)</option>
                         <option value="shadowfax">Shadowfax Technologies</option>
