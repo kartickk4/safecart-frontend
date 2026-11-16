@@ -43,10 +43,11 @@ const getBaseUrl = () => {
         const backendHost = hostname.replace('-frontend', '-backend');
         return `${window.location.protocol}//${backendHost}/api/v1`;
       }
-      if (hostname.includes('securekaro.in')) {
+      if (hostname.includes('securekaro.in') || hostname.includes('pages.dev')) {
         return LIVE_BACKEND_URL;
       }
-      return `${window.location.origin}/api/v1`;
+      // Any remote domain (e.g. preview branch, custom domain) points to live backend
+      return LIVE_BACKEND_URL;
     }
   }
 
