@@ -90,6 +90,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [cityRoute, setCityRoute] = useState('');
   const [carrierSlug, setCarrierSlug] = useState('manual'); // 'manual' = user compares and selects from live rates by default
   const [showCarrierModal, setShowCarrierModal] = useState(false);
+  const [showAutoCheapestModal, setShowAutoCheapestModal] = useState(false);
+  const [autoCheapestQuote, setAutoCheapestQuote] = useState(null);
   const [userConfirmedCourier, setUserConfirmedCourier] = useState(false);
   const [carrierQuotes, setCarrierQuotes] = useState([]);
   const [smartRecommendation, setSmartRecommendation] = useState(null);
@@ -680,6 +682,28 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     if (!receiverPincode || receiverPincode.length < 6) {
       setError(shipmentType === 'reverse' ? 'Please enter a valid 6-digit Customer Pickup Pincode.' : 'Please enter a valid 6-digit Receiver Delivery Pincode to view courier delivery rates.');
       return;
+    }
+
+    // If user selected 'auto' (Auto-Select Cheapest Courier), show preview modal with lowest rate details first!
+    if (carrierSlug === 'auto' && !userConfirmedCourier) {
+      setLoading(true);
+      try {
+        let quotes = carrierQuotes;
+        if (!quotes || quotes.length === 0) {
+          quotes = await fetchQuotesForRoute('auto', shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType);
+        }
+        if (quotes && quotes.length > 0) {
+          const sorted = [...quotes].sort((a, b) => a.price - b.price);
+          const cheapest = sorted[0];
+          setAutoCheapestQuote(cheapest);
+          setShowAutoCheapestModal(true);
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to resolve cheapest auto quote:', err);
+      } finally {
+        setLoading(false);
+      }
     }
 
     // If user is in manual mode or has not explicitly chosen & confirmed their courier from the rates modal:
@@ -2491,6 +2515,99 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         )}
                       </button>
                     </div>
+                  </div>
+                </div>
+              </div>,
+              document.body
+            )}
+
+            {/* Auto-Selected Cheapest Courier Preview Modal */}
+            {showAutoCheapestModal && autoCheapestQuote && typeof document !== 'undefined' && createPortal(
+              <div className="fixed inset-0 z-[130] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+                <div className="bg-white rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4 relative animate-in zoom-in-95 duration-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowAutoCheapestModal(false)}
+                    className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 shadow-xs">
+                      <Zap className="w-6 h-6 fill-current" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-200">
+                        Lowest Route Rate Found
+                      </span>
+                      <h3 className="text-base sm:text-lg font-black text-slate-900 mt-0.5">
+                        Auto-Selected Lowest Courier
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-emerald-50/40 border border-emerald-100 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <CarrierLogo 
+                          slug={autoCheapestQuote.baseSlug || autoCheapestQuote.slug} 
+                          name={autoCheapestQuote.name} 
+                          size="md" 
+                          className="shadow-xs"
+                        />
+                        <div>
+                          <h4 className="text-sm font-extrabold text-slate-900 leading-tight">
+                            {formatCarrierName(autoCheapestQuote.courierPartner || autoCheapestQuote.name)}
+                          </h4>
+                          <p className="text-[11px] text-slate-500 mt-0.5">
+                            Transit: <strong className="text-slate-700">{autoCheapestQuote.eta || '1-2 Days'}</strong>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 font-bold block uppercase">Lowest Freight</span>
+                        <span className="text-xl font-black text-emerald-700 font-mono">
+                          ₹{Number(autoCheapestQuote.price || 0).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-600 font-medium">
+                      <span>Route: <strong className="font-mono text-slate-800">{senderPincode}</strong> ➔ <strong className="font-mono text-slate-800">{receiverPincode}</strong></span>
+                      <span>Weight: <strong className="font-mono text-slate-800">{parcelWeight} kg</strong></span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Our multi-carrier engine analyzed all available partners and confirmed <strong>{formatCarrierName(autoCheapestQuote.courierPartner || autoCheapestQuote.name)}</strong> offers the lowest delivery rate.
+                  </p>
+
+                  <div className="space-y-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAutoCheapestModal(false);
+                        handleFinalizeWithCourier(autoCheapestQuote);
+                      }}
+                      className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>Confirm &amp; Book ({formatCarrierName(autoCheapestQuote.courierPartner || autoCheapestQuote.name)} · ₹{Number(autoCheapestQuote.price || 0).toFixed(2)})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAutoCheapestModal(false);
+                        setShowCarrierModal(true);
+                      }}
+                      className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-slate-200 transition flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Search className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Compare All Other Available Rates Instead</span>
+                    </button>
                   </div>
                 </div>
               </div>,
