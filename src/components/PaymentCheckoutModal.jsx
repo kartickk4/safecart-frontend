@@ -149,9 +149,9 @@ export default function PaymentCheckoutModal({
   };
 
   const modalContent = (
-    <div className="fixed inset-0 z-[100] flex flex-col justify-between bg-slate-900/60 backdrop-blur-sm sm:items-center sm:justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-slate-900/60 backdrop-blur-sm sm:items-center sm:justify-center p-0 sm:p-4 animate-in fade-in duration-200">
       <div 
-        className="w-full max-w-md bg-[#F4F6FB] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[100dvh] sm:max-h-[92vh]"
+        className="w-full max-w-md bg-[#F4F6FB] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Vibrant Blue Header */}
@@ -373,7 +373,7 @@ export default function PaymentCheckoutModal({
         </div>
 
         {/* Sticky Bottom Action Button */}
-        <div className="p-4 sm:p-5 bg-white border-t border-slate-200/80 shrink-0 space-y-2">
+        <div className="p-4 sm:p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] bg-white border-t border-slate-200/80 shrink-0 space-y-2">
           {processingNote && (
             <p className="text-center text-xs font-bold text-[#0052FF] animate-pulse">
               {processingNote}
