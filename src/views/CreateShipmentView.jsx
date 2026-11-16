@@ -676,11 +676,16 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       return;
     }
 
+    if (carrierSlug === 'manual' && !selectedQuote) {
+      await handleOpenCourierModal();
+      return;
+    }
+
     let quoteToUse = selectedQuote;
     if (!quoteToUse) {
       setLoading(true);
       try {
-        const quotes = await fetchQuotesForRoute(carrierSlug, shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType);
+        const quotes = await fetchQuotesForRoute(carrierSlug === 'manual' ? 'auto' : carrierSlug, shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType);
         if (quotes && quotes.length > 0) {
           quoteToUse = quotes.find(q => q.slug === carrierSlug) || quotes[0];
           if (quoteToUse) {
@@ -1136,10 +1141,10 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   {selectedQuote ? (
                     <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <CarrierLogo slug={selectedQuote.slug} name={selectedQuote.name} size="md" />
+                        <CarrierLogo slug={selectedQuote.baseSlug || selectedQuote.slug} name={selectedQuote.name} size="md" />
                         <div>
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="text-xs font-bold text-slate-900">{selectedQuote.name}</h4>
+                            <h4 className="text-xs font-bold text-slate-900">{formatCarrierName(selectedQuote.name)}</h4>
                             <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
                               <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
                               {selectedQuote.rating ? selectedQuote.rating.toFixed(1) : '4.6'}
@@ -1164,29 +1169,45 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       </button>
                     </div>
                   ) : (
-                    <select
-                      value={carrierSlug}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setCarrierSlug(val);
-                        if (val !== 'auto' && carrierQuotes.length > 0) {
-                          const found = carrierQuotes.find(q => q.slug === val);
-                          if (found) setSelectedQuote(found);
-                        }
-                      }}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white cursor-pointer"
-                    >
-                      <option value="auto">Auto-Select Cheapest Courier</option>
-                      <option value="delhivery">Delhivery Express</option>
-                      <option value="rapido">Rapido Parcel / Express (Hyperlocal & Surface)</option>
-                      <option value="shadowfax">Shadowfax Technologies</option>
-                      <option value="ekart">Ekart Logistics</option>
-                      <option value="xpressbees">Xpressbees Logistics</option>
-                      <option value="dtdc">DTDC Express</option>
-                      <option value="ecom_express">Ecom Express</option>
-                      <option value="bluedart">BlueDart Express</option>
-                      <option value="indiapost">India Post Speed Post</option>
-                    </select>
+                    <div className="space-y-2">
+                      <select
+                        value={carrierSlug}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCarrierSlug(val);
+                          if (val === 'manual') {
+                            handleOpenCourierModal();
+                          } else if (val !== 'auto' && carrierQuotes.length > 0) {
+                            const found = carrierQuotes.find(q => q.slug === val);
+                            if (found) setSelectedQuote(found);
+                          }
+                        }}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white cursor-pointer"
+                      >
+                        <option value="auto">Auto-Select Cheapest Courier</option>
+                        <option value="manual">🔍 Manually Select Courier (Compare All Live Rates)</option>
+                        <option value="delhivery">Delhivery Express</option>
+                        <option value="rapido">Rapido Parcel / Express (Hyperlocal & Surface)</option>
+                        <option value="shadowfax">Shadowfax Technologies</option>
+                        <option value="ekart">Ekart Logistics</option>
+                        <option value="xpressbees">Xpressbees Logistics</option>
+                        <option value="dtdc">DTDC Express</option>
+                        <option value="ecom_express">Ecom Express</option>
+                        <option value="bluedart">BlueDart Express</option>
+                        <option value="indiapost">India Post Speed Post</option>
+                      </select>
+
+                      {carrierSlug === 'manual' && !selectedQuote && (
+                        <button
+                          type="button"
+                          onClick={handleOpenCourierModal}
+                          className="w-full py-2.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1E56E3] border border-blue-200 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                        >
+                          <Search className="w-3.5 h-3.5" />
+                          <span>Compare All Available Courier Rates &amp; Select</span>
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -1714,21 +1735,27 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
               paymentMode === 'cod' ? (
                 codQuote.canAdjustWallet ? (
                   <>
-                    <span>Finalize COD Shipment with {selectedQuote.name} (₹{selectedQuote.price})</span>
+                    <span>Finalize COD Shipment with {formatCarrierName(selectedQuote.name)} (₹{selectedQuote.price})</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Pay & Finalize COD with {selectedQuote.name} (₹{selectedQuote.price})</span>
+                    <span>Pay & Finalize COD with {formatCarrierName(selectedQuote.name)} (₹{selectedQuote.price})</span>
                   </>
                 )
               ) : (
                 <>
-                  <span>Finalize Shipment with {selectedQuote.name} (₹{selectedQuote.price})</span>
+                  <span>Finalize Shipment with {formatCarrierName(selectedQuote.name)} (₹{selectedQuote.price})</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )
+            ) : carrierSlug === 'manual' ? (
+              <>
+                <Search className="w-5 h-5" />
+                <span>Compare Rates &amp; Select Courier</span>
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </>
             ) : (
               <>
                 <Truck className="w-5 h-5" />
