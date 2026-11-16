@@ -644,11 +644,60 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (selectedQuote) {
-      await handleFinalizeWithCourier(selectedQuote);
+    if (e && e.preventDefault) e.preventDefault();
+    if (loading) return;
+    setError('');
+
+    // Mandatory check: Supplier phone must be verified before first shipment
+    if (!phoneVerified) {
+      setError('Mobile Number Required: Please enter and verify your mobile number above to link it to your profile and proceed with booking.');
+      setPhoneError('Please verify your mobile number here before proceeding with your shipment booking.');
+      return;
+    }
+    if (!receiverName.trim()) {
+      setError('Please enter the Recipient Name.');
+      return;
+    }
+    if (!receiverPhone.trim()) {
+      setError('Please enter the Recipient Phone Number.');
+      return;
+    }
+    if (!receiverAddress.trim()) {
+      setError(shipmentType === 'reverse' ? 'Please enter the Customer Pickup Address.' : 'Please enter the Recipient Delivery Address.');
+      return;
+    }
+    if (!senderPincode || senderPincode.length < 6) {
+      setError(shipmentType === 'reverse' ? 'Please enter a valid 6-digit Warehouse Return Destination Pincode.' : 'Please enter a valid 6-digit Pickup Pincode.');
+      return;
+    }
+    if (!receiverPincode || receiverPincode.length < 6) {
+      setError(shipmentType === 'reverse' ? 'Please enter a valid 6-digit Customer Pickup Pincode.' : 'Please enter a valid 6-digit Receiver Delivery Pincode to view courier delivery rates.');
+      return;
+    }
+
+    let quoteToUse = selectedQuote;
+    if (!quoteToUse) {
+      setLoading(true);
+      try {
+        const quotes = await fetchQuotesForRoute(carrierSlug, shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType);
+        if (quotes && quotes.length > 0) {
+          quoteToUse = quotes.find(q => q.slug === carrierSlug) || quotes[0];
+          if (quoteToUse) {
+            setSelectedQuote(quoteToUse);
+            setCarrierSlug(quoteToUse.slug);
+          }
+        }
+      } catch (err) {
+        console.error('Submit quote resolution error:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (quoteToUse) {
+      await handleFinalizeWithCourier(quoteToUse);
     } else {
-      await handleOpenCourierModal(e);
+      setError('Unable to fetch live courier rates for this route. Please verify pincodes and try again.');
     }
   };
 
@@ -1638,13 +1687,13 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
           <button
             type="submit"
-            disabled={loading || fetchingQuotes}
+            disabled={loading}
             className="w-full py-4 px-6 bg-[#1E56E3] hover:bg-[#1649CC] shadow-blue-500/25 text-white font-extrabold text-sm rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
           >
-            {loading || fetchingQuotes ? (
+            {loading ? (
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span>{fetchingQuotes ? 'Calculating Courier Rates & Ratings...' : 'Processing Booking...'}</span>
+                <span>Processing Booking...</span>
               </div>
             ) : shipmentType === 'reverse' ? (
               selectedQuote ? (
