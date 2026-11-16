@@ -13,6 +13,7 @@ import RechargeModal from '../components/RechargeModal';
 import CarrierLogo from '../components/CarrierLogo';
 import PaymentCheckoutModal from '../components/PaymentCheckoutModal';
 import { getSafeCarrierRates } from '../utils/carrierRateFallback';
+import { formatCarrierName, formatAwbCode, formatPickupToken } from '../utils/formatters';
 
 
 
@@ -2630,7 +2631,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         const formattedAmount = createdData?.amount 
           ? Number(createdData.amount).toLocaleString('en-IN') 
           : '0';
-        const assignedCarrierName = createdData.pickupCarrier || createdData.autoSelectedCarrier?.name || (createdData.carrierSlug ? createdData.carrierSlug.toUpperCase() : 'Delhivery Express');
+        const assignedCarrierName = formatCarrierName(createdData.pickupCarrier || createdData.autoSelectedCarrier?.name || createdData.carrierSlug);
 
         return (
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-lg space-y-6 sm:space-y-8 animate-in fade-in zoom-in-95 duration-200 text-center">
@@ -2688,8 +2689,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <span className="text-xs font-bold text-slate-400 uppercase">AWB Tracking Code</span>
-                <span className="text-xs font-bold text-slate-900 font-mono bg-white px-2.5 py-1 rounded border border-slate-200">
-                  {createdData.awbCode || 'Assigned'}
+                <span className="text-xs font-bold text-slate-900 font-mono bg-white px-2.5 py-1 rounded border border-slate-200 break-all max-w-[220px] text-right">
+                  {formatAwbCode(createdData.awbCode) || 'Assigned'}
                 </span>
               </div>
 
@@ -2762,7 +2763,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">AWB Code:</span>
-                  <span className="font-mono font-black text-blue-700">{createdData.awbCode || 'Assigned'}</span>
+                  <span className="font-mono font-black text-blue-700">{formatAwbCode(createdData.awbCode) || 'Assigned'}</span>
                 </div>
               </div>
               <p className="text-[11px] text-slate-500 leading-relaxed">

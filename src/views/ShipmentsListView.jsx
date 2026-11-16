@@ -3,6 +3,7 @@ import { Search, Filter, Eye, ChevronLeft, ChevronRight, Download, Plus, Box, Ch
 import { shipmentAPI } from '../services/api';
 import QrScannerModal from '../components/QrScannerModal';
 import { SkeletonLoader } from '../components/Loaders';
+import { formatCarrierName, formatAwbCode } from '../utils/formatters';
 
 export default function ShipmentsListView({ onSelectShipment, openNewShipmentModal, user, currentRole, isSupplier, onRepeatShipment }) {
   const isMerchant = isSupplier !== undefined 
@@ -125,7 +126,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
   const paginated = filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   return (
-    <div className="px-4 py-5 md:p-8 max-w-7xl mx-auto space-y-5 md:space-y-8">
+    <div className="px-4 pt-6 pb-8 md:p-8 max-w-7xl mx-auto space-y-5 md:space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div>
@@ -240,7 +241,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                 <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
                   <span className="truncate">{item.city || 'Domestic Delivery'}</span>
                   <span className="text-slate-700 font-bold shrink-0 ml-2">
-                    {item.carrierSlug === 'bluedart' ? 'Blue Dart' : (item.carrierSlug ? item.carrierSlug.charAt(0).toUpperCase() + item.carrierSlug.slice(1) : 'Delhivery')}
+                    {formatCarrierName(item.carrierSlug || item.carrierPartner || item.pickupCarrier)}
                   </span>
                 </div>
 
@@ -347,7 +348,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                       {item.city}
                     </td>
                     <td className="py-3.5 px-4 text-slate-700 font-bold">
-                      {item.carrierSlug === 'bluedart' ? 'Blue Dart' : (item.carrierSlug ? item.carrierSlug.charAt(0).toUpperCase() + item.carrierSlug.slice(1) : 'Delhivery')}
+                      {formatCarrierName(item.carrierSlug || item.carrierPartner || item.pickupCarrier)}
                     </td>
                     <td className="py-3.5 px-4 font-bold text-slate-900">
                       ₹{item.amount ? Number(item.amount).toLocaleString('en-IN') : '3,420'}

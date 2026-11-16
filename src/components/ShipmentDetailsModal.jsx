@@ -5,6 +5,7 @@ import { shipmentAPI, profileAPI, claimAPI } from '../services/api';
 import { uploadImageToHost } from '../services/imageUpload';
 import QrScannerModal from './QrScannerModal';
 import CameraCaptureModal from './CameraCaptureModal';
+import { formatCarrierName, formatAwbCode, formatPickupToken } from '../utils/formatters';
 
 export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefresh, user, onRepeatShipment }) {
   const [details, setDetails] = useState(null);
@@ -980,13 +981,13 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-900">
-                    {CARRIER_NAMES[currentShipment.carrierSlug] || currentShipment.carrierSlug || 'Courier Partner'}
+                    {formatCarrierName(currentShipment.pickupCarrier || currentShipment.carrierSlug)}
                     {currentShipment.carrierSlug === 'add_later' && (
                       <span className="ml-1.5 text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Pending Assignment</span>
                     )}
                   </p>
-                  <p className="text-[11px] text-slate-500 font-mono">
-                    AWB: {currentShipment.awbCode || (isSupplier && !currentShipment.trackingSubmitted ? '— Submit tracking ID below' : 'Pending')}
+                  <p className="text-[11px] text-slate-500 font-mono break-all">
+                    AWB: {currentShipment.awbCode ? formatAwbCode(currentShipment.awbCode) : (isSupplier && !currentShipment.trackingSubmitted ? '— Submit tracking ID below' : 'Pending')}
                   </p>
                 </div>
               </div>
@@ -1053,7 +1054,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                     <div className="flex justify-between items-center text-slate-600">
                       <span className="flex items-center gap-1.5">
                         <Truck className="w-3.5 h-3.5 text-rose-500" />
-                        <span>Courier Freight ({currentShipment.pickupCarrier || 'Delhivery'})</span>
+                        <span>Courier Freight ({formatCarrierName(currentShipment.pickupCarrier || currentShipment.carrierSlug)})</span>
                       </span>
                       {codFeePaidUpfront ? (
                         <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[11px]">Paid Upfront (₹{courierFee})</span>
@@ -1138,7 +1139,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   <div className="bg-white/95 p-2.5 rounded-xl border border-emerald-100 shadow-2xs">
                     <span className="text-[10px] text-slate-400 font-bold block uppercase">Carrier (Lowest Route Charge)</span>
-                    <span className="font-extrabold text-slate-900">{currentShipment.pickupCarrier || CARRIER_NAMES[currentShipment.carrierSlug] || 'Delhivery Express'}</span>
+                    <span className="font-extrabold text-slate-900">{formatCarrierName(currentShipment.pickupCarrier || currentShipment.carrierSlug)}</span>
                     {currentShipment.pickupRate && (
                       <span className="text-[10px] text-emerald-700 font-semibold block">₹{currentShipment.pickupRate} Delivery Charge</span>
                     )}
@@ -1152,11 +1153,11 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   <div className="bg-white/95 p-2.5 rounded-xl border border-emerald-100 shadow-2xs">
                     <span className="text-[10px] text-slate-400 font-bold block uppercase">Pickup Reference Token</span>
                     <div className="flex items-center justify-between">
-                      <span className="font-mono font-black text-blue-700 select-all">{currentShipment.pickupToken}</span>
+                      <span className="font-mono font-black text-blue-700 select-all">{formatPickupToken(currentShipment.pickupToken)}</span>
                       <button
                         type="button"
                         onClick={() => {
-                          navigator.clipboard.writeText(currentShipment.pickupToken || '');
+                          navigator.clipboard.writeText(formatPickupToken(currentShipment.pickupToken) || '');
                           setCopiedPickupToken(true);
                           setTimeout(() => setCopiedPickupToken(false), 2000);
                         }}
@@ -1202,7 +1203,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                       <p className="text-xs font-black text-slate-900">Submit Courier Details & Dispatch Parcel</p>
                       <p className="text-[11px] text-slate-500 mt-0.5">
                         {currentShipment.carrierSlug && currentShipment.carrierSlug !== 'add_later'
-                          ? `Courier: ${CARRIER_NAMES[currentShipment.carrierSlug] || currentShipment.carrierSlug}${currentShipment.awbCode ? ` · AWB: ${currentShipment.awbCode}` : ''}`
+                          ? `Courier: ${formatCarrierName(currentShipment.pickupCarrier || currentShipment.carrierSlug)}${currentShipment.awbCode ? ` · AWB: ${formatAwbCode(currentShipment.awbCode)}` : ''}`
                           : 'Confirm courier service & tracking ID before dispatching the parcel.'}
                       </p>
                     </div>
