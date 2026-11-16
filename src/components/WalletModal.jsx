@@ -728,19 +728,19 @@ export default function WalletModal({ user, onUpdateUser }) {
                     </div>
                   )}
 
-                  {/* Unwithdrawable Amount */}
+                  {/* Unwithdrawable Cashback Rewards */}
                   <div className="space-y-1 sm:pl-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
                         <Clock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                        <span>24h Verification</span>
+                        <span>Cashback Unlocking</span>
                       </span>
                     </div>
                     <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
                         ₹{displayUnwithdrawable.toLocaleString('en-IN')}
                     </div>
                     <p className="text-[10px] text-blue-200/90 leading-tight">
-                      Held in 24h buyer verification window ({activePipelineItems.length} in pipeline)
+                      Bonus rewards unlocking after 24h ({activePipelineItems.length} reward{activePipelineItems.length === 1 ? '' : 's'})
                     </p>
                   </div>
                 </div>
