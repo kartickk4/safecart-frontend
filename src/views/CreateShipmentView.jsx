@@ -868,26 +868,6 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
               </button>
             </div>
 
-            {/* REVERSE LOGISTICS BANNER */}
-            {shipmentType === 'reverse' && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200/90 flex items-start gap-3.5 shadow-2xs">
-                <div className="w-9 h-9 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center shrink-0 shadow-sm text-sm">
-                  ↩️
-                </div>
-                <div className="text-xs space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-black text-slate-900">Reverse Logistics (Customer Return) Active</h4>
-                    <span className="text-[10px] font-extrabold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full border border-blue-200/80">
-                      Doorstep QC Included
-                    </span>
-                  </div>
-                  <p className="text-slate-600 text-[11px] leading-relaxed">
-                    Courier executive will visit customer's doorstep, physically verify product condition, seal inside a tamper-evident flyer, and deliver back to your seller hub. Reverse freight is debited from your seller wallet balance.
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Mandatory Phone Verification Before First Shipment Card — hidden once verified */}
             {!phoneVerified && (
               <div className="p-6 rounded-3xl bg-gradient-to-r from-blue-50 to-indigo-50/70 border border-blue-200/90 space-y-4 shadow-2xs">

@@ -625,16 +625,6 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               </button>
             </div>
 
-            {shipmentType === 'reverse' && (
-              <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 flex items-start gap-2.5 text-xs text-blue-900 mb-2">
-                <span className="text-sm">↩️</span>
-                <div>
-                  <strong className="block font-bold">Reverse Logistics (Customer Return) Active</strong>
-                  <span className="text-[11px] text-blue-700">Courier executive will collect the parcel from customer doorstep with Doorstep QC verification and return to your seller hub.</span>
-                </div>
-              </div>
-            )}
-
             <form onSubmit={handleProceedToCouriers} className="space-y-3.5">
               <div className="grid grid-cols-2 gap-3.5">
                 <div>
