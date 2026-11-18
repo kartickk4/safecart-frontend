@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   ShieldCheck, CheckCircle2, ArrowRight, Download, Copy, Printer, Package, 
-  Truck, ArrowLeft, Building, AlertTriangle, ExternalLink, Link as LinkIcon, 
+  Truck, ArrowLeft, Building, AlertTriangle, AlertCircle, ExternalLink, Link as LinkIcon, 
   Check, RotateCcw, MessageSquare, Camera, Sparkles, Bot, MapPin, Edit3, 
   Phone, Send, RefreshCw, Wallet, CreditCard, QrCode, Landmark, Lock, X,
   Star, ChevronRight, ChevronDown, ChevronUp, Zap, Award, Clock, Search, SlidersHorizontal, TrendingDown, Plane, Layers,

@@ -323,7 +323,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
       const updatedPhone = res.data?.phone || newPhoneInput;
       setPhone(updatedPhone);
       setNewPhone(updatedPhone);
-      setIsPhoneVerifiedState(true);
+      // isPhoneVerified is updated on user object below
       if (user) {
         user.phone = updatedPhone;
         user.isPhoneVerified = true;

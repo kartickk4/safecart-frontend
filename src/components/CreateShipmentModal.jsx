@@ -355,16 +355,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     const totalRequired = totalShippingCharge + requiredReserve;
 
     // If COD and merchant selected to deduct shipping charges from COD settlement:
-    if (isCod && codSettlementOption === 'deduct_from_cod') {
-      // Zero upfront payment required — skip checkout modal
-      await executeBooking({
-        deductFromSettlement: true
-      });
-      return;
-    }
+    const isDeductFromSettlement = isCod && codSettlementOption === 'deduct_from_cod';
 
     // Check if seller has sufficient balance before creating
-    if (!overrideParams?.paidUpfront && currentWallet < totalRequired) {
+    if (!isDeductFromSettlement && !overrideParams?.paidUpfront && currentWallet < totalRequired) {
       setCheckoutModalData({
         amount: totalShippingCharge,
         routeFrom: senderPincode || 'Origin',
