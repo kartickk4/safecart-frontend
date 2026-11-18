@@ -272,9 +272,9 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
 
                 {/* Line 3: Route & Carrier */}
                 <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-                  <span className="truncate">{item.city || 'Domestic Delivery'}</span>
+                  <span className="truncate">{item.city || 'Domestic'}</span>
                   <span className="text-slate-700 font-bold shrink-0 ml-2">
-                    {formatCarrierName(item.carrierSlug || item.carrierPartner || item.pickupCarrier)}
+                    {formatCarrierName(item.carrierName || item.carrierPartner || item.carrierSlug || item.pickupCarrier)}
                   </span>
                 </div>
 
@@ -381,7 +381,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
                       {item.city}
                     </td>
                     <td className="py-3.5 px-4 text-slate-700 font-bold">
-                      {formatCarrierName(item.carrierSlug || item.carrierPartner || item.pickupCarrier)}
+                      {formatCarrierName(item.carrierName || item.carrierPartner || item.carrierSlug || item.pickupCarrier)}
                     </td>
                     <td className="py-3.5 px-4 font-bold text-slate-900">
                       ₹{item.amount ? Number(item.amount).toLocaleString('en-IN') : '3,420'}

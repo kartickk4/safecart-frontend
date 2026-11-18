@@ -1278,9 +1278,9 @@ export default function DashboardView({
                     </div>
 
                     <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-200/50 gap-2">
-                      <span className="truncate flex-1 min-w-0">{item.city || 'Domestic Delivery'}</span>
+                      <span className="truncate flex-1 min-w-0">{item.city || 'Domestic'}</span>
                       <span className="text-slate-700 font-bold shrink-0">
-                        {formatCarrierName(item.carrierSlug)}
+                        {formatCarrierName(item.carrierName || item.carrierPartner || item.carrierSlug || item.pickupCarrier)}
                       </span>
                     </div>
                   </div>
@@ -1324,7 +1324,7 @@ export default function DashboardView({
                           {item.city || 'Domestic'}
                         </td>
                         <td className="py-3 px-3 text-slate-700 font-semibold">
-                          {formatCarrierName(item.carrierSlug)}
+                          {formatCarrierName(item.carrierName || item.carrierPartner || item.carrierSlug || item.pickupCarrier)}
                         </td>
                         <td className="py-3 px-3 font-black text-slate-900">
                           ₹{item.amount ? Number(item.amount).toLocaleString('en-IN') : '0'}

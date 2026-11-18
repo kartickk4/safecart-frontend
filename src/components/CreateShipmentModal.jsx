@@ -62,7 +62,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   const [amount, setAmount] = useState('');
   const [cityRoute, setCityRoute] = useState('');
   const [fundImmediately, setFundImmediately] = useState(true);
-  const [paymentMode, setPaymentMode] = useState('prepaid'); // 'prepaid' (PhonePe) | 'cod'
+  const [paymentMode, setPaymentMode] = useState('prepaid');
+  const [codSettlementOption, setCodSettlementOption] = useState('deduct_from_cod'); // 'deduct_from_cod' | 'pay_upfront' // 'prepaid' (PhonePe) | 'cod'
   const [shipmentType, setShipmentType] = useState('forward'); // 'forward' | 'reverse'
   const [returnAllowed, setReturnAllowed] = useState(true);
   const [photoReviewEnabled, setPhotoReviewEnabled] = useState(false);
@@ -353,6 +354,15 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     const requiredReserve = Math.min(1000, (activeCount + 1) * 100);
     const totalRequired = totalShippingCharge + requiredReserve;
 
+    // If COD and merchant selected to deduct shipping charges from COD settlement:
+    if (isCod && codSettlementOption === 'deduct_from_cod') {
+      // Zero upfront payment required — skip checkout modal
+      await executeBooking({
+        deductFromSettlement: true
+      });
+      return;
+    }
+
     // Check if seller has sufficient balance before creating
     if (!overrideParams?.paidUpfront && currentWallet < totalRequired) {
       setCheckoutModalData({
@@ -390,6 +400,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         paymentMode: shipmentType === 'reverse' ? 'prepaid' : paymentMode,
         isPrepaid: shipmentType === 'reverse' ? true : !isCod,
         codCharge: shipmentType === 'reverse' ? 0 : (isCod ? (selectedQuote.codCharge || 52) : 0),
+        deductFromSettlement: isCod && codSettlementOption === 'deduct_from_cod',
+        codFeePaymentMethod: isCod && codSettlementOption === 'deduct_from_cod' ? 'deduct_from_cod' : undefined,
         fundEscrow: false,
         returnAllowed: shipmentType === 'reverse' ? false : returnAllowed,
         photoReviewEnabled: shipmentType === 'reverse' ? false : Boolean(photoReviewEnabled),
@@ -853,6 +865,41 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       <span className="text-[10px] text-slate-500 font-normal">Courier collects cash</span>
                     </button>
                   </div>
+
+                  {paymentMode === 'cod' && (
+                    <div className="mt-2.5 p-3 rounded-xl bg-amber-50/90 border border-amber-200 text-xs space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-[11px] text-slate-900">COD Shipping Fee Settlement</span>
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          {codSettlementOption === 'deduct_from_cod' ? '₹0 Upfront' : 'Prepaid'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div
+                          onClick={() => setCodSettlementOption('deduct_from_cod')}
+                          className={`p-2.5 rounded-xl border text-left text-[11px] transition-all cursor-pointer select-none ${
+                            codSettlementOption === 'deduct_from_cod'
+                              ? 'bg-white border-amber-500 shadow-2xs ring-1 ring-amber-500 font-bold'
+                              : 'bg-white/70 border-slate-200 hover:bg-white text-slate-600'
+                          }`}
+                        >
+                          <div className="font-black text-amber-900">Deduct from Cash</div>
+                          <div className="text-[10px] text-slate-500 font-normal mt-0.5">₹0 upfront. Deducted from buyer collection.</div>
+                        </div>
+                        <div
+                          onClick={() => setCodSettlementOption('pay_upfront')}
+                          className={`p-2.5 rounded-xl border text-left text-[11px] transition-all cursor-pointer select-none ${
+                            codSettlementOption === 'pay_upfront'
+                              ? 'bg-white border-amber-500 shadow-2xs ring-1 ring-amber-500 font-bold'
+                              : 'bg-white/70 border-slate-200 hover:bg-white text-slate-600'
+                          }`}
+                        >
+                          <div className="font-black text-slate-900">Pay Upfront</div>
+                          <div className="text-[10px] text-slate-500 font-normal mt-0.5">Pay via Wallet/UPI now.</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

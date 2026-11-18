@@ -193,7 +193,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     return list;
   }, [carrierQuotes, carrierTab, carrierSearch, carrierSort, onlyCloseToWeight, parcelWeight]);
 
-  const [paymentMode, setPaymentMode] = useState('prepaid'); // 'prepaid' (Paid in Advance) | 'cod' (Cash on Delivery)
+  const [paymentMode, setPaymentMode] = useState('prepaid');
+  const [codSettlementOption, setCodSettlementOption] = useState('deduct_from_cod'); // 'deduct_from_cod' (₹0 upfront) | 'pay_upfront' // 'prepaid' (Paid in Advance) | 'cod' (Cash on Delivery)
   const [returnAllowed, setReturnAllowed] = useState(true);
   const isNonEcommerce = user?.platformType !== 'ecommerce';
   const [photoReviewEnabled, setPhotoReviewEnabled] = useState(false);
@@ -533,6 +534,16 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       shortfall: Math.max(0, totalRequired - currentWallet)
     }));
 
+    // If COD and merchant selected to deduct shipping charges from COD settlement:
+    if (isCod && codSettlementOption === 'deduct_from_cod') {
+      await executeBooking({
+        carrierSlug: quote.slug,
+        deliveryCharge: quote.price,
+        deductFromSettlement: true
+      });
+      return;
+    }
+
     // If seller wallet does NOT have sufficient balance (fee + security reserve):
     // Show official PhonePe "Make Payment" checkout screen
     if (currentWallet < totalRequired) {
@@ -593,6 +604,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         fundEscrow: false,
         paymentMode: shipmentType === 'reverse' ? 'prepaid' : paymentMode,
         isPrepaid: shipmentType === 'reverse' ? true : paymentMode === 'prepaid',
+        deductFromSettlement: paymentMode === 'cod' && codSettlementOption === 'deduct_from_cod',
+        codFeePaymentMethod: paymentMode === 'cod' && codSettlementOption === 'deduct_from_cod' ? 'deduct_from_cod' : undefined,
         returnAllowed: shipmentType === 'reverse' ? false : returnAllowed,
         photoReviewEnabled: shipmentType === 'reverse' ? false : Boolean(photoReviewEnabled),
         rtoProtectionEnabled: shipmentType === 'reverse' ? false : Boolean(rtoProtectionEnabled),
@@ -1653,6 +1666,78 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         )}
                       </button>
                     </div>
+
+                    {/* COD SHIPPING CHARGE SETTLEMENT SELECTOR */}
+                    {paymentMode === 'cod' && (
+                      <div className="mt-3 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-50/90 to-orange-50/70 border border-amber-200/90 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                            <h4 className="text-xs font-black text-slate-900 uppercase tracking-tight">
+                              How would you like to pay shipping charges?
+                            </h4>
+                          </div>
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                            COD Settlement
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {/* Option 1: Deduct from Settlement (Recommended - ₹0 upfront) */}
+                          <div
+                            onClick={() => setCodSettlementOption('deduct_from_cod')}
+                            className={`p-3 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-2.5 ${
+                              codSettlementOption === 'deduct_from_cod'
+                                ? 'bg-white border-amber-500 shadow-xs ring-2 ring-amber-500/20'
+                                : 'bg-white/70 border-slate-200/90 hover:bg-white hover:border-slate-300'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="codSettlementOption"
+                              checked={codSettlementOption === 'deduct_from_cod'}
+                              onChange={() => setCodSettlementOption('deduct_from_cod')}
+                              className="mt-0.5 text-amber-600 focus:ring-amber-500 cursor-pointer"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-xs font-black text-slate-900">Deduct from Settlement</span>
+                                <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                  ₹0 Upfront
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-slate-600 mt-1 leading-snug">
+                                Shipping &amp; COD fees are deducted from the buyer's cash upon delivery. No payment needed now.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Option 2: Pay Upfront Now */}
+                          <div
+                            onClick={() => setCodSettlementOption('pay_upfront')}
+                            className={`p-3 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-2.5 ${
+                              codSettlementOption === 'pay_upfront'
+                                ? 'bg-white border-amber-500 shadow-xs ring-2 ring-amber-500/20'
+                                : 'bg-white/70 border-slate-200/90 hover:bg-white hover:border-slate-300'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="codSettlementOption"
+                              checked={codSettlementOption === 'pay_upfront'}
+                              onChange={() => setCodSettlementOption('pay_upfront')}
+                              className="mt-0.5 text-amber-600 focus:ring-amber-500 cursor-pointer"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <span className="text-xs font-black text-slate-900">Pay Upfront (Wallet / UPI)</span>
+                              <p className="text-[10px] text-slate-600 mt-1 leading-snug">
+                                Pay courier charges now. Full order cash ({amount ? `₹${Number(amount).toLocaleString('en-IN')}` : 'COD cash'}) will be remitted to you upon delivery.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
