@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import TaxStatementModal from '../components/TaxStatementModal';
+import BulkUploadPanel from '../components/BulkUploadPanel';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -47,7 +48,8 @@ export default function DashboardView({
   onSelectShipment, 
   openNewShipmentModal, 
   onNavigateRefer, 
-  onNavigateRateCalc 
+  onNavigateRateCalc,
+  onNavigateTab
 }) {
   const activeRole = currentRole || user?.activeRole || user?.role || localStorage.getItem('securekaro_active_role') || 'Supplier';
 
@@ -75,6 +77,7 @@ export default function DashboardView({
   const [chartTimeframe, setChartTimeframe] = useState('30d');
   const [currentPage, setCurrentPage] = useState(1);
   const [isTaxModalOpen, setIsTaxModalOpen] = useState(false);
+  const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const [activeAnalysisTab, setActiveAnalysisTab] = useState('revenue');
 
   const [showActionModal, setShowActionModal] = useState(false);
@@ -917,7 +920,7 @@ export default function DashboardView({
           {/* Spoke 4: Bulk CSV/Excel */}
           <button
             type="button"
-            onClick={() => onNavigateTab ? onNavigateTab('create-shipment') : openNewShipmentModal?.()}
+            onClick={() => setShowBulkUploadModal(true)}
             className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-teal-50/70 to-emerald-50/50 hover:to-emerald-100/70 border border-teal-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-4"
           >
             <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
@@ -1430,6 +1433,26 @@ export default function DashboardView({
         onClose={() => setIsTaxModalOpen(false)}
         shipments={shipments}
       />
+
+      {/* BULK UPLOAD EXCEL/CSV MANIFEST MODAL */}
+      {showBulkUploadModal && (
+        <div 
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowBulkUploadModal(false);
+          }}
+        >
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col relative border border-slate-200">
+            <BulkUploadPanel
+              onClose={() => setShowBulkUploadModal(false)}
+              onUpload={() => {
+                setShowBulkUploadModal(false);
+                fetchData(true);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
