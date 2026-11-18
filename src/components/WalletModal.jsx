@@ -1492,34 +1492,39 @@ export default function WalletModal({ user, onUpdateUser }) {
       {/* WITHDRAW CASH REWARD / YIELD MODAL */}
       {showWithdrawModal && typeof document !== 'undefined' && createPortal(
         <div 
-          className="fixed inset-0 z-[100] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 select-none animate-in fade-in duration-200"
+          className="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 select-none animate-in fade-in duration-200"
           onClick={() => setShowWithdrawModal(false)}
         >
           <div 
-            className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col border border-slate-100 shadow-2xl animate-in zoom-in-95 duration-200 relative overflow-hidden"
+            className="bg-white rounded-t-[28px] sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88vh] flex flex-col border border-slate-100 shadow-2xl animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 relative overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="p-5 md:p-6 pb-4 border-b border-slate-100 relative shrink-0 flex items-start justify-between gap-3 bg-white">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-blue-50 text-[#1E56E3] border border-blue-100/80 flex items-center justify-center font-bold shadow-xs shrink-0">
-                  <Wallet className="w-5 h-5" />
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-500/25 shrink-0">
+                  <ArrowUpRight className="w-5 h-5 stroke-[2.5]" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">
-                    {isSupplier ? 'Withdraw Cleared Payout Balance' : 'Withdraw Order Balance'}
-                  </h3>
-                  <p className="text-xs text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-black text-slate-900 text-base sm:text-lg tracking-tight">
+                      {isSupplier ? 'Withdraw Payout Balance' : 'Withdraw Wallet Balance'}
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Instant 24×7
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5 font-medium">
                     {isSupplier 
-                      ? 'Transfer your cleared seller wallet payouts directly to UPI or Bank.' 
-                      : 'Transfer your order balance directly to UPI or Bank.'}
+                      ? 'Transfer cleared seller payouts directly to UPI or Bank' 
+                      : 'Transfer your cleared balance directly to UPI or Bank'}
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowWithdrawModal(false)}
-                className="p-2 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition shrink-0 cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition flex items-center justify-center shrink-0 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1528,50 +1533,67 @@ export default function WalletModal({ user, onUpdateUser }) {
             {/* Scrollable Form Body */}
             <form id="withdraw-form" onSubmit={handleWithdrawSubmit} className="p-5 md:p-6 overflow-y-auto flex-1 space-y-4">
               {withdrawSuccess && (
-                <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-950 text-xs font-extrabold flex items-center gap-2.5 animate-in fade-in duration-200">
-                  <CheckCircle2 className="w-5 h-5 text-[#1E56E3] shrink-0" />
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs font-extrabold flex items-center gap-2.5 animate-in fade-in duration-200 shadow-xs">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                   <span>{withdrawSuccess}</span>
                 </div>
               )}
 
               {withdrawError && (
-                <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2.5 animate-in fade-in duration-200">
+                <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2.5 animate-in fade-in duration-200 shadow-xs">
                   <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
                   <span>{withdrawError}</span>
                 </div>
               )}
 
-              {/* Available Balance Box */}
-              <div className="bg-gradient-to-r from-[#1E3A6E] to-[#1E56E3] text-white p-5 rounded-2xl flex items-center justify-between border border-blue-600/30 shadow-lg shadow-blue-900/20">
-                <div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-blue-200 block">
-                    {isSupplier ? 'Available Withdrawable Balance' : 'Available Order Balance'}
+              {/* Premium Hero Balance Card */}
+              <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-white p-5 rounded-2xl border border-white/10 shadow-xl shadow-indigo-950/30 relative overflow-hidden space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                    <span>Available Withdrawable Balance</span>
                   </span>
-                  <span className="text-2xl md:text-3xl font-black text-white font-mono tracking-tight">₹{displayWithdrawable.toLocaleString('en-IN')}</span>
+                  <button
+                    type="button"
+                    onClick={() => setWithdrawAmount(displayWithdrawable.toString())}
+                    className="px-3 py-1 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white font-extrabold text-[11px] transition shadow-xs border border-white/20 backdrop-blur-md cursor-pointer"
+                  >
+                    Withdraw All
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setWithdrawAmount(displayWithdrawable.toString())}
-                  className="px-3.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-extrabold text-xs transition shadow-sm backdrop-blur-sm cursor-pointer"
-                >
-                  Withdraw All
-                </button>
+                
+                <div className="text-3xl md:text-4xl font-black text-white font-mono tracking-tight flex items-baseline gap-1">
+                  <span className="text-2xl text-indigo-300 font-sans font-bold">₹</span>
+                  <span>{Number(displayWithdrawable).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[11px] text-indigo-200/80 font-medium">
+                  <span className="flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Instant Disbursal (IMPS / UPI)</span>
+                  </span>
+                  {isSupplier && securityReserve > 0 && (
+                    <span className="text-[10px] text-amber-300/90 font-semibold">
+                      ₹{securityReserve.toLocaleString('en-IN')} reserve held
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Pending Balance Notice */}
               {isSupplier && displayPendingConfirmation > 0 && (
-                <div className="p-3.5 rounded-2xl bg-teal-50 border border-teal-200/80 text-teal-950 text-xs font-semibold flex items-center gap-2.5">
+                <div className="p-3.5 rounded-2xl bg-teal-50/90 border border-teal-200/80 text-teal-950 text-xs font-semibold flex items-center gap-2.5">
                   <Clock className="w-4 h-4 text-teal-700 shrink-0" />
                   <span>
-                    <strong>₹{displayPendingConfirmation.toLocaleString('en-IN')}</strong> is currently held in your Pending Balance and unlocks automatically once the 24-hour window closes.
+                    <strong>₹{displayPendingConfirmation.toLocaleString('en-IN')}</strong> is in 24h post-delivery clearance and unlocks automatically once the window closes.
                   </span>
                 </div>
               )}
 
-              {/* Method Selector */}
+              {/* Destination Selector */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">Select Withdrawal Destination</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2.5">
                   <button
                     type="button"
                     onClick={() => {
@@ -1579,21 +1601,26 @@ export default function WalletModal({ user, onUpdateUser }) {
                       setUseCustomDestination(false);
                       if (hasSavedUpi) setWithdrawUpiId(savedUpi);
                     }}
-                    className={`p-3.5 rounded-2xl border flex items-center justify-center gap-2 text-xs transition cursor-pointer ${
+                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer relative ${
                       withdrawMethod === 'UPI'
-                        ? 'border-[#1E56E3] bg-blue-50/70 text-[#1E56E3] font-bold ring-2 ring-blue-500/20 shadow-xs'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50 font-medium'
+                        ? 'border-blue-600 bg-blue-50/80 text-blue-950 ring-2 ring-blue-500/20 shadow-xs'
+                        : 'border-slate-200/90 bg-white hover:bg-slate-50 text-slate-600'
                     }`}
                   >
-                    <QrCode className="w-4 h-4 text-[#1E56E3]" />
-                    <span className="flex items-center gap-1.5">
-                      <span>Instant UPI ID</span>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                        withdrawMethod === 'UPI' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        <QrCode className="w-4 h-4" />
+                      </div>
                       {hasSavedUpi && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-200">
                           Saved ✓
                         </span>
                       )}
-                    </span>
+                    </div>
+                    <div className="font-extrabold text-xs text-slate-900">Instant UPI ID</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5 font-medium">GPay, PhonePe, Paytm</div>
                   </button>
 
                   <button
@@ -1608,133 +1635,137 @@ export default function WalletModal({ user, onUpdateUser }) {
                         setWithdrawBankName(savedBankName);
                       }
                     }}
-                    className={`p-3.5 rounded-2xl border flex items-center justify-center gap-2 text-xs transition cursor-pointer ${
+                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer relative ${
                       withdrawMethod === 'BANK'
-                        ? 'border-[#1E56E3] bg-blue-50/70 text-[#1E56E3] font-bold ring-2 ring-blue-500/20 shadow-xs'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50 font-medium'
+                        ? 'border-blue-600 bg-blue-50/80 text-blue-950 ring-2 ring-blue-500/20 shadow-xs'
+                        : 'border-slate-200/90 bg-white hover:bg-slate-50 text-slate-600'
                     }`}
                   >
-                    <Building className="w-4 h-4 text-[#1E56E3]" />
-                    <span className="flex items-center gap-1.5">
-                      <span>Bank Transfer (IMPS)</span>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                        withdrawMethod === 'BANK' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        <Building className="w-4 h-4" />
+                      </div>
                       {hasSavedBank && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-200">
                           Saved ✓
                         </span>
                       )}
-                    </span>
+                    </div>
+                    <div className="font-extrabold text-xs text-slate-900">Bank Transfer</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5 font-medium">24×7 Direct IMPS</div>
                   </button>
                 </div>
               </div>
 
               {/* Amount Input */}
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold text-slate-700">Enter Amount (₹)</label>
-                  {withdrawAmount && (
-                    <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
-                      validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid
-                        ? 'text-emerald-600'
-                        : 'text-rose-500'
-                    }`}>
-                      {validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid ? (
-                        <>
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                          <span>Valid Amount ✓</span>
-                        </>
-                      ) : (
-                        <span>Invalid</span>
-                      )}
-                    </span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-slate-700">Enter Amount</label>
+                  <div className="flex items-center gap-1.5 text-[11px]">
+                    <span className="text-slate-400">Available:</span>
+                    <button
+                      type="button"
+                      onClick={() => setWithdrawAmount(displayWithdrawable.toString())}
+                      className="font-extrabold text-emerald-600 hover:text-emerald-700 font-mono cursor-pointer"
+                    >
+                      ₹{Number(displayWithdrawable).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="relative flex items-center">
+                  <span className="absolute left-4 text-xl font-black text-slate-400 select-none pointer-events-none">₹</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max={displayWithdrawable}
+                    step="any"
+                    required
+                    value={withdrawAmount}
+                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                    placeholder="0.00"
+                    className={`w-full pl-9 pr-20 py-3.5 border rounded-2xl text-xl font-black text-slate-900 font-mono transition outline-none ${
+                      withdrawAmount && validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid
+                        ? 'bg-emerald-50/20 border-emerald-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                        : withdrawAmount && !validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid
+                        ? 'bg-rose-50/30 border-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
+                        : 'bg-slate-50/80 border-slate-200 focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setWithdrawAmount(displayWithdrawable.toString())}
+                    className="absolute right-3 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1E56E3] font-black text-xs transition cursor-pointer"
+                  >
+                    MAX
+                  </button>
+                </div>
+
+                {/* Quick amount chips */}
+                <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mr-1">Quick:</span>
+                  {[50, 100, 200, 500, 1000].filter(amt => amt <= displayWithdrawable).map(amt => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setWithdrawAmount(amt.toString())}
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-mono font-bold transition cursor-pointer"
+                    >
+                      ₹{amt}
+                    </button>
+                  ))}
+                  {displayWithdrawable > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setWithdrawAmount(displayWithdrawable.toString())}
+                      className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1E56E3] border border-blue-200/80 text-[11px] font-mono font-bold transition cursor-pointer"
+                    >
+                      All (₹{Math.floor(displayWithdrawable)})
+                    </button>
                   )}
                 </div>
-                <input
-                  type="number"
-                  min="1"
-                  max={displayWithdrawable}
-                  required
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  placeholder="e.g. 5"
-                  className={`w-full px-4 py-3 border rounded-xl text-sm font-bold text-slate-900 transition outline-none ${
-                    withdrawAmount && validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid
-                      ? 'bg-emerald-50/20 border-emerald-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
-                      : withdrawAmount && !validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid
-                      ? 'bg-rose-50/30 border-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
-                      : 'bg-slate-50/80 border-slate-200 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10'
-                  }`}
-                />
+
                 {withdrawAmount && !validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid && (
-                  <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3 shrink-0" />
+                  <p className="text-[11px] text-rose-600 font-bold mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                     <span>{validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).error}</span>
                   </p>
                 )}
-                <div className="flex items-center justify-between mt-1.5 text-[11px]">
-                  <span className="text-slate-500 font-medium">Available to Withdraw:</span>
-                  <span className="font-extrabold text-emerald-600 font-mono">₹{displayWithdrawable.toLocaleString('en-IN')}</span>
-                </div>
+
                 {isSupplier && securityReserve > 0 && (
-                  <p className="mt-1.5 text-[10px] text-amber-700 bg-amber-50 border border-amber-200/80 rounded-lg p-2 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-amber-500" />
-                    <span>₹{securityReserve} is retained as security reserve for {activeShipmentsCount} active parcel{activeShipmentsCount === 1 ? '' : 's'} (₹100/shipment, max ₹1,000).</span>
-                  </p>
+                  <div className="mt-2.5 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/70 text-amber-900 text-[11px] flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span className="leading-snug">
+                      <strong>₹{securityReserve.toLocaleString('en-IN')}</strong> security reserve retained for {activeShipmentsCount} active parcel{activeShipmentsCount === 1 ? '' : 's'} (₹100/shipment, max ₹1,000).
+                    </span>
+                  </div>
                 )}
               </div>
-
-              {/* Live Fee Preview */}
-              {withdrawAmount && Number(withdrawAmount) > 0 && (() => {
-                const amt = Number(withdrawAmount);
-                const fee = isSupplier ? (amt < 2000 ? 2 : 0) : (amt < 100 ? 3 : 0);
-                const net = parseFloat((amt - fee).toFixed(2));
-                return (
-                  <div className={`rounded-xl border p-3 text-xs flex items-center justify-between gap-3 ${fee > 0 ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'}`}>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-slate-700">
-                        <span className="font-medium">Amount Requested:</span>
-                        <span className="font-extrabold">₹{amt.toLocaleString('en-IN')}</span>
-                      </div>
-                      {fee > 0 && (
-                        <div className="flex items-center gap-2 text-amber-700">
-                          <span className="font-medium">Processing Fee:</span>
-                          <span className="font-extrabold">− ₹{fee}</span>
-                          <span className="text-[10px] text-amber-500">
-                            ({isSupplier ? 'withdraw < ₹2,000' : 'withdraw < ₹100'})
-                          </span>
-                        </div>
-                      )}
-                      <div className={`flex items-center gap-2 font-extrabold ${fee > 0 ? 'text-amber-800' : 'text-emerald-700'}`}>
-                        <span>You Receive:</span>
-                        <span className="text-base">₹{net.toLocaleString('en-IN')}</span>
-                        {fee === 0 && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">No Fee ✓</span>}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
 
               {/* Dynamic Destination Form */}
               {withdrawMethod === 'UPI' ? (
                 hasSavedUpi && !useCustomDestination ? (
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-blue-50/60 border border-emerald-200/90 shadow-xs space-y-2.5">
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-blue-50/60 border border-emerald-200/80 shadow-xs space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                        <span>Registered UPI Payout (Auto-Filled)</span>
+                        <span>Registered UPI ID (Auto-Filled)</span>
                       </span>
                       <button
                         type="button"
                         onClick={() => setUseCustomDestination(true)}
                         className="text-[11px] font-bold text-[#1E56E3] hover:underline cursor-pointer"
                       >
-                        Change / Use Different UPI
+                        Change UPI
                       </button>
                     </div>
 
                     <div className="flex items-center justify-between bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
-                      <div>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">UPI ID / VPA</span>
-                        <span className="text-sm font-black font-mono text-slate-900 block mt-0.5">{withdrawUpiId || savedUpi}</span>
+                      <div className="min-w-0 pr-2">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">UPI VPA</span>
+                        <span className="text-sm font-black font-mono text-slate-900 block mt-0.5 truncate">{withdrawUpiId || savedUpi}</span>
                       </div>
                       <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold flex items-center gap-1 shrink-0">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -1749,7 +1780,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                   </div>
                 ) : (
                   <div>
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between mb-1.5">
                       <label className="block text-xs font-bold text-slate-700">UPI VPA / ID</label>
                       {hasSavedUpi && (
                         <button
@@ -1760,14 +1791,14 @@ export default function WalletModal({ user, onUpdateUser }) {
                           }}
                           className="text-[11px] font-bold text-[#1E56E3] hover:underline cursor-pointer"
                         >
-                          ← Revert to Saved UPI ({savedUpi})
+                          ← Use Saved UPI ({savedUpi})
                         </button>
                       )}
                     </div>
                     <input
                       type="text"
                       required
-                      placeholder="user@upi or 9876543210@paytm"
+                      placeholder="e.g. yourname@okaxis or 9876543210@paytm"
                       value={withdrawUpiId}
                       onChange={(e) => setWithdrawUpiId(e.target.value.trim())}
                       className={`w-full px-4 py-3 border rounded-xl text-xs font-mono font-bold text-slate-900 transition outline-none ${
@@ -1795,7 +1826,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                     )}
                     {/* Quick UPI Handle suggestions */}
                     <div className="flex gap-2 mt-2">
-                      {['@okaxis', '@okicici', '@paytm', '@ybl'].map(handle => (
+                      {['@okaxis', '@okicici', '@paytm', '@ybl', '@ibl'].map(handle => (
                         <button
                           key={handle}
                           type="button"
@@ -1814,7 +1845,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 )
               ) : (
                 hasSavedBank && !useCustomDestination ? (
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-blue-50/60 border border-emerald-200/90 shadow-xs space-y-2.5">
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-blue-50/60 border border-emerald-200/90 shadow-xs space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
@@ -1825,7 +1856,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                         onClick={() => setUseCustomDestination(true)}
                         className="text-[11px] font-bold text-[#1E56E3] hover:underline cursor-pointer"
                       >
-                        Change / Use Different Bank
+                        Change Bank
                       </button>
                     </div>
 
@@ -1871,119 +1902,146 @@ export default function WalletModal({ user, onUpdateUser }) {
                           }}
                           className="text-[11px] font-bold text-[#1E56E3] hover:underline cursor-pointer"
                         >
-                          ← Revert to Saved Bank Details
+                          ← Use Saved Bank
                         </button>
                       )}
                     </div>
+
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Account Holder Name</label>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Account Holder Name *</label>
                       <input
                         type="text"
                         required
                         value={withdrawAccountHolder}
                         onChange={(e) => setWithdrawAccountHolder(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
+                        placeholder="e.g. Rahul Sharma"
+                        className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 outline-none transition"
                       />
                     </div>
+
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-xs font-bold text-slate-700">Account Number</label>
-                          {withdrawAccountNumber && (
-                            <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
-                              validateBankAcc(withdrawAccountNumber).isValid ? 'text-emerald-600' : 'text-slate-400'
-                            }`}>
-                              {validateBankAcc(withdrawAccountNumber).isValid ? (
-                                <>
-                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                  <span>Valid ✓</span>
-                                </>
-                              ) : (
-                                <span>{sanitizeBankAcc(withdrawAccountNumber).length}/9-18</span>
-                              )}
-                            </span>
-                          )}
-                        </div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">Bank Name</label>
                         <input
                           type="text"
-                          required
-                          maxLength={18}
-                          value={withdrawAccountNumber}
-                          onChange={(e) => setWithdrawAccountNumber(sanitizeBankAcc(e.target.value))}
-                          placeholder="9 to 18 digits"
-                          className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-mono font-bold text-slate-900 transition outline-none ${
-                            withdrawAccountNumber && validateBankAcc(withdrawAccountNumber).isValid
-                              ? 'bg-emerald-50/20 border-emerald-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
-                              : withdrawAccountNumber && !validateBankAcc(withdrawAccountNumber).isValid
-                              ? 'bg-rose-50/30 border-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
-                              : 'bg-slate-50/80 border-slate-200 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10'
-                          }`}
+                          value={withdrawBankName}
+                          onChange={(e) => setWithdrawBankName(e.target.value)}
+                          placeholder="e.g. HDFC Bank"
+                          className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 outline-none transition"
                         />
                       </div>
                       <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-xs font-bold text-slate-700">IFSC Code</label>
-                          {withdrawIfsc && (
-                            <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
-                              validateIfsc(withdrawIfsc).isValid ? 'text-emerald-600' : 'text-slate-400'
-                            }`}>
-                              {validateIfsc(withdrawIfsc).isValid ? (
-                                <>
-                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                  <span>Valid IFSC ✓</span>
-                                </>
-                              ) : (
-                                <span>{sanitizeIfsc(withdrawIfsc).length}/11</span>
-                              )}
-                            </span>
-                          )}
-                        </div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">Account Number *</label>
                         <input
                           type="text"
                           required
-                          maxLength={11}
-                          value={withdrawIfsc}
-                          onChange={(e) => setWithdrawIfsc(sanitizeIfsc(e.target.value))}
-                          placeholder="e.g. HDFC0001234"
-                          className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-mono font-bold text-slate-900 transition outline-none uppercase ${
-                            withdrawIfsc && validateIfsc(withdrawIfsc).isValid
-                              ? 'bg-emerald-50/20 border-emerald-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
-                              : withdrawIfsc && sanitizeIfsc(withdrawIfsc).length === 11 && !validateIfsc(withdrawIfsc).isValid
-                              ? 'bg-rose-50/30 border-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
-                              : 'bg-slate-50/80 border-slate-200 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10'
-                          }`}
+                          value={withdrawAccountNumber}
+                          onChange={(e) => setWithdrawAccountNumber(sanitizeBankAcc(e.target.value))}
+                          placeholder="e.g. 50100234567890"
+                          className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 outline-none transition"
                         />
                       </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[11px] font-bold text-slate-600">IFSC Code *</label>
+                        {withdrawIfsc && (
+                          <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                            validateIfsc(withdrawIfsc).isValid ? 'text-emerald-600' : 'text-slate-400'
+                          }`}>
+                            {validateIfsc(withdrawIfsc).isValid ? (
+                              <>
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                <span>Valid IFSC ✓</span>
+                              </>
+                            ) : (
+                              <span>{sanitizeIfsc(withdrawIfsc).length}/11</span>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        maxLength={11}
+                        value={withdrawIfsc}
+                        onChange={(e) => setWithdrawIfsc(sanitizeIfsc(e.target.value))}
+                        placeholder="e.g. HDFC0001234"
+                        className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-mono font-bold text-slate-900 transition outline-none uppercase ${
+                          withdrawIfsc && validateIfsc(withdrawIfsc).isValid
+                            ? 'bg-emerald-50/20 border-emerald-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                            : withdrawIfsc && sanitizeIfsc(withdrawIfsc).length === 11 && !validateIfsc(withdrawIfsc).isValid
+                            ? 'bg-rose-50/30 border-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
+                            : 'bg-slate-50/80 border-slate-200 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10'
+                        }`}
+                      />
                     </div>
                   </div>
                 )
               )}
+
+              {/* Clean Receipt Breakdown */}
+              {withdrawAmount && Number(withdrawAmount) > 0 && (() => {
+                const amt = Number(withdrawAmount);
+                const fee = isSupplier ? (amt < 2000 ? 2 : 0) : (amt < 100 ? 3 : 0);
+                const net = parseFloat(Math.max(0, amt - fee).toFixed(2));
+                return (
+                  <div className="p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-2 text-xs">
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Withdrawal Requested</span>
+                      <span className="font-mono font-bold text-slate-900">₹{amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Processing Gateway Fee</span>
+                      <span className={fee > 0 ? "font-mono font-bold text-amber-700" : "font-mono font-bold text-emerald-600"}>
+                        {fee > 0 ? `− ₹${fee.toFixed(2)}` : 'FREE (₹0.00)'}
+                      </span>
+                    </div>
+                    <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-sm font-black">
+                      <span className="text-slate-900">Net Disbursal to Account</span>
+                      <span className="font-mono text-emerald-600 text-base">₹{net.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                );
+              })()}
             </form>
 
             {/* Pinned Sticky Footer */}
-            <div className="p-4 md:p-5 bg-slate-50 border-t border-slate-100 flex gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => setShowWithdrawModal(false)}
-                className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                form="withdraw-form"
-                disabled={withdrawLoading || displayWithdrawable <= 0}
-                className="flex-1 py-3.5 px-4 rounded-xl bg-[#1E56E3] hover:bg-[#1848BF] text-white font-extrabold text-xs shadow-lg shadow-blue-600/25 active:scale-[0.99] transition flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {withdrawLoading ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <ArrowUpRight className="w-4 h-4" />
-                    <span>Confirm Withdrawal</span>
-                  </>
-                )}
-              </button>
+            <div className="p-4 md:p-5 bg-slate-50/90 border-t border-slate-100 flex flex-col gap-2.5 shrink-0">
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowWithdrawModal(false)}
+                  className="w-1/3 py-3 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs hover:bg-slate-100 active:scale-95 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  form="withdraw-form"
+                  disabled={withdrawLoading || displayWithdrawable <= 0 || !withdrawAmount || Number(withdrawAmount) <= 0 || !validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid}
+                  className="w-2/3 py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs shadow-lg shadow-blue-600/25 active:scale-[0.99] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {withdrawLoading ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 fill-white" />
+                      <span>
+                        {withdrawAmount && Number(withdrawAmount) > 0 
+                          ? `Confirm & Withdraw ₹${Number(withdrawAmount).toLocaleString('en-IN')}`
+                          : 'Confirm Withdrawal'}
+                      </span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 font-medium">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>256-Bit Bank-Grade Encryption • Instant Gateway Disbursal</span>
+              </div>
             </div>
           </div>
         </div>,
