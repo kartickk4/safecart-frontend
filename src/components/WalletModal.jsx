@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { profileAPI, authAPI, shipmentAPI, rewardAPI, walletAPI } from '../services/api';
 import RechargeModal from './RechargeModal';
+import { AnimatedBalance } from './AnimatedNumber';
 import { ShipmentRowSkeleton } from './SkeletonLoader';
 
 
@@ -684,8 +685,7 @@ export default function WalletModal({ user, onUpdateUser }) {
 
                 <div className="mb-4">
                   <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight flex items-baseline gap-1 font-mono">
-                      <span>₹{displayTotalWallet.toLocaleString('en-IN')}</span>
-                      <span className="text-sm font-normal text-blue-200">.00</span>
+                      <AnimatedBalance value={displayTotalWallet} decimals={2} showDecimalsSplit decimalClassName="text-sm font-normal text-blue-200" />
                     </h2>
                   <p className="text-xs text-blue-200 mt-1 font-medium">
                     Total balance across cleared payouts and ongoing pipeline
@@ -703,7 +703,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                       </span>
                     </div>
                     <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
-                        ₹{displayWithdrawable.toLocaleString('en-IN')}
+                        <AnimatedBalance value={displayWithdrawable} decimals={0} />
                     </div>
                     <p className="text-[10px] text-blue-200/90 leading-tight">
                       Available now for instant UPI or Bank (IMPS) withdrawal
@@ -720,7 +720,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                         </span>
                       </div>
                       <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
-                          ₹{securityReserve.toLocaleString('en-IN')}
+                          <AnimatedBalance value={securityReserve} decimals={0} />
                       </div>
                       <p className="text-[10px] text-blue-200/90 leading-tight">
                         {activeShipmentsCount} active parcel{activeShipmentsCount === 1 ? '' : 's'} (₹100/shipment, max ₹1,000)
@@ -737,7 +737,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                       </span>
                     </div>
                     <div className="text-xl md:text-2xl font-black text-white font-mono tracking-tight">
-                        ₹{displayUnwithdrawable.toLocaleString('en-IN')}
+                        <AnimatedBalance value={displayUnwithdrawable} decimals={0} />
                     </div>
                     <p className="text-[10px] text-blue-200/90 leading-tight">
                       Bonus rewards unlocking after 24h ({activePipelineItems.length} reward{activePipelineItems.length === 1 ? '' : 's'})
@@ -786,7 +786,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
 
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                    ₹{activePipelineBalance.toLocaleString('en-IN')}
+                    <AnimatedBalance value={activePipelineBalance} decimals={0} />
                   </h2>
                 <p className="text-[11px] text-slate-500 mt-1 font-medium">Held safely across {shipments.filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit').length} in-delivery orders</p>
               </div>
@@ -808,7 +808,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
 
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                    ₹{totalReleasedPayouts.toLocaleString('en-IN')}
+                    <AnimatedBalance value={totalReleasedPayouts} decimals={0} />
                   </h2>
                 <p className="text-[11px] text-slate-500 mt-1 font-medium">
                   {shipments.filter(s => s.status === 'Released').length} payouts cleared to bank
@@ -841,8 +841,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
 
                 <h2 className="text-3xl font-black text-white tracking-tight flex items-baseline gap-1">
-                    <span>₹{displayWithdrawable.toLocaleString('en-IN')}</span>
-                    <span className="text-xs font-normal text-blue-300">.00</span>
+                    <AnimatedBalance value={displayWithdrawable} decimals={2} showDecimalsSplit decimalClassName="text-xs font-normal text-blue-300" />
                   </h2>
                 <p className="text-[11px] text-blue-200 mt-1 font-medium">
                   Your delivery-protected purchase balance
@@ -873,7 +872,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
 
                 <h2 className="text-3xl font-black text-white tracking-tight">
-                    ₹{activePipelineBalance.toLocaleString('en-IN')}
+                    <AnimatedBalance value={activePipelineBalance} decimals={0} />
                   </h2>
                 <p className="text-[11px] text-blue-100 mt-1 font-medium">Locked in {shipments.filter(s => s.status === 'Awaiting Payment' || s.status === 'Pending Pickup' || s.status === 'In Transit').length} active orders</p>
               </div>
@@ -895,7 +894,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
 
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                    ₹{totalReleasedPayouts.toLocaleString('en-IN')}
+                    <AnimatedBalance value={totalReleasedPayouts} decimals={0} />
                   </h2>
                 <p className="text-[11px] text-slate-500 mt-1 font-medium">
                   {shipments.filter(s => s.status === 'Released').length} completed order{shipments.filter(s => s.status === 'Released').length === 1 ? '' : 's'}
@@ -919,7 +918,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 </div>
 
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                    ₹{pendingReleaseAmount.toLocaleString('en-IN')}
+                    <AnimatedBalance value={pendingReleaseAmount} decimals={0} />
                   </h2>
                 <p className="text-[11px] text-slate-500 mt-1 font-medium">
                   {shipments.filter(s => s.status === 'Delivered' || s.status === 'Out for Delivery').length} awaiting delivery sign-off
@@ -982,7 +981,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                 <span className={`text-2xl font-black font-mono ${
                   (Number(user?.walletBalance) || 0) < 0 ? 'text-rose-600' : 'text-slate-900'
                 }`}>
-                  {(Number(user?.walletBalance) || 0) < 0 ? `-₹${Math.abs(Number(user?.walletBalance)).toFixed(2)}` : `₹${(Number(user?.walletBalance) || 0).toFixed(2)}`}
+                  <AnimatedBalance value={Number(user?.walletBalance) || 0} decimals={2} />
                 </span>
               </div>
 

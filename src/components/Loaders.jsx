@@ -537,6 +537,8 @@ export function BouncingBall({ size = 'md', className = '', label = null }) {
   );
 }
 
+export { default as AnimatedNumber, AnimatedBalance } from './AnimatedNumber';
+
 export default {
   SpinnerLoader,
   SkeletonLoader,

@@ -1,3 +1,4 @@
+import { AnimatedBalance } from './AnimatedNumber';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   CheckCircle2, ShieldCheck, Sparkles, Wallet, Smartphone,
@@ -501,8 +502,7 @@ export default function ConfirmedWithCashback({
                       Wallet Balance
                     </span>
                     <span className="text-sm font-bold text-slate-900">
-                      ₹{totalBalance}
-                      <span className="text-slate-400 font-normal text-xs"> / ₹{minWithdrawal}</span>
+                      <AnimatedBalance value={totalBalance} decimals={0} /><span className="text-slate-400 font-normal text-xs"> / ₹{minWithdrawal}</span>
                     </span>
                   </div>
 
@@ -592,7 +592,7 @@ export default function ConfirmedWithCashback({
             {/* Balance row */}
             <div className="px-5 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
               <span className="text-sm text-slate-600">Wallet Balance</span>
-              <span className="text-lg font-bold text-emerald-700">₹{totalBalance}.00</span>
+              <span className="text-lg font-bold text-emerald-700"><AnimatedBalance value={totalBalance} decimals={2} showDecimalsSplit /></span>
             </div>
 
             {/* QR + info */}

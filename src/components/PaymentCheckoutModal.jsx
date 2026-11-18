@@ -1,3 +1,4 @@
+import { AnimatedBalance } from './AnimatedNumber';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { 
@@ -250,7 +251,7 @@ export default function PaymentCheckoutModal({
                     SecureKaro Wallet
                   </div>
                   <div className="text-sm sm:text-base font-black text-slate-900 font-mono tracking-tight">
-                    ₹ {currentWallet.toFixed(2)}
+                    <AnimatedBalance value={currentWallet} decimals={2} />
                   </div>
                 </div>
               </div>

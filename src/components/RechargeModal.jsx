@@ -1,3 +1,4 @@
+import { AnimatedBalance } from './AnimatedNumber';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { 
@@ -171,7 +172,7 @@ export default function RechargeModal({ isOpen, onClose, currentBalance = 0, ini
               </span>
             </div>
             <span className={`text-base font-black tracking-tight ${isNegative ? 'text-rose-300' : 'text-emerald-400'}`}>
-              {isNegative ? `-₹${absDue.toFixed(2)}` : `₹${currentNum.toFixed(2)}`}
+              <AnimatedBalance value={currentNum} decimals={2} />
             </span>
           </div>
         </div>
