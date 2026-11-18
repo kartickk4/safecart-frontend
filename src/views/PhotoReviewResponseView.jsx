@@ -1,3 +1,4 @@
+import { formatCarrierName } from '../utils/formatters';
 import React, { useState, useEffect } from 'react';
 import { CheckCircle2, XCircle, Camera, ShieldCheck, RefreshCw, ArrowRight, Sparkles, Truck, Package, MapPin } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
@@ -97,7 +98,7 @@ export default function PhotoReviewResponseView({ shipmentId, action }) {
           {shipment?.shipmentId && (
             <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs text-slate-400 font-mono">
               <span>Shipment: #{shipment.shipmentId}</span>
-              <span className="capitalize">{shipment.carrierSlug || 'Delhivery'}</span>
+              <span className="font-semibold text-slate-200">{formatCarrierName(shipment.carrierSlug)}</span>
             </div>
           )}
           <div className="flex flex-col sm:flex-row gap-3 pt-1">

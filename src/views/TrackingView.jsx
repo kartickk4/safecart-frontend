@@ -1,3 +1,4 @@
+import { formatCarrierName } from '../utils/formatters';
 import React, { useState, useEffect } from 'react';
 import { Search, Navigation, Truck, MapPin, CheckCircle2, Clock, ShieldCheck, RefreshCw, ExternalLink, Lock, Send, Package, ArrowRight, Radio, Crown, Sparkles, Camera, AlertTriangle, Eye, RotateCcw, Tag, Copy, Check, XCircle, CreditCard, Image as ImageIcon, X, ZoomIn, Scale, Zap } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
@@ -914,7 +915,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Shipment registered on platform. Assigned Courier: <strong>{(selectedCourier || trackingResult?.carrier || 'Delhivery Express').replace('_', ' ').toUpperCase()}</strong> • AWB: <span className="font-mono font-bold text-slate-800">{courierAwb || trackingResult?.awbCode || 'Assigned'}</span>.
+                        Shipment registered on platform. Assigned Courier: <strong>{formatCarrierName(selectedCourier || trackingResult?.carrier)}</strong> • AWB: <span className="font-mono font-bold text-slate-800">{courierAwb || trackingResult?.awbCode || 'Assigned'}</span>.
                       </p>
 
                       {/* Optional: Weight scale photo info if enabled and not picked up */}
@@ -990,7 +991,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                         </div>
                         <p className="text-xs text-slate-500 mt-0.5">
                           {isParcelPickedUp
-                            ? `Parcel picked up from sender by courier partner (${(selectedCourier || trackingResult?.carrier || 'Delhivery Express').replace('_', ' ').toUpperCase()}). In transit to sorting hub.`
+                            ? `Parcel picked up from sender by courier partner (${formatCarrierName(selectedCourier || trackingResult?.carrier)}). In transit to sorting hub.`
                             : `Courier partner has received the pickup manifest. Courier executive is scheduled to arrive at sender address.`}
                         </p>
                       </div>
@@ -1132,7 +1133,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                         {trackingResult?.status || 'In Transit'}
                       </span>
                     </div>
-                    <p className="text-xs text-blue-100 mt-1">Route: <span className="font-semibold text-white">{trackingResult?.route || 'Origin → Destination'}</span> • Carrier: <span className="font-semibold text-white capitalize">{trackingResult?.carrier || 'delhivery'}</span></p>
+                    <p className="text-xs text-blue-100 mt-1">Route: <span className="font-semibold text-white">{trackingResult?.route || 'Origin → Destination'}</span> • Carrier: <span className="font-semibold text-white">{formatCarrierName(trackingResult?.carrier)}</span></p>
                   </div>
                 </div>
 

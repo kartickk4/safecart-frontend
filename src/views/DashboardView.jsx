@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import TaxStatementModal from '../components/TaxStatementModal';
+import { formatCarrierName } from '../utils/formatters';
 import BulkUploadPanel from '../components/BulkUploadPanel';
 import {
   Chart as ChartJS,
@@ -232,7 +233,7 @@ export default function DashboardView({
       if (rawSlug.startsWith('PSF-') || rawSlug.startsWith('SPL-') || rawSlug.startsWith('TRK-')) {
         rawSlug = 'DELHIVERY';
       }
-      const displayName = carrierNameLookup[rawSlug] || s.carrierSlug || 'Direct Logistics';
+      const displayName = formatCarrierName(s.carrierSlug);
 
       if (!carrierMap[displayName]) {
         carrierMap[displayName] = { 
@@ -1276,10 +1277,10 @@ export default function DashboardView({
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-200/50">
-                      <span className="truncate">{item.city || 'Domestic'}</span>
-                      <span className="capitalize text-slate-600 font-semibold shrink-0 ml-2">
-                        {item.carrierSlug || 'Delhivery'}
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-200/50 gap-2">
+                      <span className="truncate flex-1 min-w-0">{item.city || 'Domestic Delivery'}</span>
+                      <span className="text-slate-700 font-bold shrink-0">
+                        {formatCarrierName(item.carrierSlug)}
                       </span>
                     </div>
                   </div>
@@ -1322,8 +1323,8 @@ export default function DashboardView({
                         <td className="py-3 px-3 text-slate-500 font-medium">
                           {item.city || 'Domestic'}
                         </td>
-                        <td className="py-3 px-3 text-slate-600 capitalize font-medium">
-                          {item.carrierSlug || 'Delhivery'}
+                        <td className="py-3 px-3 text-slate-700 font-semibold">
+                          {formatCarrierName(item.carrierSlug)}
                         </td>
                         <td className="py-3 px-3 font-black text-slate-900">
                           ₹{item.amount ? Number(item.amount).toLocaleString('en-IN') : '0'}

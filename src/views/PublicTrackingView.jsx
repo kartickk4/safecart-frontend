@@ -1,3 +1,4 @@
+import { formatCarrierName } from '../utils/formatters';
 import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck, Lock, Search, Phone, Truck, CheckCircle2,
@@ -73,7 +74,7 @@ export default function PublicTrackingView({ initialTrackingId = '', initialPhon
               shipmentId: ship.shipmentId || idToUse,
               awbCode: ship.awbCode || res.data.awb || 'Pending',
               carrierSlug: ship.carrierSlug || 'delhivery',
-              courierName: (ship.carrierSlug || 'DELHIVERY').toUpperCase(),
+              courierName: formatCarrierName(ship.carrierSlug).toUpperCase(),
               status: ship.status || res.data.status || 'In Transit',
               escrowStage: ship.escrowStage || 4,
               stageLabel: ship.status || 'In Transit',
