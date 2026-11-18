@@ -73,23 +73,13 @@ export default function Sidebar({
             id: 'rate-calculator',
             label: 'Rate Calculator',
             icon: Calculator,
-            color: 'text-[#1E56E3]',
-            customBadge: (
-              <span className="bg-blue-100 text-[#1E56E3] text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shadow-2xs">
-                LIVE
-              </span>
-            )
+            color: 'text-[#1E56E3]'
           },
           {
             id: 'roi-calculator',
             label: 'Savings Calculator',
             icon: Calculator,
-            color: 'text-emerald-600',
-            customBadge: (
-              <span className="bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shadow-2xs">
-                FREE
-              </span>
-            )
+            color: 'text-emerald-600'
           }
         ]
       }
