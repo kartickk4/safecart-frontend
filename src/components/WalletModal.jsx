@@ -25,8 +25,10 @@ import {
   Truck,
   Phone,
   Mail,
-  Plus
+  Plus,
+  AlertCircle
 } from 'lucide-react';
+import { validateUpi, validateBankAcc, sanitizeBankAcc, validateIfsc, sanitizeIfsc, validateAmount } from '../utils/validators';
 import { profileAPI, authAPI, shipmentAPI, rewardAPI, walletAPI } from '../services/api';
 import RechargeModal from './RechargeModal';
 import { AnimatedBalance } from './AnimatedNumber';
@@ -533,32 +535,42 @@ export default function WalletModal({ user, onUpdateUser }) {
     setWithdrawError('');
     setWithdrawSuccess('');
 
-    const amt = Number(withdrawAmount);
-    if (isNaN(amt) || amt <= 0) {
-      setWithdrawError('Please enter a valid withdrawal amount greater than ₹0');
+    const amtVal = validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable });
+    if (!amtVal.isValid) {
+      setWithdrawError(amtVal.error);
       return;
     }
-
-    const maxAllowed = displayWithdrawable;
-    if (amt > maxAllowed) {
-      setWithdrawError(`Requested amount exceeds your withdrawable balance (₹${maxAllowed.toLocaleString('en-IN')})`);
-      return;
-    }
+    const amt = amtVal.value;
 
     const effectiveUpi = (withdrawUpiId || savedUpi || '').trim();
-    if (withdrawMethod === 'UPI' && (!effectiveUpi || !effectiveUpi.includes('@'))) {
-      setWithdrawError('Please enter a valid UPI ID (e.g. name@upi)');
-      return;
+    if (withdrawMethod === 'UPI') {
+      const upiVal = validateUpi(effectiveUpi);
+      if (!upiVal.isValid) {
+        setWithdrawError(`UPI Error: ${upiVal.error}`);
+        return;
+      }
     }
 
-    const effectiveAcc = (withdrawAccountNumber || savedAcc || '').trim();
-    const effectiveIfsc = (withdrawIfsc || savedIfsc || '').trim();
+    const effectiveAcc = sanitizeBankAcc(withdrawAccountNumber || savedAcc || '');
+    const effectiveIfsc = sanitizeIfsc(withdrawIfsc || savedIfsc || '');
     const effectiveHolder = (withdrawAccountHolder || savedHolder || user?.fullName || '').trim();
     const effectiveBankName = (withdrawBankName || savedBankName || '').trim();
 
-    if (withdrawMethod === 'BANK' && (!effectiveAcc || !effectiveIfsc || !effectiveHolder)) {
-      setWithdrawError('Please complete all bank account details.');
-      return;
+    if (withdrawMethod === 'BANK') {
+      if (!effectiveHolder || effectiveHolder.length < 2) {
+        setWithdrawError('Please enter a valid Account Holder Name');
+        return;
+      }
+      const accVal = validateBankAcc(effectiveAcc);
+      if (!accVal.isValid) {
+        setWithdrawError(`Bank Account Error: ${accVal.error}`);
+        return;
+      }
+      const ifscVal = validateIfsc(effectiveIfsc);
+      if (!ifscVal.isValid) {
+        setWithdrawError(`IFSC Error: ${ifscVal.error}`);
+        return;
+      }
     }
 
     // ── Fee Preview ──────────────────────────────────────────────────────────
@@ -1617,7 +1629,25 @@ export default function WalletModal({ user, onUpdateUser }) {
 
               {/* Amount Input */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Enter Amount (₹)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700">Enter Amount (₹)</label>
+                  {withdrawAmount && (
+                    <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                      validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid
+                        ? 'text-emerald-600'
+                        : 'text-rose-500'
+                    }`}>
+                      {validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid ? (
+                        <>
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span>Valid Amount ✓</span>
+                        </>
+                      ) : (
+                        <span>Invalid</span>
+                      )}
+                    </span>
+                  )}
+                </div>
                 <input
                   type="number"
                   min="1"
@@ -1626,8 +1656,20 @@ export default function WalletModal({ user, onUpdateUser }) {
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(e.target.value)}
                   placeholder="e.g. 5"
-                  className="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
+                  className={`w-full px-4 py-3 border rounded-xl text-sm font-bold text-slate-900 transition outline-none ${
+                    withdrawAmount && validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid
+                      ? 'bg-emerald-50/20 border-emerald-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                      : withdrawAmount && !validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid
+                      ? 'bg-rose-50/30 border-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
+                      : 'bg-slate-50/80 border-slate-200 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10'
+                  }`}
                 />
+                {withdrawAmount && !validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).isValid && (
+                  <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 shrink-0" />
+                    <span>{validateAmount(withdrawAmount, { min: 1, balance: displayWithdrawable }).error}</span>
+                  </p>
+                )}
                 <div className="flex items-center justify-between mt-1.5 text-[11px]">
                   <span className="text-slate-500 font-medium">Available to Withdraw:</span>
                   <span className="font-extrabold text-emerald-600 font-mono">₹{displayWithdrawable.toLocaleString('en-IN')}</span>
@@ -1727,9 +1769,30 @@ export default function WalletModal({ user, onUpdateUser }) {
                       required
                       placeholder="user@upi or 9876543210@paytm"
                       value={withdrawUpiId}
-                      onChange={(e) => setWithdrawUpiId(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
+                      onChange={(e) => setWithdrawUpiId(e.target.value.trim())}
+                      className={`w-full px-4 py-3 border rounded-xl text-xs font-mono font-bold text-slate-900 transition outline-none ${
+                        withdrawUpiId && validateUpi(withdrawUpiId).isValid
+                          ? 'bg-emerald-50/20 border-emerald-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                          : withdrawUpiId && !validateUpi(withdrawUpiId).isValid
+                          ? 'bg-rose-50/30 border-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
+                          : 'bg-slate-50/80 border-slate-200 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10'
+                      }`}
                     />
+                    {withdrawUpiId && (
+                      <div className="mt-1 flex items-center justify-between text-[10px] font-mono">
+                        {validateUpi(withdrawUpiId).isValid ? (
+                          <span className="text-emerald-600 font-bold flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>Valid UPI Address ✓</span>
+                          </span>
+                        ) : (
+                          <span className="text-rose-500 font-semibold flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            <span>{validateUpi(withdrawUpiId).error}</span>
+                          </span>
+                        )}
+                      </div>
+                    )}
                     {/* Quick UPI Handle suggestions */}
                     <div className="flex gap-2 mt-2">
                       {['@okaxis', '@okicici', '@paytm', '@ybl'].map(handle => (
@@ -1824,23 +1887,71 @@ export default function WalletModal({ user, onUpdateUser }) {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Account Number</label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-xs font-bold text-slate-700">Account Number</label>
+                          {withdrawAccountNumber && (
+                            <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                              validateBankAcc(withdrawAccountNumber).isValid ? 'text-emerald-600' : 'text-slate-400'
+                            }`}>
+                              {validateBankAcc(withdrawAccountNumber).isValid ? (
+                                <>
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                  <span>Valid ✓</span>
+                                </>
+                              ) : (
+                                <span>{sanitizeBankAcc(withdrawAccountNumber).length}/9-18</span>
+                              )}
+                            </span>
+                          )}
+                        </div>
                         <input
                           type="text"
                           required
+                          maxLength={18}
                           value={withdrawAccountNumber}
-                          onChange={(e) => setWithdrawAccountNumber(e.target.value)}
-                          className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none"
+                          onChange={(e) => setWithdrawAccountNumber(sanitizeBankAcc(e.target.value))}
+                          placeholder="9 to 18 digits"
+                          className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-mono font-bold text-slate-900 transition outline-none ${
+                            withdrawAccountNumber && validateBankAcc(withdrawAccountNumber).isValid
+                              ? 'bg-emerald-50/20 border-emerald-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                              : withdrawAccountNumber && !validateBankAcc(withdrawAccountNumber).isValid
+                              ? 'bg-rose-50/30 border-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
+                              : 'bg-slate-50/80 border-slate-200 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10'
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">IFSC Code</label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-xs font-bold text-slate-700">IFSC Code</label>
+                          {withdrawIfsc && (
+                            <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                              validateIfsc(withdrawIfsc).isValid ? 'text-emerald-600' : 'text-slate-400'
+                            }`}>
+                              {validateIfsc(withdrawIfsc).isValid ? (
+                                <>
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                  <span>Valid IFSC ✓</span>
+                                </>
+                              ) : (
+                                <span>{sanitizeIfsc(withdrawIfsc).length}/11</span>
+                              )}
+                            </span>
+                          )}
+                        </div>
                         <input
                           type="text"
                           required
+                          maxLength={11}
                           value={withdrawIfsc}
-                          onChange={(e) => setWithdrawIfsc(e.target.value.toUpperCase())}
-                          className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10 transition outline-none uppercase"
+                          onChange={(e) => setWithdrawIfsc(sanitizeIfsc(e.target.value))}
+                          placeholder="e.g. HDFC0001234"
+                          className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-mono font-bold text-slate-900 transition outline-none uppercase ${
+                            withdrawIfsc && validateIfsc(withdrawIfsc).isValid
+                              ? 'bg-emerald-50/20 border-emerald-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                              : withdrawIfsc && sanitizeIfsc(withdrawIfsc).length === 11 && !validateIfsc(withdrawIfsc).isValid
+                              ? 'bg-rose-50/30 border-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
+                              : 'bg-slate-50/80 border-slate-200 focus:bg-white focus:border-[#1E56E3] focus:ring-4 focus:ring-blue-500/10'
+                          }`}
                         />
                       </div>
                     </div>

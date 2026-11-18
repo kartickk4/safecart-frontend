@@ -3,7 +3,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, ShieldCheck, ArrowRight, ArrowLeft, AlertTriangle, RotateCcw, 
   Camera, Phone, Truck, Star, Zap, Check, Lock, RefreshCw, Clock, Award,
-  CreditCard, Banknote, Search, Sparkles, TrendingDown, Plane, LayoutGrid, List, Scale
+  CreditCard, Banknote, Search, Sparkles, TrendingDown, Plane, LayoutGrid, List, Scale,
+  CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { shipmentAPI, profileAPI, agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
@@ -11,6 +12,7 @@ import RechargeModal from './RechargeModal';
 import PaymentCheckoutModal from './PaymentCheckoutModal';
 import { getSafeCarrierRates } from '../utils/carrierRateFallback';
 import { formatCarrierName } from '../utils/formatters';
+import { validatePhone, sanitizePhone, validatePincode, sanitizePincode, validateAmount, validateWeight } from '../utils/validators';
 
 export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData, onUpdateUser }) {
   // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection
@@ -254,16 +256,28 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       setError(shipmentType === 'reverse' ? 'Please enter the Customer Name.' : 'Please enter the Recipient Name.');
       return;
     }
-    if (!receiverPhone.trim()) {
-      setError(shipmentType === 'reverse' ? 'Please enter the Customer Phone Number.' : 'Please enter the Recipient Phone Number.');
+    const phoneVal = validatePhone(receiverPhone);
+    if (!phoneVal.isValid) {
+      setError(shipmentType === 'reverse' ? `Customer Mobile Error: ${phoneVal.error}` : `Recipient Mobile Error: ${phoneVal.error}`);
       return;
     }
     if (!receiverAddress.trim()) {
       setError(shipmentType === 'reverse' ? 'Please enter the Customer Pickup Address.' : 'Please enter the Recipient Delivery Address.');
       return;
     }
-    if (!receiverPincode || receiverPincode.length < 6) {
-      setError(shipmentType === 'reverse' ? 'Please enter a valid 6-digit Customer Pickup Pincode.' : 'Please enter a valid 6-digit Receiver Delivery Pincode to view delivery rates.');
+    const pinVal = validatePincode(receiverPincode);
+    if (!pinVal.isValid) {
+      setError(shipmentType === 'reverse' ? `Customer Pickup PIN Error: ${pinVal.error}` : `Recipient Delivery PIN Error: ${pinVal.error}`);
+      return;
+    }
+    const amtVal = validateAmount(amount, { min: 1, max: 1000000 });
+    if (!amtVal.isValid) {
+      setError(`Declared Parcel Value Error: ${amtVal.error}`);
+      return;
+    }
+    const wtVal = validateWeight(parcelWeight, { min: 0.05, max: 100 });
+    if (!wtVal.isValid) {
+      setError(`Parcel Weight Error: ${wtVal.error}`);
       return;
     }
 
@@ -638,17 +652,50 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {shipmentType === 'reverse' ? 'Customer Phone (Pickup OTP) *' : 'Recipient Phone *'}
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-slate-700">
+                      {shipmentType === 'reverse' ? 'Customer Phone (Pickup OTP) *' : 'Recipient Phone *'}
+                    </label>
+                    {receiverPhone && (
+                      <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                        validatePhone(receiverPhone).isValid ? 'text-emerald-600' : 'text-slate-400'
+                      }`}>
+                        {validatePhone(receiverPhone).isValid ? (
+                          <>
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            <span>Valid Mobile ✓</span>
+                          </>
+                        ) : (
+                          <span>{sanitizePhone(receiverPhone).length}/10</span>
+                        )}
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="tel"
                     required
-                    placeholder="+91 98765 43210"
+                    maxLength={10}
+                    placeholder="e.g. 9876543210"
                     value={receiverPhone}
-                    onChange={(e) => setReceiverPhone(e.target.value)}
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                    onChange={(e) => {
+                      const sanitized = sanitizePhone(e.target.value);
+                      setReceiverPhone(sanitized);
+                      if (error) setError('');
+                    }}
+                    className={`w-full px-3.5 py-2 bg-slate-50 border rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:bg-white transition ${
+                      receiverPhone && validatePhone(receiverPhone).isValid
+                        ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                        : receiverPhone && sanitizePhone(receiverPhone).length === 10 && !validatePhone(receiverPhone).isValid
+                        ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
+                        : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
                   />
+                  {receiverPhone && sanitizePhone(receiverPhone).length === 10 && !validatePhone(receiverPhone).isValid && (
+                    <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1 animate-in fade-in duration-150">
+                      <AlertCircle className="w-3 h-3 shrink-0" />
+                      <span>{validatePhone(receiverPhone).error}</span>
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -668,9 +715,25 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
 
               <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {shipmentType === 'reverse' ? 'Customer Pickup Pincode *' : 'Receiver Delivery Pincode *'}
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-slate-700">
+                      {shipmentType === 'reverse' ? 'Customer Pickup Pincode *' : 'Receiver Delivery Pincode *'}
+                    </label>
+                    {receiverPincode && (
+                      <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                        validatePincode(receiverPincode).isValid ? 'text-emerald-600' : 'text-slate-400'
+                      }`}>
+                        {validatePincode(receiverPincode).isValid ? (
+                          <>
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            <span>Valid PIN ✓</span>
+                          </>
+                        ) : (
+                          <span>{sanitizePincode(receiverPincode).length}/6</span>
+                        )}
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="text"
                     maxLength={6}
@@ -678,17 +741,39 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     placeholder={shipmentType === 'reverse' ? 'e.g. 560001 (Customer Pincode)' : 'e.g. 400001 (Mumbai)'}
                     value={receiverPincode}
                     onChange={(e) => {
-                      setReceiverPincode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                      const sanitized = sanitizePincode(e.target.value);
+                      setReceiverPincode(sanitized);
                       if (error) setError('');
                     }}
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                    className={`w-full px-3.5 py-2 bg-slate-50 border rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:bg-white transition ${
+                      receiverPincode && validatePincode(receiverPincode).isValid
+                        ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                        : receiverPincode && sanitizePincode(receiverPincode).length === 6 && !validatePincode(receiverPincode).isValid
+                        ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
+                        : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
                   />
+                  {receiverPincode && sanitizePincode(receiverPincode).length === 6 && !validatePincode(receiverPincode).isValid && (
+                    <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1 animate-in fade-in duration-150">
+                      <AlertCircle className="w-3 h-3 shrink-0" />
+                      <span>{validatePincode(receiverPincode).error}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Parcel Dead Weight (kg)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-slate-700">
+                      Parcel Dead Weight (kg)
+                    </label>
+                    {parcelWeight && (
+                      <span className={`text-[10px] font-mono font-bold ${
+                        validateWeight(parcelWeight).isValid ? 'text-emerald-600' : 'text-rose-500'
+                      }`}>
+                        {validateWeight(parcelWeight).isValid ? `${parcelWeight} kg ✓` : 'Invalid wt'}
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="number"
                     step="0.1"

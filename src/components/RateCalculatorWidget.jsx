@@ -8,6 +8,7 @@ import { agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
 import { SkeletonLoader, ButtonLoader, PulsingBeacon, SpinnerArc, TextShimmer } from './Loaders';
 import { getSafeCarrierRates, generateClientFallbackQuotes } from '../utils/carrierRateFallback';
+import { validatePincode, sanitizePincode, validateAmount } from '../utils/validators';
 
 const POPULAR_DESTINATIONS = [
   { name: 'Delhi', pincode: '110001' },
@@ -86,12 +87,14 @@ export default function RateCalculatorWidget({
     const currentFreight = forcedFreightType || freightType;
     const isReverseFreight = currentFreight === 'reverse';
 
-    if (!effectiveFrom || effectiveFrom.length !== 6) {
-      setError(isReverseFreight ? 'Please enter a valid 6-digit Return Pickup Pincode' : 'Please enter a valid 6-digit Pickup Pincode');
+    const pinFromVal = validatePincode(effectiveFrom);
+    if (!pinFromVal.isValid) {
+      setError(isReverseFreight ? `Return Pickup PIN Error: ${pinFromVal.error}` : `Pickup PIN Error: ${pinFromVal.error}`);
       return;
     }
-    if (!effectiveTo || effectiveTo.length !== 6) {
-      setError(isReverseFreight ? 'Please enter a valid 6-digit Return Destination Pincode' : 'Please enter a valid 6-digit Delivery Pincode');
+    const pinToVal = validatePincode(effectiveTo);
+    if (!pinToVal.isValid) {
+      setError(isReverseFreight ? `Return Destination PIN Error: ${pinToVal.error}` : `Delivery PIN Error: ${pinToVal.error}`);
       return;
     }
 
@@ -276,25 +279,49 @@ export default function RateCalculatorWidget({
         {/* PINCODES ROW WITH SWAP BUTTON */}
         <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-end">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#1E56E3]" />
-              {isReverseMode ? 'Return Pickup Pincode' : 'Pickup Pincode'}
-            </label>
-            <input
-              type="text"
-              maxLength={6}
-              value={fromPincode}
-              onChange={(e) => {
-                const pin = e.target.value.replace(/\D/g, '').slice(0, 6);
-                setFromPincode(pin);
-                if (error) setError('');
-                if (pin.length === 6 && toPincode && toPincode.length === 6) {
-                  handleCalculateRates(null, freightType, pin, toPincode);
-                }
-              }}
-              placeholder={isReverseMode ? "e.g. 110001" : "e.g. 700049"}
-              className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E56E3] transition"
-            />
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#1E56E3]" />
+                {isReverseMode ? 'Return Pickup Pincode' : 'Pickup Pincode'}
+              </label>
+              {fromPincode && (
+                <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                  validatePincode(fromPincode).isValid ? 'text-emerald-600' : 'text-slate-400'
+                }`}>
+                  {validatePincode(fromPincode).isValid ? (
+                    <>
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Valid PIN ✓</span>
+                    </>
+                  ) : (
+                    <span>{fromPincode.length}/6</span>
+                  )}
+                </span>
+              )}
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                maxLength={6}
+                value={fromPincode}
+                onChange={(e) => {
+                  const pin = sanitizePincode(e.target.value);
+                  setFromPincode(pin);
+                  if (error) setError('');
+                  if (pin.length === 6 && toPincode && toPincode.length === 6) {
+                    handleCalculateRates(null, freightType, pin, toPincode);
+                  }
+                }}
+                placeholder={isReverseMode ? "e.g. 110001" : "e.g. 700049"}
+                className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 transition ${
+                  fromPincode && validatePincode(fromPincode).isValid
+                    ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                    : fromPincode && fromPincode.length === 6 && !validatePincode(fromPincode).isValid
+                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
+                    : 'border-slate-200 focus:border-[#1E56E3] focus:ring-blue-500/20'
+                }`}
+              />
+            </div>
           </div>
 
           <div>
@@ -303,31 +330,55 @@ export default function RateCalculatorWidget({
                 <MapPin className="w-3.5 h-3.5 text-emerald-600" />
                 {isReverseMode ? 'Return Destination Pincode' : 'Delivery Pincode'}
               </label>
-              <button
-                type="button"
-                onClick={handleSwapPincodes}
-                className="text-[11px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer transition"
-                title="Swap origin and destination"
-              >
-                <ArrowLeftRight className="w-3 h-3" />
-                <span>Swap</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {toPincode && (
+                  <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                    validatePincode(toPincode).isValid ? 'text-emerald-600' : 'text-slate-400'
+                  }`}>
+                    {validatePincode(toPincode).isValid ? (
+                      <>
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span>Valid PIN ✓</span>
+                      </>
+                    ) : (
+                      <span>{toPincode.length}/6</span>
+                    )}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSwapPincodes}
+                  className="text-[11px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer transition"
+                  title="Swap origin and destination"
+                >
+                  <ArrowLeftRight className="w-3 h-3" />
+                  <span>Swap</span>
+                </button>
+              </div>
             </div>
-            <input
-              type="text"
-              maxLength={6}
-              value={toPincode}
-              onChange={(e) => {
-                const pin = e.target.value.replace(/\D/g, '').slice(0, 6);
-                setToPincode(pin);
-                if (error) setError('');
-                if (pin.length === 6 && fromPincode && fromPincode.length === 6) {
-                  handleCalculateRates(null, freightType, fromPincode, pin);
-                }
-              }}
-              placeholder={isReverseMode ? "e.g. 700049" : "e.g. 110001"}
-              className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1E56E3] transition"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                maxLength={6}
+                value={toPincode}
+                onChange={(e) => {
+                  const pin = sanitizePincode(e.target.value);
+                  setToPincode(pin);
+                  if (error) setError('');
+                  if (pin.length === 6 && fromPincode && fromPincode.length === 6) {
+                    handleCalculateRates(null, freightType, fromPincode, pin);
+                  }
+                }}
+                placeholder={isReverseMode ? "e.g. 700049" : "e.g. 110001"}
+                className={`w-full px-3.5 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white border rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 transition ${
+                  toPincode && validatePincode(toPincode).isValid
+                    ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                    : toPincode && toPincode.length === 6 && !validatePincode(toPincode).isValid
+                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
+                    : 'border-slate-200 focus:border-[#1E56E3] focus:ring-blue-500/20'
+                }`}
+              />
+            </div>
           </div>
         </div>
 

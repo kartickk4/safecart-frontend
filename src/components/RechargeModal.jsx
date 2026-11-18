@@ -19,6 +19,7 @@ import {
   Info
 } from 'lucide-react';
 import { walletAPI } from '../services/api';
+import { validateAmount } from '../utils/validators';
 
 export default function RechargeModal({ isOpen, onClose, currentBalance = 0, initialAmount = null, onSuccess }) {
   if (!isOpen) return null;
@@ -282,9 +283,25 @@ export default function RechargeModal({ isOpen, onClose, currentBalance = 0, ini
 
               {/* Amount Input */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Select or Enter Recharge Amount
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Select or Enter Recharge Amount
+                  </label>
+                  {amount && (
+                    <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                      validateAmount(amount, { min: 10, max: 100000 }).isValid ? 'text-emerald-600' : 'text-rose-500'
+                    }`}>
+                      {validateAmount(amount, { min: 10, max: 100000 }).isValid ? (
+                        <>
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span>Valid Amount ✓</span>
+                        </>
+                      ) : (
+                        <span>{validateAmount(amount, { min: 10, max: 100000 }).error}</span>
+                      )}
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-lg">
                     ₹
@@ -300,7 +317,13 @@ export default function RechargeModal({ isOpen, onClose, currentBalance = 0, ini
                       setError('');
                     }}
                     placeholder="Enter amount (e.g. 500)"
-                    className="w-full pl-9 pr-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 font-black text-xl text-slate-900 outline-none transition"
+                    className={`w-full pl-9 pr-4 py-3.5 rounded-2xl border-2 font-black text-xl text-slate-900 outline-none transition ${
+                      amount && validateAmount(amount, { min: 10, max: 100000 }).isValid
+                        ? 'border-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100'
+                        : amount && !validateAmount(amount, { min: 10, max: 100000 }).isValid
+                        ? 'border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-100 bg-rose-50/20'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-100'
+                    }`}
                   />
                 </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, Store, Package, X, Sparkles, ChevronRight, MapPin, Truck, AlertCircle, Gift, Tag } from 'lucide-react';
 import { authAPI, profileAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
+import { validateEmail, validatePincode, sanitizePincode } from '../utils/validators';
 const LegalComplianceView = React.lazy(() => import('./LegalComplianceView'));
 import { auth, RecaptchaVerifier, signInWithPhoneNumber, googleProvider, signInWithPopup, GoogleAuthProvider } from '../firebase';
 
@@ -906,20 +907,45 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-slate-700">Email Address</label>
+                {email && (
+                  <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                    validateEmail(email).isValid ? 'text-emerald-600' : 'text-slate-400'
+                  }`}>
+                    {validateEmail(email).isValid ? (
+                      <>
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span>Valid Email ✓</span>
+                      </>
+                    ) : null}
+                  </span>
+                )}
+              </div>
               <input
                 type="email"
                 required
                 placeholder="you@company.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+                onChange={(e) => setEmail(e.target.value.trim())}
+                className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition ${
+                  email && validateEmail(email).isValid
+                    ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                    : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
+                }`}
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-semibold text-slate-700">Password</label>
+                {isSignUp && password && (
+                  <span className={`text-[10px] font-mono font-bold ${
+                    password.length >= 6 ? 'text-emerald-600' : 'text-amber-600'
+                  }`}>
+                    {password.length >= 6 ? 'Strong (6+ chars) ✓' : `${password.length}/6 chars`}
+                  </span>
+                )}
                 {!isSignUp && (
                   <button
                     type="button"
@@ -1710,14 +1736,36 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">6-Digit Pincode *</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[11px] font-bold text-slate-700">6-Digit Pincode *</label>
+                        {sellerAddress.pincode && (
+                          <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                            validatePincode(sellerAddress.pincode).isValid ? 'text-emerald-600' : 'text-slate-400'
+                          }`}>
+                            {validatePincode(sellerAddress.pincode).isValid ? (
+                              <>
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                <span>Valid ✓</span>
+                              </>
+                            ) : (
+                              <span>{sellerAddress.pincode.length}/6</span>
+                            )}
+                          </span>
+                        )}
+                      </div>
                       <input
                         type="text"
                         maxLength={6}
                         placeholder="e.g. 560001"
                         value={sellerAddress.pincode}
-                        onChange={(e) => setSellerAddress({ ...sellerAddress, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) })}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                        onChange={(e) => setSellerAddress({ ...sellerAddress, pincode: sanitizePincode(e.target.value) })}
+                        className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:bg-white transition ${
+                          sellerAddress.pincode && validatePincode(sellerAddress.pincode).isValid
+                            ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                            : sellerAddress.pincode && sellerAddress.pincode.length === 6 && !validatePincode(sellerAddress.pincode).isValid
+                            ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
+                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
+                        }`}
                       />
                     </div>
                     <div>
