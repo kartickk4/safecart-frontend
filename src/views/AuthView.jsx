@@ -62,6 +62,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
   const [userToOnboard, setUserToOnboard] = useState(null);
 
   // Forgot password modal state
+  // DPDP Act, 2023 Granular & Itemized Statutory Consent (Defaults strictly to false — never automated)
+  const [consentAgeTerms, setConsentAgeTerms] = useState(false);
+  const [consentLogistics, setConsentLogistics] = useState(false);
+
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [resetStep, setResetStep] = useState(1); // 1: Send OTP, 2: Enter OTP & New Password, 3: Success
@@ -521,7 +525,16 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
 
         // Try signup to set password — if user already exists, just proceed
         try {
-          await authAPI.signup({ email, password, phone: formattedPhone, fullName, referralCode: referralCode || undefined });
+          await authAPI.signup({ 
+            email, 
+            password, 
+            phone: formattedPhone, 
+            fullName, 
+            referralCode: referralCode || undefined,
+            is18Plus: consentAgeTerms,
+            termsAndPrivacyConsent: consentAgeTerms,
+            logisticsProcessingConsent: consentLogistics
+          });
         } catch (_) {
           // User already exists (created by verifyOtp) — this is expected, ignore
         }
@@ -542,7 +555,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
           password,
           phone: formattedPhone,
           fullName,
-          referralCode: referralCode || undefined
+          referralCode: referralCode || undefined,
+          is18Plus: consentAgeTerms,
+          termsAndPrivacyConsent: consentAgeTerms,
+          logisticsProcessingConsent: consentLogistics
         });
         const registeredUser = res.data?.user || res.data;
         const token = res.data?.accessToken;
@@ -570,6 +586,11 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
       if (isSignUp) {
         if (!fullName || !phone || !email || !password) {
           setError('Please fill in all required fields.');
+          setLoading(false);
+          return;
+        }
+        if (!consentAgeTerms || !consentLogistics) {
+          setError('DPDP Act Consent Required: Please tick both itemized consent boxes below (confirming 18+ age and logistics data processing) to create an account.');
           setLoading(false);
           return;
         }
@@ -1014,10 +1035,75 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
               </div>
             )}
 
+            {/* DPDP Act, 2023 Explicit, Granular & Itemized Consent Box (Non-automated) */}
+            {isSignUp && (
+              <div className="pt-2 pb-1 space-y-2 text-left">
+                <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-2xl space-y-2.5">
+                  <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                      DPDP Act, 2023 Statutory Consent
+                    </span>
+                    <span className="text-[9.5px] font-bold text-blue-700 bg-blue-100/70 border border-blue-200 px-1.5 py-0.5 rounded">
+                      Required
+                    </span>
+                  </div>
+
+                  {/* Itemized Box 1: Age Confirmation & Legal Policy Consent */}
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none group">
+                    <input
+                      type="checkbox"
+                      checked={consentAgeTerms}
+                      onChange={(e) => {
+                        setConsentAgeTerms(e.target.checked);
+                        if (error) setError('');
+                      }}
+                      className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#1E56E3] focus:ring-blue-500 cursor-pointer shrink-0 transition"
+                    />
+                    <span className="text-[11px] text-slate-700 leading-snug">
+                      I confirm I am <strong>18+ years of age</strong> and give explicit consent to the{' '}
+                      <button
+                        type="button"
+                        onClick={() => setShowLegalModal('terms')}
+                        className="text-[#1E56E3] font-bold underline hover:text-blue-800 cursor-pointer"
+                      >
+                        Terms of Service
+                      </button>{' '}
+                      and{' '}
+                      <button
+                        type="button"
+                        onClick={() => setShowLegalModal('privacy')}
+                        className="text-[#1E56E3] font-bold underline hover:text-blue-800 cursor-pointer"
+                      >
+                        Privacy Policy
+                      </button>.
+                    </span>
+                  </label>
+
+                  {/* Itemized Box 2: Purpose-Specific Logistics Data Processing */}
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none group">
+                    <input
+                      type="checkbox"
+                      checked={consentLogistics}
+                      onChange={(e) => {
+                        setConsentLogistics(e.target.checked);
+                        if (error) setError('');
+                      }}
+                      className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#1E56E3] focus:ring-blue-500 cursor-pointer shrink-0 transition"
+                    />
+                    <span className="text-[11px] text-slate-700 leading-snug">
+                      I consent to the collection and processing of my name, phone, and delivery address strictly for{' '}
+                      <strong>courier booking, live tracking, and escrow payout settlement</strong> under Section 6 of the DPDP Act.
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
             <button
               type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 mt-6"
+              disabled={loading || (isSignUp && (!consentAgeTerms || !consentLogistics))}
+              className="w-full py-3 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
