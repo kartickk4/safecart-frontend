@@ -3321,9 +3321,9 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                           <div>
                             <span className="font-bold">Refund Payout Destination: </span>
                             <span className="font-mono text-emerald-800">
-                              {user.bankDetails?.accountNumber
-                                ? `${user.bankDetails.bankName || 'Bank'} A/C ending in ••••${user.bankDetails.accountNumber.slice(-4)}`
-                                : `UPI: ${user.bankDetails?.upiId}`}
+                              {user?.bankDetails?.accountNumber
+                                ? `${user.bankDetails.bankName || 'Bank'} A/C ending in ••••${(user.bankDetails.accountNumber || '').slice(-4)}`
+                                : `UPI: ${user?.bankDetails?.upiId || 'Not set'}`}
                             </span>
                           </div>
                         </div>

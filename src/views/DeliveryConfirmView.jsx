@@ -1050,9 +1050,9 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                           <div>
                             <span className="font-extrabold text-emerald-900 block">Refund Payout Destination (Verified)</span>
                             <span className="font-mono text-emerald-800 text-[11px]">
-                              {user.bankDetails?.accountNumber
-                                ? `${user.bankDetails.bankName || 'Bank'} A/C ending in ••••${user.bankDetails.accountNumber.slice(-4)}`
-                                : `UPI: ${user.bankDetails?.upiId}`}
+                              {user?.bankDetails?.accountNumber
+                                ? `${user.bankDetails.bankName || 'Bank'} A/C ending in ••••${(user.bankDetails.accountNumber || '').slice(-4)}`
+                                : `UPI: ${user?.bankDetails?.upiId || 'Not set'}`}
                             </span>
                           </div>
                         </div>

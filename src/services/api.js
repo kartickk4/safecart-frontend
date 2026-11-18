@@ -77,6 +77,10 @@ api.interceptors.request.use((config) => {
   if (activeRole) {
     config.headers['X-Active-Role'] = activeRole;
   }
+  const twoFAToken = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('securekaro_admin_2fa_token') : null;
+  if (twoFAToken) {
+    config.headers['X-2FA-Token'] = twoFAToken;
+  }
   return config;
 }, (error) => {
   return Promise.reject(error);
