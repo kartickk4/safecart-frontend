@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import React, { useState, useMemo } from 'react';
 import { 
   FileSpreadsheet, Download, Printer, X, CheckCircle, TrendingUp, 
@@ -176,8 +177,14 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
     window.print();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto select-none"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden printable-area">
         
         {/* MODAL HEADER */}
@@ -454,6 +461,7 @@ export default function TaxStatementModal({ isOpen, onClose, shipments = [] }) {
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

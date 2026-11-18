@@ -385,10 +385,10 @@ const BulkUploadPanel = ({ onUpload, onClose }) => {
     <div style={{
       background: '#ffffff',
       borderRadius: '20px',
-      padding: '22px',
+      padding: '18px 16px',
       width: '100%',
       fontFamily: "'Inter', system-ui, sans-serif",
-      maxHeight: '92vh',
+      maxHeight: '88dvh',
       overflowY: 'auto'
     }}>
 

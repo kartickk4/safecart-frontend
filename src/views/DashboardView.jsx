@@ -1435,15 +1435,18 @@ export default function DashboardView({
         shipments={shipments}
       />
 
-      {/* BULK UPLOAD EXCEL/CSV MANIFEST MODAL */}
-      {showBulkUploadModal && (
+      {/* BULK UPLOAD EXCEL/CSV MANIFEST MODAL (Portal to document.body to break free from stacking contexts and transforms) */}
+      {showBulkUploadModal && typeof document !== 'undefined' && createPortal(
         <div 
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[150] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-5 select-none animate-in fade-in duration-200 overflow-y-auto"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowBulkUploadModal(false);
           }}
         >
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col relative border border-slate-200">
+          <div 
+            className="bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[92dvh] sm:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col relative border border-slate-200 my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <BulkUploadPanel
               onClose={() => setShowBulkUploadModal(false)}
               onUpload={() => {
@@ -1452,7 +1455,8 @@ export default function DashboardView({
               }}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
