@@ -1570,7 +1570,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                         </div>
                         <p className="text-[11px] text-slate-500 mt-0.5">
                           {paymentMode === 'cod'
-                            ? `Courier collects ${amount ? `₹${Number(amount).toLocaleString('en-IN')}` : 'cash'} at delivery • Remitted to seller wallet`
+                            ? `Courier collects ${amount ? `₹${Number(amount).toLocaleString('en-IN')}` : 'cash'} at delivery • ${codSettlementOption === 'deduct_from_cod' ? 'Deduct fee from settlement (₹0 upfront)' : 'Pay fee now (Wallet/UPI)'}`
                             : 'Buyer paid you directly • ₹0 collected at delivery • Freight fee deducted from wallet'}
                         </p>
                       </div>
@@ -1585,7 +1585,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
                   {/* Expandable Options Panel with Smooth Sliding Accordion Transition */}
                   <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isPaymentDropdownOpen ? 'max-h-[500px] opacity-100 border-t border-slate-200/80' : 'max-h-0 opacity-0 pointer-events-none'
+                    isPaymentDropdownOpen ? 'max-h-[1400px] opacity-100 border-t border-slate-200/80 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden pointer-events-none'
                   }`}>
                     <div className="p-3 bg-slate-50/70 grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {/* Prepaid (Paid in Advance) */}
@@ -1633,7 +1633,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                             return;
                           }
                           setPaymentMode('cod');
-                          setTimeout(() => setIsPaymentDropdownOpen(false), 200);
+                          // Keep open so user can choose COD fee settlement option
                           if (senderPincode && receiverPincode && receiverPincode.length === 6) {
                             await fetchQuotesForRoute(carrierSlug, 'cod');
                           }
@@ -1729,7 +1729,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                               className="mt-0.5 text-amber-600 focus:ring-amber-500 cursor-pointer"
                             />
                             <div className="flex-1 min-w-0">
-                              <span className="text-xs font-black text-slate-900">Pay Upfront (Wallet / UPI)</span>
+                              <span className="text-xs font-black text-slate-900">Pay Now (Wallet/UPI)</span>
                               <p className="text-[10px] text-slate-600 mt-1 leading-snug">
                                 Pay courier charges now. Full order cash ({amount ? `₹${Number(amount).toLocaleString('en-IN')}` : 'COD cash'}) will be remitted to you upon delivery.
                               </p>

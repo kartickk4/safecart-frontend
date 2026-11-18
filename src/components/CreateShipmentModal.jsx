@@ -871,7 +871,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       <div className="flex items-center justify-between">
                         <span className="font-extrabold text-[11px] text-slate-900">COD Shipping Fee Settlement</span>
                         <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                          {codSettlementOption === 'deduct_from_cod' ? '₹0 Upfront' : 'Prepaid'}
+                          {codSettlementOption === 'deduct_from_cod' ? '₹0 Upfront' : 'Pay Now'}
                         </span>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
@@ -894,7 +894,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                               : 'bg-white/70 border-slate-200 hover:bg-white text-slate-600'
                           }`}
                         >
-                          <div className="font-black text-slate-900">Pay Upfront</div>
+                          <div className="font-black text-slate-900">Pay Now (Wallet/UPI)</div>
                           <div className="text-[10px] text-slate-500 font-normal mt-0.5">Pay via Wallet/UPI now.</div>
                         </div>
                       </div>
