@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCw, Download, Plus, Truck, ShoppingBag, ArrowLeftRight, CheckCircle2, Crown, Sparkles, ShieldCheck, Wallet, AlertTriangle, LogOut, Menu } from 'lucide-react';
+import { RefreshCw, Download, Plus, Truck, ShoppingBag, ArrowLeftRight, CheckCircle2, Crown, Sparkles, ShieldCheck, Wallet, AlertTriangle, LogOut, Menu, PanelLeft } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
 import MobileNavDrawer from './MobileNavDrawer';
 import { SpinnerArc } from './Loaders';
@@ -16,7 +16,9 @@ export default function Header({
   onOpenAdmin, 
   onOpenWallet, 
   onSignOut,
-  notifCount = 0
+  notifCount = 0,
+  isSidebarCollapsed = false,
+  onToggleSidebar
 }) {
   const [exporting, setExporting] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -159,17 +161,29 @@ export default function Header({
 
         {/* ── DESKTOP HEADER (lg+) ── */}
         <div className="hidden lg:flex lg:items-center justify-between gap-4">
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-                {isSupplier ? 'Supplier Platform' : 'Buyer Order Portal'}
-              </h1>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            </div>
+          <div className="flex items-center gap-3 min-w-0">
+            {onToggleSidebar && (
+              <button
+                type="button"
+                onClick={onToggleSidebar}
+                className="p-2 rounded-xl border border-slate-200/90 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition shadow-2xs btn-press cursor-pointer shrink-0"
+                title={isSidebarCollapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+              >
+                <PanelLeft className="w-4 h-4" />
+              </button>
+            )}
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                  {isSupplier ? 'Supplier Platform' : 'Buyer Order Portal'}
+                </h1>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              </div>
 
-            <p className="text-xs text-slate-500 font-medium mt-0.5 truncate">
-              Welcome back, <span className="text-slate-900 font-bold">{user?.fullName?.split(' ')[0] || 'Partner'}</span> — {isSupplier ? 'overview of your outgoing shipments and courier settlements' : 'manage your incoming deliveries and order confirmations'} as of <span className="font-semibold text-slate-700">{currentDate} • {currentTime}</span>
-            </p>
+              <p className="text-xs text-slate-500 font-medium mt-0.5 truncate">
+                Welcome back, <span className="text-slate-900 font-bold">{user?.fullName?.split(' ')[0] || 'Partner'}</span> — {isSupplier ? 'overview of your outgoing shipments and courier settlements' : 'manage your incoming deliveries and order confirmations'} as of <span className="font-semibold text-slate-700">{currentDate} • {currentTime}</span>
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2.5 flex-nowrap justify-end shrink-0">
