@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ShieldCheck, LayoutDashboard, PlusCircle, Navigation, Wallet, 
+import {
+  ShieldCheck, LayoutDashboard, PlusCircle, Navigation, Wallet,
   AlertCircle, FileText, Bell, Settings, LogOut, Package, CheckCircle2, UserCheck, HelpCircle, ChevronRight, Sparkles, RotateCcw, ArrowLeftRight, Truck, ShoppingBag, Crown, Gift, QrCode, Calculator,
   PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import { TAB_ROUTES } from '../utils/routes';
 
-export default function Sidebar({ 
-  currentTab, 
-  setCurrentTab, 
-  user, 
-  currentRole, 
-  onSwitchRole, 
-  onSignOut, 
-  openNewShipmentModal, 
+export default function Sidebar({
+  currentTab,
+  setCurrentTab,
+  user,
+  currentRole,
+  onSwitchRole,
+  onSignOut,
+  openNewShipmentModal,
   notifCount = 0,
   isCollapsed: controlledCollapsed,
   onToggleCollapse
@@ -112,8 +112,8 @@ export default function Sidebar({
             )
           }
         ] : []),
-        ...(isSupplier 
-          ? [{ id: 'return-orders', label: 'Return Orders & Tracking', icon: RotateCcw, color: 'text-amber-600' }] 
+        ...(isSupplier
+          ? [{ id: 'return-orders', label: 'Return Orders & Tracking', icon: RotateCcw, color: 'text-amber-600' }]
           : [{ id: 'return-tracking', label: 'Returns & Tracking', icon: RotateCcw, color: 'text-amber-600' }]
         ),
         { id: 'track', label: 'Tracking & Journey', icon: Navigation, badge: null },
@@ -134,20 +134,20 @@ export default function Sidebar({
     {
       section: 'WALLET & REWARDS',
       items: [
-        { 
-          id: 'wallet', 
-          label: isSupplier ? 'Wallet & Payouts' : 'Order Wallet', 
-          icon: Wallet, 
+        {
+          id: 'wallet',
+          label: isSupplier ? 'Wallet & Payouts' : 'Order Wallet',
+          icon: Wallet,
           customBadge: isSupplier && (Number(user?.walletBalance) || 0) < 0 ? (
             <span className="bg-rose-100 text-rose-800 text-[9px] font-black px-1.5 py-0.5 rounded-full animate-pulse border border-rose-300">
               DUE -₹{Math.abs(Number(user?.walletBalance)).toFixed(0)}
             </span>
           ) : null
         },
-        { 
-          id: 'refer', 
-          label: 'Refer & Earn', 
-          icon: Gift, 
+        {
+          id: 'refer',
+          label: 'Refer & Earn',
+          icon: Gift,
           color: 'text-amber-500',
           customBadge: (
             <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-xs">
@@ -160,9 +160,9 @@ export default function Sidebar({
     {
       section: 'ACCOUNT & HELP',
       items: [
-        { 
-          id: 'notifications', 
-          label: 'Notifications', 
+        {
+          id: 'notifications',
+          label: 'Notifications',
           icon: Bell,
           customBadge: notifCount > 0 ? (
             <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
@@ -196,21 +196,20 @@ export default function Sidebar({
   ];
 
   return (
-    <aside 
-      className={`hidden md:flex flex-col h-screen sticky top-0 z-30 select-none bg-white/95 backdrop-blur-xl border-r border-slate-200/80 shadow-[2px_0_15px_-3px_rgba(0,0,0,0.03)] transition-[width] duration-300 ease-in-out shrink-0 ${
-        isCollapsed ? 'w-[72px]' : 'w-64'
-      }`}
+    <aside
+      className={`hidden md:flex flex-col h-screen sticky top-0 z-30 select-none bg-white/95 backdrop-blur-xl border-r border-slate-200/80 shadow-[2px_0_15px_-3px_rgba(0,0,0,0.03)] transition-[width] duration-300 ease-in-out shrink-0 ${isCollapsed ? 'w-[72px]' : 'w-64'
+        }`}
     >
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Modern Brand Header */}
         <div className={`border-b border-slate-100/90 transition-all ${isCollapsed ? 'p-3 flex flex-col items-center gap-2' : 'p-4'}`}>
           <div className={`flex items-center ${isCollapsed ? 'flex-col justify-center gap-2' : 'justify-between'} w-full`}>
             <div className={`flex items-center gap-2.5 min-w-0 ${isCollapsed ? 'justify-center' : ''}`}>
-              <img 
-                loading="lazy" 
-                src="/logo.jpg" 
-                alt="SecureKaro" 
-                className={`${isCollapsed ? 'w-8 h-8' : 'w-9 h-9'} rounded-xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white transition-all`} 
+              <img
+                loading="lazy"
+                src="/logo.jpg"
+                alt="SecureKaro"
+                className={`${isCollapsed ? 'w-8 h-8' : 'w-9 h-9'} rounded-xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white transition-all`}
               />
               {!isCollapsed && (
                 <div className="min-w-0 animate-in fade-in duration-150">
@@ -291,20 +290,17 @@ export default function Sidebar({
                         setCurrentTab(item.id);
                       }
                     }}
-                    className={`relative flex items-center rounded-xl transition-all duration-150 group btn-press cursor-pointer select-none ${
-                      isCollapsed 
-                        ? 'justify-center p-2.5 mx-auto w-10 h-10' 
+                    className={`relative flex items-center rounded-xl transition-all duration-150 group btn-press cursor-pointer select-none ${isCollapsed
+                        ? 'justify-center p-2.5 mx-auto w-10 h-10'
                         : 'justify-between px-3 py-2 w-full text-xs font-bold'
-                    } ${
-                      isActive
+                      } ${isActive
                         ? 'bg-gradient-to-r from-[#1E56E3] to-blue-600 text-white shadow-md shadow-blue-500/25 border border-blue-400/20'
                         : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-2.5'}`}>
-                      <Icon className={`w-4 h-4 transition-transform group-hover:scale-110 shrink-0 ${
-                        isActive ? 'text-white' : item.color || 'text-slate-500'
-                      }`} />
+                      <Icon className={`w-4 h-4 transition-transform group-hover:scale-110 shrink-0 ${isActive ? 'text-white' : item.color || 'text-slate-500'
+                        }`} />
                       {!isCollapsed && <span className="tracking-tight truncate">{item.label}</span>}
                     </div>
 
@@ -331,12 +327,12 @@ export default function Sidebar({
           ))}
         </div>
       </div>
- 
+
       {/* User Profile Badge at bottom */}
       <div className={`border-t border-slate-100 bg-slate-50/50 ${isCollapsed ? 'p-2' : 'p-3'}`}>
         {!isCollapsed ? (
           <div className="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition">
-            <div 
+            <div
               className="flex items-center gap-2 min-w-0 cursor-pointer flex-1"
               onClick={() => setCurrentTab('profile')}
               title="Open Profile & Bank Payout Settings"
@@ -375,7 +371,7 @@ export default function Sidebar({
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <div 
+            <div
               className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs cursor-pointer hover:scale-105 transition-transform"
               onClick={() => setCurrentTab('profile')}
               title={`Profile: ${user?.fullName || 'Kartick Das'}`}
