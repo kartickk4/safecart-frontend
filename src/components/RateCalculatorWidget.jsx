@@ -551,7 +551,7 @@ export default function RateCalculatorWidget({
           </div>
 
           {/* SAVINGS CALLOUT BANNER */}
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 flex items-center justify-between gap-3 text-emerald-950">
+          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 flex items-center justify-between gap-3 text-emerald-950 mask-rise">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
                 <Sparkles className="w-4 h-4" />
@@ -586,11 +586,13 @@ export default function RateCalculatorWidget({
               const codFee = Number(q.codCharge || 0);
               const freightPart = isCodMode ? Math.max(0, totalRate - codFee) : totalRate;
 
+              const delayIndex = (idx % 4) + 1;
+
               return (
                 <div
                   key={q.slug || idx}
                   onClick={() => setSelectedQuote(q)}
-                  className={`p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 cursor-pointer ${
+                  className={`p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 cursor-pointer mask-rise mask-rise-delay-${delayIndex} ${
                     isSelected
                       ? 'bg-blue-50/70 border-[#1E56E3] shadow-sm'
                       : isCheapest

@@ -399,3 +399,66 @@
 .bouncing-ball-shadow {
   animation: ballGroundShadow 0.75s infinite;
 }
+
+/* ── 6. Mask Rise Horizon Reveal Animations (Apple & Linear Grade) ────────── */
+@keyframes maskRiseSoft {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes maskRiseUp {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mask-rise-container {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.mask-rise-container-block {
+  overflow: hidden;
+  display: block;
+}
+
+.mask-rise {
+  animation: maskRiseSoft 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mask-rise-fast {
+  animation: maskRiseSoft 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mask-rise-clip {
+  animation: maskRiseUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mask-rise-delay-1 { animation-delay: 50ms; }
+.mask-rise-delay-2 { animation-delay: 100ms; }
+.mask-rise-delay-3 { animation-delay: 150ms; }
+.mask-rise-delay-4 { animation-delay: 200ms; }
+.mask-rise-delay-5 { animation-delay: 250ms; }
+.mask-rise-delay-6 { animation-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mask-rise,
+  .mask-rise-fast,
+  .mask-rise-clip {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

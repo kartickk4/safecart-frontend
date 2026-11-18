@@ -25,6 +25,8 @@ import {
 import { shipmentAPI, notificationAPI } from '../services/api';
 import { MetricCardSkeleton, ShipmentRowSkeleton } from '../components/SkeletonLoader';
 import { SpinnerArc, EqualizerBars, TextShimmer } from '../components/Loaders';
+import MaskRise from '../components/MaskRise';
+import AnimatedNumber, { AnimatedBalance } from '../components/AnimatedNumber';
 
 ChartJS.register(
   CategoryScale,
@@ -697,7 +699,7 @@ export default function DashboardView({
       {/* 4 PRIMARY EXECUTIVE KPI CARDS (2x2 on Mobile, 4x1 on Desktop) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
         {/* KPI 1: Active In-Transit Orders */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between mask-rise mask-rise-delay-1">
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Money in Hold</span>
@@ -707,7 +709,9 @@ export default function DashboardView({
           </div>
           <div className="relative">
             <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
-              ₹{analytics.activePipelineHeld.toLocaleString('en-IN')}
+              <MaskRise clip delay={60}>
+                <AnimatedBalance value={analytics.activePipelineHeld} decimals={0} />
+              </MaskRise>
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
               <span className="text-blue-600 font-bold bg-blue-50 px-1 py-0.2 rounded">
@@ -719,7 +723,7 @@ export default function DashboardView({
         </div>
 
         {/* KPI 2: Realized / Payout Revenue */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-emerald-300 transition group relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-emerald-300 transition group relative overflow-hidden flex flex-col justify-between mask-rise mask-rise-delay-2">
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-emerald-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Paid to Bank</span>
@@ -729,7 +733,9 @@ export default function DashboardView({
           </div>
           <div className="relative">
             <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
-              ₹{analytics.totalReleasedRevenue.toLocaleString('en-IN')}
+              <MaskRise clip delay={120}>
+                <AnimatedBalance value={analytics.totalReleasedRevenue} decimals={0} />
+              </MaskRise>
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
               <span className="text-emerald-700 font-bold bg-emerald-50 px-1 py-0.2 rounded">
@@ -741,7 +747,7 @@ export default function DashboardView({
         </div>
 
         {/* KPI 3: Fulfillment Success Rate */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-indigo-300 transition group relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-indigo-300 transition group relative overflow-hidden flex flex-col justify-between mask-rise mask-rise-delay-3">
           <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-indigo-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Fulfillment</span>
@@ -751,7 +757,11 @@ export default function DashboardView({
           </div>
           <div className="relative">
             <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
-              {analytics.deliverySuccessRate}%
+              <MaskRise clip delay={180}>
+                <span className="flex items-center">
+                  <AnimatedNumber value={analytics.deliverySuccessRate} />%
+                </span>
+              </MaskRise>
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
               <span className="text-indigo-700 font-bold bg-indigo-50 px-1 py-0.2 rounded">
@@ -763,7 +773,7 @@ export default function DashboardView({
         </div>
 
         {/* KPI 4: Pending Buyer Confirmations */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-amber-300 transition group relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-amber-300 transition group relative overflow-hidden flex flex-col justify-between mask-rise mask-rise-delay-4">
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-amber-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Sign-Off Due</span>
@@ -773,7 +783,9 @@ export default function DashboardView({
           </div>
           <div className="relative">
             <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
-              ₹{analytics.pendingSignoffAmount.toLocaleString('en-IN')}
+              <MaskRise clip delay={240}>
+                <AnimatedBalance value={analytics.pendingSignoffAmount} decimals={0} />
+              </MaskRise>
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
               <span className="text-amber-700 font-bold bg-amber-50 px-1 py-0.2 rounded">
@@ -787,7 +799,7 @@ export default function DashboardView({
 
       {/* SECONDARY OPERATIONAL EFFICIENCY METRICS (4 Micro Cards) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3 mask-rise mask-rise-delay-1">
           <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-blue-600 font-bold shadow-2xs">
             <Truck className="w-4 h-4" />
           </div>
@@ -797,7 +809,7 @@ export default function DashboardView({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3 mask-rise mask-rise-delay-2">
           <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-amber-600 font-bold shadow-2xs">
             <RotateCcw className="w-4 h-4" />
           </div>
@@ -807,7 +819,7 @@ export default function DashboardView({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3 mask-rise mask-rise-delay-3">
           <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-bold shadow-2xs text-amber-600">
             <Truck className="w-4 h-4" />
           </div>
@@ -819,7 +831,7 @@ export default function DashboardView({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3 mask-rise mask-rise-delay-4">
           <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-600 font-bold shadow-2xs">
             <Percent className="w-4 h-4" />
           </div>
@@ -847,7 +859,7 @@ export default function DashboardView({
           <button
             type="button"
             onClick={() => onNavigateTab ? onNavigateTab('ai-agent') : null}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-purple-50/70 to-indigo-50/50 hover:to-indigo-100/70 border border-purple-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-purple-50/70 to-indigo-50/50 hover:to-indigo-100/70 border border-purple-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-1"
           >
             <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
               <Sparkles className="w-4 h-4 text-amber-300" />
@@ -867,7 +879,7 @@ export default function DashboardView({
           <button
             type="button"
             onClick={openNewShipmentModal}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-blue-50/70 to-sky-50/50 hover:to-sky-100/70 border border-blue-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-blue-50/70 to-sky-50/50 hover:to-sky-100/70 border border-blue-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-2"
           >
             <div className="w-8 h-8 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
               <Package className="w-4 h-4" />
@@ -887,7 +899,7 @@ export default function DashboardView({
           <button
             type="button"
             onClick={onNavigateRateCalc}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-sky-50/70 to-cyan-50/50 hover:to-cyan-100/70 border border-sky-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-sky-50/70 to-cyan-50/50 hover:to-cyan-100/70 border border-sky-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-3"
           >
             <div className="w-8 h-8 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
               <Calculator className="w-4 h-4" />
@@ -906,7 +918,7 @@ export default function DashboardView({
           <button
             type="button"
             onClick={() => onNavigateTab ? onNavigateTab('create-shipment') : openNewShipmentModal?.()}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-teal-50/70 to-emerald-50/50 hover:to-emerald-100/70 border border-teal-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-teal-50/70 to-emerald-50/50 hover:to-emerald-100/70 border border-teal-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-4"
           >
             <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
               <FileSpreadsheet className="w-4 h-4" />
@@ -925,7 +937,7 @@ export default function DashboardView({
           <button
             type="button"
             onClick={() => onNavigateTab ? onNavigateTab('return-orders') : null}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-amber-50/70 to-orange-50/50 hover:to-orange-100/70 border border-amber-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-amber-50/70 to-orange-50/50 hover:to-orange-100/70 border border-amber-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-5"
           >
             <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
               <RotateCcw className="w-4 h-4" />
@@ -947,7 +959,7 @@ export default function DashboardView({
           <button
             type="button"
             onClick={() => onNavigateTab ? onNavigateTab('wallet') : null}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-emerald-50/70 to-green-50/50 hover:to-green-100/70 border border-emerald-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-emerald-50/70 to-green-50/50 hover:to-green-100/70 border border-emerald-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-6"
           >
             <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
               <IndianRupee className="w-4 h-4" />

@@ -643,7 +643,7 @@ export default function WalletModal({ user, onUpdateUser }) {
   return (
     <div className="p-3 sm:p-6 md:p-8 max-w-6xl mx-auto space-y-6 sm:space-y-8 select-none">
       {/* Clean Header */}
-      <div>
+      <div className="mask-rise">
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
           {isSupplier ? 'Supplier Wallet & Payouts' : 'Buyer Order Wallet'}
         </h1>
@@ -660,7 +660,7 @@ export default function WalletModal({ user, onUpdateUser }) {
         {isSupplier ? (
           <>
             {/* Supplier Card 1: Main Unified Wallet Card */}
-            <div className="sm:col-span-2 lg:col-span-2 bg-gradient-to-br from-[#1E3A6E] via-[#1A459C] to-[#1E56E3] text-white p-4 sm:p-6 md:p-7 rounded-2xl sm:rounded-3xl shadow-xl shadow-blue-900/20 border border-blue-400/20 relative overflow-hidden flex flex-col justify-between group hover:shadow-2xl hover:shadow-blue-900/30 transition">
+            <div className="sm:col-span-2 lg:col-span-2 bg-gradient-to-br from-[#1E3A6E] via-[#1A459C] to-[#1E56E3] text-white p-4 sm:p-6 md:p-7 rounded-2xl sm:rounded-3xl shadow-xl shadow-blue-900/20 border border-blue-400/20 relative overflow-hidden flex flex-col justify-between group hover:shadow-2xl hover:shadow-blue-900/30 transition mask-rise mask-rise-delay-1">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition pointer-events-none">
                 <Wallet className="w-32 h-32 text-white" />
               </div>
@@ -776,7 +776,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             </div>
 
             {/* Supplier Card 2: Money In Hold */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition mask-rise mask-rise-delay-2">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Money In Hold</span>
@@ -798,7 +798,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             </div>
 
             {/* Supplier Card 3: Released Payouts */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition mask-rise mask-rise-delay-3">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Released Payouts</span>
@@ -824,7 +824,7 @@ export default function WalletModal({ user, onUpdateUser }) {
         ) : (
           <>
             {/* Receiver Card 1: Order Balance */}
-            <div className="bg-gradient-to-br from-[#1E3A6E] via-[#1A459C] to-[#1E56E3] text-white p-6 rounded-3xl shadow-xl shadow-blue-900/20 border border-blue-400/20 relative overflow-hidden flex flex-col justify-between group hover:shadow-2xl hover:shadow-blue-900/30 transition">
+            <div className="bg-gradient-to-br from-[#1E3A6E] via-[#1A459C] to-[#1E56E3] text-white p-6 rounded-3xl shadow-xl shadow-blue-900/20 border border-blue-400/20 relative overflow-hidden flex flex-col justify-between group hover:shadow-2xl hover:shadow-blue-900/30 transition mask-rise mask-rise-delay-1">
               <div className="absolute top-0 right-0 p-4 opacity-15 group-hover:opacity-25 transition">
                 <ShieldCheck className="w-24 h-24 text-white" />
               </div>
@@ -864,7 +864,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             </div>
 
             {/* Receiver Card 2: Active Order Funds */}
-            <div className="bg-gradient-to-br from-[#1E56E3] to-[#1442B5] text-white p-6 rounded-3xl shadow-lg shadow-blue-500/20 border border-blue-400/30 relative overflow-hidden flex flex-col justify-between">
+            <div className="bg-gradient-to-br from-[#1E56E3] to-[#1442B5] text-white p-6 rounded-3xl shadow-lg shadow-blue-500/20 border border-blue-400/30 relative overflow-hidden flex flex-col justify-between mask-rise mask-rise-delay-2">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[11px] font-black text-blue-200 uppercase tracking-wider">Active Orders</span>
@@ -884,7 +884,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             </div>
 
             {/* Receiver Card 3: Total Purchased */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition mask-rise mask-rise-delay-3">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Total Purchased</span>
@@ -908,7 +908,7 @@ export default function WalletModal({ user, onUpdateUser }) {
             </div>
 
             {/* Receiver Card 4: Pending Release */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition mask-rise mask-rise-delay-4">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Pending Release</span>
