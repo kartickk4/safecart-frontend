@@ -24,6 +24,7 @@ import {
 } from 'chart.js';
 import { shipmentAPI, notificationAPI } from '../services/api';
 import { MetricCardSkeleton, ShipmentRowSkeleton } from '../components/SkeletonLoader';
+import { SpinnerArc, EqualizerBars, TextShimmer } from '../components/Loaders';
 
 ChartJS.register(
   CategoryScale,
@@ -554,7 +555,7 @@ export default function DashboardView({
             title="Refresh Live Analytics Data"
             className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold cursor-pointer shrink-0"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin text-blue-600' : ''}`} />
+            {loading ? <SpinnerArc size="xs" color="text-blue-600" /> : <RefreshCw className="w-3.5 h-3.5 text-slate-500" />}
             <span>Sync</span>
           </button>
         </div>
@@ -696,7 +697,7 @@ export default function DashboardView({
       {/* 4 PRIMARY EXECUTIVE KPI CARDS (2x2 on Mobile, 4x1 on Desktop) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
         {/* KPI 1: Active In-Transit Orders */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Money in Hold</span>
@@ -705,7 +706,7 @@ export default function DashboardView({
             </div>
           </div>
           <div className="relative">
-            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight truncate">
+            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
               ₹{analytics.activePipelineHeld.toLocaleString('en-IN')}
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
@@ -718,7 +719,7 @@ export default function DashboardView({
         </div>
 
         {/* KPI 2: Realized / Payout Revenue */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition group relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-emerald-300 transition group relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-emerald-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Paid to Bank</span>
@@ -727,7 +728,7 @@ export default function DashboardView({
             </div>
           </div>
           <div className="relative">
-            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight truncate">
+            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
               ₹{analytics.totalReleasedRevenue.toLocaleString('en-IN')}
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
@@ -740,7 +741,7 @@ export default function DashboardView({
         </div>
 
         {/* KPI 3: Fulfillment Success Rate */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition group relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-indigo-300 transition group relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-indigo-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Fulfillment</span>
@@ -749,7 +750,7 @@ export default function DashboardView({
             </div>
           </div>
           <div className="relative">
-            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight truncate">
+            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
               {analytics.deliverySuccessRate}%
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
@@ -762,7 +763,7 @@ export default function DashboardView({
         </div>
 
         {/* KPI 4: Pending Buyer Confirmations */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition group relative overflow-hidden flex flex-col justify-between">
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-amber-300 transition group relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-amber-100 transition pointer-events-none"></div>
           <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
             <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Sign-Off Due</span>
@@ -771,7 +772,7 @@ export default function DashboardView({
             </div>
           </div>
           <div className="relative">
-            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight truncate">
+            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
               ₹{analytics.pendingSignoffAmount.toLocaleString('en-IN')}
             </h3>
             <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
@@ -791,7 +792,7 @@ export default function DashboardView({
             <Truck className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">In Transit Transit</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase">In Transit</p>
             <p className="text-base font-black text-slate-800">{analytics.statusCounts.inTransit} parcels</p>
           </div>
         </div>
@@ -826,6 +827,140 @@ export default function DashboardView({
             <p className="text-[10px] font-bold text-slate-400 uppercase">Settlement Speed</p>
             <p className="text-base font-black text-slate-800">&lt; 4 Hours <span className="text-[10px] font-medium text-emerald-600 font-bold">Fast</span></p>
           </div>
+        </div>
+      </div>
+
+            {/* ── OPERATIONS HUB & SPOKE LAUNCHER (Central Command Center radiating to primary workflows) ── */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
+            <h4 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase">
+              Operations Hub · Quick Actions
+            </h4>
+          </div>
+          <span className="text-[10px] font-bold text-slate-400">Radiating Workflows</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+          {/* Spoke 1: 1-Click AI Agent */}
+          <button
+            type="button"
+            onClick={() => onNavigateTab ? onNavigateTab('ai-agent') : null}
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-purple-50/70 to-indigo-50/50 hover:to-indigo-100/70 border border-purple-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+          >
+            <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
+              <Sparkles className="w-4 h-4 text-amber-300" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-purple-950 flex items-center gap-1">
+                <span>AI Agent</span>
+                <span className="text-[8px] bg-purple-600 text-white px-1 py-0.2 rounded font-black">FAST</span>
+              </p>
+              <p className="text-[10px] text-purple-700/80 mt-0.5 font-medium leading-tight">
+                WhatsApp & Chat Parser
+              </p>
+            </div>
+          </button>
+
+          {/* Spoke 2: Create Shipment */}
+          <button
+            type="button"
+            onClick={openNewShipmentModal}
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-blue-50/70 to-sky-50/50 hover:to-sky-100/70 border border-blue-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+          >
+            <div className="w-8 h-8 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
+              <Package className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-blue-950 flex items-center gap-1">
+                <span>Book Courier</span>
+                <span className="text-[8px] bg-blue-600 text-white px-1 py-0.2 rounded font-black">+</span>
+              </p>
+              <p className="text-[10px] text-blue-700/80 mt-0.5 font-medium leading-tight">
+                9+ Integrated Partners
+              </p>
+            </div>
+          </button>
+
+          {/* Spoke 3: Rate Calculator */}
+          <button
+            type="button"
+            onClick={onNavigateRateCalc}
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-sky-50/70 to-cyan-50/50 hover:to-cyan-100/70 border border-sky-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+          >
+            <div className="w-8 h-8 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
+              <Calculator className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-sky-950 flex items-center gap-1">
+                <span>Rate Compare</span>
+              </p>
+              <p className="text-[10px] text-sky-700/80 mt-0.5 font-medium leading-tight">
+                Live PIN Rates & ETA
+              </p>
+            </div>
+          </button>
+
+          {/* Spoke 4: Bulk CSV/Excel */}
+          <button
+            type="button"
+            onClick={() => onNavigateTab ? onNavigateTab('create-shipment') : openNewShipmentModal?.()}
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-teal-50/70 to-emerald-50/50 hover:to-emerald-100/70 border border-teal-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+          >
+            <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
+              <FileSpreadsheet className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-teal-950 flex items-center gap-1">
+                <span>Bulk Upload</span>
+              </p>
+              <p className="text-[10px] text-teal-700/80 mt-0.5 font-medium leading-tight">
+                Excel & CSV Manifest
+              </p>
+            </div>
+          </button>
+
+          {/* Spoke 5: Returns & RTO Recovery */}
+          <button
+            type="button"
+            onClick={() => onNavigateTab ? onNavigateTab('return-orders') : null}
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-amber-50/70 to-orange-50/50 hover:to-orange-100/70 border border-amber-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+          >
+            <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
+              <RotateCcw className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-amber-950 flex items-center gap-1">
+                <span>Returns & RTO</span>
+                {analytics.returnCount > 0 && (
+                  <span className="text-[8px] bg-amber-500 text-white px-1 py-0.2 rounded font-black">{analytics.returnCount}</span>
+                )}
+              </p>
+              <p className="text-[10px] text-amber-700/80 mt-0.5 font-medium leading-tight">
+                Reverse QC & Shield
+              </p>
+            </div>
+          </button>
+
+          {/* Spoke 6: Wallet & Fast Payouts */}
+          <button
+            type="button"
+            onClick={() => onNavigateTab ? onNavigateTab('wallet') : null}
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-emerald-50/70 to-green-50/50 hover:to-green-100/70 border border-emerald-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between"
+          >
+            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
+              <IndianRupee className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-emerald-950 flex items-center gap-1">
+                <span>Wallet Payout</span>
+              </p>
+              <p className="text-[10px] text-emerald-700/80 mt-0.5 font-medium leading-tight">
+                Instant UPI & Bank Payout
+              </p>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -1230,7 +1365,10 @@ export default function DashboardView({
           <div>
             <div className="flex items-center justify-between mb-1">
               <h3 className="font-extrabold text-slate-900 text-base">Delivery Audit Log</h3>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <div className="flex items-center gap-1.5">
+                <EqualizerBars count={3} color="bg-emerald-500" />
+                <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider">Live</span>
+              </div>
             </div>
             <p className="text-xs text-slate-500 mb-4">Immutable transaction stream</p>
 
@@ -1264,7 +1402,7 @@ export default function DashboardView({
             <div className="p-3 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 text-slate-700">
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="w-4 h-4 text-blue-600" />
-                <span className="text-[11px] font-extrabold text-blue-900">Delivery Guarantee Active</span>
+                <TextShimmer variant="blue" className="text-[11px] font-extrabold text-blue-900">Delivery Guarantee Active</TextShimmer>
               </div>
               <p className="text-[10px] text-slate-500 leading-relaxed">
                 All payouts are backed by verified delivery OTP sign-off.

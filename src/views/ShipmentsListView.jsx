@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Filter, Eye, ChevronLeft, ChevronRight, Download, Plus, Box, CheckCircle2, Clock, AlertTriangle, QrCode, Camera, RotateCcw } from 'lucide-react';
 import { shipmentAPI } from '../services/api';
 import QrScannerModal from '../components/QrScannerModal';
-import { SkeletonLoader } from '../components/Loaders';
+import { SkeletonLoader, BouncingBall } from '../components/Loaders';
 import { formatCarrierName, formatAwbCode } from '../utils/formatters';
 
 export default function ShipmentsListView({ onSelectShipment, openNewShipmentModal, user, currentRole, isSupplier, onRepeatShipment }) {
@@ -111,6 +111,21 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
     }
   };
 
+  const tabCounts = useMemo(() => {
+    let held = 0, released = 0, returns = 0;
+    shipments.forEach(s => {
+      if (s.status === 'Released') released++;
+      else if (['Held', 'In Transit', 'Out for Delivery', 'Pending Pickup', 'Awaiting Payment'].includes(s.status)) held++;
+      if ((s.returnStatus && s.returnStatus !== 'None') || s.status?.includes('Return') || s.returnAwbCode) returns++;
+    });
+    return {
+      All: shipments.length,
+      Held: held,
+      Released: released,
+      Returns: returns
+    };
+  }, [shipments]);
+
   const filtered = shipments.filter(item => {
     const matchesSearch = (item.shipmentId || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                           (item.receiverName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -170,17 +185,35 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
       <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Filter Tabs & Search */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          {/* Filter Pills */}
-          <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 text-xs font-semibold text-slate-600 overflow-x-auto no-scrollbar">
-            {['All', 'Held', 'Released', 'Returns'].map(tab => (
-              <button
-                key={tab}
-                onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
-                className={`px-3.5 py-1.5 rounded-lg whitespace-nowrap transition text-xs ${activeTab === tab ? 'bg-white text-[#1E56E3] shadow-xs font-bold' : 'hover:text-slate-900'}`}
-              >
-                {tab}
-              </button>
-            ))}
+          {/* Segmented Tab Bar */}
+          <div className="bg-slate-100/90 p-1 rounded-2xl flex items-center gap-1 text-xs font-bold text-slate-600 overflow-x-auto no-scrollbar border border-slate-200/80 shadow-inner shrink-0">
+            {[
+              { key: 'All', label: 'All Orders' },
+              { key: 'Held', label: 'In Transit' },
+              { key: 'Released', label: 'Settled' },
+              { key: 'Returns', label: 'Returns' }
+            ].map(tab => {
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => { setActiveTab(tab.key); setCurrentPage(1); }}
+                  className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-all text-xs font-bold flex items-center gap-1.5 btn-press cursor-pointer ${
+                    isActive 
+                      ? 'bg-white text-[#1E56E3] shadow-sm shadow-slate-900/5 font-extrabold scale-[1.01]' 
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/60'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span className={`text-[9.5px] font-black px-1.5 py-0.2 rounded-full font-mono tabular-nums ${
+                    isActive ? 'bg-blue-50 text-[#1E56E3]' : 'bg-slate-200/80 text-slate-600'
+                  }`}>
+                    {tabCounts[tab.key] || 0}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Search Box */}
@@ -202,7 +235,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
             <SkeletonLoader type="shipment" count={3} />
           ) : paginated.length === 0 ? (
             <div className="py-10 text-center text-slate-400">
-              <Box className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+              <BouncingBall size="md" className="mx-auto mb-3" />
               <p className="font-bold text-slate-600 text-sm">
                 {isMerchant ? 'No shipments found' : 'No orders or packages found'}
               </p>
@@ -320,7 +353,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
               ) : paginated.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="py-12 text-center text-slate-400">
-                    <Box className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <BouncingBall size="md" className="mx-auto mb-3" />
                     <p className="font-bold text-slate-600 text-sm">
                       {isMerchant ? 'No shipments found' : 'No orders or packages found'}
                     </p>

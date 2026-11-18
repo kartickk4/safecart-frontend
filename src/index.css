@@ -1,33 +1,92 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     background-color: #F8FAFC;
     color: #0F172A;
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-tap-highlight-color: transparent;
+    letter-spacing: -0.011em;
   }
 
-  /* Clean, rounded modern numbers everywhere (no dotted or slashed zeros) */
+  ::selection {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+  }
+
+  /* Accessible focus ring standards */
+  :focus-visible {
+    outline: 2px solid rgba(30, 86, 227, 0.45);
+    outline-offset: 2px;
+  }
+
+  /* Clean, rounded modern numbers with tabular figure support */
   .font-mono,
   code,
   kbd,
   samp,
-  pre {
+  pre,
+  .tabular-nums {
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
-    font-variant-numeric: normal;
-    font-feature-settings: normal;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "cv05" 1;
+    letter-spacing: -0.02em;
   }
 }
 
-/* Tactile Spring Press for Native Mobile Feel */
+/* ── Impeccable & Emil Kowalski Tactile Micro-Interactions ───────────────── */
+
 .press-spring {
-  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s ease;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease;
 }
 .press-spring:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
+}
+
+.btn-press {
+  transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, background-color 0.14s ease;
+}
+.btn-press:active {
+  transform: scale(0.975);
+}
+
+/* Multi-layered Designer Elevation Shadows */
+.shadow-card-designer {
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 3px 12px -2px rgba(15, 23, 42, 0.03);
+}
+
+.shadow-card-hover {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+.shadow-card-hover:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px -4px rgba(15, 23, 42, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+}
+
+.shadow-modal-designer {
+  box-shadow: 0 20px 45px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.05);
+}
+
+/* Glassmorphism Surface Layer */
+.glass-surface {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.glass-surface-dark {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 /* Skeleton Loading Shimmer */
@@ -55,13 +114,13 @@
   scrollbar-width: none;
 }
 
-/* Custom Scrollbar */
+/* Refined Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
@@ -71,40 +130,28 @@
   background: #94A3B8;
 }
 
-/* Status Pills */
+/* Semantic Status Pills (Impeccable Color Architecture) */
 .pill-held {
-  @apply bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-xs font-semibold inline-flex items-center gap-1.5;
+  @apply bg-blue-50/90 text-[#1E56E3] border border-blue-200/90 px-2.5 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5 shadow-sm;
 }
 .pill-released {
-  @apply bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-xs font-semibold inline-flex items-center gap-1.5;
+  @apply bg-emerald-50/90 text-emerald-700 border border-emerald-200/90 px-2.5 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5 shadow-sm;
 }
 .pill-disputed {
-  @apply bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-0.5 rounded-full text-xs font-semibold inline-flex items-center gap-1.5;
+  @apply bg-rose-50/90 text-rose-700 border border-rose-200/90 px-2.5 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5 shadow-sm;
 }
 
 .pill-delivery-transit {
-  @apply bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-indigo-50/90 text-indigo-700 border border-indigo-200/80 px-2.5 py-0.5 rounded-full text-xs font-semibold shadow-sm;
 }
 .pill-delivery-out {
-  @apply bg-amber-50 text-amber-700 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-amber-50/90 text-amber-800 border border-amber-200/80 px-2.5 py-0.5 rounded-full text-xs font-semibold shadow-sm;
 }
 .pill-delivery-delivered {
-  @apply bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-emerald-50/90 text-emerald-800 border border-emerald-200/80 px-2.5 py-0.5 rounded-full text-xs font-semibold shadow-sm;
 }
 .pill-delivery-delayed {
-  @apply bg-red-50 text-red-600 px-2.5 py-0.5 rounded-full text-xs font-medium;
-}
-
-/* Smooth Transitions */
-.card-shadow {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
-}
-.card-hover {
-  transition: all 0.2s ease-in-out;
-}
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  @apply bg-rose-50/90 text-rose-700 border border-rose-200/80 px-2.5 py-0.5 rounded-full text-xs font-semibold shadow-sm;
 }
 
 /* Hide Google reCAPTCHA Badge */
@@ -115,7 +162,33 @@
   display: none !important;
 }
 
-/* ── AI Agent / Voice Animations ── */
+/* ── Smooth View Transitions (Emil Kowalski Motion Physics) ──────────────── */
+@keyframes viewEnter {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.view-enter {
+  animation: viewEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes topProgress {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-top-progress {
+  animation: topProgress 1.2s ease-in-out infinite;
+}
+
+/* ── AI Agent / Voice Composer Animations ────────────────────────────────── */
 @keyframes micPulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4); }
   50%       { box-shadow: 0 0 0 8px rgba(225, 29, 72, 0); }
@@ -137,17 +210,17 @@
 }
 
 @keyframes msgSlideIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes floatAnim {
   0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
+  50%      { transform: translateY(-6px); }
 }
 
 @keyframes widgetSlideIn {
-  from { opacity: 0; transform: translateY(24px) scale(0.95); }
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0)   scale(1); }
 }
 
@@ -156,7 +229,34 @@
   to   { opacity: 1;   transform: scale(1); }
 }
 
-/* ── Print Optimization for Shipping Labels & Tax Statements ── */
+.mic-ripple {
+  animation: micRipple 1.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes micRipple {
+  0%   { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+
+.scan-sweep-line {
+  animation: scanSweep 2.1s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes scanSweep {
+  0%, 100% { transform: translateY(-100%); opacity: 0.25; }
+  50%      { transform: translateY(100%); opacity: 0.85; }
+}
+
+.animate-dock-reveal {
+  animation: dockReveal 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes dockReveal {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Print Optimization for Shipping Labels & Tax Statements ─────────────── */
 @media print {
   body * {
     visibility: hidden;
@@ -182,57 +282,120 @@
   }
 }
 
+/* ── 5 CRAFT ANIMATIONS (Spinner Arc, Bouncing Dot, Equalizer, Text Shimmer, Bouncing Ball) ── */
 
-/* Smooth View Transition */
-@keyframes viewEnter {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
+/* 1. Spinner Arc (Thin 270-degree conic rotation) */
+@keyframes spinnerArcRotate {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner-arc {
+  border-radius: 9999px;
+  border-style: solid;
+  border-color: transparent;
+  border-top-color: currentColor;
+  border-right-color: currentColor;
+  animation: spinnerArcRotate 0.65s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* 2. Bouncing Dots (Physics-based gravity rise & fall) */
+@keyframes bounceDotGravity {
+  0%, 100% {
     transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  50% {
+    transform: translateY(-7px);
+    animation-timing-function: cubic-bezier(0.32, 0, 0.67, 0);
   }
 }
 
-.view-enter {
-  animation: viewEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.bouncing-dot-1 {
+  animation: bounceDotGravity 0.9s infinite;
+  animation-delay: 0s;
+}
+.bouncing-dot-2 {
+  animation: bounceDotGravity 0.9s infinite;
+  animation-delay: 0.15s;
+}
+.bouncing-dot-3 {
+  animation: bounceDotGravity 0.9s infinite;
+  animation-delay: 0.3s;
 }
 
-@keyframes topProgress {
-  0% { transform: translateX(-100%); }
-  50% { transform: translateX(0%); }
-  100% { transform: translateX(100%); }
+/* 3. Equalizer (Audio & Telemetry frequency bars) */
+@keyframes equalizerPulse {
+  0%, 100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
 }
 
-.animate-top-progress {
-  animation: topProgress 1.2s ease-in-out infinite;
+.equalizer-bar {
+  transform-origin: bottom;
+  animation: equalizerPulse 0.9s ease-in-out infinite;
 }
 
-/* Pro Composer Micro-Animations */
-@keyframes micRipple {
-  0%   { transform: scale(1); opacity: 0.55; }
-  100% { transform: scale(1.65); opacity: 0; }
+/* 4. Text Shimmer (Moving ambient metallic light) */
+@keyframes textShimmerSweep {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-.mic-ripple {
-  animation: micRipple 1.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+.text-shimmer {
+  background: linear-gradient(90deg, #1E56E3 0%, #3B82F6 25%, #93C5FD 50%, #3B82F6 75%, #1E56E3 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmerSweep 2.4s linear infinite;
 }
 
-@keyframes scanSweep {
-  0%, 100% { transform: translateY(-100%); opacity: 0.25; }
-  50%      { transform: translateY(100%); opacity: 0.85; }
+.text-shimmer-slate {
+  background: linear-gradient(90deg, #475569 0%, #94A3B8 25%, #F8FAFC 50%, #94A3B8 75%, #475569 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmerSweep 2.4s linear infinite;
 }
 
-.scan-sweep-line {
-  animation: scanSweep 2.1s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+.text-shimmer-amber {
+  background: linear-gradient(90deg, #D97706 0%, #F59E0B 25%, #FEF3C7 50%, #F59E0B 75%, #D97706 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmerSweep 2.4s linear infinite;
 }
 
-@keyframes dockReveal {
-  from { opacity: 0; transform: translateY(6px) scale(0.985); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+/* 5. Bouncing Ball (Physical squash-and-stretch on ground impact) */
+@keyframes ballSquashBounce {
+  0%, 100% {
+    transform: translateY(-16px) scale(0.92, 1.08);
+    animation-timing-function: cubic-bezier(0.5, 0.05, 0.8, 0.5);
+  }
+  50% {
+    transform: translateY(0) scale(1.18, 0.82);
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+  }
 }
 
-.animate-dock-reveal {
-  animation: dockReveal 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+@keyframes ballGroundShadow {
+  0%, 100% {
+    transform: scale(0.55);
+    opacity: 0.25;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.65;
+  }
+}
+
+.bouncing-ball-sphere {
+  animation: ballSquashBounce 0.75s infinite;
+}
+
+.bouncing-ball-shadow {
+  animation: ballGroundShadow 0.75s infinite;
 }

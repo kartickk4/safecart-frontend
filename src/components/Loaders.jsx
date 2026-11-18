@@ -247,6 +247,7 @@ export function PulsingBeacon({ color = 'blue', label = null }) {
 export function ButtonLoader({
   loading = false,
   loadingText = 'Processing...',
+  spinnerType = 'arc',
   icon = null,
   children,
   disabled = false,
@@ -274,7 +275,11 @@ export function ButtonLoader({
     >
       {loading ? (
         <>
-          <SpinnerLoader size="sm" color={variant === 'outline' || variant === 'secondary' ? 'primary' : 'white'} />
+          {spinnerType === 'arc' ? (
+            <SpinnerArc size="sm" color={variant === 'outline' || variant === 'secondary' ? 'text-[#1E56E3]' : 'text-white'} />
+          ) : (
+            <SpinnerLoader size="sm" color={variant === 'outline' || variant === 'secondary' ? 'primary' : 'white'} />
+          )}
           <span>{loadingText}</span>
         </>
       ) : (
@@ -418,7 +423,7 @@ export function PullToRefresh({
       >
         <div className="w-10 h-10 rounded-full bg-white shadow-lg border border-slate-200/90 flex items-center justify-center text-[#1E56E3]">
           {isRefreshing ? (
-            <RefreshCw className="w-4 h-4 animate-spin text-[#1E56E3]" />
+            <SpinnerArc size="sm" color="text-[#1E56E3]" />
           ) : (
             <ArrowDown 
               className="w-4 h-4 transition-transform duration-100" 
@@ -444,6 +449,94 @@ export function PullToRefresh({
   );
 }
 
+
+/* ==========================================================================
+   7. 5 CRAFT ANIMATED LOADERS (Spinner Arc, Bouncing Dots, Equalizer, Text Shimmer, Bouncing Ball)
+   ========================================================================== */
+
+/** 1. SPINNER ARC (Thin 270-degree continuous conic arc) */
+export function SpinnerArc({ size = 'md', className = '', color = 'text-[#1E56E3]' }) {
+  const sizeMap = {
+    xs: 'w-3.5 h-3.5 border-[1.5px]',
+    sm: 'w-4 h-4 border-2',
+    md: 'w-5 h-5 border-2',
+    lg: 'w-7 h-7 border-[2.5px]',
+    xl: 'w-10 h-10 border-3'
+  };
+  return (
+    <div 
+      className={`spinner-arc shrink-0 ${sizeMap[size] || sizeMap.md} ${color} ${className}`}
+      role="status"
+      aria-label="Loading"
+    />
+  );
+}
+
+/** 2. BOUNCING DOTS (Physics-based gravity rise & fall) */
+export function BouncingDots({ label = null, className = '', color = 'bg-[#1E56E3]' }) {
+  return (
+    <div className={`inline-flex items-center gap-1.5 ${className}`}>
+      <div className="flex items-center gap-1 py-1">
+        <span className={`w-1.5 h-1.5 rounded-full ${color} bouncing-dot-1`} />
+        <span className={`w-1.5 h-1.5 rounded-full ${color} bouncing-dot-2`} />
+        <span className={`w-1.5 h-1.5 rounded-full ${color} bouncing-dot-3`} />
+      </div>
+      {label && <span className="text-xs font-semibold text-slate-500">{label}</span>}
+    </div>
+  );
+}
+
+/** 3. EQUALIZER BARS (Frequency spectrum & telemetry monitor) */
+export function EqualizerBars({ count = 4, className = '', color = 'bg-blue-600', label = null }) {
+  const delays = ['0s', '0.2s', '0.4s', '0.15s', '0.35s'];
+  const heights = ['h-3.5', 'h-4', 'h-5', 'h-3.5', 'h-4.5'];
+  return (
+    <div className={`inline-flex items-center gap-2 ${className}`}>
+      <div className="flex items-end gap-1 h-5">
+        {Array.from({ length: Math.min(count, 5) }).map((_, i) => (
+          <span 
+            key={i}
+            className={`w-1 rounded-full ${heights[i] || 'h-4'} ${color} equalizer-bar`}
+            style={{ animationDelay: delays[i] || '0s' }}
+          />
+        ))}
+      </div>
+      {label && <span className="text-xs font-bold text-slate-600">{label}</span>}
+    </div>
+  );
+}
+
+/** 4. TEXT SHIMMER (Moving metallic gradient light sweep) */
+export function TextShimmer({ children, variant = 'blue', className = '' }) {
+  const variantClass = variant === 'slate' 
+    ? 'text-shimmer-slate' 
+    : variant === 'amber' 
+    ? 'text-shimmer-amber' 
+    : 'text-shimmer';
+  return (
+    <span className={`font-bold inline-block ${variantClass} ${className}`}>
+      {children}
+    </span>
+  );
+}
+
+/** 5. BOUNCING BALL (Tactile physical squash-and-stretch on ground impact) */
+export function BouncingBall({ size = 'md', className = '', label = null }) {
+  const sizeMap = {
+    sm: { ball: 'w-3 h-3', shadow: 'w-3 h-0.5' },
+    md: { ball: 'w-4 h-4', shadow: 'w-4 h-1' },
+    lg: { ball: 'w-6 h-6', shadow: 'w-6 h-1.5' }
+  };
+  const s = sizeMap[size] || sizeMap.md;
+  return (
+    <div className={`inline-flex flex-col items-center justify-end h-8 ${className}`}>
+      <div className={`${s.ball} rounded-full bg-gradient-to-tr from-[#1443BC] via-[#1E56E3] to-[#38BDF8] shadow-xs bouncing-ball-sphere`} />
+      <div className={`${s.shadow} rounded-full bg-slate-900/30 blur-[0.5px] mt-0.5 bouncing-ball-shadow`} />
+      {label && <span className="text-[11px] font-bold text-slate-500 mt-1">{label}</span>}
+    </div>
+  );
+}
+
 export default {
   SpinnerLoader,
   SkeletonLoader,
@@ -453,6 +546,11 @@ export default {
   PulsingBeacon,
   ButtonLoader,
   FullScreenLoader,
-  PullToRefresh
+  PullToRefresh,
+  SpinnerArc,
+  BouncingDots,
+  EqualizerBars,
+  TextShimmer,
+  BouncingBall
 };
 

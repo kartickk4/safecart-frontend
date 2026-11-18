@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, ShieldAlert, Gavel, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw, Clock, Sparkles, Lock, MessageSquare, Send, Camera, Tag, MapPin, Check, QrCode, Printer, Zap, Building, Image as ImageIcon, Eye, ZoomIn, PackageCheck, Package } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, ArrowLeft, ShieldCheck, ShieldAlert, Gavel, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw, Clock, Sparkles, Lock, MessageSquare, Send, Camera, Tag, MapPin, Check, QrCode, Printer, Zap, Building, Image as ImageIcon, Eye, ZoomIn, PackageCheck, Package } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { shipmentAPI, profileAPI, claimAPI } from '../services/api';
 import { uploadImageToHost } from '../services/imageUpload';
@@ -272,6 +272,43 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       setDispatchErr(err.response?.data?.error || 'Failed to submit courier details. Please try again.');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  // ── Stack Navigation: Browser History Sync ──
+  useEffect(() => {
+    if (!isOpen || !shipment) return;
+    try {
+      window.history.pushState({ modal: 'shipment-detail', id: shipment.shipmentId }, '');
+    } catch (_) {}
+
+    const handlePop = () => {
+      onClose?.();
+    };
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, [isOpen, shipment?.shipmentId]);
+
+  // ── Gesture Navigation: Swipe-Right to Dismiss ──
+  const swipeStartX = useRef(0);
+  const swipeStartY = useRef(0);
+
+  const handlePanelTouchStart = (e) => {
+    swipeStartX.current = e.touches[0].clientX;
+    swipeStartY.current = e.touches[0].clientY;
+  };
+
+  const handlePanelTouchEnd = (e) => {
+    const deltaX = e.changedTouches[0].clientX - swipeStartX.current;
+    const deltaY = e.changedTouches[0].clientY - swipeStartY.current;
+    // Swipe right by >75px to close
+    if (deltaX > 75 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      try {
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([20]);
+        }
+      } catch (_) {}
+      onClose?.();
     }
   };
 
@@ -888,7 +925,29 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
         }
       }}
     >
-      <div className="bg-white h-full sm:h-auto max-w-xl w-full sm:rounded-3xl p-8 shadow-2xl relative border border-slate-100 overflow-y-auto max-h-screen">
+      <div 
+        onTouchStart={handlePanelTouchStart}
+        onTouchEnd={handlePanelTouchEnd}
+        className="bg-white h-full sm:h-auto max-w-xl w-full sm:rounded-3xl p-6 sm:p-8 shadow-2xl relative border border-slate-100 overflow-y-auto max-h-screen animate-in slide-in-from-right duration-200"
+      >
+        {/* Mobile Drag Handle & Stack Navigation Bar */}
+        <div className="w-10 h-1 rounded-full bg-slate-300 mx-auto mb-3 sm:hidden" />
+        <div className="flex items-center justify-between pb-3 mb-5 border-b border-slate-100/90 text-xs">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-1.5 font-bold text-slate-600 hover:text-[#1E56E3] transition btn-press cursor-pointer"
+            title="Go back (Stack Nav)"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Shipments</span>
+          </button>
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+            <span>Shipments</span>
+            <span>/</span>
+            <span className="font-mono text-slate-800 font-bold">{currentShipment.shipmentId}</span>
+          </div>
+        </div>
         <button
           type="button"
           onClick={onClose}

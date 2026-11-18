@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { agentAPI } from '../services/api';
 import CarrierLogo from './CarrierLogo';
-import { SkeletonLoader, ButtonLoader, PulsingBeacon } from './Loaders';
+import { SkeletonLoader, ButtonLoader, PulsingBeacon, SpinnerArc, TextShimmer } from './Loaders';
 import { getSafeCarrierRates, generateClientFallbackQuotes } from '../utils/carrierRateFallback';
 
 const POPULAR_DESTINATIONS = [
@@ -528,8 +528,8 @@ export default function RateCalculatorWidget({
         <div className="mt-6 pt-5 border-t border-slate-100 space-y-3.5 animate-in fade-in duration-200">
           <div className="flex items-center justify-between text-xs">
             <span className="font-extrabold text-slate-700 uppercase tracking-wide flex items-center gap-2">
-              <PulsingBeacon color="blue" />
-              <span>Fetching Real-Time Courier Rates...</span>
+              <SpinnerArc size="sm" color="text-[#1E56E3]" />
+              <TextShimmer variant="blue">Fetching Real-Time Courier Rates...</TextShimmer>
             </span>
             <span className="text-slate-400 font-semibold text-[11px]">Delhivery · Shadowfax · Xpressbees</span>
           </div>

@@ -4,6 +4,7 @@ import { shipmentAPI } from '../services/api';
 import { uploadImageToHost } from '../services/imageUpload';
 import { analyzeImageClarity } from '../utils/imageClarity';
 import CameraCaptureModal from '../components/CameraCaptureModal';
+import { SpinnerArc, TextShimmer, EqualizerBars, BouncingBall } from '../components/Loaders';
 
 export default function TrackingView({ onSelectShipment, user, selectedShipment }) {
   // Derive current user IDs
@@ -694,7 +695,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
             disabled={loading}
             className="px-6 py-3 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 transition inline-flex items-center justify-center gap-2 w-full sm:w-auto cursor-pointer"
           >
-            {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span>Track Live</span>}
+            {loading ? <SpinnerArc size="sm" color="text-white" /> : <span>Track Live</span>}
           </button>
         </form>
 
@@ -878,9 +879,9 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                         COMPLETED ✓
                       </span>
                     ) : (
-                      <span className="bg-blue-100 text-[#1E56E3] font-bold text-[10px] px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
-                        IN PROGRESS
+                      <span className="bg-blue-100 text-[#1E56E3] font-bold text-[10px] px-2.5 py-0.5 rounded-full flex items-center gap-1.5 border border-blue-200">
+                        <EqualizerBars count={3} color="bg-blue-600" />
+                        <TextShimmer variant="blue" className="text-[10px] uppercase tracking-wider">LIVE IN TRANSIT</TextShimmer>
                       </span>
                     )}
                   </div>
@@ -1160,9 +1161,11 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
                   </div>
 
                   <div className="flex flex-col items-center text-center space-y-2">
-                    <div className="w-10 h-10 rounded-full bg-amber-500 text-white font-bold flex items-center justify-center shadow-md animate-pulse">🚚</div>
+                    <div className="w-10 h-10 rounded-full bg-amber-500 text-white font-bold flex items-center justify-center shadow-md">
+                      <BouncingBall size="sm" />
+                    </div>
                     <span className="text-xs font-bold text-amber-600">In Transit</span>
-                    <span className="text-[10px] text-slate-400">Bhiwandi Hub</span>
+                    <span className="text-[10px] text-slate-400">Live Telemetry</span>
                   </div>
 
                   <div className="flex flex-col items-center text-center space-y-2 opacity-50">
@@ -2156,8 +2159,10 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
       {/* INITIAL LOADING STATE */}
       {!trackingResult && loading && (
         <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-6 sm:p-12 text-center shadow-xs max-w-xl mx-auto space-y-3 animate-in fade-in duration-200">
-          <RefreshCw className="w-8 h-8 text-[#1E56E3] animate-spin mx-auto" />
-          <p className="text-xs font-bold text-slate-700">Loading latest shipment tracking...</p>
+          <SpinnerArc size="lg" color="text-[#1E56E3]" className="mx-auto" />
+          <TextShimmer variant="blue" className="text-xs font-bold">
+            Loading latest shipment tracking...
+          </TextShimmer>
         </div>
       )}
       {/* Lightbox / Full Photo View Modal */}

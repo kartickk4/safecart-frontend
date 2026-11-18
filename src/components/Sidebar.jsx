@@ -173,7 +173,7 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
           <button
             type="button"
             onClick={() => onSwitchRole && onSwitchRole(isSupplier ? 'Receiver' : 'Supplier')}
-            className="mt-2.5 w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 hover:bg-blue-50/70 border border-slate-200/70 hover:border-blue-200 text-[11px] font-bold text-slate-700 hover:text-[#1E56E3] transition-all group shadow-2xs"
+            className="mt-2.5 w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50/80 hover:bg-blue-50/80 border border-slate-200/80 hover:border-blue-200 text-[11px] font-bold text-slate-700 hover:text-[#1E56E3] transition-all group shadow-2xs btn-press cursor-pointer"
             title={`Switch to ${isSupplier ? 'Receiver (Buyer)' : 'Supplier (Merchant)'} Mode`}
           >
             <span className="flex items-center gap-1.5">
@@ -212,10 +212,10 @@ export default function Sidebar({ currentTab, setCurrentTab, user, currentRole, 
                         setCurrentTab(item.id);
                       }
                     }}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-bold transition-all duration-200 group active:scale-[0.98] ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-bold transition-all duration-150 group btn-press cursor-pointer select-none ${
                       isActive
                         ? 'bg-gradient-to-r from-[#1E56E3] to-blue-600 text-white shadow-md shadow-blue-500/25 border border-blue-400/20'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
                     }`}
                   >
                     <div className="flex items-center gap-3">

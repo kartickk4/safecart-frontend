@@ -10,6 +10,7 @@ import {
 import BulkUploadPanel from "../components/BulkUploadPanel";
 import CarrierLogo from "../components/CarrierLogo";
 import { useVoiceAgent } from "../utils/useVoiceAgent";
+import { BouncingDots, TextShimmer, EqualizerBars, SpinnerArc } from "../components/Loaders";
 
 const getApiBase = () => {
   if (typeof window !== 'undefined') {
@@ -44,10 +45,11 @@ const formatMessage = (text) => {
 };
 
 const TypingDots = () => (
-  <div className="flex items-center gap-1.5 py-1 px-1">
-    <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" style={{ animationDelay: "0ms" }} />
-    <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" style={{ animationDelay: "150ms" }} />
-    <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+  <div className="flex items-center gap-2 py-0.5 px-1">
+    <BouncingDots color="bg-indigo-600" />
+    <TextShimmer variant="blue" className="text-xs font-semibold">
+      SecureKaro AI is processing...
+    </TextShimmer>
   </div>
 );
 
@@ -991,9 +993,11 @@ export default function AIAgentView({ onBack }) {
                 </span>
               </div>
               <div className="text-[11px] text-slate-500 font-medium truncate">
-                {step > 0 && step < 12
-                  ? "Booking in progress • Multi-carrier rates"
-                  : "29,000+ Pincodes • Instant Booking"}
+                {step > 0 && step < 12 ? (
+                  <TextShimmer variant="blue">Booking in progress • Multi-carrier rates</TextShimmer>
+                ) : (
+                  <span>29,000+ Pincodes • Instant Booking</span>
+                )}
               </div>
             </div>
           </div>
@@ -1184,18 +1188,7 @@ export default function AIAgentView({ onBack }) {
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-rose-900 flex items-center gap-2">
                     <span>Listening to your voice...</span>
-                    <div className="flex items-end gap-1 h-5">
-                      {[1, 2, 3, 4, 5, 6, 7].map((barIdx) => {
-                        const dynamicHeight = Math.max(6, Math.min(24, Math.round((audioLevel / 100) * 24 * (0.5 + (barIdx % 3) * 0.3))));
-                        return (
-                          <div
-                            key={barIdx}
-                            className="w-1 bg-rose-500 rounded-full transition-all duration-75"
-                            style={{ height: `${dynamicHeight}px` }}
-                          />
-                        );
-                      })}
-                    </div>
+                    <EqualizerBars count={5} color="bg-rose-500" />
                   </div>
                   {liveTranscript && (
                     <div className="text-[11px] text-rose-700 font-medium truncate max-w-xs mt-0.5">

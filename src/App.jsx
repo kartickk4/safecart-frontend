@@ -913,6 +913,9 @@ export default function App() {
           <Header
             user={user}
             currentRole={isSupplier ? 'Supplier' : 'Receiver'}
+            currentTab={currentTab}
+            setCurrentTab={setCurrentTab}
+            notifCount={notifCount}
             onSwitchRole={handleSwitchRole}
             onRefresh={() => window.location.reload()}
             openNewShipmentModal={() => setCurrentTab('create-shipment')}
@@ -951,6 +954,7 @@ export default function App() {
               openNewShipmentModal={() => setCurrentTab('create-shipment')}
               onNavigateRefer={() => setCurrentTab('refer')}
               onNavigateRateCalc={() => setCurrentTab('rate-calculator')}
+              onNavigateTab={(tab) => setCurrentTab(tab)}
             />
           )}
 
