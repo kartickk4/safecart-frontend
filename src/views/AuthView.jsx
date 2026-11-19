@@ -27,7 +27,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
   const [roleModalStep, setRoleModalStep] = useState(1); // 1: who are you? 2: platform type? 3: pickup address?
   const [pendingUser, setPendingUser] = useState(null); // user object waiting for role assignment
   const [pendingIsNew, setPendingIsNew] = useState(false);
-  const [selectedRoleType, setSelectedRoleType] = useState(''); // 'Supplier' | 'Receiver'
+  const [selectedRoleType, setSelectedRoleType] = useState('Supplier'); // 'Supplier' | 'Receiver'
   const [selectedPlatform, setSelectedPlatform] = useState(''); // 'independent' | 'ecommerce'
   const [sellerAddress, setSellerAddress] = useState({
     street: '',
@@ -500,7 +500,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
 
       // 2. Always verify OTP with backend (it creates the user and returns token)
       try {
-        const verifyRes = await authAPI.verifyOtp({ phone: formattedPhone, code: signUpOtp });
+        const activeSignupRole = selectedRoleType || localStorage.getItem('securekaro_active_role') || 'Supplier';
+        const verifyRes = await authAPI.verifyOtp({ phone: formattedPhone, code: signUpOtp, role: activeSignupRole });
         otpVerifyData = verifyRes.data;
       } catch (vErr) {
         
@@ -539,12 +540,15 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
           // User already exists (created by verifyOtp) — this is expected, ignore
         }
 
+        const activeSignupRole = selectedRoleType || localStorage.getItem('securekaro_active_role') || 'Supplier';
         const registeredUser = {
           ...(otpVerifyData.user || {}),
           fullName: fullName || otpVerifyData.user?.fullName,
           email: email || otpVerifyData.user?.email,
-          activeRole: 'User',
+          activeRole: activeSignupRole,
+          role: activeSignupRole
         };
+        localStorage.setItem('securekaro_active_role', activeSignupRole);
         setShowSignUpOtpModal(false);
         // Account created & OTP verified — ask if user has a referral code
         promptReferralOrAdvance(registeredUser, true);
@@ -615,10 +619,12 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
         return;
 
       } else {
-        const res = await authAPI.login({ email, password });
+        const targetRole = localStorage.getItem('securekaro_active_role') || 'Supplier';
+        const res = await authAPI.login({ email, password, role: targetRole });
         const { accessToken, user } = res.data;
-        user.activeRole = user.role || 'User';
+        user.activeRole = targetRole;
         localStorage.setItem('securekaro_token', accessToken);
+        localStorage.setItem('securekaro_active_role', targetRole);
         onAuthSuccess(user);
       }
     } catch (err) {

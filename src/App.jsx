@@ -245,7 +245,7 @@ export default function App() {
   const savedActiveRole = typeof window !== 'undefined' ? localStorage.getItem('securekaro_active_role') : null;
   const isSupplier = savedActiveRole 
     ? savedActiveRole === 'Supplier' 
-    : (user?.role === 'Supplier' || user?.activeRole === 'Supplier');
+    : (user?.activeRole === 'Receiver' ? false : true); // Defaults to Supplier (Seller Hub)
 
   const refreshCounts = async () => {
     if (!localStorage.getItem('securekaro_token')) return;
@@ -416,23 +416,18 @@ export default function App() {
         }
       }
     } catch (_) {}
-    const savedRole = localStorage.getItem('securekaro_active_role');
-    if (savedRole && (savedRole === 'Supplier' || savedRole === 'Receiver')) {
-      userData.activeRole = savedRole;
-    }
+    const savedRole = localStorage.getItem('securekaro_active_role') || (userData.activeRole === 'Receiver' ? 'Receiver' : 'Supplier');
+    userData.activeRole = savedRole;
+    localStorage.setItem('securekaro_active_role', savedRole);
     setUser(userData);
     localStorage.setItem('securekaro_user', JSON.stringify(userData));
     setIsNewUser(!!newUserFlag);
     setShowWelcomeModal(true);
 
-    // Navigate to appropriate landing tab on successful login
-    const activeRole = savedRole || userData.activeRole || userData.role || 'Supplier';
-    const isSupp = activeRole === 'Supplier';
-    const lastTab = localStorage.getItem('securekaro_last_tab');
-    const destinationTab = (lastTab && lastTab !== 'login' && lastTab !== 'register' && TAB_ROUTES[lastTab])
-      ? (isSupp || (lastTab !== 'dashboard' && lastTab !== 'create-shipment' && lastTab !== 'return-orders' && lastTab !== 'ai-agent') ? lastTab : 'shipments-list')
-      : (isSupp ? 'dashboard' : 'shipments-list');
-
+    // Navigate directly to Seller Hub (Dashboard) on successful login
+    const isSupp = savedRole === 'Supplier';
+    const destinationTab = isSupp ? 'dashboard' : 'shipments-list';
+    localStorage.setItem('securekaro_last_tab', destinationTab);
     setCurrentTab(destinationTab, { replace: true });
 
     // Refresh complete profile in background to guarantee isPro and balances are in sync
