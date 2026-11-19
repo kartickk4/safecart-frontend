@@ -1215,7 +1215,7 @@ export default function AIAgentView({ onBack }) {
               { label: '📦 Book Shipment', query: 'Book shipment' },
               { label: '🛡️ Weight Shield', query: 'How does Weight Shield work?' },
               { label: '🚨 NDR Alerts', query: 'Show active NDR shipments' },
-              { label: '📊 Shipping Rates', query: 'Cost to deliver' },
+              { label: '📊 Shipping Rates', query: 'Shipping rates' },
               { label: '💰 My Wallet', query: 'What is my wallet balance?' },
               { label: '🔍 Track Order', query: 'Track my recent order' }
             ].map((qp, i) => (
