@@ -1707,7 +1707,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                                 </span>
                               </div>
                               <p className="text-[10px] text-slate-600 mt-1 leading-snug">
-                                Shipping &amp; COD fees are deducted from the buyer's cash upon delivery. No payment needed now.
+                                Shipping, COD fee, and RTO return charges (if delivery fails) are deducted from settlement. ₹0 upfront payment required.
                               </p>
                             </div>
                           </div>

@@ -877,8 +877,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                               : 'bg-white/70 border-slate-200 hover:bg-white text-slate-600'
                           }`}
                         >
-                          <div className="font-black text-amber-900">Deduct from Cash</div>
-                          <div className="text-[10px] text-slate-500 font-normal mt-0.5">₹0 upfront. Deducted from buyer collection.</div>
+                          <div className="font-black text-amber-900">Deduct from Settlement</div>
+                          <div className="text-[10px] text-slate-500 font-normal mt-0.5">₹0 upfront. Shipping, COD fee &amp; RTO return charges deducted from settlement.</div>
                         </div>
                         <div
                           onClick={() => setCodSettlementOption('pay_upfront')}
