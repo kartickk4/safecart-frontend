@@ -185,7 +185,7 @@ const CarrierCard = ({ quotes, selectedSlug, onSelect }) => {
   );
 };
 
-const MessageBubble = ({ msg, isLatest, onCarrierSelect, selectedCarrierSlug, onRetry }) => {
+const MessageBubble = ({ msg, isLatest, onCarrierSelect, selectedCarrierSlug, onRetry, onProgress, onComplete }) => {
   const isAgent = msg.role === "agent";
   const isError = msg.isError;
   const [copied, setCopied] = useState(false);
@@ -234,6 +234,8 @@ const MessageBubble = ({ msg, isLatest, onCarrierSelect, selectedCarrierSlug, on
                 text={msg.content}
                 animate={isLatest}
                 isAgent={true}
+                onProgress={isLatest ? onProgress : undefined}
+                onComplete={isLatest ? onComplete : undefined}
               />
             ) : (
               <div dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
@@ -517,6 +519,7 @@ export default function AIAgentView({ onBack }) {
   const [showMicHelp, setShowMicHelp] = useState(false);
   const initRef = useRef(false);
   const messagesContainerRef = useRef(null);
+  const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -607,14 +610,46 @@ export default function AIAgentView({ onBack }) {
     }
   }, [isListening, liveTranscript]);
 
-  useEffect(() => { 
+  const scrollToBottom = useCallback((behavior = "smooth") => { 
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
-        behavior: "smooth"
+        behavior
       });
     }
-  }, [messages]);
+  }, []);
+
+  const handleScrollOnProgress = useCallback(() => {
+    if (messagesContainerRef.current) {
+      const el = messagesContainerRef.current;
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (distanceFromBottom <= 350) {
+        el.scrollTop = el.scrollHeight;
+      }
+    }
+  }, []);
+
+  useEffect(() => { 
+    scrollToBottom("smooth");
+  }, [messages, scrollToBottom]);
+
+  // Continuously track content expansion during streaming token reveal, image loads, and card renders
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => {
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (distanceFromBottom <= 350) {
+        el.scrollTop = el.scrollHeight;
+      }
+    });
+
+    observer.observe(el);
+    Array.from(el.children).forEach(child => observer.observe(child));
+
+    return () => observer.disconnect();
+  }, [messages, isLoading]);
 
   useEffect(() => { 
     if (!initRef.current) { 
@@ -1027,7 +1062,7 @@ export default function AIAgentView({ onBack }) {
         {/* ── MESSAGES CHAT STREAM (Strictly Scoped Scroll) ── */}
         <div
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-4 bg-gradient-to-b from-slate-50/50 via-white to-indigo-50/20"
+          className="flex-1 overflow-y-auto px-4 sm:px-8 pt-6 pb-12 space-y-4 bg-gradient-to-b from-slate-50/50 via-white to-indigo-50/20"
         >
           
           {/* Empty State Hero Prompt Starter */}
@@ -1121,6 +1156,8 @@ export default function AIAgentView({ onBack }) {
               onCarrierSelect={handleCarrierSelect} 
               selectedCarrierSlug={selectedCarrier?.slug}
               onRetry={handleReset}
+              onProgress={idx === messages.length - 1 ? handleScrollOnProgress : undefined}
+              onComplete={idx === messages.length - 1 ? () => scrollToBottom("smooth") : undefined}
             />
           ))}
 
@@ -1135,6 +1172,9 @@ export default function AIAgentView({ onBack }) {
               </div>
             </div>
           )}
+
+          {/* Bottom clearance anchor so message ends are never hidden under suggestions/dock */}
+          <div ref={messagesEndRef} className="h-8 w-full shrink-0" aria-hidden="true" />
         </div>
 
         {/* ── QUICK SUGGESTION PILLS ── */}

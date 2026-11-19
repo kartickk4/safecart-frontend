@@ -6,7 +6,7 @@ import TextReveal from './TextReveal';
  * AgentChatBubble — A single message bubble in light friendly colors.
  * role: 'agent' | 'user'
  */
-const AgentChatBubble = ({ role, content, timestamp, isLatest = false }) => {
+const AgentChatBubble = ({ role, content, timestamp, isLatest = false, onProgress, onComplete }) => {
   const isAgent = role === 'agent';
 
   // Convert *bold* markdown to <strong> and newlines to <br>
@@ -92,7 +92,13 @@ const AgentChatBubble = ({ role, content, timestamp, isLatest = false }) => {
           wordBreak: 'break-word'
         }}>
           {isAgent ? (
-            <TextReveal text={content} animate={isLatest} isAgent={true} />
+            <TextReveal 
+              text={content} 
+              animate={isLatest} 
+              isAgent={true} 
+              onProgress={isLatest ? onProgress : undefined}
+              onComplete={isLatest ? onComplete : undefined}
+            />
           ) : (
             formatContent(content)
           )}

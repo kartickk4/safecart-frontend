@@ -22,6 +22,7 @@ export default function TextReveal({
   animate = true,
   speed = 18,
   isAgent = true,
+  onProgress,
   onComplete,
   className = ''
 }) {
@@ -56,9 +57,10 @@ export default function TextReveal({
       if (timerRef.current) clearInterval(timerRef.current);
       setVisibleCount(tokens.length);
       setIsFinished(true);
+      if (typeof onProgress === 'function') onProgress();
       if (typeof onComplete === 'function') onComplete();
     }
-  }, [isFinished, tokens.length, onComplete]);
+  }, [isFinished, tokens.length, onProgress, onComplete]);
 
   useEffect(() => {
     // If not animating, reveal all instantly
@@ -79,6 +81,9 @@ export default function TextReveal({
     timerRef.current = setInterval(() => {
       setVisibleCount((prev) => {
         const next = prev + stepSize;
+        if (typeof onProgress === 'function') {
+          onProgress();
+        }
         if (next >= tokens.length) {
           clearInterval(timerRef.current);
           setIsFinished(true);
@@ -94,7 +99,7 @@ export default function TextReveal({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [text, shouldAnimate, tokens.length, speed, onComplete]);
+  }, [text, shouldAnimate, tokens.length, speed, onProgress, onComplete]);
 
   // Render visible tokens
   const renderedTokens = useMemo(() => {

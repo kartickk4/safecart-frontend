@@ -95,6 +95,10 @@ const AgentWidget = ({ onNavigate }) => {
   }, [isListening, liveTranscript]);
 
   // Scroll to bottom on new messages
+  const handleScrollOnProgress = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+  }, []);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -707,6 +711,8 @@ const AgentWidget = ({ onNavigate }) => {
                     content={msg.content}
                     timestamp={msg.timestamp}
                     isLatest={idx === messages.length - 1}
+                    onProgress={idx === messages.length - 1 ? handleScrollOnProgress : undefined}
+                    onComplete={idx === messages.length - 1 ? () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) : undefined}
                   />
 
                   {msg.role === 'agent' && msg.showCarriers && msg.carrierQuotes?.length > 0 && (
