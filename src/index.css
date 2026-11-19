@@ -462,3 +462,59 @@
     opacity: 1 !important;
   }
 }
+
+/* ── 7. Progressive AI Text Reveal & Token Glow Animations (Apple & Linear Grade) ── */
+@keyframes textTokenReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+    filter: blur(2.5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes caretBlinkPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.15;
+    transform: scale(0.9);
+  }
+}
+
+.text-reveal-token {
+  display: inline;
+  will-change: transform, opacity, filter;
+  animation: textTokenReveal 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.ai-typing-caret {
+  display: inline-block;
+  width: 2.5px;
+  height: 1.1em;
+  background: linear-gradient(180deg, #4f46e5, #0284c7);
+  border-radius: 1.5px;
+  vertical-align: -0.15em;
+  margin-left: 3px;
+  box-shadow: 0 0 8px rgba(79, 70, 229, 0.5);
+  animation: caretBlinkPulse 0.75s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-reveal-token {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+  .ai-typing-caret {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}

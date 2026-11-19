@@ -1,11 +1,12 @@
 import React from 'react';
 import { Bot, User } from 'lucide-react';
+import TextReveal from './TextReveal';
 
 /**
  * AgentChatBubble — A single message bubble in light friendly colors.
  * role: 'agent' | 'user'
  */
-const AgentChatBubble = ({ role, content, timestamp }) => {
+const AgentChatBubble = ({ role, content, timestamp, isLatest = false }) => {
   const isAgent = role === 'agent';
 
   // Convert *bold* markdown to <strong> and newlines to <br>
@@ -90,7 +91,11 @@ const AgentChatBubble = ({ role, content, timestamp }) => {
             : '0 4px 14px rgba(79, 70, 229, 0.25)',
           wordBreak: 'break-word'
         }}>
-          {formatContent(content)}
+          {isAgent ? (
+            <TextReveal text={content} animate={isLatest} isAgent={true} />
+          ) : (
+            formatContent(content)
+          )}
         </div>
         {time && (
           <span style={{ fontSize: '10.5px', color: '#94a3b8', marginTop: '3px', padding: '0 4px' }}>

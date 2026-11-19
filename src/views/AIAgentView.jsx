@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import BulkUploadPanel from "../components/BulkUploadPanel";
 import CarrierLogo from "../components/CarrierLogo";
+import TextReveal from "../components/TextReveal";
 import { useVoiceAgent } from "../utils/useVoiceAgent";
 import { BouncingDots, TextShimmer, EqualizerBars, SpinnerArc } from "../components/Loaders";
 
@@ -184,7 +185,7 @@ const CarrierCard = ({ quotes, selectedSlug, onSelect }) => {
   );
 };
 
-const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) => {
+const MessageBubble = ({ msg, isLatest, onCarrierSelect, selectedCarrierSlug, onRetry }) => {
   const isAgent = msg.role === "agent";
   const isError = msg.isError;
   const [copied, setCopied] = useState(false);
@@ -227,8 +228,17 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
                   : "bg-white border border-slate-200/90 text-slate-800 rounded-2xl rounded-tl-xs shadow-slate-100"
                 : "bg-gradient-to-r from-[#1E56E3] to-[#4338CA] text-white font-medium rounded-2xl rounded-tr-xs shadow-indigo-500/20"
             }`}
-            dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
-          />
+          >
+            {isAgent && !isError ? (
+              <TextReveal
+                text={msg.content}
+                animate={isLatest}
+                isAgent={true}
+              />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+            )}
+          </div>
 
           {isAgent && !isError && (
             <button
@@ -1107,6 +1117,7 @@ export default function AIAgentView({ onBack }) {
             <MessageBubble 
               key={idx} 
               msg={msg} 
+              isLatest={idx === messages.length - 1}
               onCarrierSelect={handleCarrierSelect} 
               selectedCarrierSlug={selectedCarrier?.slug}
               onRetry={handleReset}

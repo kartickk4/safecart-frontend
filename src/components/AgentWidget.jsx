@@ -706,6 +706,7 @@ const AgentWidget = ({ onNavigate }) => {
                     role={msg.role}
                     content={msg.content}
                     timestamp={msg.timestamp}
+                    isLatest={idx === messages.length - 1}
                   />
 
                   {msg.role === 'agent' && msg.showCarriers && msg.carrierQuotes?.length > 0 && (
