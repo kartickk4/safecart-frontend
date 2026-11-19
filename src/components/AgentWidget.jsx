@@ -210,7 +210,6 @@ const AgentWidget = ({ onNavigate }) => {
       }]);
     } finally {
       setIsLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [sessionId, isLoading, isOpen]);
 
@@ -305,7 +304,6 @@ const AgentWidget = ({ onNavigate }) => {
       })
       .finally(() => {
         setIsLoading(false);
-        setTimeout(() => inputRef.current?.focus(), 100);
       });
   };
 

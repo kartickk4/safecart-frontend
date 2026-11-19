@@ -790,7 +790,6 @@ export default function AIAgentView({ onBack }) {
       ]);
     } finally {
       setIsLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [sessionId, isLoading]);
 
@@ -855,7 +854,6 @@ export default function AIAgentView({ onBack }) {
       })
       .finally(() => {
         setIsLoading(false);
-        setTimeout(() => inputRef.current?.focus(), 100);
       });
   }, [sessionId, isLoading]);
 
