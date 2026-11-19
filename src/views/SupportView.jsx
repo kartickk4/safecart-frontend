@@ -126,16 +126,16 @@ export default function SupportView() {
             <Phone className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-extrabold text-slate-900 text-sm">WhatsApp & Hotline</h3>
+            <h3 className="font-extrabold text-slate-900 text-sm">Customer Helpline</h3>
             <a 
-              href="https://wa.me/917044255626?text=Hi%20SecureKaro%20Support" 
+              href="tel:18007233227" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-xs text-emerald-700 font-extrabold mt-0.5 hover:underline block font-mono"
             >
-              +91 70442 55626
+              1800-723-3227
             </a>
-            <p className="text-[11px] text-slate-500 mt-1">Official WhatsApp Business & Customer Hotline.</p>
+            <p className="text-[11px] text-slate-500 mt-1">All-India Toll-Free Logistics Customer Helpline.</p>
           </div>
         </div>
 

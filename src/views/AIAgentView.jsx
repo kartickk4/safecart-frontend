@@ -371,18 +371,16 @@ const MessageBubble = ({ msg, onCarrierSelect, selectedCarrierSlug, onRetry }) =
                     <MessageCircle size={15} />
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">WhatsApp & Phone Desk</div>
-                    <div className="text-xs font-black text-slate-900 font-mono">+91 70442 55626</div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Toll-Free Helpline</div>
+                    <div className="text-xs font-black text-slate-900 font-mono">1800-723-3227</div>
                   </div>
                 </div>
                 <a
-                  href="https://wa.me/917044255626?text=Hi%20SecureKaro%20Support,%20I%20need%20assistance%20with%20my%20shipment"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="tel:18007233227"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-xs transition active:scale-95 cursor-pointer"
                 >
                   <ExternalLink size={12} />
-                  <span>WhatsApp</span>
+                  <span>Call Toll-Free</span>
                 </a>
               </div>
 

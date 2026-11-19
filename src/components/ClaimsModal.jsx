@@ -16,7 +16,7 @@ export default function ClaimsModal({ onSelectShipment }) {
     {
       claimId: 'CLM-3129-A',
       shipmentId: 'PSF-2026-00812',
-      filedBy: 'Kartick Das (Supplier)',
+      filedBy: 'Verified Merchant (Supplier)',
       reason: 'Delivery delay penalty dispute',
       description: 'Carrier weather disruption caused 48h delay beyond control.',
       status: 'Escalated Urgent',

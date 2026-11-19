@@ -924,7 +924,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
               <label className="block text-xs font-semibold text-slate-700 mb-1">Account Holder Name (Optional)</label>
               <input
                 type="text"
-                placeholder="e.g. Kartick Das"
+                placeholder="e.g. Account Holder Name"
                 value={bankDetails.accountHolderName}
                 onChange={(e) => setBankDetails({ ...bankDetails, accountHolderName: e.target.value })}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-blue-500"
@@ -1023,7 +1023,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/70 space-y-1">
               <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Data Fiduciary Details</span>
               <p className="text-[11.5px]">M/s SecureKaro (SecureKaro Logistics)</p>
-              <p className="text-[11px] text-slate-500">Proprietor: Kartick Das | Kolkata 700049</p>
+              <p className="text-[11px] text-slate-500">Commercial Shipping Entity | Kolkata, India</p>
             </div>
 
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/70 space-y-1">

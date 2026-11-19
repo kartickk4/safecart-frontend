@@ -591,7 +591,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
           return;
         }
         if (!agreedToDpdpConsent) {
-          setError('DPDP Act Consent Required: Please tick the consent checkbox below (confirming 18+ age and logistics data processing) to create an account.');
+          setError('DPDP Act Consent Required: Please tick the consent checkbox below to create an account.');
           setLoading(false);
           return;
         }
@@ -1050,7 +1050,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                     className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#1E56E3] focus:ring-blue-500 cursor-pointer shrink-0 transition"
                   />
                   <span className="text-[11px] text-slate-700 leading-snug">
-                    I confirm I am <strong>18+ years of age</strong> and give explicit consent to the collection and processing of my contact, delivery, and payment details for courier logistics, live tracking, and escrow settlements under the{' '}
+                    I give explicit consent to the collection and processing of my contact, delivery, and payment details for courier logistics, live tracking, and escrow settlements under the{' '}
                     <button
                       type="button"
                       onClick={() => setShowLegalModal('terms')}

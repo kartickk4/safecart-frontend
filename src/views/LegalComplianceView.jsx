@@ -4,12 +4,12 @@ import {
   RotateCcw, DollarSign, Package, CheckCircle2, AlertCircle, Building2, ExternalLink, Truck
 } from 'lucide-react';
 
-export default function LegalComplianceView({ initialTab = 'contact', onTabChange }) {
-  const [activeTab, setActiveTab] = useState(initialTab); // 'contact' | 'terms' | 'shipping' | 'refunds' | 'services' | 'privacy'
+export default function LegalComplianceView({ initialTab = 'terms', onTabChange }) {
+  const [activeTab, setActiveTab] = useState(initialTab === 'contact' ? 'terms' : initialTab); // 'terms' | 'shipping' | 'refunds' | 'services' | 'privacy'
 
   React.useEffect(() => {
     if (initialTab) {
-      setActiveTab(initialTab);
+      setActiveTab(initialTab === 'contact' ? 'terms' : initialTab);
     }
   }, [initialTab]);
 
@@ -26,7 +26,6 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
       {/* Navigation Tabs */}
       <div className="bg-white p-2 rounded-2xl border border-slate-200/80 shadow-sm flex flex-wrap gap-2 text-xs font-bold text-slate-600">
         {[
-          { id: 'contact', label: 'Contact Us', icon: Phone },
           { id: 'terms', label: 'Terms & Conditions', icon: FileText },
           { id: 'shipping', label: 'Shipping & Delivery Policy', icon: Truck },
           { id: 'refunds', label: 'Refunds & Cancellations', icon: RotateCcw },
@@ -62,7 +61,7 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
               </div>
               <div>
                 <h2 className="text-xl font-black text-slate-900">Merchant Contact Information</h2>
-                <p className="text-xs text-slate-500 font-medium">M/s SecureKaro Logistics (Proprietor: Kartick Das) Customer Support & Logistics Desk</p>
+                <p className="text-xs text-slate-500 font-medium">SecureKaro Logistics Customer Support &amp; Logistics Desk</p>
               </div>
             </div>
 
@@ -73,8 +72,8 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
                   <Phone className="w-5 h-5" />
                   <span>Customer Support Helpline</span>
                 </div>
-                <p className="text-2xl font-black text-slate-900">+91 70442 55626</p>
-                <p className="text-xs text-slate-600 font-semibold">Toll-Free: +91 1800-723-3227</p>
+                <p className="text-2xl font-black text-slate-900">1800-723-3227</p>
+                <p className="text-xs text-slate-600 font-semibold">Toll-Free All India Customer Helpline</p>
                 <p className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
                   <Clock className="w-4 h-4 text-slate-400" />
                   <span>Operating Hours: Mon – Sat (9:00 AM to 7:00 PM IST)</span>
@@ -100,10 +99,8 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
                   <span>Registered Office & Operating Address</span>
                 </div>
                 <div className="text-xs text-slate-700 font-semibold leading-relaxed space-y-1">
-                  <p className="font-bold text-slate-900 text-sm">M/s SecureKaro (SecureKaro Logistics)</p>
-                  <p>Proprietor: Kartick Das</p>
-                  <p>Municipality: North Dum Dum, District: North 24 Parganas</p>
-                  <p>Kolkata, West Bengal 700049, India.</p>
+                  <p className="font-bold text-slate-900 text-sm">SecureKaro (SecureKaro Logistics)</p>
+                  <p>Registered Operations: Kolkata, West Bengal, India.</p>
                   <p className="text-[11px] font-mono text-slate-500 font-normal pt-1 border-t border-slate-200">
                     Certificate of Enlistment (Trade Licence No): <span className="font-bold text-slate-800">0917P453826577951</span>
                   </p>
@@ -121,9 +118,9 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-700 font-medium">
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Officer Name</span>
-                    <span className="font-bold text-slate-900 text-sm">Kartick Das</span>
-                    <span className="block text-slate-500 text-[11px]">Proprietor & Grievance Officer</span>
+                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Officer Designation</span>
+                    <span className="font-bold text-slate-900 text-sm">Grievance Redressal Officer</span>
+                    <span className="block text-slate-500 text-[11px]">Compliance & Customer Grievances</span>
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[10px] uppercase font-bold">Direct Compliance Email</span>
@@ -154,7 +151,7 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
             <div>
               <h3 className="text-sm font-bold text-slate-900 mb-1">1. Nature of Platform & Services</h3>
               <p>
-                SecureKaro ("Platform"), operated by M/s SecureKaro Logistics (Proprietor: Kartick Das), is a <strong>Logistics Aggregator & Shipping Software Platform</strong> that facilitates <strong>B2B Courier Booking, Automated Shipping Label Generation, Multi-Carrier Parcel Tracking, and Delivery Protection</strong>. SecureKaro aggregates licensed courier partners (including Delhivery, Blue Dart, DTDC, and Shadowfax) to provide seamless parcel dispatch, shipment milestone tracking, and COD fraud protection for sellers and buyers.
+                SecureKaro ("Platform"), operated by SecureKaro Logistics, is a <strong>Logistics Aggregator & Shipping Software Platform</strong> that facilitates <strong>B2B Courier Booking, Automated Shipping Label Generation, Multi-Carrier Parcel Tracking, and Delivery Protection</strong>. SecureKaro aggregates licensed courier partners (including Delhivery, Blue Dart, DTDC, and Shadowfax) to provide seamless parcel dispatch, shipment milestone tracking, and COD fraud protection for sellers and buyers.
               </p>
             </div>
 
@@ -189,7 +186,7 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
             <div>
               <h3 className="text-sm font-bold text-slate-900 mb-1">6. Privacy, Permissions &amp; Data Protection (DPDP Act, 2023)</h3>
               <div className="space-y-1.5 text-slate-600 text-xs">
-                <p>By registering or using SecureKaro, you affirm that you are at least 18 years of age and grant explicit statutory consent under the Digital Personal Data Protection Act, 2023 (DPDP Act) for the collection and processing of your personal data strictly for specified purposes:</p>
+                <p>By registering or using SecureKaro, you grant explicit statutory consent under the Digital Personal Data Protection Act, 2023 (DPDP Act) for the collection and processing of your personal data strictly for specified purposes:</p>
                 <div className="pl-3 border-l-2 border-blue-500 text-slate-700 text-[11px] space-y-1 my-1.5">
                   <p>• <strong>Identity &amp; Communication:</strong> Full Name, Mobile Number, and Email for OTP security, two-factor authentication, and critical shipment dispatch alerts.</p>
                   <p>• <strong>Logistics &amp; Routing:</strong> Pickup and Delivery addresses, Pincodes, and Landmark details shared with integrated courier partners (Delhivery, Shadowfax, etc.) solely for parcel pickup, route navigation, and delivery proof sign-off.</p>
@@ -354,11 +351,11 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
                 This Privacy Policy is formulated in strict accordance with the <strong>Digital Personal Data Protection Act, 2023 (DPDP Act, 2023)</strong>, the <strong>Information Technology Act, 2000</strong>, and the <strong>Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011 (SPDI Rules)</strong>.
               </p>
               <div className="text-[11.5px] bg-white p-3 rounded-xl border border-slate-200 space-y-1">
-                <p><strong>Designated Data Fiduciary:</strong> M/s SecureKaro (SecureKaro Logistics)</p>
-                <p><strong>Proprietor &amp; Data Protection Lead:</strong> Kartick Das</p>
-                <p><strong>Operating Address:</strong> Nimta, North Dum Dum Municipality, Kolkata, West Bengal 700049, India</p>
+                <p><strong>Designated Data Fiduciary:</strong> SecureKaro Logistics</p>
+                <p><strong>Data Protection Lead:</strong> Authorized Compliance Officer</p>
+                <p><strong>Operating Region:</strong> Kolkata, West Bengal, India</p>
                 <p><strong>Trade Licence No (Certificate of Enlistment):</strong> 0917P453826577951 | State Ref: 220882607200574612</p>
-                <p><strong>Official Privacy &amp; Grievance Contact:</strong> <span className="font-mono text-[#1E56E3] font-bold">logistic@securekaro.in</span></p>
+                <p><strong>Official Privacy &amp; Grievance Desk:</strong> <span className="font-mono text-[#1E56E3] font-bold">logistic@securekaro.in</span></p>
               </div>
             </div>
 
@@ -498,8 +495,8 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-white p-4 rounded-xl border border-emerald-200">
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Nodal Officer</span>
-                  <span className="font-extrabold text-slate-900">Kartick Das</span>
-                  <span className="block text-slate-500 text-[11px]">Proprietor &amp; Grievance Lead</span>
+                  <span className="font-extrabold text-slate-900">Grievance Redressal Officer</span>
+                  <span className="block text-slate-500 text-[11px]">Data Privacy &amp; Compliance Desk</span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Direct Redressal Email</span>

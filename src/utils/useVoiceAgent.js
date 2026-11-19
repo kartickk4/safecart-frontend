@@ -536,7 +536,7 @@ export function useVoiceAgent({ onFinalTranscript, autoSend = false } = {}) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
 
-    const sample = "Hi Kartick! I am your SecureKaro AI assistant. I am ready to book, track, and protect your shipments.";
+    const sample = "Hi there! I am your SecureKaro AI assistant. I am ready to book, track, and protect your shipments.";
     const currentVoices = window.speechSynthesis.getVoices();
     const voice = selectSweetCasualFemaleVoice(currentVoices, voiceName);
 

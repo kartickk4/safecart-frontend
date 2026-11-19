@@ -1108,7 +1108,7 @@ export default function WalletModal({ user, onUpdateUser }) {
               <label className="block text-xs font-semibold text-slate-700 mb-1">Account Holder Name (Optional)</label>
               <input
                 type="text"
-                placeholder="e.g. Kartick Das"
+                placeholder="e.g. Account Holder Name"
                 value={bankDetails.accountHolderName}
                 onChange={(e) => setBankDetails({ ...bankDetails, accountHolderName: e.target.value })}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500"

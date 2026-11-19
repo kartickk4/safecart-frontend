@@ -831,18 +831,18 @@ export default function App() {
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
             <div>
               <div className="font-extrabold text-slate-800 text-sm">M/s SecureKaro (SecureKaro Logistics)</div>
-              <div>Proprietor: Kartick Das • Nimta, North Dum Dum Municipality, Kolkata, West Bengal 700049</div>
-              <div>Trade Licence: 0917P453826577951 • Helpline: +91 70442 55626 / 1800-723-3227</div>
+              <div>Logistics Aggregator &amp; Shipping Platform • Kolkata, West Bengal, India</div>
+              <div>Trade Licence: 0917P453826577951 • Toll-Free Helpline: 1800-723-3227</div>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 font-semibold text-slate-600">
-              <a href="/contact" onClick={(e) => { e.preventDefault(); setCurrentTab('contact'); }} className="hover:text-[#1E56E3]">Contact Us</a>
-              <span>•</span>
+
+
               <a href="/terms" onClick={(e) => { e.preventDefault(); setCurrentTab('terms'); }} className="hover:text-[#1E56E3]">Terms & Conditions</a>
-              <span>•</span>
+
               <a href="/privacy" onClick={(e) => { e.preventDefault(); setCurrentTab('privacy'); }} className="hover:text-[#1E56E3]">Privacy Policy</a>
-              <span>•</span>
+
               <a href="/shipping" onClick={(e) => { e.preventDefault(); setCurrentTab('shipping'); }} className="hover:text-[#1E56E3]">Shipping Policy</a>
-              <span>•</span>
+
               <a href="/refund" onClick={(e) => { e.preventDefault(); setCurrentTab('refunds'); }} className="hover:text-[#1E56E3]">Refund Policy</a>
             </div>
           </div>

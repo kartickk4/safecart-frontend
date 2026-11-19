@@ -332,7 +332,7 @@ export default function Sidebar({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-slate-900 truncate">
-                  {user?.fullName || 'Kartick Das'}
+                  {user?.fullName || 'SecureKaro User'}
                 </p>
                 <p className="text-[10px] text-slate-400 font-semibold capitalize truncate">
                   {user?.activeRole || user?.role || 'Supplier'}
@@ -364,7 +364,7 @@ export default function Sidebar({
             <div
               className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs cursor-pointer hover:scale-105 transition-transform"
               onClick={() => setCurrentTab('profile')}
-              title={`Profile: ${user?.fullName || 'Kartick Das'}`}
+              title={`Profile: ${user?.fullName || 'SecureKaro User'}`}
             >
               {userInitials}
             </div>
