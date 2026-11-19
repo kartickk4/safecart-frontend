@@ -187,10 +187,16 @@ export default function LegalComplianceView({ initialTab = 'contact', onTabChang
             </div>
 
             <div>
-              <h3 className="text-sm font-bold text-slate-900 mb-1">6. Privacy &amp; Data Protection (DPDP Act, 2023)</h3>
-              <p>
-                By accessing SecureKaro, users consent to the processing of necessary personal and shipment data in strict accordance with the Digital Personal Data Protection Act, 2023 (DPDP Act) and our Privacy Policy. Users retain full statutory rights of access, correction, nomination, and erasure (account deletion) under Chapter III of the DPDP Act.
-              </p>
+              <h3 className="text-sm font-bold text-slate-900 mb-1">6. Privacy, Permissions &amp; Data Protection (DPDP Act, 2023)</h3>
+              <div className="space-y-1.5 text-slate-600 text-xs">
+                <p>By registering or using SecureKaro, you affirm that you are at least 18 years of age and grant explicit statutory consent under the Digital Personal Data Protection Act, 2023 (DPDP Act) for the collection and processing of your personal data strictly for specified purposes:</p>
+                <div className="pl-3 border-l-2 border-blue-500 text-slate-700 text-[11px] space-y-1 my-1.5">
+                  <p>• <strong>Identity &amp; Communication:</strong> Full Name, Mobile Number, and Email for OTP security, two-factor authentication, and critical shipment dispatch alerts.</p>
+                  <p>• <strong>Logistics &amp; Routing:</strong> Pickup and Delivery addresses, Pincodes, and Landmark details shared with integrated courier partners (Delhivery, Shadowfax, etc.) solely for parcel pickup, route navigation, and delivery proof sign-off.</p>
+                  <p>• <strong>Financial &amp; Escrow Settlement:</strong> Bank Account Numbers, IFSC codes, and UPI IDs processed securely for escrow custody, cash-on-delivery (COD) wallet remittances, and instant refund processing in accordance with RBI and DPDP guidelines.</p>
+                </div>
+                <p>You retain full statutory rights of access, correction, nomination, and permanent erasure (account deletion) under Chapter III of the DPDP Act. Consent may be revoked at any time by closing your account via Profile settings.</p>
+              </div>
             </div>
 
             <div>
