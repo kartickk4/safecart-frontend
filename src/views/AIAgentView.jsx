@@ -440,8 +440,8 @@ const QUICK_REPLIES = {
 };
 
 const QUICK_REPLY_KEYWORDS = {
-  'Book Shipment':              'Book a new shipment',
-  '📦 Book Shipment':           'Book a new shipment',
+  'Book Shipment':              'Book shipment',
+  '📦 Book Shipment':           'Book shipment',
   'Track Order':                'Track my recent order',
   '🚚 Track Order':             'Track my recent order',
   'My Wallet':                  'What is my wallet balance?',
