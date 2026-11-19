@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --port 3001 --host",
     "build": "vite build",
+    "verify": "node scripts/verify-codebase.cjs",
     "preview": "vite preview",
     "start": "serve -s dist"
   },
