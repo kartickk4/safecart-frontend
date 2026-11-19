@@ -1094,8 +1094,8 @@ export default function PublicQrConfirmView({ qrToken }) {
                           <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
                             <CheckCircle2 className="w-5 h-5" />
                           </div>
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${actionChoice === 'confirm' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300'}`}>
-                            {actionChoice === 'confirm' && <span className="w-1.5 h-1.5 rounded-full bg-white"></span>}
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${actionChoice === 'confirm' ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs' : 'border-slate-400 bg-white'}`}>
+                            {actionChoice === 'confirm' && <span className="w-2 h-2 rounded-full bg-white"></span>}
                           </div>
                         </div>
                         <div>
@@ -1147,8 +1147,8 @@ export default function PublicQrConfirmView({ qrToken }) {
                           <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
                             <RotateCcw className="w-5 h-5" />
                           </div>
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${actionChoice === 'return' ? 'border-amber-600 bg-amber-600 text-white' : 'border-slate-300'}`}>
-                            {actionChoice === 'return' && <span className="w-1.5 h-1.5 rounded-full bg-white"></span>}
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${actionChoice === 'return' ? 'border-amber-600 bg-amber-600 text-white shadow-xs' : 'border-slate-400 bg-white'}`}>
+                            {actionChoice === 'return' && <span className="w-2 h-2 rounded-full bg-white"></span>}
                           </div>
                         </div>
                         <div>

@@ -909,51 +909,68 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 />
               </div>
 
-              <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <RotateCcw className="w-4 h-4 text-amber-600 shrink-0" />
+              <div className={`p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between ${
+                returnAllowed ? 'bg-amber-50/90 border-amber-300 shadow-xs' : 'bg-slate-50/80 border-slate-200'
+              }`}>
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                    returnAllowed ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-500'
+                  }`}>
+                    <RotateCcw className="w-4 h-4" />
+                  </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-900">Enable Return Option</p>
-                    <p className="text-[10px] text-slate-500">Allows buyer to request return within 24h of delivery</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-xs font-bold text-slate-900">Enable Return Option</p>
+                      <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ${
+                        returnAllowed ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-200 text-slate-600'
+                      }`}>
+                        {returnAllowed ? 'Enabled' : 'Off'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Allows buyer to request return within 24h of delivery</p>
                   </div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
                   <input
                     type="checkbox"
                     checked={returnAllowed}
                     onChange={(e) => setReturnAllowed(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-amber-600"></div>
+                  <div className="w-11 h-6 bg-slate-300 border border-slate-300/80 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-sm peer-checked:bg-amber-500 peer-checked:border-amber-500 shadow-inner"></div>
                 </label>
               </div>
 
               {/* Packed Parcel Photo on Weight Scale with Label (Default: OFF) */}
-              <div className={`p-3 rounded-2xl border transition-all ${
-                photoReviewEnabled ? 'bg-indigo-50/80 border-indigo-200' : 'bg-slate-50 border-slate-200'
+              <div className={`p-3.5 rounded-2xl border-2 transition-all ${
+                photoReviewEnabled ? 'bg-indigo-50/90 border-indigo-300 shadow-xs' : 'bg-slate-50/80 border-slate-200'
               } flex items-center justify-between`}>
-                <div className="flex items-center gap-2">
-                  <Scale className={`w-4 h-4 shrink-0 ${photoReviewEnabled ? 'text-indigo-600' : 'text-slate-500'}`} />
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                    photoReviewEnabled ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-500'
+                  }`}>
+                    <Scale className="w-4 h-4" />
+                  </div>
                   <div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-xs font-bold text-slate-900">Packed Parcel Photo on Weight Scale with Label</p>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
-                        photoReviewEnabled ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-200 text-slate-600'
+                      <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ${
+                        photoReviewEnabled ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' : 'bg-slate-200 text-slate-600'
                       }`}>
-                        {photoReviewEnabled ? 'Enabled' : 'Off'}
+                        {photoReviewEnabled ? 'Enabled' : 'Optional (Off)'}
                       </span>
                     </div>
-                    <p className="text-[10px] text-slate-500">Optional: Upload parcel on scale with label before pickup</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Optional: Upload parcel on scale with label before pickup</p>
                   </div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
+                <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
                   <input
                     type="checkbox"
                     checked={photoReviewEnabled}
                     onChange={(e) => setPhotoReviewEnabled(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-indigo-600"></div>
+                  <div className="w-11 h-6 bg-slate-300 border border-slate-300/80 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-sm peer-checked:bg-indigo-600 peer-checked:border-indigo-600 shadow-inner"></div>
                 </label>
               </div>
 

@@ -1747,15 +1747,21 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
               {shipmentType === 'forward' ? (
                 <>
                   {/* Return Policy Selection */}
-              <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 flex items-center justify-between">
+              <div className={`p-4 rounded-2xl border-2 transition-all flex items-center justify-between ${
+                returnAllowed ? 'bg-amber-50/90 border-amber-300 shadow-xs' : 'bg-slate-50/80 border-slate-200'
+              }`}>
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold shrink-0">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold shrink-0 ${
+                    returnAllowed ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-500'
+                  }`}>
                     <RotateCcw className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-xs font-bold text-slate-900">Enable Product Return Option for this Parcel</p>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${returnAllowed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        returnAllowed ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-200 text-slate-700'
+                      }`}>
                         {returnAllowed ? 'Returns Enabled' : 'Returns Disabled'}
                       </span>
                     </div>
@@ -1771,15 +1777,15 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     onChange={(e) => setReturnAllowed(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                  <div className="w-11 h-6 bg-slate-300 border border-slate-300/80 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-sm peer-checked:bg-amber-500 peer-checked:border-amber-500 shadow-inner"></div>
                 </label>
               </div>
 
               {/* Smart RTO & Undelivered Protection (Available for all shipments: COD & Prepaid) */}
-              <div className={`rounded-2xl border overflow-hidden transition-all ${
+              <div className={`rounded-2xl border-2 overflow-hidden transition-all ${
                 rtoProtectionEnabled
-                  ? 'bg-emerald-50/70 border-emerald-200/90'
-                  : 'bg-slate-50 border-slate-200'
+                  ? 'bg-emerald-50/90 border-emerald-400 shadow-xs'
+                  : 'bg-slate-50/80 border-slate-200'
               }`}>
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -1793,7 +1799,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-xs font-bold text-slate-900">RTO &amp; Undelivered Protection</p>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${rtoProtectionEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${rtoProtectionEnabled ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-200 text-slate-700'}`}>
                           {rtoProtectionEnabled ? 'Protection Active' : 'Disabled'}
                         </span>
                         <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
@@ -1812,7 +1818,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                       onChange={(e) => setRtoProtectionEnabled(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <div className="w-11 h-6 bg-slate-300 border border-slate-300/80 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-sm peer-checked:bg-emerald-600 peer-checked:border-emerald-600 shadow-inner"></div>
                   </label>
                 </div>
 
@@ -1839,10 +1845,10 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
               </div>
 
               {/* Packed Parcel Photo on Weight Scale with Label (Default: OFF) */}
-              <div className={`p-4 rounded-2xl border transition-all ${
+              <div className={`p-4 rounded-2xl border-2 transition-all ${
                 photoReviewEnabled
-                  ? 'bg-indigo-50/80 border-indigo-200/90'
-                  : 'bg-slate-50 border-slate-200'
+                  ? 'bg-indigo-50/90 border-indigo-300 shadow-xs'
+                  : 'bg-slate-50/80 border-slate-200'
               } flex items-center justify-between`}>
                 <div className="flex items-center gap-3">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold shrink-0 ${
@@ -1875,7 +1881,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     onChange={(e) => setPhotoReviewEnabled(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                  <div className="w-11 h-6 bg-slate-300 border border-slate-300/80 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-sm peer-checked:bg-indigo-600 peer-checked:border-indigo-600 shadow-inner"></div>
                 </label>
               </div>
             </>

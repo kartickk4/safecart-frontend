@@ -775,8 +775,8 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                         Confirm delivery now. You keep a 24-hour return window to inspect and test the contents before funds are released to the seller.
                       </p>
                     </div>
-                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${!returnAllowed ? 'border-slate-300 bg-slate-200' : confirmChoice === 'keep_open_24h' ? 'border-[#1E56E3] bg-[#1E56E3] text-white' : 'border-slate-300'}`}>
-                      {returnAllowed && confirmChoice === 'keep_open_24h' && <span className="w-1.5 h-1.5 rounded-full bg-white"></span>}
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${!returnAllowed ? 'border-slate-300 bg-slate-200' : confirmChoice === 'keep_open_24h' ? 'border-[#1E56E3] bg-[#1E56E3] text-white shadow-xs' : 'border-slate-400 bg-white'}`}>
+                      {returnAllowed && confirmChoice === 'keep_open_24h' && <span className="w-2 h-2 rounded-full bg-white"></span>}
                     </div>
                   </div>
 
@@ -802,8 +802,8 @@ export default function DeliveryConfirmView({ onConfirmed, user }) {
                         Confirm parcel and immediately release funds to the seller's wallet.
                       </p>
                     </div>
-                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${confirmChoice === 'confirm_and_close' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300'}`}>
-                      {confirmChoice === 'confirm_and_close' && <span className="w-1.5 h-1.5 rounded-full bg-white"></span>}
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${confirmChoice === 'confirm_and_close' ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs' : 'border-slate-400 bg-white'}`}>
+                      {confirmChoice === 'confirm_and_close' && <span className="w-2 h-2 rounded-full bg-white"></span>}
                     </div>
                   </div>
                 </div>
