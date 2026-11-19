@@ -40,7 +40,10 @@ const escapeHtml = (str) => {
 const formatMessage = (text) => {
   if (!text) return "";
   const safe = escapeHtml(text);
-  let html = safe.replace(/\*([^*]+)\*/g, "<strong class='font-bold text-slate-900'>$1</strong>");
+  let html = safe.replace(/\*\*([^*\n]+)\*\*/g, "<strong class='font-bold text-slate-900'>$1</strong>");
+  html = html.replace(/\*([^*\n]+)\*/g, "<strong class='font-bold text-slate-900'>$1</strong>");
+  html = html.replace(/`([^`\n]+)`/g, "<code class='px-1 py-0.5 rounded bg-slate-100 text-indigo-700 font-mono text-xs'>$1</code>");
+  html = html.replace(/\n\n/g, "<div class='h-2'></div>");
   html = html.replace(/\n/g, "<br/>");
   return html;
 };
