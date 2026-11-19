@@ -788,7 +788,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <input
                     type="number"
                     required
-                    placeholder="3420"
+                    placeholder="e.g. 1500"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white font-bold"

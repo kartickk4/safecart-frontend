@@ -87,7 +87,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [parcelWidth, setParcelWidth] = useState('10');
   const [parcelHeight, setParcelHeight] = useState('5');
   const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('3420');
+  const [amount, setAmount] = useState('');
   const [cityRoute, setCityRoute] = useState('');
   const [carrierSlug, setCarrierSlug] = useState('manual'); // 'manual' = user compares and selects from live rates by default
   const [showCarrierModal, setShowCarrierModal] = useState(false);
@@ -1213,7 +1213,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                   <input
                     type="number"
                     required
-                    placeholder="3420"
+                    placeholder="e.g. 1500"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:bg-white"
