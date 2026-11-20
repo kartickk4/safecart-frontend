@@ -1024,8 +1024,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                 value={email}
                 onChange={(e) => setEmail(e.target.value.trim())}
                 className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition ${email && validateEmail(email).isValid
-                    ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
-                    : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
+                  ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                  : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
                   }`}
               />
             </div>
@@ -1316,10 +1316,6 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                   <p className="text-xs text-slate-500 mt-1">Enter the 6-digit OTP code sent to <span className="font-bold text-slate-800">{forgotEmail}</span>.</p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-100 text-xs text-[#1E56E3] font-semibold">
-                  <span>💡 Security OTP: <span className="font-mono font-extrabold text-slate-900">489201</span></span>
-                </div>
-
                 {resetErr && (
                   <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold">{resetErr}</div>
                 )}
@@ -1331,9 +1327,9 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                       type="text"
                       required
                       maxLength="6"
-                      placeholder="489201"
+                      placeholder="------"
                       value={resetOtp}
-                      onChange={(e) => setResetOtp(e.target.value)}
+                      onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, ''))}
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-center text-lg font-mono font-bold text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -1450,8 +1446,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                   disabled={signUpResendTimer > 0 || signUpResending}
                   onClick={handleResendSignUpOtp}
                   className={`font-bold transition flex items-center gap-1.5 cursor-pointer ${signUpResendTimer > 0 || signUpResending
-                      ? 'text-slate-300 cursor-not-allowed'
-                      : 'text-[#1E56E3] hover:underline'
+                    ? 'text-slate-300 cursor-not-allowed'
+                    : 'text-[#1E56E3] hover:underline'
                     }`}
                 >
                   {signUpResending ? (
@@ -1646,8 +1642,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                       type="button"
                       onClick={() => setSelectedRoleType('Supplier')}
                       className={`p-5 rounded-2xl border-2 text-left transition-all duration-200 flex flex-col gap-3 ${selectedRoleType === 'Supplier'
-                          ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
-                          : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-100'
+                        ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
+                        : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-100'
                         }`}
                     >
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedRoleType === 'Supplier' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
@@ -1664,8 +1660,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                       type="button"
                       onClick={() => setSelectedRoleType('Receiver')}
                       className={`p-5 rounded-2xl border-2 text-left transition-all duration-200 flex flex-col gap-3 ${selectedRoleType === 'Receiver'
-                          ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
-                          : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-100'
+                        ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
+                        : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-100'
                         }`}
                     >
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedRoleType === 'Receiver' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
@@ -1710,8 +1706,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                       type="button"
                       onClick={() => setSelectedPlatform('independent')}
                       className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-200 flex items-center gap-4 ${selectedPlatform === 'independent'
-                          ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
-                          : 'border-slate-200 bg-slate-50/60 hover:border-slate-300'
+                        ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
+                        : 'border-slate-200 bg-slate-50/60 hover:border-slate-300'
                         }`}
                     >
                       <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${selectedPlatform === 'independent' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
@@ -1729,8 +1725,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                       type="button"
                       onClick={() => setSelectedPlatform('ecommerce')}
                       className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-200 flex items-center gap-4 ${selectedPlatform === 'ecommerce'
-                          ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
-                          : 'border-slate-200 bg-slate-50/60 hover:border-slate-300'
+                        ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
+                        : 'border-slate-200 bg-slate-50/60 hover:border-slate-300'
                         }`}
                     >
                       <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${selectedPlatform === 'ecommerce' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
@@ -1851,10 +1847,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                         value={sellerAddress.pincode}
                         onChange={(e) => setSellerAddress({ ...sellerAddress, pincode: sanitizePincode(e.target.value) })}
                         className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:bg-white transition ${sellerAddress.pincode && validatePincode(sellerAddress.pincode).isValid
-                            ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
-                            : sellerAddress.pincode && sellerAddress.pincode.length === 6 && !validatePincode(sellerAddress.pincode).isValid
-                              ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
-                              : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
+                          ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                          : sellerAddress.pincode && sellerAddress.pincode.length === 6 && !validatePincode(sellerAddress.pincode).isValid
+                            ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
+                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
                           }`}
                       />
                     </div>
@@ -2052,8 +2048,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                       disabled={googleResendTimer > 0 || googleResending}
                       onClick={handleResendGooglePhoneOtp}
                       className={`font-bold transition flex items-center gap-1 cursor-pointer ${googleResendTimer > 0 || googleResending
-                          ? 'text-slate-300 cursor-not-allowed'
-                          : 'text-[#1E56E3] hover:underline'
+                        ? 'text-slate-300 cursor-not-allowed'
+                        : 'text-[#1E56E3] hover:underline'
                         }`}
                     >
                       {googleResending ? (
