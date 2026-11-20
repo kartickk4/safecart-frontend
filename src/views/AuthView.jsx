@@ -779,8 +779,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
               <div className="text-[10px] xl:text-[11px] text-blue-200 font-medium mt-0.5">COD Wallet Payout</div>
             </div>
             <div className="p-2.5 xl:p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-center transition hover:bg-white/15">
-              <div className="text-base xl:text-lg font-black text-emerald-300">₹0 Upfront</div>
-              <div className="text-[10px] xl:text-[11px] text-blue-200 font-medium mt-0.5">COD Booking Option</div>
+              <div className="text-base xl:text-lg font-black text-emerald-300">Pay Later</div>
+              <div className="text-[10px] xl:text-[11px] text-blue-200 font-medium mt-0.5 leading-tight">Pay after parcel delivered</div>
             </div>
             <div className="p-2.5 xl:p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-center transition hover:bg-white/15">
               <div className="text-base xl:text-lg font-black text-white">29,000+</div>
