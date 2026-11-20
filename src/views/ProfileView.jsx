@@ -256,6 +256,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
     setPhoneChangeLoading(true);
     setPhoneChangeError('');
     setPhoneChangeSuccess('');
+    setOldPhoneOtp('');
     try {
       const currentNumber = user?.phone || phone;
       const res = await profileAPI.sendPhoneOtp(currentNumber, true);
@@ -298,6 +299,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
     setPhoneChangeLoading(true);
     setPhoneChangeError('');
     setPhoneChangeSuccess('');
+    setNewPhoneOtp('');
     try {
       const res = await profileAPI.sendPhoneOtp(newPhoneInput, false);
       setNewPhoneOtpSent(true);
@@ -1220,7 +1222,10 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                     maxLength="6"
                     placeholder="------"
                     value={oldPhoneOtp}
-                    onChange={(e) => setOldPhoneOtp(e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => {
+                      setPhoneChangeError('');
+                      setOldPhoneOtp(e.target.value.replace(/\D/g, ''));
+                    }}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl font-mono font-black text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500 focus:bg-white"
                   />
                 </div>
@@ -1311,7 +1316,10 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                         maxLength="6"
                         placeholder="------"
                         value={newPhoneOtp}
-                        onChange={(e) => setNewPhoneOtp(e.target.value.replace(/\D/g, ''))}
+                        onChange={(e) => {
+                          setPhoneChangeError('');
+                          setNewPhoneOtp(e.target.value.replace(/\D/g, ''));
+                        }}
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl font-mono font-black text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500 focus:bg-white"
                       />
                     </div>
