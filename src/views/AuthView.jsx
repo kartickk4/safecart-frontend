@@ -1177,14 +1177,6 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
             >
               Refunds & Cancellations
             </a>
-            <span>•</span>
-            <a 
-              href="/pricing" 
-              onClick={(e) => { e.preventDefault(); setShowLegalModal('services'); }} 
-              className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
-            >
-              Products & Pricing (INR ₹)
-            </a>
           </div>
         </div>
       </div>
