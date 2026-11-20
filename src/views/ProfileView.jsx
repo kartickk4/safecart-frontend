@@ -117,7 +117,7 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
           setSecurityLoading(false);
           return;
         }
-        const res = await authAPI.sendOtp(normalized, isSupplier ? 'Supplier' : 'Receiver');
+        const res = await authAPI.sendOtp({ phone: normalized, role: isSupplier ? 'Supplier' : 'Receiver', purpose: 'verification' });
         setSecuritySuccess(res.data?.message || `Verification OTP sent via SMS to ${normalized}.`);
         if (res.data?.debugCode) {
           setSecurityDebugOtp(res.data.debugCode);
@@ -1468,7 +1468,10 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                   maxLength="6"
                   placeholder="------"
                   value={securityOtpInput}
-                  onChange={(e) => setSecurityOtpInput(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => {
+                    setSecurityError('');
+                    setSecurityOtpInput(e.target.value.replace(/\D/g, ''));
+                  }}
                   className="w-full text-center text-2xl font-mono font-extrabold tracking-widest px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white"
                 />
               </div>
@@ -1484,7 +1487,10 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                 <button
                   type="button"
                   disabled={securityTimer > 0 || securityLoading}
-                  onClick={() => handleSendSecurityOtp()}
+                  onClick={() => {
+                    setSecurityOtpInput('');
+                    handleSendSecurityOtp();
+                  }}
                   className={`font-bold ${
                     securityTimer > 0 ? 'text-slate-300 cursor-not-allowed' : 'text-[#1E56E3] hover:underline cursor-pointer'
                   }`}
