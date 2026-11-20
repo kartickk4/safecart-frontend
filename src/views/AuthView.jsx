@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, Store, Package, X, Sparkles, ChevronRight, MapPin, Truck, AlertCircle, Gift, Tag } from 'lucide-react';
+import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, Store, Package, X, Sparkles, ChevronRight, MapPin, Truck, AlertCircle, Gift, Tag, Zap, Scale, Clock, MessageSquare } from 'lucide-react';
 import { authAPI, profileAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
 import { validateEmail, validatePincode, sanitizePincode } from '../utils/validators';
@@ -733,14 +733,14 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
   return (
     <div className="min-h-screen w-full flex bg-[#F7F9FC]">
       {/* LEFT HERO COLUMN - ROYAL BLUE SECUREKARO BRANDING */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#1E56E3] via-[#1649CC] to-[#0D38A8] text-white p-12 flex-col justify-between relative overflow-hidden select-none">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#1E56E3] via-[#1649CC] to-[#0D38A8] text-white p-8 xl:p-12 flex-col justify-between relative overflow-hidden select-none">
         {/* Background glow elements */}
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute -bottom-24 -right-24 w-[30rem] h-[30rem] bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Brand Header */}
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-3 mb-2">
             <img
               src="/logo.jpg"
               alt="SecureKaro"
@@ -750,61 +750,129 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
               <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 SecureKaro
               </h1>
-              <p className="text-xs text-blue-200 font-medium">Logistics Aggregator & Shipping Software</p>
+              <p className="text-xs text-blue-200 font-medium">Logistics Aggregator &amp; Shipping Software</p>
             </div>
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-blue-100 font-medium mt-1">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] text-blue-100 font-semibold mt-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            B2B Courier Booking & Delivery Protection Platform
+            B2B Courier Booking &amp; Delivery Protection Platform
           </div>
         </div>
 
-        {/* Hero Copy & Feature Cards */}
-        <div className="my-auto relative z-10 max-w-lg">
-          <h2 className="text-4xl font-extrabold tracking-tight leading-tight text-white mb-4">
+        {/* Hero Copy & Highlight Badges */}
+        <div className="relative z-10 max-w-xl my-4">
+          <h2 className="text-3xl xl:text-4xl font-extrabold tracking-tight leading-tight text-white mb-2">
             Ship with confidence.<br />
-            Protected on delivery.
+            <span className="text-blue-200">Protected on Delivery.</span>
           </h2>
-          <p className="text-blue-100 text-sm leading-relaxed mb-8">
-            E-commerce Shipping Label & Parcel Tracking Tool with COD Protection. Multi-courier booking, live tracking, and digital doorstep sign-off protection.
+          <p className="text-blue-100 text-xs xl:text-sm leading-relaxed mb-4">
+            All-in-one logistics copilot with guaranteed 24-hour COD remittances, instant AI WhatsApp booking, and zero-loss RTO fraud shield across 29,000+ Indian pincodes.
           </p>
 
-          <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-4 transition hover:bg-white/15">
-              <div className="p-2.5 rounded-xl bg-white/15 text-white">
-                <ShieldCheck className="w-5 h-5" />
+          {/* Key Stat Counter Capsules */}
+          <div className="grid grid-cols-3 gap-2.5 mb-4">
+            <div className="p-2.5 xl:p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-center transition hover:bg-white/15">
+              <div className="text-base xl:text-lg font-black text-white flex items-center justify-center gap-1">
+                <Zap className="w-4 h-4 text-amber-300" />
+                <span>24 Hours</span>
+              </div>
+              <div className="text-[10px] xl:text-[11px] text-blue-200 font-medium mt-0.5">COD Wallet Payout</div>
+            </div>
+            <div className="p-2.5 xl:p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-center transition hover:bg-white/15">
+              <div className="text-base xl:text-lg font-black text-emerald-300">₹0 Upfront</div>
+              <div className="text-[10px] xl:text-[11px] text-blue-200 font-medium mt-0.5">COD Booking Option</div>
+            </div>
+            <div className="p-2.5 xl:p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-center transition hover:bg-white/15">
+              <div className="text-base xl:text-lg font-black text-white">29,000+</div>
+              <div className="text-[10px] xl:text-[11px] text-blue-200 font-medium mt-0.5">Pincodes Connected</div>
+            </div>
+          </div>
+
+          {/* 6 High-Impact Merchant Benefit Cards */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
+            {/* Benefit 1: 24h Settlement */}
+            <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-3 transition hover:bg-white/15">
+              <div className="p-2 rounded-xl bg-amber-400/20 text-amber-300 shrink-0 mt-0.5">
+                <Zap className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-white">Delivery Protection Suite</h3>
-                <p className="text-xs text-blue-100 mt-0.5">Shipments and COD values are safeguarded until verified delivery confirmation.</p>
+                <h3 className="font-bold text-xs text-white">24h Express Settlement</h3>
+                <p className="text-[10.5px] text-blue-100 leading-snug mt-0.5">
+                  Automated wallet &amp; bank transfer within 24 hours of verified delivery.
+                </p>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-4 transition hover:bg-white/15">
-              <div className="p-2.5 rounded-xl bg-white/15 text-white">
-                <Box className="w-5 h-5" />
+            {/* Benefit 2: Smart RTO Protection */}
+            <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-3 transition hover:bg-white/15">
+              <div className="p-2 rounded-xl bg-emerald-400/20 text-emerald-300 shrink-0 mt-0.5">
+                <ShieldCheck className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-white">Multi-Carrier Live Tracking</h3>
-                <p className="text-xs text-blue-100 mt-0.5">Integrate Delhivery, Blue Dart, DTDC, and Shadowfax with live parcel milestones.</p>
+                <h3 className="font-bold text-xs text-white">Smart RTO &amp; NDR Shield</h3>
+                <p className="text-[10.5px] text-blue-100 leading-snug mt-0.5">
+                  Automated WhatsApp recovery for failed attempts + ₹40 weekly seller relief.
+                </p>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-4 transition hover:bg-white/15">
-              <div className="p-2.5 rounded-xl bg-white/15 text-white">
-                <RefreshCw className="w-5 h-5" />
+            {/* Benefit 3: Multi-Carrier Shipping Rates */}
+            <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-3 transition hover:bg-white/15">
+              <div className="p-2 rounded-xl bg-blue-400/20 text-blue-200 shrink-0 mt-0.5">
+                <Truck className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-white">Prompt Courier Settlement</h3>
-                <p className="text-xs text-blue-100 mt-0.5">Fast automated settlement within 24 hours of confirmed delivery sign-off.</p>
+                <h3 className="font-bold text-xs text-white">Cheapest Multi-Carrier Rates</h3>
+                <p className="text-[10.5px] text-blue-100 leading-snug mt-0.5">
+                  Compare Delhivery, Shadowfax &amp; DTDC from just ₹42/500g across India.
+                </p>
+              </div>
+            </div>
+
+            {/* Benefit 4: AI WhatsApp Copilot */}
+            <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-3 transition hover:bg-white/15">
+              <div className="p-2 rounded-xl bg-purple-400/20 text-purple-200 shrink-0 mt-0.5">
+                <MessageSquare className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="font-bold text-xs text-white">AI WhatsApp Dispatch</h3>
+                <p className="text-[10.5px] text-blue-100 leading-snug mt-0.5">
+                  Paste buyer orders or voice notes to generate instant AWB shipping labels.
+                </p>
+              </div>
+            </div>
+
+            {/* Benefit 5: Weight Shield */}
+            <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-3 transition hover:bg-white/15">
+              <div className="p-2 rounded-xl bg-teal-400/20 text-teal-200 shrink-0 mt-0.5">
+                <Scale className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="font-bold text-xs text-white">Weight Dispute Shield</h3>
+                <p className="text-[10.5px] text-blue-100 leading-snug mt-0.5">
+                  Pre-pickup parcel scale photo proof stops fake courier weight penalties.
+                </p>
+              </div>
+            </div>
+
+            {/* Benefit 6: In-Box QR Sign-Off */}
+            <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-start gap-3 transition hover:bg-white/15">
+              <div className="p-2 rounded-xl bg-rose-400/20 text-rose-300 shrink-0 mt-0.5">
+                <Lock className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="font-bold text-xs text-white">In-Box QR &amp; OTP Sign-Off</h3>
+                <p className="text-[10.5px] text-blue-100 leading-snug mt-0.5">
+                  Doorstep verification eliminates package theft and fraudulent returns.
+                </p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Footer info */}
-        <div className="relative z-10 text-xs text-blue-200 flex items-center justify-between border-t border-white/10 pt-4">
-          <span>&copy; {new Date().getFullYear()} SecureKaro Logistics & Shipping Software</span>
+        <div className="relative z-10 text-xs text-blue-200 flex items-center justify-between border-t border-white/10 pt-3">
+          <span>&copy; {new Date().getFullYear()} SecureKaro Logistics &amp; Shipping Software</span>
           <span className="flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> 256-Bit SSL Encrypted</span>
         </div>
       </div>
