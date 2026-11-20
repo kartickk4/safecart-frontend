@@ -166,20 +166,27 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
 
   const handleSendResetOtp = async (e) => {
     e.preventDefault();
-    if (!forgotEmail) return;
+    const input = (forgotEmail || '').trim();
+    if (!input) return;
     setResetErr('');
     setResetMsg('');
     setResetLoading(true);
 
+    const isEmail = input.includes('@');
+    const cleanPhone = input.replace(/\D/g, '').slice(-10);
+    const payload = isEmail
+      ? { email: input.toLowerCase(), role: isSupplier ? 'Supplier' : 'Receiver' }
+      : { phone: cleanPhone, role: isSupplier ? 'Supplier' : 'Receiver' };
+
     try {
-      const res = await authAPI.forgotPassword({ email: forgotEmail });
-      setResetMsg(res.data?.message || `Password reset verification code sent to ${forgotEmail}`);
+      const res = await authAPI.forgotPassword(payload);
+      setResetMsg(res.data?.message || `Password reset verification code sent to ${input}`);
       if (res.data?.debugCode) {
         setSignUpDebugOtp(res.data.debugCode);
       }
       setResetStep(2);
     } catch (err) {
-      setResetErr(err.response?.data?.error || 'Failed to send password reset code. Please verify email.');
+      setResetErr(err.response?.data?.error || 'Failed to send password reset code. Please verify email or mobile number.');
     } finally {
       setResetLoading(false);
     }
@@ -200,8 +207,15 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
     setResetMsg('');
     setResetLoading(true);
 
+    const input = (forgotEmail || '').trim();
+    const isEmail = input.includes('@');
+    const cleanPhone = input.replace(/\D/g, '').slice(-10);
+    const payload = isEmail
+      ? { email: input.toLowerCase(), code: resetOtp, newPassword, role: isSupplier ? 'Supplier' : 'Receiver' }
+      : { phone: cleanPhone, code: resetOtp, newPassword, role: isSupplier ? 'Supplier' : 'Receiver' };
+
     try {
-      await authAPI.resetPassword({ email: forgotEmail, code: resetOtp, newPassword });
+      await authAPI.resetPassword(payload);
       setResetStep(3);
     } catch (err) {
       setResetErr(err.response?.data?.error || 'Invalid or expired OTP verification code.');
@@ -1274,7 +1288,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                 </div>
                 <div>
                   <h3 className="text-xl font-extrabold text-slate-900">Reset Your Password</h3>
-                  <p className="text-xs text-slate-500 mt-1">Enter your registered email address to receive a 6-digit security OTP verification code.</p>
+                  <p className="text-xs text-slate-500 mt-1">Enter your registered email address or mobile number to receive a 6-digit security OTP verification code.</p>
                 </div>
 
                 {resetErr && (
@@ -1283,11 +1297,11 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
 
                 <form onSubmit={handleSendResetOtp} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address or Mobile Number</label>
                     <input
-                      type="email"
+                      type="text"
                       required
-                      placeholder="you@company.com"
+                      placeholder="you@company.com or 10-digit mobile"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white"
