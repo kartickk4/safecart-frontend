@@ -227,7 +227,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
           if (credential?.idToken) {
             oAuthIdToken = credential.idToken;
           }
-        } catch (_) {}
+        } catch (_) { }
       } catch (fbErr) {
         console.warn('Firebase Popup error:', fbErr);
         if (fbErr.code === 'auth/popup-closed-by-user' || fbErr.code === 'auth/cancelled-popup-request') {
@@ -421,18 +421,18 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
           await window.googleConfirmationResult.confirm(googleOtpCode);
         } catch (fbErr) {
           setGoogleProfileErr('Invalid or expired SMS verification code.');
-            setGoogleProfileLoading(false);
-            return;
+          setGoogleProfileLoading(false);
+          return;
         }
       } else {
         try {
           await authAPI.verifyOtp({ phone: formattedPhone, code: googleOtpCode, purpose: 'verification' });
         } catch (vErr) {
-          
-            setGoogleProfileErr(vErr.response?.data?.error || 'Invalid or expired SMS verification code.');
-            setGoogleProfileLoading(false);
-            return;
-          
+
+          setGoogleProfileErr(vErr.response?.data?.error || 'Invalid or expired SMS verification code.');
+          setGoogleProfileLoading(false);
+          return;
+
         }
       }
 
@@ -461,13 +461,13 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
       if (!window.recaptchaVerifier) {
         window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
           'size': 'invisible',
-          'callback': () => {},
+          'callback': () => { },
           'expired-callback': () => {
             try {
               if (window.recaptchaVerifier) {
                 window.recaptchaVerifier.clear();
               }
-            } catch(e){}
+            } catch (e) { }
             window.recaptchaVerifier = null;
           }
         });
@@ -493,8 +493,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
           await window.confirmationResult.confirm(signUpOtp);
         } catch (fbErr) {
           setSignUpOtpErr('Invalid verification code entered or code expired.');
-            setSignUpOtpLoading(false);
-            return;
+          setSignUpOtpLoading(false);
+          return;
         }
       }
 
@@ -504,11 +504,11 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
         const verifyRes = await authAPI.verifyOtp({ phone: formattedPhone, code: signUpOtp, role: activeSignupRole });
         otpVerifyData = verifyRes.data;
       } catch (vErr) {
-        
-          setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP code.');
-          setSignUpOtpLoading(false);
-          return;
-        
+
+        setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP code.');
+        setSignUpOtpLoading(false);
+        return;
+
       }
 
       // 3. Use the token from verifyOtp (user already created by backend)
@@ -525,11 +525,11 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
 
         // Try signup to set password — if user already exists, just proceed
         try {
-          await authAPI.signup({ 
-            email, 
-            password, 
-            phone: formattedPhone, 
-            fullName, 
+          await authAPI.signup({
+            email,
+            password,
+            phone: formattedPhone,
+            fullName,
             referralCode: referralCode || undefined,
             agreedToDpdpConsent: true,
             is18Plus: true,
@@ -719,10 +719,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
     } catch (e) {
       console.warn('Role/address update notice:', e.message);
     }
-    const updatedUser = { 
-      ...pendingUser, 
-      role: finalRole, 
-      activeRole: finalRole, 
+    const updatedUser = {
+      ...pendingUser,
+      role: finalRole,
+      activeRole: finalRole,
       platformType,
       ...addrPayload
     };
@@ -741,10 +741,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
         {/* Brand Header */}
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-3">
-            <img 
-              src="/logo.jpg" 
-              alt="SecureKaro" 
-              className="w-10 h-10 rounded-xl object-cover shadow-lg border border-white/40 bg-white" 
+            <img
+              src="/logo.jpg"
+              alt="SecureKaro"
+              className="w-10 h-10 rounded-xl object-cover shadow-lg border border-white/40 bg-white"
             />
             <div>
               <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -816,10 +816,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
           {/* MOBILE BRAND IDENTITY HEADER (SHOWN ONLY ON MOBILE PHONES) */}
           <div className="lg:hidden pb-4 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <img 
-                src="/logo.jpg" 
-                alt="SecureKaro" 
-                className="w-10 h-10 rounded-2xl object-cover shadow-md shadow-blue-600/15 border border-slate-200/80 bg-white" 
+              <img
+                src="/logo.jpg"
+                alt="SecureKaro"
+                className="w-10 h-10 rounded-2xl object-cover shadow-md shadow-blue-600/15 border border-slate-200/80 bg-white"
               />
               <div>
                 <div className="flex items-center gap-1.5">
@@ -836,7 +836,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
               <span>SSL Secured</span>
             </div>
           </div>
-          
+
           {/* Top Pill Tab Switcher */}
           <div className="flex justify-end">
             <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1 text-sm font-medium text-slate-600 w-full sm:w-auto">
@@ -938,9 +938,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-semibold text-slate-700">Email Address</label>
                 {email && (
-                  <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
-                    validateEmail(email).isValid ? 'text-emerald-600' : 'text-slate-400'
-                  }`}>
+                  <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${validateEmail(email).isValid ? 'text-emerald-600' : 'text-slate-400'
+                    }`}>
                     {validateEmail(email).isValid ? (
                       <>
                         <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -956,11 +955,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                 placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value.trim())}
-                className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition ${
-                  email && validateEmail(email).isValid
+                className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition ${email && validateEmail(email).isValid
                     ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
                     : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
-                }`}
+                  }`}
               />
             </div>
 
@@ -968,9 +966,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-semibold text-slate-700">Password</label>
                 {isSignUp && password && (
-                  <span className={`text-[10px] font-mono font-bold ${
-                    password.length >= 6 ? 'text-emerald-600' : 'text-amber-600'
-                  }`}>
+                  <span className={`text-[10px] font-mono font-bold ${password.length >= 6 ? 'text-emerald-600' : 'text-amber-600'
+                    }`}>
                     {password.length >= 6 ? 'Strong (6+ chars) ✓' : `${password.length}/6 chars`}
                   </span>
                 )}
@@ -1056,7 +1053,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                     className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#1E56E3] focus:ring-blue-500 cursor-pointer shrink-0 transition"
                   />
                   <span className="text-[11px] text-slate-700 leading-snug">
-                    I give explicit consent to the collection and processing of my contact, delivery, and payment details for courier logistics, live tracking, and escrow settlements under the{' '}
+                    I give explicit consent to the collection and processing of my contact, delivery, and payment details for courier logistics, live tracking, and order settlements under the{' '}
                     <button
                       type="button"
                       onClick={() => setShowLegalModal('terms')}
@@ -1113,10 +1110,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
               ) : (
                 <>
                   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                   </svg>
                   <span>Continue with Google</span>
                 </>
@@ -1146,36 +1143,44 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
 
           {/* PhonePe Merchant Compliance Active Policy Links */}
           <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-center gap-x-3.5 gap-y-2 text-[11px] font-bold text-slate-500">
-            <a 
-              href="/terms" 
-              onClick={(e) => { e.preventDefault(); setShowLegalModal('terms'); }} 
+            <a
+              href="/terms"
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('terms'); }}
               className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Terms & Conditions
             </a>
             <span>•</span>
-            <a 
-              href="/privacy" 
-              onClick={(e) => { e.preventDefault(); setShowLegalModal('privacy'); }} 
+            <a
+              href="/privacy"
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('privacy'); }}
               className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Privacy Policy
             </a>
             <span>•</span>
-            <a 
-              href="/shipping" 
-              onClick={(e) => { e.preventDefault(); setShowLegalModal('shipping'); }} 
+            <a
+              href="/shipping"
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('shipping'); }}
               className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Shipping & Delivery
             </a>
             <span>•</span>
-            <a 
-              href="/refund" 
-              onClick={(e) => { e.preventDefault(); setShowLegalModal('refunds'); }} 
+            <a
+              href="/refund"
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('refunds'); }}
               className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
             >
               Refunds & Cancellations
+            </a>
+            <span>•</span>
+            <a
+              href="/pricing"
+              onClick={(e) => { e.preventDefault(); setShowLegalModal('services'); }}
+              className="hover:text-[#1E56E3] hover:underline transition cursor-pointer"
+            >
+              Products & Pricing (INR ₹)
             </a>
           </div>
         </div>
@@ -1344,7 +1349,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
               </p>
             </div>
 
-            
+
 
             {signUpOtpErr && (
               <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold">{signUpOtpErr}</div>
@@ -1376,11 +1381,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                   type="button"
                   disabled={signUpResendTimer > 0 || signUpResending}
                   onClick={handleResendSignUpOtp}
-                  className={`font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                    signUpResendTimer > 0 || signUpResending
+                  className={`font-bold transition flex items-center gap-1.5 cursor-pointer ${signUpResendTimer > 0 || signUpResending
                       ? 'text-slate-300 cursor-not-allowed'
                       : 'text-[#1E56E3] hover:underline'
-                  }`}
+                    }`}
                 >
                   {signUpResending ? (
                     <>
@@ -1573,15 +1577,13 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                     <button
                       type="button"
                       onClick={() => setSelectedRoleType('Supplier')}
-                      className={`p-5 rounded-2xl border-2 text-left transition-all duration-200 flex flex-col gap-3 ${
-                        selectedRoleType === 'Supplier'
+                      className={`p-5 rounded-2xl border-2 text-left transition-all duration-200 flex flex-col gap-3 ${selectedRoleType === 'Supplier'
                           ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
                           : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-100'
-                      }`}
+                        }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        selectedRoleType === 'Supplier' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
-                      }`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedRoleType === 'Supplier' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
+                        }`}>
                         <ShoppingBag className="w-5 h-5" />
                       </div>
                       <div>
@@ -1593,15 +1595,13 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                     <button
                       type="button"
                       onClick={() => setSelectedRoleType('Receiver')}
-                      className={`p-5 rounded-2xl border-2 text-left transition-all duration-200 flex flex-col gap-3 ${
-                        selectedRoleType === 'Receiver'
+                      className={`p-5 rounded-2xl border-2 text-left transition-all duration-200 flex flex-col gap-3 ${selectedRoleType === 'Receiver'
                           ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
                           : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-100'
-                      }`}
+                        }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        selectedRoleType === 'Receiver' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
-                      }`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedRoleType === 'Receiver' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
+                        }`}>
                         <UserCheck className="w-5 h-5" />
                       </div>
                       <div>
@@ -1641,15 +1641,13 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                     <button
                       type="button"
                       onClick={() => setSelectedPlatform('independent')}
-                      className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-200 flex items-center gap-4 ${
-                        selectedPlatform === 'independent'
+                      className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-200 flex items-center gap-4 ${selectedPlatform === 'independent'
                           ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
                           : 'border-slate-200 bg-slate-50/60 hover:border-slate-300'
-                      }`}
+                        }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${
-                        selectedPlatform === 'independent' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
-                      }`}>
+                      <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${selectedPlatform === 'independent' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
+                        }`}>
                         <Store className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
@@ -1662,15 +1660,13 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                     <button
                       type="button"
                       onClick={() => setSelectedPlatform('ecommerce')}
-                      className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-200 flex items-center gap-4 ${
-                        selectedPlatform === 'ecommerce'
+                      className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-200 flex items-center gap-4 ${selectedPlatform === 'ecommerce'
                           ? 'border-[#1E56E3] bg-blue-50 shadow-md shadow-blue-100'
                           : 'border-slate-200 bg-slate-50/60 hover:border-slate-300'
-                      }`}
+                        }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${
-                        selectedPlatform === 'ecommerce' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
-                      }`}>
+                      <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${selectedPlatform === 'ecommerce' ? 'bg-[#1E56E3] text-white' : 'bg-slate-200 text-slate-500'
+                        }`}>
                         <Package className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
@@ -1767,9 +1763,8 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                       <div className="flex items-center justify-between mb-1">
                         <label className="text-[11px] font-bold text-slate-700">6-Digit Pincode *</label>
                         {sellerAddress.pincode && (
-                          <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
-                            validatePincode(sellerAddress.pincode).isValid ? 'text-emerald-600' : 'text-slate-400'
-                          }`}>
+                          <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${validatePincode(sellerAddress.pincode).isValid ? 'text-emerald-600' : 'text-slate-400'
+                            }`}>
                             {validatePincode(sellerAddress.pincode).isValid ? (
                               <>
                                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -1787,13 +1782,12 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                         placeholder="e.g. 560001"
                         value={sellerAddress.pincode}
                         onChange={(e) => setSellerAddress({ ...sellerAddress, pincode: sanitizePincode(e.target.value) })}
-                        className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:bg-white transition ${
-                          sellerAddress.pincode && validatePincode(sellerAddress.pincode).isValid
+                        className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:bg-white transition ${sellerAddress.pincode && validatePincode(sellerAddress.pincode).isValid
                             ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
                             : sellerAddress.pincode && sellerAddress.pincode.length === 6 && !validatePincode(sellerAddress.pincode).isValid
-                            ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
-                            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
-                        }`}
+                              ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
+                              : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
+                          }`}
                       />
                     </div>
                     <div>
@@ -1955,7 +1949,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                   </p>
                 </div>
 
-                
+
 
                 {googleProfileErr && (
                   <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
@@ -1989,11 +1983,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                       type="button"
                       disabled={googleResendTimer > 0 || googleResending}
                       onClick={handleResendGooglePhoneOtp}
-                      className={`font-bold transition flex items-center gap-1 cursor-pointer ${
-                        googleResendTimer > 0 || googleResending
+                      className={`font-bold transition flex items-center gap-1 cursor-pointer ${googleResendTimer > 0 || googleResending
                           ? 'text-slate-300 cursor-not-allowed'
                           : 'text-[#1E56E3] hover:underline'
-                      }`}
+                        }`}
                     >
                       {googleResending ? (
                         <>

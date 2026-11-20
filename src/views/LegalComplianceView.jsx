@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import { 
-  ShieldCheck, Phone, Mail, MapPin, Clock, FileText, 
-  RotateCcw, CheckCircle2, AlertCircle, Building2, ExternalLink, Truck
+import {
+  ShieldCheck, Phone, Mail, MapPin, Clock, FileText,
+  RotateCcw, DollarSign, Package, CheckCircle2, AlertCircle, Building2, ExternalLink, Truck
 } from 'lucide-react';
 
 export default function LegalComplianceView({ initialTab = 'terms', onTabChange }) {
-  const [activeTab, setActiveTab] = useState(
-    initialTab === 'contact' || initialTab === 'services' ? 'terms' : initialTab
-  ); // 'terms' | 'shipping' | 'refunds' | 'privacy'
+  const [activeTab, setActiveTab] = useState(initialTab === 'contact' ? 'terms' : initialTab); // 'terms' | 'shipping' | 'refunds' | 'services' | 'privacy'
 
   React.useEffect(() => {
     if (initialTab) {
-      setActiveTab(initialTab === 'contact' || initialTab === 'services' ? 'terms' : initialTab);
+      setActiveTab(initialTab === 'contact' ? 'terms' : initialTab);
     }
   }, [initialTab]);
 
@@ -31,6 +29,7 @@ export default function LegalComplianceView({ initialTab = 'terms', onTabChange 
           { id: 'terms', label: 'Terms & Conditions', icon: FileText },
           { id: 'shipping', label: 'Shipping & Delivery Policy', icon: Truck },
           { id: 'refunds', label: 'Refunds & Cancellations', icon: RotateCcw },
+          { id: 'services', label: 'Products & Services (INR Pricing)', icon: Package },
           { id: 'privacy', label: 'Privacy Policy', icon: ShieldCheck }
         ].map(tab => {
           const Icon = tab.icon;
@@ -39,11 +38,10 @@ export default function LegalComplianceView({ initialTab = 'terms', onTabChange 
             <button
               key={tab.id}
               onClick={() => handleSelectTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition cursor-pointer ${
-                isActive 
-                  ? 'bg-[#1E56E3] text-white shadow-md shadow-blue-500/20 font-extrabold' 
-                  : 'hover:bg-slate-100 text-slate-700'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition cursor-pointer ${isActive
+                ? 'bg-[#1E56E3] text-white shadow-md shadow-blue-500/20 font-extrabold'
+                : 'hover:bg-slate-100 text-slate-700'
+                }`}
             >
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
@@ -289,6 +287,43 @@ export default function LegalComplianceView({ initialTab = 'terms', onTabChange 
         </div>
       )}
 
+      {/* TAB 5: PRODUCTS / SERVICES & PRICING IN INR (₹) */}
+      {activeTab === 'services' && (
+        <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6 animate-in fade-in duration-200">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-xl font-black text-slate-900">Products & Services Catalog (Pricing in INR ₹)</h2>
+            <p className="text-xs text-slate-500 font-medium">Transparent INR fee structure for shipping aggregator software, label generation, and tracking services</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Service 1 */}
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 space-y-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#1E56E3] flex items-center justify-center font-bold">
+                <Truck className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-extrabold text-slate-900">B2B Courier Booking & Multi-Carrier Shipping</h3>
+              <p className="text-xs text-slate-500 font-medium">Access real-time courier shipping rates, automated AWB generation, and door-to-door courier dispatch across 29,000+ Indian pincodes.</p>
+              <div className="pt-2 border-t border-slate-200 flex items-baseline justify-between">
+                <span className="text-xs text-slate-400 font-bold uppercase">Courier Tariff</span>
+                <span className="text-base font-black text-slate-900">From ₹45.00 INR / 500g</span>
+              </div>
+            </div>
+
+            {/* Service 2 */}
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200/80 space-y-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-extrabold text-slate-900">Parcel Delivery Protection & Sign-Off Suite</h3>
+              <p className="text-xs text-slate-500 font-medium">Automated in-box QR verification, SMS OTP delivery sign-off, photo verification before dispatch, and dispute resolution tools.</p>
+              <div className="pt-2 border-t border-slate-200 flex items-baseline justify-between">
+                <span className="text-xs text-slate-400 font-bold uppercase">Software Platform Fee</span>
+                <span className="text-lg font-black text-emerald-600">₹0 INR <span className="text-[10px] text-slate-400 font-normal">(Free for registered users)</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* TAB 6: PRIVACY POLICY & DPDP ACT, 2023 COMPLIANCE */}
       {activeTab === 'privacy' && (

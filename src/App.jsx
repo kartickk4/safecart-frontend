@@ -168,7 +168,7 @@ export default function App() {
     const token = localStorage.getItem('securekaro_token');
     const isPublic = [
       'login', 'register', 'support', 'roi-calculator', 'rate-calculator', 'track', 'delivery-confirm',
-      'legal', 'contact', 'terms', 'privacy', 'shipping', 'refunds'
+      'legal', 'contact', 'terms', 'privacy', 'shipping', 'refunds', 'services'
     ].includes(currentTab);
 
     let activeTab = currentTab;
@@ -732,7 +732,7 @@ export default function App() {
     );
   }
 
-  const isLegalTab = ['legal', 'contact', 'terms', 'privacy', 'shipping', 'refunds'].includes(currentTab);
+  const isLegalTab = ['legal', 'contact', 'terms', 'privacy', 'shipping', 'refunds', 'services'].includes(currentTab);
 
   // Allow unauthenticated visitors to view standalone public pages (legal, support, roi-calculator)
   if (!user && (isLegalTab || currentTab === 'support' || currentTab === 'roi-calculator' || currentTab === 'rate-calculator')) {
