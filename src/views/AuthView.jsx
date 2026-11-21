@@ -521,7 +521,15 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
       // 2. Always verify OTP with backend (it creates the user and returns token)
       try {
         const activeSignupRole = selectedRoleType || localStorage.getItem('securekaro_active_role') || 'Supplier';
-        const verifyRes = await authAPI.verifyOtp({ phone: formattedPhone, code: signUpOtp, role: activeSignupRole });
+        const verifyRes = await authAPI.verifyOtp({
+          phone: formattedPhone,
+          code: signUpOtp,
+          role: activeSignupRole,
+          fullName,
+          email,
+          password,
+          referralCode: referralCode || undefined
+        });
         otpVerifyData = verifyRes.data;
       } catch (vErr) {
 

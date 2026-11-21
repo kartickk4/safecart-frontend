@@ -552,18 +552,25 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-slate-700">Email Address</label>
+                <div className="flex items-center gap-2">
+                  <label className="block text-xs font-semibold text-slate-700">Email Address</label>
+                  {email && email.includes('-otp.in') && (
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                      Auto-Generated from Phone Sign-In
+                    </span>
+                  )}
+                </div>
                 {!isEditingEmail ? (
                   <button
                     type="button"
                     onClick={() => {
-                      setNewEmail(email);
+                      setNewEmail(email && email.includes('-otp.in') ? '' : email);
                       setIsEditingEmail(true);
                     }}
                     className="text-[11px] font-bold text-[#1E56E3] hover:underline inline-flex items-center gap-1 cursor-pointer"
                   >
                     <Edit3 className="w-3 h-3" />
-                    <span>Edit</span>
+                    <span>{email && email.includes('-otp.in') ? 'Add Real Email' : 'Edit'}</span>
                   </button>
                 ) : (
                   <div className="flex items-center gap-2">
