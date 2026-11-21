@@ -29,6 +29,9 @@ export default function RoleSelectionModal({ isOpen, user, onComplete }) {
         payload.pickupAddress = addressData;
       }
       const res = await profileAPI.updateProfile(payload);
+      if (res.data?.accessToken) {
+        localStorage.setItem('securekaro_token', res.data.accessToken);
+      }
       const updatedUser = res.data;
       onComplete(updatedUser);
     } catch (err) {

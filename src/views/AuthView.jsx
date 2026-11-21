@@ -172,13 +172,14 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
     setResetMsg('');
     setResetLoading(true);
 
-    const isEmail = input.includes('@');
-    const cleanPhone = input.replace(/\D/g, '').slice(-10);
-    const payload = isEmail
-      ? { email: input.toLowerCase(), role: isSupplier ? 'Supplier' : 'Receiver' }
-      : { phone: cleanPhone, role: isSupplier ? 'Supplier' : 'Receiver' };
-
     try {
+      const isEmail = input.includes('@');
+      const cleanPhone = input.replace(/\D/g, '').slice(-10);
+      const activeRole = selectedRoleType || localStorage.getItem('securekaro_active_role') || 'Supplier';
+      const payload = isEmail
+        ? { email: input.toLowerCase(), role: activeRole }
+        : { phone: cleanPhone, role: activeRole };
+
       const res = await authAPI.forgotPassword(payload);
       setResetMsg(res.data?.message || `Password reset verification code sent to ${input}`);
       if (res.data?.debugCode) {
@@ -207,14 +208,15 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
     setResetMsg('');
     setResetLoading(true);
 
-    const input = (forgotEmail || '').trim();
-    const isEmail = input.includes('@');
-    const cleanPhone = input.replace(/\D/g, '').slice(-10);
-    const payload = isEmail
-      ? { email: input.toLowerCase(), code: resetOtp, newPassword, role: isSupplier ? 'Supplier' : 'Receiver' }
-      : { phone: cleanPhone, code: resetOtp, newPassword, role: isSupplier ? 'Supplier' : 'Receiver' };
-
     try {
+      const input = (forgotEmail || '').trim();
+      const isEmail = input.includes('@');
+      const cleanPhone = input.replace(/\D/g, '').slice(-10);
+      const activeRole = selectedRoleType || localStorage.getItem('securekaro_active_role') || 'Supplier';
+      const payload = isEmail
+        ? { email: input.toLowerCase(), code: resetOtp, newPassword, role: activeRole }
+        : { phone: cleanPhone, code: resetOtp, newPassword, role: activeRole };
+
       await authAPI.resetPassword(payload);
       setResetStep(3);
     } catch (err) {
@@ -456,6 +458,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
         phone: formattedPhone,
         isPhoneVerified: true
       });
+
+      if (res.data?.accessToken) {
+        localStorage.setItem('securekaro_token', res.data.accessToken);
+      }
 
       const updatedUser = res.data;
       updatedUser.activeRole = updatedUser.role || 'User';
@@ -1067,7 +1073,14 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                 {!isSignUp && (
                   <button
                     type="button"
-                    onClick={() => { setForgotEmail(email); setShowForgotModal(true); setResetStep(1); }}
+                    onClick={() => {
+                      setForgotEmail(email);
+                      setResetErr('');
+                      setResetMsg('');
+                      setResetLoading(false);
+                      setResetStep(1);
+                      setShowForgotModal(true);
+                    }}
                     className="text-xs text-[#1E56E3] font-bold hover:underline"
                   >
                     Forgot password?
@@ -1285,7 +1298,12 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 space-y-6 relative">
             <button
-              onClick={() => setShowForgotModal(false)}
+              onClick={() => {
+                setShowForgotModal(false);
+                setResetLoading(false);
+                setResetErr('');
+                setResetMsg('');
+              }}
               className="absolute right-5 top-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold text-sm flex items-center justify-center"
             >
               ✕
