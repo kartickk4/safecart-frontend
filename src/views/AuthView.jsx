@@ -1018,29 +1018,40 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-slate-700">Email Address</label>
+                <label className="text-xs font-semibold text-slate-700">
+                  {isSignUp ? 'Email Address' : 'Email Address or Mobile Number'}
+                </label>
                 {email && (
-                  <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${validateEmail(email).isValid ? 'text-emerald-600' : 'text-slate-400'
-                    }`}>
+                  <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
+                    validateEmail(email).isValid || (!isSignUp && email.replace(/\D/g, '').length >= 10)
+                      ? 'text-emerald-600'
+                      : 'text-slate-400'
+                  }`}>
                     {validateEmail(email).isValid ? (
                       <>
                         <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                         <span>Valid Email ✓</span>
+                      </>
+                    ) : (!isSignUp && email.replace(/\D/g, '').length >= 10) ? (
+                      <>
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span>Valid Mobile ✓</span>
                       </>
                     ) : null}
                   </span>
                 )}
               </div>
               <input
-                type="email"
+                type={isSignUp ? "email" : "text"}
                 required
-                placeholder="you@company.com"
+                placeholder={isSignUp ? "you@company.com" : "you@company.com or 10-digit mobile"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value.trim())}
-                className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition ${email && validateEmail(email).isValid
-                  ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
-                  : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
-                  }`}
+                className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition ${
+                  email && (validateEmail(email).isValid || (!isSignUp && email.replace(/\D/g, '').length >= 10))
+                    ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                    : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
+                }`}
               />
             </div>
 
