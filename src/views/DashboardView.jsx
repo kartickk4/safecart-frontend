@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   ShieldCheck, Package, Clock, AlertTriangle, TrendingUp, IndianRupee, 
@@ -522,15 +522,15 @@ export default function DashboardView({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 md:gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wide border border-blue-200/60">
+            <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200/80">
               Supplier Command Center
             </span>
           </div>
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight mt-1 flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
             Business Performance &amp; Logistics Analytics
           </h1>
-          <p className="text-xs text-slate-500 font-medium">
-            Monitor real-time cash flow, delivery fulfillment efficiency, order velocity, and customer dispute health.
+          <p className="text-xs text-slate-500 font-normal mt-0.5">
+            Real-time cash flow, delivery fulfillment efficiency, and courier settlement metrics.
           </p>
         </div>
 
@@ -540,9 +540,9 @@ export default function DashboardView({
             <button
               onClick={onNavigateRateCalc}
               title="Compare live carrier shipping rates"
-              className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-[#1E56E3] transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-black cursor-pointer shrink-0"
+              className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 transition shadow-2xs flex items-center gap-1.5 text-xs font-medium cursor-pointer shrink-0"
             >
-              <Calculator className="w-3.5 h-3.5 text-[#1E56E3]" />
+              <Calculator className="w-3.5 h-3.5 text-slate-500" />
               <span>Rate Calculator</span>
             </button>
           )}
@@ -550,18 +550,18 @@ export default function DashboardView({
           <button
             onClick={() => setIsTaxModalOpen(true)}
             title="Open CA-Ready Tax & P&L Statement"
-            className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-blue-800 transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-black cursor-pointer shrink-0"
+            className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 transition shadow-2xs flex items-center gap-1.5 text-xs font-medium cursor-pointer shrink-0"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
+            <FileSpreadsheet className="w-3.5 h-3.5 text-slate-500" />
             <span>Tax &amp; P&amp;L</span>
           </button>
 
           <button
             onClick={() => fetchData(true)}
             title="Refresh Live Analytics Data"
-            className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shadow-xs active:scale-95 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold cursor-pointer shrink-0"
+            className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shadow-2xs flex items-center gap-1.5 text-xs font-medium cursor-pointer shrink-0"
           >
-            {loading ? <SpinnerArc size="xs" color="text-blue-600" /> : <RefreshCw className="w-3.5 h-3.5 text-slate-500" />}
+            {loading ? <SpinnerArc size="xs" color="text-slate-600" /> : <RefreshCw className="w-3.5 h-3.5 text-slate-500" />}
             <span>Sync</span>
           </button>
         </div>
@@ -569,24 +569,23 @@ export default function DashboardView({
 
       {/* PENDING RETURN / REFUND / REPLACEMENT ACTION BANNER & POPUP */}
       {pendingActionOrders.length > 0 && (
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 flex items-center justify-between gap-3 shadow-xs">
+        <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200/90 flex items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
-              <AlertTriangle className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold shrink-0">
+              <AlertTriangle className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <h4 className="text-xs sm:text-sm font-extrabold text-amber-950 flex items-center gap-2">
+              <h4 className="text-xs sm:text-sm font-semibold text-amber-950 flex items-center gap-2">
                 <span>Action Required: {pendingActionOrders.length} Pending Return / Replacement Order{pendingActionOrders.length > 1 ? 's' : ''}</span>
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
               </h4>
-              <p className="text-[11px] text-amber-800 truncate">
-                Buyers are awaiting your approval or replacement dispatch. Click to take immediate action.
+              <p className="text-[11px] text-amber-800 truncate mt-0.5">
+                Buyers are awaiting your approval or replacement dispatch. Click to review.
               </p>
             </div>
           </div>
           <button
             onClick={() => setShowActionModal(true)}
-            className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition shrink-0 cursor-pointer shadow-xs"
+            className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium rounded-lg transition shrink-0 cursor-pointer"
           >
             Review Orders
           </button>
@@ -703,73 +702,70 @@ export default function DashboardView({
       {/* 4 PRIMARY EXECUTIVE KPI CARDS (2x2 on Mobile, 4x1 on Desktop) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
         {/* KPI 1: Active In-Transit Orders */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-blue-300 transition group relative overflow-hidden flex flex-col justify-between mask-rise mask-rise-delay-1">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-100 transition pointer-events-none"></div>
-          <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
-            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Money in Hold</span>
-            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold shrink-0">
-              <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+        <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between mask-rise mask-rise-delay-1">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-xs font-medium text-slate-500 truncate">Money in escrow</span>
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#1E56E3] flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-4 h-4" />
             </div>
           </div>
-          <div className="relative">
-            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
+          <div>
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-900 tracking-tight font-mono tabular-nums truncate">
               <MaskRise clip delay={60}>
                 <AnimatedBalance value={analytics.activePipelineHeld} decimals={0} />
               </MaskRise>
             </h3>
-            <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
-              <span className="text-blue-600 font-bold bg-blue-50 px-1 py-0.2 rounded">
+            <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] text-slate-500 flex-wrap">
+              <span className="text-blue-700 font-medium bg-blue-50 px-1.5 py-0.2 rounded">
                 {analytics.activePipelineHeldCount} orders
               </span>
-              <span className="hidden sm:inline">in delivery</span>
+              <span className="hidden sm:inline">in transit</span>
             </div>
           </div>
         </div>
 
         {/* KPI 2: Realized / Payout Revenue */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-emerald-300 transition group relative overflow-hidden flex flex-col justify-between mask-rise mask-rise-delay-2">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-emerald-100 transition pointer-events-none"></div>
-          <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
-            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Paid to Bank</span>
-            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+        <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between mask-rise mask-rise-delay-2">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-xs font-medium text-slate-500 truncate">Paid to bank</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+              <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="relative">
-            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
+          <div>
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-900 tracking-tight font-mono tabular-nums truncate">
               <MaskRise clip delay={120}>
                 <AnimatedBalance value={analytics.totalReleasedRevenue} decimals={0} />
               </MaskRise>
             </h3>
-            <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
-              <span className="text-emerald-700 font-bold bg-emerald-50 px-1 py-0.2 rounded">
+            <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] text-slate-500 flex-wrap">
+              <span className="text-emerald-700 font-medium bg-emerald-50 px-1.5 py-0.2 rounded">
                 {analytics.releasedCount} payouts
               </span>
-              <span className="hidden sm:inline">received in bank</span>
+              <span className="hidden sm:inline">settled</span>
             </div>
           </div>
         </div>
 
         {/* KPI 3: Fulfillment Success Rate */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-indigo-300 transition group relative overflow-hidden flex flex-col justify-between mask-rise mask-rise-delay-3">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-indigo-100 transition pointer-events-none"></div>
-          <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
-            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Fulfillment</span>
-            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shrink-0">
-              <Target className="w-4 h-4 sm:w-5 sm:h-5" />
+        <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between mask-rise mask-rise-delay-3">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-xs font-medium text-slate-500 truncate">Fulfillment rate</span>
+            <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+              <Target className="w-4 h-4" />
             </div>
           </div>
-          <div className="relative">
-            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
+          <div>
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-900 tracking-tight font-mono tabular-nums truncate">
               <MaskRise clip delay={180}>
                 <span className="flex items-center">
                   <AnimatedNumber value={analytics.deliverySuccessRate} />%
                 </span>
               </MaskRise>
             </h3>
-            <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
-              <span className="text-indigo-700 font-bold bg-indigo-50 px-1 py-0.2 rounded">
-                {analytics.totalOrders} orders
+            <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] text-slate-500 flex-wrap">
+              <span className="text-slate-700 font-medium bg-slate-100 px-1.5 py-0.2 rounded">
+                {analytics.totalOrders} total
               </span>
               <span className="hidden sm:inline">delivered</span>
             </div>
@@ -777,25 +773,24 @@ export default function DashboardView({
         </div>
 
         {/* KPI 4: Pending Buyer Confirmations */}
-        <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer shadow-card-hover hover:border-amber-300 transition group relative overflow-hidden flex flex-col justify-between mask-rise mask-rise-delay-4">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-amber-100 transition pointer-events-none"></div>
-          <div className="flex items-center justify-between mb-2 sm:mb-3 relative">
-            <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate">Sign-Off Due</span>
-            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shrink-0">
-              <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
+        <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between mask-rise mask-rise-delay-4">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-xs font-medium text-slate-500 truncate">Sign-off pending</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+              <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="relative">
-            <h3 className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight font-mono tabular-nums truncate">
+          <div>
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-900 tracking-tight font-mono tabular-nums truncate">
               <MaskRise clip delay={240}>
                 <AnimatedBalance value={analytics.pendingSignoffAmount} decimals={0} />
               </MaskRise>
             </h3>
-            <div className="flex items-center gap-1 mt-1 sm:mt-2 text-[10px] sm:text-[11px] font-semibold text-slate-500 flex-wrap">
-              <span className="text-amber-700 font-bold bg-amber-50 px-1 py-0.2 rounded">
-                {analytics.pendingSignoffCount} pending
+            <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] text-slate-500 flex-wrap">
+              <span className="text-amber-800 font-medium bg-amber-50 px-1.5 py-0.2 rounded">
+                {analytics.pendingSignoffCount} parcels
               </span>
-              <span className="hidden sm:inline">auto-release</span>
+              <span className="hidden sm:inline">in review</span>
             </div>
           </div>
         </div>
@@ -803,59 +798,58 @@ export default function DashboardView({
 
       {/* SECONDARY OPERATIONAL EFFICIENCY METRICS (4 Micro Cards) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3 mask-rise mask-rise-delay-1">
-          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-blue-600 font-bold shadow-2xs">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center gap-3 mask-rise mask-rise-delay-1">
+          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 shadow-2xs">
             <Truck className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">In Transit</p>
-            <p className="text-base font-black text-slate-800">{analytics.statusCounts.inTransit} parcels</p>
+            <p className="text-[11px] text-slate-500">In transit</p>
+            <p className="text-sm sm:text-base font-semibold text-slate-900">{analytics.statusCounts.inTransit} parcels</p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3 mask-rise mask-rise-delay-2">
-          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-amber-600 font-bold shadow-2xs">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center gap-3 mask-rise mask-rise-delay-2">
+          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 shadow-2xs">
             <RotateCcw className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Return Rate</p>
-            <p className="text-base font-black text-slate-800">{analytics.returnRate}% <span className="text-[10px] font-medium text-slate-400">({analytics.returnCount})</span></p>
+            <p className="text-[11px] text-slate-500">Return rate</p>
+            <p className="text-sm sm:text-base font-semibold text-slate-900">{analytics.returnRate}% <span className="text-xs font-normal text-slate-400">({analytics.returnCount})</span></p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3 mask-rise mask-rise-delay-3">
-          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-bold shadow-2xs text-amber-600">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center gap-3 mask-rise mask-rise-delay-3">
+          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 shadow-2xs">
             <Truck className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Returns In Transit</p>
-            <p className="text-base font-black text-slate-800">
+            <p className="text-[11px] text-slate-500">Returns in transit</p>
+            <p className="text-sm sm:text-base font-semibold text-slate-900">
               {analytics.activeReturnsInTransit} parcels
             </p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center gap-3 mask-rise mask-rise-delay-4">
-          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-600 font-bold shadow-2xs">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center gap-3 mask-rise mask-rise-delay-4">
+          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 shadow-2xs">
             <Percent className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">Settlement Speed</p>
-            <p className="text-base font-black text-slate-800">&lt; 4 Hours <span className="text-[10px] font-medium text-emerald-600 font-bold">Fast</span></p>
+            <p className="text-[11px] text-slate-500">Settlement speed</p>
+            <p className="text-sm sm:text-base font-semibold text-slate-900">&lt; 4 hours</p>
           </div>
         </div>
       </div>
 
-            {/* ── OPERATIONS HUB & SPOKE LAUNCHER (Central Command Center radiating to primary workflows) ── */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-card-designer space-y-3">
+      {/* ── OPERATIONS HUB ── */}
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
-            <h4 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase">
+            <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+            <h4 className="text-xs sm:text-sm font-semibold text-slate-900 tracking-tight">
               Operations Hub · Quick Actions
             </h4>
           </div>
-          <span className="text-[10px] font-bold text-slate-400">Radiating Workflows</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
@@ -863,18 +857,17 @@ export default function DashboardView({
           <button
             type="button"
             onClick={() => onNavigateTab ? onNavigateTab('ai-agent') : null}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-purple-50/70 to-indigo-50/50 hover:to-indigo-100/70 border border-purple-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-1"
+            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-1"
           >
-            <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
-              <Sparkles className="w-4 h-4 text-amber-300" />
+            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5 text-slate-600" />
             </div>
             <div>
-              <p className="text-xs font-black text-purple-950 flex items-center gap-1">
+              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
                 <span>AI Agent</span>
-                <span className="text-[8px] bg-purple-600 text-white px-1 py-0.2 rounded font-black">FAST</span>
               </p>
-              <p className="text-[10px] text-purple-700/80 mt-0.5 font-medium leading-tight">
-                WhatsApp & Chat Parser
+              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                WhatsApp &amp; chat parser
               </p>
             </div>
           </button>
@@ -883,18 +876,17 @@ export default function DashboardView({
           <button
             type="button"
             onClick={openNewShipmentModal}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-blue-50/70 to-sky-50/50 hover:to-sky-100/70 border border-blue-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-2"
+            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-2"
           >
-            <div className="w-8 h-8 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
-              <Package className="w-4 h-4" />
+            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
+              <Package className="w-3.5 h-3.5 text-slate-600" />
             </div>
             <div>
-              <p className="text-xs font-black text-blue-950 flex items-center gap-1">
+              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
                 <span>Book Courier</span>
-                <span className="text-[8px] bg-blue-600 text-white px-1 py-0.2 rounded font-black">+</span>
               </p>
-              <p className="text-[10px] text-blue-700/80 mt-0.5 font-medium leading-tight">
-                9+ Integrated Partners
+              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                9+ carrier partners
               </p>
             </div>
           </button>
@@ -903,17 +895,17 @@ export default function DashboardView({
           <button
             type="button"
             onClick={onNavigateRateCalc}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-sky-50/70 to-cyan-50/50 hover:to-cyan-100/70 border border-sky-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-3"
+            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-3"
           >
-            <div className="w-8 h-8 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
-              <Calculator className="w-4 h-4" />
+            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
+              <Calculator className="w-3.5 h-3.5 text-slate-600" />
             </div>
             <div>
-              <p className="text-xs font-black text-sky-950 flex items-center gap-1">
+              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
                 <span>Rate Compare</span>
               </p>
-              <p className="text-[10px] text-sky-700/80 mt-0.5 font-medium leading-tight">
-                Live PIN Rates & ETA
+              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                Live pincode rates &amp; ETA
               </p>
             </div>
           </button>
@@ -922,17 +914,17 @@ export default function DashboardView({
           <button
             type="button"
             onClick={() => setShowBulkUploadModal(true)}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-teal-50/70 to-emerald-50/50 hover:to-emerald-100/70 border border-teal-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-4"
+            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-4"
           >
-            <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
-              <FileSpreadsheet className="w-4 h-4" />
+            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
+              <FileSpreadsheet className="w-3.5 h-3.5 text-slate-600" />
             </div>
             <div>
-              <p className="text-xs font-black text-teal-950 flex items-center gap-1">
+              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
                 <span>Bulk Upload</span>
               </p>
-              <p className="text-[10px] text-teal-700/80 mt-0.5 font-medium leading-tight">
-                Excel & CSV Manifest
+              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                Excel &amp; CSV manifest
               </p>
             </div>
           </button>
@@ -941,20 +933,20 @@ export default function DashboardView({
           <button
             type="button"
             onClick={() => onNavigateTab ? onNavigateTab('return-orders') : null}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-amber-50/70 to-orange-50/50 hover:to-orange-100/70 border border-amber-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-5"
+            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-5"
           >
-            <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
-              <RotateCcw className="w-4 h-4" />
+            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
+              <RotateCcw className="w-3.5 h-3.5 text-slate-600" />
             </div>
             <div>
-              <p className="text-xs font-black text-amber-950 flex items-center gap-1">
-                <span>Returns & RTO</span>
+              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
+                <span>Returns &amp; RTO</span>
                 {analytics.returnCount > 0 && (
-                  <span className="text-[8px] bg-amber-500 text-white px-1 py-0.2 rounded font-black">{analytics.returnCount}</span>
+                  <span className="text-[9px] bg-slate-200 text-slate-700 px-1 py-0.2 rounded font-medium">{analytics.returnCount}</span>
                 )}
               </p>
-              <p className="text-[10px] text-amber-700/80 mt-0.5 font-medium leading-tight">
-                Reverse QC & Shield
+              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                Reverse QC &amp; replacement
               </p>
             </div>
           </button>
@@ -963,17 +955,17 @@ export default function DashboardView({
           <button
             type="button"
             onClick={() => onNavigateTab ? onNavigateTab('wallet') : null}
-            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-b from-emerald-50/70 to-green-50/50 hover:to-green-100/70 border border-emerald-200/80 text-left transition shadow-2xs hover:shadow-xs group btn-press cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-6"
+            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-6"
           >
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold mb-2 shadow-xs group-hover:scale-105 transition-transform">
-              <IndianRupee className="w-4 h-4" />
+            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
+              <IndianRupee className="w-3.5 h-3.5 text-slate-600" />
             </div>
             <div>
-              <p className="text-xs font-black text-emerald-950 flex items-center gap-1">
+              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
                 <span>Wallet Payout</span>
               </p>
-              <p className="text-[10px] text-emerald-700/80 mt-0.5 font-medium leading-tight">
-                Instant UPI & Bank Payout
+              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                Instant UPI &amp; bank settlement
               </p>
             </div>
           </button>

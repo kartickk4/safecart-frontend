@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, Store, Package, X, Sparkles, ChevronRight, MapPin, Truck, AlertCircle, Gift, Tag, Zap, Scale, Clock, MessageSquare } from 'lucide-react';
 import { authAPI, profileAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';
@@ -983,36 +983,33 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
           </div>
 
           {/* Quick Public Parcel Tracking Banner */}
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50/60 to-blue-50 border border-blue-200/90 flex items-center justify-between gap-3 shadow-2xs">
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center shrink-0 shadow-xs">
-                <Truck className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center shrink-0">
+                <Truck className="w-4 h-4 text-slate-600" />
               </div>
               <div>
-                <p className="text-xs font-black text-slate-900">Tracking an incoming parcel?</p>
-                <p className="text-[11px] text-slate-500">Inspect courier milestones & delivery protection with zero login.</p>
+                <p className="text-xs font-semibold text-slate-900">Tracking an incoming parcel?</p>
+                <p className="text-[11px] text-slate-500">Check milestones and delivery protection without signing in.</p>
               </div>
             </div>
             <button
               type="button"
               onClick={onOpenPublicTrack}
-              className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#1E56E3] border border-blue-200 text-xs font-black transition shrink-0 flex items-center gap-1 shadow-2xs cursor-pointer hover:border-blue-300"
+              className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-[#1E56E3] border border-slate-200 text-xs font-medium transition shrink-0 flex items-center gap-1 cursor-pointer"
             >
-              <span>Track Now</span>
+              <span>Track</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-
-
           {/* Alert Error Message */}
           {error && (
-            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium space-y-2">
-              <div className="flex items-center gap-2 font-semibold">
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium space-y-2">
+              <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
                 <span>{error}</span>
               </div>
-
             </div>
           )}
 
@@ -1025,7 +1022,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                   <input
                     type="text"
                     required
-                    placeholder="Marcus Rivera"
+                    placeholder="Rahul Sharma"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
@@ -1205,7 +1202,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
             <button
               type="submit"
               disabled={loading || (isSignUp && !agreedToDpdpConsent)}
-              className="w-full py-3 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
+              className="w-full py-3 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-medium text-sm rounded-xl shadow-xs transition flex items-center justify-center gap-2 disabled:opacity-50 mt-4 cursor-pointer"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -1219,7 +1216,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
 
             <div className="relative flex py-2 items-center">
               <div className="flex-grow border-t border-slate-200"></div>
-              <span className="flex-shrink mx-3 text-xs text-slate-400 font-semibold uppercase tracking-wider">or</span>
+              <span className="flex-shrink mx-3 text-xs text-slate-400 font-normal">or</span>
               <div className="flex-grow border-t border-slate-200"></div>
             </div>
 
@@ -1227,7 +1224,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
               type="button"
               onClick={handleGoogleSignIn}
               disabled={loading || googleLoading}
-              className="w-full py-3 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2.5 disabled:opacity-75 cursor-pointer"
+              className="w-full py-3 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 font-medium text-xs rounded-xl shadow-2xs transition flex items-center justify-center gap-2.5 disabled:opacity-75 cursor-pointer"
             >
               {googleLoading ? (
                 <div className="flex items-center gap-2">
