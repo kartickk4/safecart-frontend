@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Box, RefreshCw, Eye, EyeOff, Lock, CheckCircle2, ArrowRight, UserCheck, ShoppingBag, Store, Package, X, Sparkles, ChevronRight, MapPin, Truck, AlertCircle, Gift, Tag, Zap, Scale, Clock, MessageSquare } from 'lucide-react';
 import { authAPI, profileAPI } from '../services/api';
 import PhoneInput from '../components/PhoneInput';

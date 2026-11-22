@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   ShieldCheck, Package, Clock, AlertTriangle, TrendingUp, IndianRupee, 
@@ -798,173 +798,182 @@ export default function DashboardView({
 
       {/* SECONDARY OPERATIONAL EFFICIENCY METRICS (4 Micro Cards) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
-        <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center gap-3 mask-rise mask-rise-delay-1">
-          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 shadow-2xs">
+        {/* In transit - Royal Blue */}
+        <div className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-br from-blue-50/80 to-white border border-blue-200/70 hover:border-blue-300 flex items-center gap-3 transition-all shadow-2xs mask-rise mask-rise-delay-1">
+          <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
             <Truck className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[11px] text-slate-500">In transit</p>
-            <p className="text-sm sm:text-base font-semibold text-slate-900">{analytics.statusCounts.inTransit} parcels</p>
+            <p className="text-[11px] font-medium text-blue-700/80">In transit</p>
+            <p className="text-sm sm:text-base font-bold text-blue-950">{analytics.statusCounts.inTransit} parcels</p>
           </div>
         </div>
 
-        <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center gap-3 mask-rise mask-rise-delay-2">
-          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 shadow-2xs">
+        {/* Return rate - Amber */}
+        <div className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-br from-amber-50/80 to-white border border-amber-200/70 hover:border-amber-300 flex items-center gap-3 transition-all shadow-2xs mask-rise mask-rise-delay-2">
+          <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
             <RotateCcw className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[11px] text-slate-500">Return rate</p>
-            <p className="text-sm sm:text-base font-semibold text-slate-900">{analytics.returnRate}% <span className="text-xs font-normal text-slate-400">({analytics.returnCount})</span></p>
+            <p className="text-[11px] font-medium text-amber-700/80">Return rate</p>
+            <p className="text-sm sm:text-base font-bold text-amber-950">
+              {analytics.returnRate}% <span className="text-xs font-semibold text-amber-600">({analytics.returnCount})</span>
+            </p>
           </div>
         </div>
 
-        <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center gap-3 mask-rise mask-rise-delay-3">
-          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 shadow-2xs">
+        {/* Returns in transit - Purple */}
+        <div className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-br from-purple-50/80 to-white border border-purple-200/70 hover:border-purple-300 flex items-center gap-3 transition-all shadow-2xs mask-rise mask-rise-delay-3">
+          <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-xs">
             <Truck className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[11px] text-slate-500">Returns in transit</p>
-            <p className="text-sm sm:text-base font-semibold text-slate-900">
+            <p className="text-[11px] font-medium text-purple-700/80">Returns in transit</p>
+            <p className="text-sm sm:text-base font-bold text-purple-950">
               {analytics.activeReturnsInTransit} parcels
             </p>
           </div>
         </div>
 
-        <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center gap-3 mask-rise mask-rise-delay-4">
-          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 shadow-2xs">
+        {/* Settlement speed - Emerald */}
+        <div className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-br from-emerald-50/80 to-white border border-emerald-200/70 hover:border-emerald-300 flex items-center gap-3 transition-all shadow-2xs mask-rise mask-rise-delay-4">
+          <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
             <Percent className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[11px] text-slate-500">Settlement speed</p>
-            <p className="text-sm sm:text-base font-semibold text-slate-900">&lt; 4 hours</p>
+            <p className="text-[11px] font-medium text-emerald-700/80">Settlement speed</p>
+            <p className="text-sm sm:text-base font-bold text-emerald-950">&lt; 4 hours</p>
           </div>
         </div>
       </div>
 
       {/* ── OPERATIONS HUB ── */}
-      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3.5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-slate-400"></span>
-            <h4 className="text-xs sm:text-sm font-semibold text-slate-900 tracking-tight">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 ring-4 ring-blue-100"></span>
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight">
               Operations Hub · Quick Actions
             </h4>
           </div>
+          <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200/60 hidden sm:inline-block">
+            One-Click Workflows
+          </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-          {/* Spoke 1: 1-Click AI Agent */}
+          {/* Spoke 1: 1-Click AI Agent - Vibrant Purple */}
           <button
             type="button"
             onClick={() => onNavigateTab ? onNavigateTab('ai-agent') : null}
-            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-1"
+            className="p-3.5 rounded-2xl bg-gradient-to-b from-purple-50/90 via-purple-50/40 to-white hover:from-purple-100/90 hover:to-white border border-purple-200/80 hover:border-purple-400 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-2xs hover:shadow-md hover:-translate-y-0.5 group mask-rise mask-rise-delay-1"
           >
-            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
-              <Sparkles className="w-3.5 h-3.5 text-slate-600" />
+            <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center mb-2.5 shadow-sm group-hover:scale-105 transition-transform">
+              <Sparkles className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
+              <p className="text-xs font-bold text-purple-950 group-hover:text-purple-700 transition-colors flex items-center gap-1">
                 <span>AI Agent</span>
               </p>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+              <p className="text-[10px] text-purple-700/80 font-medium mt-0.5 leading-tight">
                 WhatsApp &amp; chat parser
               </p>
             </div>
           </button>
 
-          {/* Spoke 2: Create Shipment */}
+          {/* Spoke 2: Create Shipment - Royal Blue */}
           <button
             type="button"
             onClick={openNewShipmentModal}
-            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-2"
+            className="p-3.5 rounded-2xl bg-gradient-to-b from-blue-50/90 via-blue-50/40 to-white hover:from-blue-100/90 hover:to-white border border-blue-200/80 hover:border-blue-400 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-2xs hover:shadow-md hover:-translate-y-0.5 group mask-rise mask-rise-delay-2"
           >
-            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
-              <Package className="w-3.5 h-3.5 text-slate-600" />
+            <div className="w-8 h-8 rounded-xl bg-[#1E56E3] text-white flex items-center justify-center mb-2.5 shadow-sm group-hover:scale-105 transition-transform">
+              <Package className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
+              <p className="text-xs font-bold text-blue-950 group-hover:text-[#1E56E3] transition-colors flex items-center gap-1">
                 <span>Book Courier</span>
               </p>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+              <p className="text-[10px] text-blue-700/80 font-medium mt-0.5 leading-tight">
                 9+ carrier partners
               </p>
             </div>
           </button>
 
-          {/* Spoke 3: Rate Calculator */}
+          {/* Spoke 3: Rate Calculator - Sky Blue */}
           <button
             type="button"
             onClick={onNavigateRateCalc}
-            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-3"
+            className="p-3.5 rounded-2xl bg-gradient-to-b from-sky-50/90 via-sky-50/40 to-white hover:from-sky-100/90 hover:to-white border border-sky-200/80 hover:border-sky-400 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-2xs hover:shadow-md hover:-translate-y-0.5 group mask-rise mask-rise-delay-3"
           >
-            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
-              <Calculator className="w-3.5 h-3.5 text-slate-600" />
+            <div className="w-8 h-8 rounded-xl bg-sky-600 text-white flex items-center justify-center mb-2.5 shadow-sm group-hover:scale-105 transition-transform">
+              <Calculator className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
+              <p className="text-xs font-bold text-sky-950 group-hover:text-sky-700 transition-colors flex items-center gap-1">
                 <span>Rate Compare</span>
               </p>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+              <p className="text-[10px] text-sky-700/80 font-medium mt-0.5 leading-tight">
                 Live pincode rates &amp; ETA
               </p>
             </div>
           </button>
 
-          {/* Spoke 4: Bulk CSV/Excel */}
+          {/* Spoke 4: Bulk CSV/Excel - Emerald/Teal */}
           <button
             type="button"
             onClick={() => setShowBulkUploadModal(true)}
-            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-4"
+            className="p-3.5 rounded-2xl bg-gradient-to-b from-teal-50/90 via-teal-50/40 to-white hover:from-teal-100/90 hover:to-white border border-teal-200/80 hover:border-teal-400 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-2xs hover:shadow-md hover:-translate-y-0.5 group mask-rise mask-rise-delay-4"
           >
-            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
-              <FileSpreadsheet className="w-3.5 h-3.5 text-slate-600" />
+            <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center mb-2.5 shadow-sm group-hover:scale-105 transition-transform">
+              <FileSpreadsheet className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
+              <p className="text-xs font-bold text-teal-950 group-hover:text-teal-700 transition-colors flex items-center gap-1">
                 <span>Bulk Upload</span>
               </p>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+              <p className="text-[10px] text-teal-700/80 font-medium mt-0.5 leading-tight">
                 Excel &amp; CSV manifest
               </p>
             </div>
           </button>
 
-          {/* Spoke 5: Returns & RTO Recovery */}
+          {/* Spoke 5: Returns & RTO Recovery - Amber/Orange */}
           <button
             type="button"
             onClick={() => onNavigateTab ? onNavigateTab('return-orders') : null}
-            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-5"
+            className="p-3.5 rounded-2xl bg-gradient-to-b from-amber-50/90 via-amber-50/40 to-white hover:from-amber-100/90 hover:to-white border border-amber-200/80 hover:border-amber-400 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-2xs hover:shadow-md hover:-translate-y-0.5 group mask-rise mask-rise-delay-5"
           >
-            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
-              <RotateCcw className="w-3.5 h-3.5 text-slate-600" />
+            <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center mb-2.5 shadow-sm group-hover:scale-105 transition-transform">
+              <RotateCcw className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
+              <p className="text-xs font-bold text-amber-950 group-hover:text-amber-700 transition-colors flex items-center gap-1.5">
                 <span>Returns &amp; RTO</span>
                 {analytics.returnCount > 0 && (
-                  <span className="text-[9px] bg-slate-200 text-slate-700 px-1 py-0.2 rounded font-medium">{analytics.returnCount}</span>
+                  <span className="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded-full font-bold">{analytics.returnCount}</span>
                 )}
               </p>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+              <p className="text-[10px] text-amber-700/80 font-medium mt-0.5 leading-tight">
                 Reverse QC &amp; replacement
               </p>
             </div>
           </button>
 
-          {/* Spoke 6: Wallet & Fast Payouts */}
+          {/* Spoke 6: Wallet & Fast Payouts - Emerald */}
           <button
             type="button"
             onClick={() => onNavigateTab ? onNavigateTab('wallet') : null}
-            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left transition-colors cursor-pointer flex flex-col justify-between mask-rise mask-rise-delay-6"
+            className="p-3.5 rounded-2xl bg-gradient-to-b from-emerald-50/90 via-emerald-50/40 to-white hover:from-emerald-100/90 hover:to-white border border-emerald-200/80 hover:border-emerald-400 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-2xs hover:shadow-md hover:-translate-y-0.5 group mask-rise mask-rise-delay-6"
           >
-            <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-2 shadow-2xs">
-              <IndianRupee className="w-3.5 h-3.5 text-slate-600" />
+            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-2.5 shadow-sm group-hover:scale-105 transition-transform">
+              <IndianRupee className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-900 flex items-center gap-1">
+              <p className="text-xs font-bold text-emerald-950 group-hover:text-emerald-700 transition-colors flex items-center gap-1">
                 <span>Wallet Payout</span>
               </p>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+              <p className="text-[10px] text-emerald-700/80 font-medium mt-0.5 leading-tight">
                 Instant UPI &amp; bank settlement
               </p>
             </div>

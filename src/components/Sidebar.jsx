@@ -93,7 +93,7 @@ export default function Sidebar({
             label: 'AI Shipping Agent',
             icon: Sparkles,
             customBadge: (
-              <span className="bg-slate-100 text-slate-600 border border-slate-200/80 text-[10px] font-medium px-1.5 py-0.5 rounded-md">
+              <span className="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
                 AI
               </span>
             )
@@ -135,7 +135,7 @@ export default function Sidebar({
           label: 'Refer & Earn',
           icon: Gift,
           customBadge: (
-            <span className="bg-slate-100 text-slate-700 text-[10px] font-medium px-1.5 py-0.5 rounded-md border border-slate-200/80">
+            <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-amber-200">
               ₹30 bonus
             </span>
           )
