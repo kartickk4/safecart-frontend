@@ -75,6 +75,13 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
   const [resetErr, setResetErr] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
 
+  useEffect(() => {
+    if (showForgotModal) {
+      setResetLoading(false);
+      setResetErr('');
+    }
+  }, [showForgotModal]);
+
   // Sign Up 2FA OTP state
   const [showSignUpOtpModal, setShowSignUpOtpModal] = useState(false);
   const [signUpOtp, setSignUpOtp] = useState('');
@@ -172,6 +179,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
     setResetMsg('');
     setResetLoading(true);
 
+    const safetyTimer = setTimeout(() => {
+      setResetLoading(false);
+    }, 12000);
+
     try {
       const isEmail = input.includes('@');
       const cleanPhone = input.replace(/\D/g, '').slice(-10);
@@ -189,6 +200,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
     } catch (err) {
       setResetErr(err.response?.data?.error || 'Failed to send password reset code. Please verify email or mobile number.');
     } finally {
+      clearTimeout(safetyTimer);
       setResetLoading(false);
     }
   };
@@ -521,9 +533,9 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
       // 2. Always verify OTP with backend (it creates the user and returns token)
       try {
         const activeSignupRole = selectedRoleType || localStorage.getItem('securekaro_active_role') || 'Supplier';
-        const verifyRes = await authAPI.verifyOtp({
-          phone: formattedPhone,
-          code: signUpOtp,
+        const verifyRes = await authAPI.verifyOtp({ 
+          phone: formattedPhone, 
+          code: signUpOtp, 
           role: activeSignupRole,
           fullName,
           email,
@@ -532,11 +544,9 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
         });
         otpVerifyData = verifyRes.data;
       } catch (vErr) {
-
         setSignUpOtpErr(vErr.response?.data?.error || 'Invalid or expired OTP code.');
         setSignUpOtpLoading(false);
         return;
-
       }
 
       // 3. Use the token from verifyOtp (user already created by backend)
@@ -544,9 +554,12 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
       if (otpVerifyData?.accessToken) {
         localStorage.setItem('securekaro_token', otpVerifyData.accessToken);
 
-        // Update the auto-created user with the real name, email, and password
+        // Update the user profile if needed and sync any fresh token
         try {
-          await profileAPI.updateProfile({ fullName, email });
+          const profRes = await profileAPI.updateProfile({ fullName, email });
+          if (profRes.data?.accessToken) {
+            localStorage.setItem('securekaro_token', profRes.data.accessToken);
+          }
         } catch (profileErr) {
           console.warn('Profile update after OTP signup:', profileErr.message);
         }

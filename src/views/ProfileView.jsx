@@ -207,6 +207,9 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
     setIsError(false);
     try {
       const res = await profileAPI.updateProfile({ email: trimmed });
+      if (res.data?.accessToken) {
+        localStorage.setItem('securekaro_token', res.data.accessToken);
+      }
       setEmail(trimmed);
       setIsEditingEmail(false);
       setIsError(false);
@@ -452,6 +455,9 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
         pincode: addressData.pincode,
         pickupAddress: addressData
       });
+      if (res.data?.accessToken) {
+        localStorage.setItem('securekaro_token', res.data.accessToken);
+      }
       setMsg('Profile, Address, and Payout Bank Account details successfully saved!');
       if (onUpdateUser) onUpdateUser(res.data);
       setShowSecurityModal(false);
