@@ -68,16 +68,30 @@ export default function Sidebar({
       {
         section: 'Overview',
         items: [
-          { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
+          {
+            id: 'dashboard',
+            label: 'Dashboard',
+            icon: LayoutDashboard,
+            iconColor: 'text-[#1E56E3]',
+            iconBg: 'bg-blue-50 text-[#1E56E3]',
+            activeClass: 'bg-blue-50/90 text-[#1E56E3] font-bold border-blue-200/80',
+            badge: null
+          },
           {
             id: 'rate-calculator',
             label: 'Rate Calculator',
-            icon: Calculator
+            icon: Calculator,
+            iconColor: 'text-sky-600',
+            iconBg: 'bg-sky-50 text-sky-600',
+            activeClass: 'bg-sky-50/90 text-sky-700 font-bold border-sky-200/80'
           },
           {
             id: 'roi-calculator',
             label: 'Savings Calculator',
-            icon: Calculator
+            icon: Calculator,
+            iconColor: 'text-emerald-600',
+            iconBg: 'bg-emerald-50 text-emerald-600',
+            activeClass: 'bg-emerald-50/90 text-emerald-700 font-bold border-emerald-200/80'
           }
         ]
       }
@@ -85,31 +99,75 @@ export default function Sidebar({
     {
       section: 'Shipments & orders',
       items: [
-        { id: 'shipments-list', label: isSupplier ? 'All Shipments' : 'My Orders & Packages', icon: Package, badge: null },
+        {
+          id: 'shipments-list',
+          label: isSupplier ? 'All Shipments' : 'My Orders & Packages',
+          icon: Package,
+          iconColor: 'text-indigo-600',
+          iconBg: 'bg-indigo-50 text-indigo-600',
+          activeClass: 'bg-indigo-50/90 text-indigo-700 font-bold border-indigo-200/80',
+          badge: null
+        },
         ...(isSupplier ? [
-          { id: 'create-shipment', label: 'Create Shipment', icon: PlusCircle, highlight: true },
+          {
+            id: 'create-shipment',
+            label: 'Create Shipment',
+            icon: PlusCircle,
+            highlight: true,
+            iconColor: 'text-[#1E56E3]',
+            iconBg: 'bg-blue-100 text-[#1E56E3]',
+            activeClass: 'bg-blue-50/90 text-[#1E56E3] font-bold border-blue-200/80'
+          },
           {
             id: 'ai-agent',
             label: 'AI Shipping Agent',
             icon: Sparkles,
+            iconColor: 'text-purple-600',
+            iconBg: 'bg-purple-50 text-purple-600',
+            activeClass: 'bg-purple-50/90 text-purple-700 font-bold border-purple-200/80',
             customBadge: (
-              <span className="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+              <span className="bg-purple-100 text-purple-700 border border-purple-200 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
                 AI
               </span>
             )
           }
         ] : []),
         ...(isSupplier
-          ? [{ id: 'return-orders', label: 'Return Orders & Tracking', icon: RotateCcw }]
-          : [{ id: 'return-tracking', label: 'Returns & Tracking', icon: RotateCcw }]
+          ? [{
+              id: 'return-orders',
+              label: 'Return Orders & Tracking',
+              icon: RotateCcw,
+              iconColor: 'text-amber-600',
+              iconBg: 'bg-amber-50 text-amber-600',
+              activeClass: 'bg-amber-50/90 text-amber-700 font-bold border-amber-200/80'
+            }]
+          : [{
+              id: 'return-tracking',
+              label: 'Returns & Tracking',
+              icon: RotateCcw,
+              iconColor: 'text-amber-600',
+              iconBg: 'bg-amber-50 text-amber-600',
+              activeClass: 'bg-amber-50/90 text-amber-700 font-bold border-amber-200/80'
+            }]
         ),
-        { id: 'track', label: 'Tracking & Journey', icon: Navigation, badge: null },
+        {
+          id: 'track',
+          label: 'Tracking & Journey',
+          icon: Navigation,
+          iconColor: 'text-cyan-600',
+          iconBg: 'bg-cyan-50 text-cyan-600',
+          activeClass: 'bg-cyan-50/90 text-cyan-700 font-bold border-cyan-200/80',
+          badge: null
+        },
         ...(!isSupplier ? [{
           id: 'delivery-confirm',
           label: 'Delivery Sign-Off',
           icon: CheckCircle2,
+          iconColor: 'text-emerald-600',
+          iconBg: 'bg-emerald-50 text-emerald-600',
+          activeClass: 'bg-emerald-50/90 text-emerald-700 font-bold border-emerald-200/80',
           customBadge: (
-            <span className="bg-emerald-50 text-emerald-800 text-[10px] font-medium px-1.5 py-0.5 rounded-md flex items-center gap-1 border border-emerald-200/80">
+            <span className="bg-emerald-50 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 border border-emerald-200/80">
               <QrCode className="w-2.5 h-2.5" />
               <span>QR</span>
             </span>
@@ -124,8 +182,11 @@ export default function Sidebar({
           id: 'wallet',
           label: isSupplier ? 'Wallet & Payouts' : 'Order Wallet',
           icon: Wallet,
+          iconColor: 'text-emerald-600',
+          iconBg: 'bg-emerald-50 text-emerald-600',
+          activeClass: 'bg-emerald-50/90 text-emerald-700 font-bold border-emerald-200/80',
           customBadge: isSupplier && (Number(user?.walletBalance) || 0) < 0 ? (
-            <span className="bg-rose-50 text-rose-700 text-[10px] font-medium px-1.5 py-0.5 rounded-md border border-rose-200">
+            <span className="bg-rose-50 text-rose-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-rose-200">
               Due -₹{Math.abs(Number(user?.walletBalance)).toFixed(0)}
             </span>
           ) : null
@@ -134,6 +195,9 @@ export default function Sidebar({
           id: 'refer',
           label: 'Refer & Earn',
           icon: Gift,
+          iconColor: 'text-amber-600',
+          iconBg: 'bg-amber-50 text-amber-600',
+          activeClass: 'bg-amber-50/90 text-amber-700 font-bold border-amber-200/80',
           customBadge: (
             <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-amber-200">
               ₹30 bonus
@@ -149,15 +213,39 @@ export default function Sidebar({
           id: 'notifications',
           label: 'Notifications',
           icon: Bell,
+          iconColor: 'text-blue-600',
+          iconBg: 'bg-blue-50 text-blue-600',
+          activeClass: 'bg-blue-50/90 text-blue-700 font-bold border-blue-200/80',
           customBadge: notifCount > 0 ? (
-            <span className="bg-slate-900 text-white text-[10px] font-medium px-1.5 py-0.2 rounded-full tabular-nums">
+            <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full tabular-nums">
               {notifCount}
             </span>
           ) : null
         },
-        { id: 'profile', label: 'Profile & Bank Payout', icon: Settings },
-        { id: 'support', label: 'Help & Support', icon: HelpCircle },
-        { id: 'legal', label: 'Merchant & Legal Info', icon: FileText }
+        {
+          id: 'profile',
+          label: 'Profile & Bank Payout',
+          icon: Settings,
+          iconColor: 'text-violet-600',
+          iconBg: 'bg-violet-50 text-violet-600',
+          activeClass: 'bg-violet-50/90 text-violet-700 font-bold border-violet-200/80'
+        },
+        {
+          id: 'support',
+          label: 'Help & Support',
+          icon: HelpCircle,
+          iconColor: 'text-blue-500',
+          iconBg: 'bg-blue-50 text-blue-600',
+          activeClass: 'bg-blue-50/90 text-blue-700 font-bold border-blue-200/80'
+        },
+        {
+          id: 'legal',
+          label: 'Merchant & Legal Info',
+          icon: FileText,
+          iconColor: 'text-teal-600',
+          iconBg: 'bg-teal-50 text-teal-600',
+          activeClass: 'bg-teal-50/90 text-teal-700 font-bold border-teal-200/80'
+        }
       ]
     },
     ...(isAdmin ? [
@@ -168,8 +256,11 @@ export default function Sidebar({
             id: 'admin',
             label: 'Admin Console',
             icon: ShieldCheck,
+            iconColor: 'text-rose-600',
+            iconBg: 'bg-rose-50 text-rose-600',
+            activeClass: 'bg-rose-50/90 text-rose-700 font-bold border-rose-200/80',
             customBadge: (
-              <span className="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-medium px-1.5 py-0.5 rounded-md">
+              <span className="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold px-1.5 py-0.5 rounded-md">
                 Admin
               </span>
             )
@@ -220,14 +311,14 @@ export default function Sidebar({
             <button
               type="button"
               onClick={() => onSwitchRole && onSwitchRole(isSupplier ? 'Receiver' : 'Supplier')}
-              className="mt-2.5 w-full flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-50/80 hover:bg-blue-50/80 border border-slate-200/80 hover:border-blue-200 text-[11px] font-bold text-slate-700 hover:text-[#1E56E3] transition-all group shadow-2xs btn-press cursor-pointer"
+              className="mt-2.5 w-full flex items-center justify-between px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-blue-50/90 hover:from-blue-100 hover:to-indigo-100 border border-blue-200/80 text-[11px] font-bold text-blue-950 transition-all group shadow-2xs btn-press cursor-pointer"
               title={`Switch to ${isSupplier ? 'Receiver (Buyer)' : 'Supplier (Merchant)'} Mode`}
             >
               <span className="flex items-center gap-1.5 truncate">
-                <ArrowLeftRight className="w-3.5 h-3.5 text-blue-600 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+                <ArrowLeftRight className="w-3.5 h-3.5 text-[#1E56E3] group-hover:rotate-180 transition-transform duration-300 shrink-0" />
                 <span>Switch to {isSupplier ? 'Receiver' : 'Supplier'}</span>
               </span>
-              <span className="text-[10px] font-extrabold text-[#1E56E3] bg-blue-50 px-1.5 py-0.5 rounded-md border border-blue-100 shrink-0">
+              <span className="text-[10px] font-bold text-white bg-[#1E56E3] px-2 py-0.5 rounded-md shadow-2xs shrink-0">
                 {isSupplier ? 'Buyer' : 'Seller'}
               </span>
             </button>
@@ -235,10 +326,10 @@ export default function Sidebar({
             <button
               type="button"
               onClick={() => onSwitchRole && onSwitchRole(isSupplier ? 'Receiver' : 'Supplier')}
-              className="p-2 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-[#1E56E3] border border-slate-200/80 transition btn-press cursor-pointer"
+              className="p-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1E56E3] border border-blue-200/80 transition btn-press cursor-pointer"
               title={`Switch to ${isSupplier ? 'Receiver (Buyer)' : 'Supplier (Merchant)'} Mode`}
             >
-              <ArrowLeftRight className="w-3.5 h-3.5 text-blue-600" />
+              <ArrowLeftRight className="w-3.5 h-3.5 text-[#1E56E3]" />
             </button>
           )}
         </div>
@@ -248,7 +339,7 @@ export default function Sidebar({
           {navItems.map((group, gIdx) => (
             <div key={gIdx} className="space-y-0.5">
               {!isCollapsed ? (
-                <p className="px-3 text-[11px] font-medium text-slate-400 mb-1">
+                <p className="px-3 text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1.5 mt-2">
                   {group.section}
                 </p>
               ) : (
@@ -274,17 +365,22 @@ export default function Sidebar({
                         setCurrentTab(item.id);
                       }
                     }}
-                    className={`relative flex items-center rounded-lg transition-colors duration-150 group btn-press cursor-pointer select-none ${isCollapsed
-                        ? 'justify-center p-2.5 mx-auto w-10 h-10'
-                        : 'justify-between px-3 py-2 w-full text-xs font-medium'
+                    className={`relative flex items-center rounded-xl transition-all duration-150 group btn-press cursor-pointer select-none ${isCollapsed
+                        ? 'justify-center p-2 mx-auto w-10 h-10'
+                        : 'justify-between px-2.5 py-1.5 w-full text-xs font-semibold'
                       } ${isActive
-                        ? 'bg-blue-50 text-[#1E56E3] font-semibold border border-blue-200/60'
-                        : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
+                        ? (item.activeClass ? `${item.activeClass} border shadow-2xs` : 'bg-blue-50 text-[#1E56E3] font-bold border border-blue-200/80 shadow-2xs')
+                        : 'text-slate-700 hover:bg-slate-50/90 hover:text-slate-900 border border-transparent'
                       }`}
                   >
                     <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-2.5'}`}>
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#1E56E3]' : 'text-slate-400 group-hover:text-slate-600'
-                        }`} />
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                        isActive
+                          ? (item.iconBg || 'bg-blue-100 text-[#1E56E3]') + ' shadow-2xs font-bold'
+                          : (item.iconBg ? `${item.iconBg} ${item.iconColor}` : 'bg-slate-100 text-slate-600')
+                      }`}>
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
                       {!isCollapsed && <span className="truncate">{item.label}</span>}
                     </div>
 
@@ -292,16 +388,16 @@ export default function Sidebar({
                       item.customBadge ? (
                         item.customBadge
                       ) : isActive ? (
-                        <ChevronRight className="w-3.5 h-3.5 text-[#1E56E3]/60 shrink-0" />
+                        <ChevronRight className="w-3.5 h-3.5 opacity-60 shrink-0" />
                       ) : null
                     )}
 
                     {/* Mini Badge / Status Dot in collapsed mode */}
                     {isCollapsed && (
                       isActive ? (
-                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#1E56E3] ring-2 ring-white"></span>
+                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#1E56E3] ring-2 ring-white"></span>
                       ) : (item.customBadge || (item.id === 'notifications' && notifCount > 0)) ? (
-                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-slate-900 ring-2 ring-white"></span>
+                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-blue-600 ring-2 ring-white"></span>
                       ) : null
                     )}
                   </a>
@@ -321,14 +417,14 @@ export default function Sidebar({
               onClick={() => setCurrentTab('profile')}
               title="Open Profile & Bank Payout Settings"
             >
-              <div className="w-8 h-8 rounded-lg bg-slate-800 text-white font-medium text-xs flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#1E56E3] via-blue-600 to-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs shadow-blue-500/25">
                 {userInitials}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-slate-900 truncate">
+                <p className="text-xs font-bold text-slate-900 truncate">
                   {user?.fullName || 'SecureKaro User'}
                 </p>
-                <p className="text-[10px] text-slate-500 font-medium capitalize truncate">
+                <p className="text-[10px] text-blue-600 font-bold capitalize truncate">
                   {user?.activeRole || user?.role || 'Supplier'}
                 </p>
               </div>
@@ -356,7 +452,7 @@ export default function Sidebar({
         ) : (
           <div className="flex flex-col items-center gap-2">
             <div
-              className="w-9 h-9 rounded-lg bg-slate-800 text-white font-medium text-xs flex items-center justify-center cursor-pointer hover:bg-slate-700 transition"
+              className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1E56E3] via-blue-600 to-indigo-600 text-white font-black text-xs flex items-center justify-center cursor-pointer shadow-xs shadow-blue-500/25 hover:opacity-90 transition"
               onClick={() => setCurrentTab('profile')}
               title={`Profile: ${user?.fullName || 'SecureKaro User'}`}
             >
