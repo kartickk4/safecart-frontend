@@ -60,19 +60,24 @@ const getBaseUrl = () => {
 export const API_BASE_URL = getBaseUrl();
 
 export const getLabelDownloadUrl = (shipmentId, directUrl) => {
-  // If direct external label URL exists (e.g. NimbusPost S3, Shiprocket S3, Delhivery/Shadowfax direct URL)
+  const base = API_BASE_URL || LIVE_BACKEND_URL;
+  const token = localStorage.getItem('token') || localStorage.getItem('safecart_token') || '';
+  const tokenQuery = token ? `&token=${encodeURIComponent(token)}` : '';
+
+  // Non-expiring external label URL (exclude temporary 15-minute S3 signed links like NimbusPost)
   if (
     directUrl &&
     typeof directUrl === 'string' &&
     directUrl.startsWith('http') &&
     !directUrl.includes('dummy.pdf') &&
-    !directUrl.includes('/api/v1/shipments')
+    !directUrl.includes('/api/v1/shipments') &&
+    !directUrl.includes('X-Amz-Expires') &&
+    !directUrl.includes('files.nimbuspost.com')
   ) {
     return directUrl;
   }
-  const base = API_BASE_URL || LIVE_BACKEND_URL;
-  const token = localStorage.getItem('token') || localStorage.getItem('safecart_token') || '';
-  const tokenQuery = token ? `&token=${encodeURIComponent(token)}` : '';
+
+  // Always route through backend for permanent, reliable PDF generation & streaming
   return `${base.replace(/\/+$/, '')}/shipments/${shipmentId}/label?format=pdf${tokenQuery}`;
 };
 
