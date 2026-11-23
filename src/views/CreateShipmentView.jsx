@@ -1835,15 +1835,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     <p className="text-[10px] font-black uppercase tracking-wider text-emerald-800">RTO Protection Benefits</p>
                     <div className="space-y-2">
                       <div className="flex items-start gap-2">
-                        <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">1</span>
+                        <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">✓</span>
                         <p className="text-[11px] text-slate-700 leading-relaxed">
                           <strong>₹40 Weekly Seller Relief:</strong> If parcel returns undelivered (RTO), SecureKaro credits seller <strong className="text-emerald-700">+₹40</strong> compensation once per rolling 7-day week to offset shipping &amp; packaging costs.
-                        </p>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">✓</span>
-                        <p className="text-[11px] text-slate-700 leading-relaxed">
-                          <strong>Zero Deduction:</strong> Buyers receive 100% full refunds on undelivered parcels with zero deduction, and sellers are never penalized.
                         </p>
                       </div>
                     </div>
