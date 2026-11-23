@@ -150,7 +150,7 @@ export default function PaymentCheckoutModal({
   };
 
   const modalContent = (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-slate-900/60 backdrop-blur-sm sm:items-center sm:justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[150] flex flex-col bg-slate-900/60 backdrop-blur-sm sm:items-center sm:justify-center p-0 sm:p-4 animate-in fade-in duration-200">
       <div 
         className="w-full max-w-md bg-[#F4F6FB] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}

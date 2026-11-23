@@ -120,7 +120,7 @@ export default function RechargeModal({ isOpen, onClose, currentBalance = 0, ini
 
   return typeof document !== 'undefined' ? createPortal(
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200 select-none"
       onClick={onClose}
     >
       <div 

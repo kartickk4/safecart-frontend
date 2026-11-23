@@ -342,6 +342,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
 
   // Step 2 Submit: Finalize booking with selected courier
   const handleFinalizeBooking = async (overrideParams = null) => {
+    const validOverrides = (overrideParams && !overrideParams.nativeEvent && typeof overrideParams === 'object') ? overrideParams : null;
     if (!selectedQuote) return;
     setLoading(true);
     setError('');
@@ -359,7 +360,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     const isDeductFromSettlement = isCod && codSettlementOption === 'deduct_from_cod';
 
     // Check if seller has sufficient balance before creating
-    if (!isDeductFromSettlement && !overrideParams?.paidUpfront && currentWallet < totalRequired) {
+    if (!isDeductFromSettlement && !validOverrides?.paidUpfront && currentWallet < totalRequired) {
       setCheckoutModalData({
         amount: totalShippingCharge,
         routeFrom: senderPincode || 'Origin',
@@ -1104,6 +1105,45 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               </div>
             </div>
 
+            {/* COD Settlement Option Selector in Step 2 */}
+            {paymentMode === 'cod' && shipmentType !== 'reverse' && (
+              <div className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-3 flex-wrap animate-in fade-in duration-150">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                  <span className="text-xs font-black text-amber-950">COD Settlement Mode:</span>
+                  <span className="text-[11px] text-amber-800 font-medium">
+                    {codSettlementOption === 'deduct_from_cod' 
+                      ? '₹0 Upfront required — courier & COD fees deducted upon delivery' 
+                      : 'Pay courier charges upfront via Wallet or PhonePe'}
+                  </span>
+                </div>
+                <div className="inline-flex items-center p-0.5 bg-white rounded-xl border border-amber-300 shadow-2xs gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setCodSettlementOption('deduct_from_cod')}
+                    className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${
+                      codSettlementOption === 'deduct_from_cod'
+                        ? 'bg-amber-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    ₹0 Upfront (Deduct from COD)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCodSettlementOption('pay_upfront')}
+                    className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${
+                      codSettlementOption === 'pay_upfront'
+                        ? 'bg-amber-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    Pay Now (Wallet/UPI)
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Smart Routing Recommendation Banner removed */}
 
             {/* Filter Tabs & Search Bar */}
@@ -1677,7 +1717,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               <button
                 type="button"
                 disabled={loading || !selectedQuote}
-                onClick={handleFinalizeBooking}
+                onClick={() => handleFinalizeBooking()}
                 className="flex-1 py-3 px-4 bg-[#1E56E3] hover:bg-[#1649CC] text-white font-extrabold text-xs rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
