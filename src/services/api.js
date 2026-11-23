@@ -60,11 +60,20 @@ const getBaseUrl = () => {
 export const API_BASE_URL = getBaseUrl();
 
 export const getLabelDownloadUrl = (shipmentId, directUrl) => {
-  if (directUrl && typeof directUrl === 'string' && directUrl.startsWith('http') && !directUrl.includes('dummy.pdf') && !directUrl.includes('/label')) {
+  // If direct external label URL exists (e.g. NimbusPost S3, Shiprocket S3, Delhivery/Shadowfax direct URL)
+  if (
+    directUrl &&
+    typeof directUrl === 'string' &&
+    directUrl.startsWith('http') &&
+    !directUrl.includes('dummy.pdf') &&
+    !directUrl.includes('/api/v1/shipments')
+  ) {
     return directUrl;
   }
   const base = API_BASE_URL || LIVE_BACKEND_URL;
-  return `${base.replace(/\/+$/, '')}/shipments/${shipmentId}/label?format=pdf`;
+  const token = localStorage.getItem('token') || localStorage.getItem('safecart_token') || '';
+  const tokenQuery = token ? `&token=${encodeURIComponent(token)}` : '';
+  return `${base.replace(/\/+$/, '')}/shipments/${shipmentId}/label?format=pdf${tokenQuery}`;
 };
 
 const api = axios.create({
