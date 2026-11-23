@@ -57,7 +57,15 @@ const getBaseUrl = () => {
   return 'http://localhost:5001/api/v1';
 };
 
-const API_BASE_URL = getBaseUrl();
+export const API_BASE_URL = getBaseUrl();
+
+export const getLabelDownloadUrl = (shipmentId, directUrl) => {
+  if (directUrl && typeof directUrl === 'string' && directUrl.startsWith('http') && !directUrl.includes('dummy.pdf') && !directUrl.includes('/label')) {
+    return directUrl;
+  }
+  const base = API_BASE_URL || LIVE_BACKEND_URL;
+  return `${base.replace(/\/+$/, '')}/shipments/${shipmentId}/label?format=pdf`;
+};
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ArrowLeft, ShieldCheck, ShieldAlert, Gavel, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw, Clock, Sparkles, Lock, MessageSquare, Send, Camera, Tag, MapPin, Check, QrCode, Printer, Zap, Building, Image as ImageIcon, Eye, ZoomIn, PackageCheck, Package } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { shipmentAPI, profileAPI, claimAPI } from '../services/api';
+import { shipmentAPI, profileAPI, claimAPI, getLabelDownloadUrl } from '../services/api';
 import { uploadImageToHost } from '../services/imageUpload';
 import QrScannerModal from './QrScannerModal';
 import CameraCaptureModal from './CameraCaptureModal';
@@ -1051,11 +1051,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                 </div>
               </div>
               <a
-                href={
-                  currentShipment.shippingLabelUrl && !currentShipment.shippingLabelUrl.includes('dummy.pdf') && !currentShipment.shippingLabelUrl.includes('/label')
-                    ? currentShipment.shippingLabelUrl
-                    : `/api/v1/shipments/${currentShipment.shipmentId}/label?format=pdf`
-                }
+                href={getLabelDownloadUrl(currentShipment.shipmentId, currentShipment.shippingLabelUrl)}
                 target="_blank"
                 rel="noreferrer"
                 className="text-xs font-bold text-[#1E56E3] hover:underline flex items-center gap-1"
