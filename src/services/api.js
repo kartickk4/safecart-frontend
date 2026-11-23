@@ -61,7 +61,7 @@ export const API_BASE_URL = getBaseUrl();
 
 export const getLabelDownloadUrl = (shipmentId, directUrl) => {
   const base = API_BASE_URL || LIVE_BACKEND_URL;
-  const token = localStorage.getItem('token') || localStorage.getItem('safecart_token') || '';
+  const token = localStorage.getItem('securekaro_token') || localStorage.getItem('token') || localStorage.getItem('safecart_token') || '';
   const tokenQuery = token ? `&token=${encodeURIComponent(token)}` : '';
 
   // Non-expiring external label URL (exclude temporary 15-minute S3 signed links like NimbusPost)
