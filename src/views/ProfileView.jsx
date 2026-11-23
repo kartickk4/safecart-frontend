@@ -272,17 +272,18 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
     }
   };
 
-  const handleVerifyOldPhoneOtp = async (e) => {
-    if (e) e.preventDefault();
-    if (!oldPhoneOtp || oldPhoneOtp.length < 4) {
-      setPhoneChangeError('Please enter the 6-digit OTP code sent to your current mobile.');
+  const handleVerifyOldPhoneOtp = async (e, otpOverride) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const code = (otpOverride || oldPhoneOtp || '').trim();
+    if (!code || code.length < 6) {
+      if (!otpOverride) setPhoneChangeError('Please enter the 6-digit OTP code sent to your current mobile.');
       return;
     }
     setPhoneChangeLoading(true);
     setPhoneChangeError('');
     try {
       const currentNumber = user?.phone || phone;
-      const res = await profileAPI.verifyPhoneOtp(currentNumber, oldPhoneOtp, true);
+      const res = await profileAPI.verifyPhoneOtp(currentNumber, code, true);
       setPhoneChangeSuccess('Current phone verified! Now enter your new mobile number.');
       setPhoneChangeStep(2);
       setPhoneResendTimer(0);
@@ -315,16 +316,17 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
     }
   };
 
-  const handleVerifyNewPhoneOtp = async (e) => {
-    if (e) e.preventDefault();
-    if (!newPhoneOtp || newPhoneOtp.length < 4) {
-      setPhoneChangeError('Please enter the 6-digit OTP sent to your new mobile number.');
+  const handleVerifyNewPhoneOtp = async (e, otpOverride) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const code = (otpOverride || newPhoneOtp || '').trim();
+    if (!code || code.length < 6) {
+      if (!otpOverride) setPhoneChangeError('Please enter the 6-digit OTP sent to your new mobile number.');
       return;
     }
     setPhoneChangeLoading(true);
     setPhoneChangeError('');
     try {
-      const res = await profileAPI.verifyPhoneOtp(newPhoneInput, newPhoneOtp, false);
+      const res = await profileAPI.verifyPhoneOtp(newPhoneInput, code, false);
       const updatedPhone = res.data?.phone || newPhoneInput;
       setPhone(updatedPhone);
       setNewPhone(updatedPhone);
@@ -471,13 +473,13 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
     }
   };
 
-  const handleVerifySecurityOtp = async (e) => {
-    if (e) e.preventDefault();
+  const handleVerifySecurityOtp = async (e, otpOverride) => {
+    if (e && e.preventDefault) e.preventDefault();
     setSecurityError('');
 
-    const trimmedOtp = securityOtpInput.trim();
-    if (!trimmedOtp || trimmedOtp.length < 4) {
-      setSecurityError('Please enter the 6-digit OTP code.');
+    const trimmedOtp = (otpOverride || securityOtpInput || '').trim();
+    if (!trimmedOtp || trimmedOtp.length < 6) {
+      if (!otpOverride) setSecurityError('Please enter the 6-digit OTP code.');
       return;
     }
 
@@ -1237,7 +1239,11 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                     value={oldPhoneOtp}
                     onChange={(e) => {
                       setPhoneChangeError('');
-                      setOldPhoneOtp(e.target.value.replace(/\D/g, ''));
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                      setOldPhoneOtp(val);
+                      if (val.length === 6 && !phoneChangeLoading) {
+                        handleVerifyOldPhoneOtp(null, val);
+                      }
                     }}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl font-mono font-black text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500 focus:bg-white"
                   />
@@ -1331,7 +1337,11 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                         value={newPhoneOtp}
                         onChange={(e) => {
                           setPhoneChangeError('');
-                          setNewPhoneOtp(e.target.value.replace(/\D/g, ''));
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          setNewPhoneOtp(val);
+                          if (val.length === 6 && !phoneChangeLoading) {
+                            handleVerifyNewPhoneOtp(null, val);
+                          }
                         }}
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl font-mono font-black text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500 focus:bg-white"
                       />
@@ -1483,7 +1493,11 @@ export default function ProfileView({ user, currentRole, onSwitchRole, onUpdateU
                   value={securityOtpInput}
                   onChange={(e) => {
                     setSecurityError('');
-                    setSecurityOtpInput(e.target.value.replace(/\D/g, ''));
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setSecurityOtpInput(val);
+                    if (val.length === 6 && !securityLoading) {
+                      handleVerifySecurityOtp(null, val);
+                    }
                   }}
                   className="w-full text-center text-2xl font-mono font-extrabold tracking-widest px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white"
                 />

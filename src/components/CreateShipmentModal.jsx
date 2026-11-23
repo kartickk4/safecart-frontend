@@ -216,15 +216,16 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     }
   };
 
-  const handleVerifyPhoneOtp = async () => {
-    if (!phoneOtp || phoneOtp.length < 4) {
-      setPhoneError('Please enter the 6-digit OTP code.');
+  const handleVerifyPhoneOtp = async (otpOverride) => {
+    const code = (otpOverride || phoneOtp || '').trim();
+    if (!code || code.length < 6) {
+      if (!otpOverride) setPhoneError('Please enter the 6-digit OTP code.');
       return;
     }
     setPhoneLoading(true);
     setPhoneError('');
     try {
-      const res = await profileAPI.verifyPhoneOtp(verifyPhone, phoneOtp);
+      const res = await profileAPI.verifyPhoneOtp(verifyPhone, code);
       setPhoneVerified(true);
       setPhoneSuccessMsg('Phone verified successfully!');
       const updatedPhone = res.data?.phone || verifyPhone;
@@ -579,7 +580,13 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                         maxLength="6"
                         placeholder="Enter 6-digit OTP"
                         value={phoneOtp}
-                        onChange={(e) => setPhoneOtp(e.target.value.replace(/\D/g, ''))}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          setPhoneOtp(val);
+                          if (val.length === 6 && !phoneLoading) {
+                            handleVerifyPhoneOtp(val);
+                          }
+                        }}
                         className="flex-1 px-3 py-1.5 bg-white border border-blue-200 rounded-lg text-xs font-mono font-bold tracking-widest text-center"
                       />
                       <button

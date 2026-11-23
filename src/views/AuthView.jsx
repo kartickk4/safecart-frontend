@@ -424,12 +424,13 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
     }
   };
 
-  const handleVerifyGooglePhoneOtp = async (e) => {
-    e.preventDefault();
+  const handleVerifyGooglePhoneOtp = async (e, otpOverride) => {
+    if (e && e.preventDefault) e.preventDefault();
     setGoogleProfileErr('');
 
-    if (!googleOtpCode || googleOtpCode.trim().length < 6) {
-      setGoogleProfileErr('Please enter the 6-digit SMS verification code.');
+    const code = (otpOverride || googleOtpCode || '').trim();
+    if (!code || code.length < 6) {
+      if (!otpOverride) setGoogleProfileErr('Please enter the 6-digit SMS verification code.');
       return;
     }
 
@@ -446,7 +447,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
       // 1. Verify SMS OTP Code
       if (window.googleConfirmationResult) {
         try {
-          await window.googleConfirmationResult.confirm(googleOtpCode);
+          await window.googleConfirmationResult.confirm(code);
         } catch (fbErr) {
           setGoogleProfileErr('Invalid or expired SMS verification code.');
           setGoogleProfileLoading(false);
@@ -454,7 +455,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
         }
       } else {
         try {
-          await authAPI.verifyOtp({ phone: formattedPhone, code: googleOtpCode, purpose: 'verification' });
+          await authAPI.verifyOtp({ phone: formattedPhone, code, purpose: 'verification' });
         } catch (vErr) {
 
           setGoogleProfileErr(vErr.response?.data?.error || 'Invalid or expired SMS verification code.');
@@ -510,8 +511,10 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
   };
 
 
-  const handleVerifySignUpOtp = async (e) => {
-    e.preventDefault();
+  const handleVerifySignUpOtp = async (e, otpOverride) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const code = (otpOverride || signUpOtp || '').trim();
+    if (!code || code.length < 6) return;
     setSignUpOtpErr('');
     setSignUpOtpLoading(true);
 
@@ -522,7 +525,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
       // 1. Verify SMS OTP via Firebase or Backend API
       if (window.confirmationResult) {
         try {
-          await window.confirmationResult.confirm(signUpOtp);
+          await window.confirmationResult.confirm(code);
         } catch (fbErr) {
           setSignUpOtpErr('Invalid verification code entered or code expired.');
           setSignUpOtpLoading(false);
@@ -535,7 +538,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
         const activeSignupRole = selectedRoleType || localStorage.getItem('securekaro_active_role') || 'Supplier';
         const verifyRes = await authAPI.verifyOtp({ 
           phone: formattedPhone, 
-          code: signUpOtp, 
+          code, 
           role: activeSignupRole,
           fullName,
           email,
@@ -1489,7 +1492,14 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                   maxLength="6"
                   placeholder="------"
                   value={signUpOtp}
-                  onChange={(e) => setSignUpOtp(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setSignUpOtp(val);
+                    setSignUpOtpErr('');
+                    if (val.length === 6 && !signUpOtpLoading) {
+                      handleVerifySignUpOtp(null, val);
+                    }
+                  }}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-xl font-mono font-black text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500 focus:bg-white"
                 />
               </div>
@@ -2091,7 +2101,14 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                       maxLength="6"
                       placeholder="------"
                       value={googleOtpCode}
-                      onChange={(e) => setGoogleOtpCode(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        setGoogleOtpCode(val);
+                        setGoogleProfileErr('');
+                        if (val.length === 6 && !googleProfileLoading) {
+                          handleVerifyGooglePhoneOtp(null, val);
+                        }
+                      }}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-xl font-mono font-black text-slate-900 tracking-widest focus:ring-2 focus:ring-blue-500 focus:bg-white"
                     />
                   </div>

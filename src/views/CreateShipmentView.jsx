@@ -309,15 +309,16 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     }
   };
 
-  const handleVerifyPhoneOtp = async () => {
-    if (!phoneOtp || phoneOtp.length < 4) {
-      setPhoneError('Please enter the 6-digit OTP code.');
+  const handleVerifyPhoneOtp = async (otpOverride) => {
+    const code = (otpOverride || phoneOtp || '').trim();
+    if (!code || code.length < 6) {
+      if (!otpOverride) setPhoneError('Please enter the 6-digit OTP code.');
       return;
     }
     setPhoneLoading(true);
     setPhoneError('');
     try {
-      const res = await profileAPI.verifyPhoneOtp(verifyPhone, phoneOtp);
+      const res = await profileAPI.verifyPhoneOtp(verifyPhone, code);
       setPhoneVerified(true);
       setPhoneSuccessMsg('Phone verified successfully! You can now book your shipment.');
       const updatedPhone = res.data?.phone || verifyPhone;
@@ -964,7 +965,13 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                           type="text"
                           maxLength="6"
                           value={phoneOtp}
-                          onChange={(e) => setPhoneOtp(e.target.value.replace(/\D/g, ''))}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                            setPhoneOtp(val);
+                            if (val.length === 6 && !phoneLoading) {
+                              handleVerifyPhoneOtp(val);
+                            }
+                          }}
                           placeholder="Enter 6-digit OTP"
                           className="w-full sm:w-64 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-center text-base font-mono tracking-widest font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                         />

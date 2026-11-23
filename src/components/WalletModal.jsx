@@ -458,17 +458,18 @@ export default function WalletModal({ user, onUpdateUser }) {
     await handleSendWalletOtp(otpMethod);
   };
 
-  const handleVerifyOtp = async () => {
-    if (!otpInput || otpInput.length < 4) {
-      setOtpError('Please enter a valid 6-digit OTP code.');
+  const handleVerifyOtp = async (otpOverride) => {
+    const code = (otpOverride || otpInput || '').trim();
+    if (!code || code.length < 6) {
+      if (!otpOverride) setOtpError('Please enter a valid 6-digit OTP code.');
       return;
     }
 
     try {
       if (otpMethod === 'phone') {
-        await authAPI.verifyOtp(user?.phone, otpInput, isSupplier ? 'Supplier' : 'Receiver');
+        await authAPI.verifyOtp(user?.phone, code, isSupplier ? 'Supplier' : 'Receiver');
       } else {
-        await authAPI.verifyEmailOtp(user?.email, otpInput, isSupplier ? 'Supplier' : 'Receiver');
+        await authAPI.verifyEmailOtp(user?.email, code, isSupplier ? 'Supplier' : 'Receiver');
       }
       setOtpVerified(true);
       setEditing(true);
@@ -2118,7 +2119,14 @@ export default function WalletModal({ user, onUpdateUser }) {
                 type="text"
                 maxLength="6"
                 value={otpInput}
-                onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  setOtpInput(val);
+                  setOtpError('');
+                  if (val.length === 6) {
+                    handleVerifyOtp(val);
+                  }
+                }}
                 placeholder="------"
                 className="w-full text-center text-2xl font-mono font-extrabold tracking-widest px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white"
               />
