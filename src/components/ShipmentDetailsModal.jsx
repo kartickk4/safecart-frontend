@@ -873,8 +873,18 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
     return null;
   }
 
-  const isCancellable = ['Awaiting Payment', 'Pending Pickup'].includes(currentShipment?.status);
-  const isUndeliverable = ['In Transit', 'Out for Delivery', 'Reached Destination Hub'].includes(currentShipment?.status);
+  // Physical pickup status check: Has the courier partner actually physically picked up the parcel?
+  const isPhysicallyPickedUp = Boolean(
+    currentShipment?.isPickedUp ||
+    currentShipment?.pickupStatus === 'Picked Up' ||
+    currentShipment?.pickupCompletedAt ||
+    ['Reached Destination Hub', 'Out for Delivery', 'Delivered', 'Completed', 'Cancelled', 'Released', 'Undelivered', 'Returned & Refunded', 'Return Requested', 'Return In Transit'].includes(currentShipment?.status) ||
+    (currentShipment?.carrierMilestones || []).some(m => /^picked\s*up$|^pickup\s*(done|completed)$/i.test(m?.status || m?.title || ''))
+  );
+
+  // Cancellable: User or seller can cancel before courier physically picks up the package
+  const isCancellable = !isPhysicallyPickedUp;
+  const isUndeliverable = ['In Transit', 'Out for Delivery', 'Reached Destination Hub'].includes(currentShipment?.status) && isPhysicallyPickedUp;
   // Returnable: only after delivery is confirmed or status is Delivered and return window is open
   const isReturnAlreadyApplied = Boolean(
     currentShipment?.status === 'Return Requested' ||
@@ -901,11 +911,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
       || Boolean(currentShipment?.deliveryConfirmed)
     );
 
-  const isPickedUp = Boolean(
-    currentShipment?.isPickedUp ||
-    ['Picked Up', 'In Transit', 'Out for Delivery', 'Delivered', 'Completed', 'Cancelled', 'Returned & Refunded', 'Return Requested', 'Return In Transit'].includes(currentShipment?.status) ||
-    (currentShipment?.carrierMilestones || []).some(m => /picked\s*up|pickup\s*done|in\s*transit|out\s*for\s*delivery|delivered/i.test(m?.status || m?.title || ''))
-  );
+  const isPickedUp = isPhysicallyPickedUp;
 
   const discountOfferedAtTime = currentShipment?.discountOfferedAt ? new Date(currentShipment.discountOfferedAt).getTime() : 0;
   const discountElapsedMs = discountOfferedAtTime > 0 ? (Date.now() - discountOfferedAtTime) : 0;
@@ -3152,12 +3158,14 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
                 {isCancellable && (
                   <button
+                    type="button"
                     onClick={() => setShowCancelForm(true)}
                     disabled={actionLoading}
-                    className="py-3 px-3 bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold text-xs rounded-xl transition flex items-center gap-1 shrink-0"
+                    className="py-3 px-3.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs"
+                    title="Cancel shipment before courier pickup"
                   >
-                    <XCircle className="w-4 h-4 text-slate-500" />
-                    <span>Cancel</span>
+                    <XCircle className="w-4 h-4 text-rose-600" />
+                    <span>Cancel Shipment</span>
                   </button>
                 )}
 
