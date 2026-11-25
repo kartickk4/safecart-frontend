@@ -424,8 +424,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         const total = Number(chosen.exactRate || chosen.price || (freight + codFee));
         const walletBal = Number(user?.walletBalance) || 0;
         const activeCount = codQuote?.activeShipmentsCount !== undefined ? codQuote.activeShipmentsCount : (user?.activeShipmentsCount || 0);
-        const requiredReserve = codQuote?.requiredReserve || Math.min(1000, (activeCount + 1) * 100);
-        const totalRequired = total + requiredReserve;
+        const requiredReserve = 0;
+        const totalRequired = total;
 
         setCodQuote(prev => ({
           ...prev,
@@ -433,7 +433,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
           codCharge: codFee,
           totalCharge: total,
           totalRequired,
-          requiredReserve,
+          requiredReserve: 0,
           activeShipmentsCount: activeCount,
           walletBalance: walletBal,
           canAdjustWallet: walletBal >= totalRequired,
@@ -518,8 +518,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
     const totalShippingCharge = Number(quote.exactRate || quote.price || (deliveryFee + codFee));
     const currentWallet = Number(user?.walletBalance) || 0;
     const activeCount = user?.activeShipmentsCount !== undefined ? user.activeShipmentsCount : (codQuote?.activeShipmentsCount || 0);
-    const requiredReserve = Math.min(1000, (activeCount + 1) * 100);
-    const totalRequired = totalShippingCharge + requiredReserve;
+    const requiredReserve = 0;
+    const totalRequired = totalShippingCharge;
 
     setCodQuote(prev => ({
       ...prev,
@@ -527,7 +527,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       codCharge: codFee,
       totalCharge: totalShippingCharge,
       totalRequired,
-      requiredReserve,
+      requiredReserve: 0,
       activeShipmentsCount: activeCount,
       carrierName: quote.courierPartner || quote.name,
       walletBalance: currentWallet,
@@ -649,8 +649,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       if (err.response?.status === 402 || 
           err.response?.data?.code === 'INSUFFICIENT_WALLET_BALANCE' || 
           err.response?.data?.code === 'COD_PAYMENT_REQUIRED' || 
-          err.response?.data?.code === 'PREPAID_SHIPPING_PAYMENT_REQUIRED' ||
-          err.response?.data?.code === 'SECURITY_BUFFER_REQUIRED') {
+          err.response?.data?.code === 'PREPAID_SHIPPING_PAYMENT_REQUIRED') {
         const data = err.response?.data || {};
         const fee = data.totalCharge || targetDeliveryCharge;
         setCheckoutModalData({
@@ -661,7 +660,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
           breakdown: {
             freight: data.deliveryCharge || fee,
             codFee: data.codCharge || 0,
-            requiredReserve: data.requiredReserve || 100
+            requiredReserve: 0
           },
           quote: selectedQuote
         });
@@ -2829,13 +2828,6 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                     <div className="flex justify-between text-slate-600">
                       <span>COD Handling Fee:</span>
                       <span className="font-mono font-bold text-slate-800">₹{codQuote.codCharge}</span>
-                    </div>
-                    <div className="flex justify-between text-slate-600">
-                      <span className="flex items-center gap-1">
-                        <span>Dynamic Security Reserve:</span>
-                        <span className="text-[10px] text-blue-600 font-semibold">(₹100/active, max ₹1,000)</span>
-                      </span>
-                      <span className="font-mono font-bold text-blue-700">₹{codQuote.requiredReserve || Math.min(1000, ((codQuote.activeShipmentsCount || 0) + 1) * 100)}</span>
                     </div>
                     <div className="flex justify-between text-slate-500 text-[10px]">
                       <span>Current Wallet Balance:</span>
