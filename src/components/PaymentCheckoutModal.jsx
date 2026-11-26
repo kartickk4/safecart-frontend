@@ -29,7 +29,6 @@ export default function PaymentCheckoutModal({
   routeFrom = 'Origin',
   routeTo = 'Destination',
   amount = 0,
-  discountPercent = 3,
   walletBalance = 0,
   breakdown = null,
   courierName = 'Courier Partner',
@@ -75,7 +74,7 @@ export default function PaymentCheckoutModal({
           await onPaymentSuccess({
             paidVia: 'WALLET',
             amount: payableAmount,
-            paidUpfront: false // Deducted directly in createShipment backend
+            paidUpfront: true
           });
         }
         onClose();
@@ -180,10 +179,6 @@ export default function PaymentCheckoutModal({
                   <span>{formatRouteLabel(routeFrom)}</span>
                   <span className="text-slate-400 font-normal">➔</span>
                   <span>{formatRouteLabel(routeTo)}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#0052FF] mt-0.5">
-                  <Zap className="w-3.5 h-3.5 fill-[#0052FF] shrink-0" />
-                  <span>Discount Applied: {discountPercent}%</span>
                 </div>
               </div>
 

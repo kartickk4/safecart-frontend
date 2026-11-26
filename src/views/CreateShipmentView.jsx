@@ -3120,7 +3120,6 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         routeFrom={checkoutModalData.routeFrom || senderPincode || 'Origin'}
         routeTo={checkoutModalData.routeTo || receiverPincode || 'Destination'}
         amount={checkoutModalData.amount || selectedQuote?.price || 0}
-        discountPercent={3}
         walletBalance={user?.walletBalance || 0}
         courierName={checkoutModalData.courierName || selectedQuote?.name || 'Courier Partner'}
         breakdown={checkoutModalData.breakdown}
@@ -3131,7 +3130,8 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
           await executeBooking({
             carrierSlug: checkoutModalData?.quote?.slug || selectedQuote?.slug || carrierSlug,
             deliveryCharge: checkoutModalData?.amount || selectedQuote?.price || codQuote.deliveryCharge,
-            paidUpfront: paymentResult?.paidUpfront || false,
+            paidVia: paymentResult?.paidVia,
+            paidUpfront: true,
             txnId: paymentResult?.txnId
           });
         }}

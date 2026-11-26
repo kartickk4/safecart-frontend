@@ -353,8 +353,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     const totalShippingCharge = deliveryFee;
     const currentWallet = Number(user?.walletBalance) || 0;
     const activeCount = Number(user?.activeShipmentsCount) || 0;
-    const requiredReserve = Math.min(1000, (activeCount + 1) * 100);
-    const totalRequired = totalShippingCharge + requiredReserve;
+    const requiredReserve = 0; // Standard negative balance model - no artificial holding limit
+    const totalRequired = totalShippingCharge;
 
     // If COD and merchant selected to deduct shipping charges from COD settlement:
     const isDeductFromSettlement = isCod && codSettlementOption === 'deduct_from_cod';
@@ -369,7 +369,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         breakdown: {
           freight: deliveryFee - codFee,
           codFee: codFee,
-          requiredReserve
+          requiredReserve: 0
         }
       });
       setShowCheckoutModal(true);
@@ -431,7 +431,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
           breakdown: {
             freight: data.deliveryCharge || fee,
             codFee: data.codCharge || 0,
-            requiredReserve: data.requiredReserve || 100
+            requiredReserve: 0
           }
         });
         setShowCheckoutModal(true);
@@ -1740,7 +1740,6 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
           routeFrom={checkoutModalData.routeFrom || senderPincode || 'Origin'}
           routeTo={checkoutModalData.routeTo || receiverPincode || 'Destination'}
           amount={checkoutModalData.amount || selectedQuote?.price || 0}
-          discountPercent={3}
           walletBalance={user?.walletBalance || 0}
           courierName={checkoutModalData.courierName || selectedQuote?.name || 'Courier Partner'}
           breakdown={checkoutModalData.breakdown}
@@ -1749,7 +1748,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
           onPaymentSuccess={async (paymentResult) => {
             setShowCheckoutModal(false);
             await handleFinalizeBooking({
-              paidUpfront: paymentResult?.paidUpfront || false,
+              paidVia: paymentResult?.paidVia,
+              paidUpfront: true,
               txnId: paymentResult?.txnId
             });
           }}
