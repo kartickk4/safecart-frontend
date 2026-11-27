@@ -1182,75 +1182,97 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               );
             })()}
 
-            {/* ── AUTO-SCHEDULED COURIER PICKUP CARD ── */}
-            {Boolean(currentShipment.pickupSlot || currentShipment.pickupToken) && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50/90 via-teal-50/60 to-emerald-50/40 border border-emerald-200/90 space-y-3 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
-                      ⚡ Courier Pickup Auto-Scheduled
+            {/* ── AUTO-SCHEDULED COURIER PICKUP CARD / MANIFEST STATUS ── */}
+            {Boolean(currentShipment.pickupSlot || currentShipment.pickupToken) && (() => {
+              const isConfirmed = currentShipment.pickupStatus === 'Scheduled' || currentShipment.pickupStatus === 'Pickup Scheduled';
+              const cardBg = isConfirmed 
+                ? 'bg-gradient-to-r from-emerald-50/90 via-teal-50/60 to-emerald-50/40 border-emerald-200/90' 
+                : 'bg-gradient-to-r from-amber-50/90 via-orange-50/60 to-amber-50/40 border-amber-200/90';
+              const dotBg = isConfirmed ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500';
+              const titleColor = isConfirmed ? 'text-emerald-950' : 'text-amber-950';
+              const badgeClass = isConfirmed
+                ? 'bg-emerald-200/80 text-emerald-800 border-emerald-300'
+                : 'bg-amber-200/80 text-amber-900 border-amber-300';
+              const titleText = isConfirmed ? '⚡ Courier Pickup Auto-Scheduled' : '📦 Manifest Ready to Ship (Pickup Pending)';
+              const badgeText = isConfirmed ? 'Scheduled' : 'Ready to Ship';
+
+              return (
+                <div className={`p-4 rounded-2xl ${cardBg} border space-y-3 shadow-2xs`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${dotBg}`}></span>
+                      <span className={`text-xs font-black ${titleColor} uppercase tracking-wide`}>
+                        {titleText}
+                      </span>
+                    </div>
+                    <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${badgeClass}`}>
+                      {badgeText}
                     </span>
                   </div>
-                  <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-200/80 text-emerald-800 border border-emerald-300">
-                    {currentShipment.pickupStatus || 'Scheduled'}
-                  </span>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  <div className="bg-white/95 p-2.5 rounded-xl border border-emerald-100 shadow-2xs">
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Carrier (Lowest Route Charge)</span>
-                    <span className="font-extrabold text-slate-900">{formatCarrierName(currentShipment.pickupCarrier || currentShipment.carrierSlug)}</span>
-                    {currentShipment.pickupRate && (
-                      <span className="text-[10px] text-emerald-700 font-semibold block">₹{currentShipment.pickupRate} Delivery Charge</span>
-                    )}
-                  </div>
+                  {currentShipment.pickupError && (
+                    <div className="p-3 rounded-xl bg-white/90 border border-amber-300 text-amber-950 text-xs flex items-start gap-2 shadow-2xs">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold text-[11px] uppercase tracking-wide text-amber-800">Carrier Dispatch Requirement</p>
+                        <p className="mt-0.5 text-slate-700 leading-relaxed font-medium">{currentShipment.pickupError}</p>
+                      </div>
+                    </div>
+                  )}
 
-                  <div className="bg-white/95 p-2.5 rounded-xl border border-emerald-100 shadow-2xs">
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Pickup Slot</span>
-                    <span className="font-extrabold text-slate-900 leading-tight block">{currentShipment.pickupSlot}</span>
-                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div className="bg-white/95 p-2.5 rounded-xl border border-slate-100 shadow-2xs">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Carrier (Lowest Route Charge)</span>
+                      <span className="font-extrabold text-slate-900">{formatCarrierName(currentShipment.pickupCarrier || currentShipment.carrierSlug)}</span>
+                      {currentShipment.pickupRate && (
+                        <span className="text-[10px] text-emerald-700 font-semibold block">₹{currentShipment.pickupRate} Delivery Charge</span>
+                      )}
+                    </div>
 
-                  <div className="bg-white/95 p-2.5 rounded-xl border border-emerald-100 shadow-2xs">
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Pickup Reference Token</span>
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono font-black text-blue-700 select-all">{formatPickupToken(currentShipment.pickupToken)}</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText(formatPickupToken(currentShipment.pickupToken) || '');
-                          setCopiedPickupToken(true);
-                          setTimeout(() => setCopiedPickupToken(false), 2000);
-                        }}
-                        className="text-[10px] text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-50 transition"
-                        title="Copy Pickup Token"
-                      >
-                        {copiedPickupToken ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-                      </button>
+                    <div className="bg-white/95 p-2.5 rounded-xl border border-slate-100 shadow-2xs">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Pickup Slot</span>
+                      <span className="font-extrabold text-slate-900 leading-tight block">{currentShipment.pickupSlot}</span>
+                    </div>
+
+                    <div className="bg-white/95 p-2.5 rounded-xl border border-slate-100 shadow-2xs">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Pickup Reference Token</span>
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-black text-blue-700 select-all">{formatPickupToken(currentShipment.pickupToken)}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(formatPickupToken(currentShipment.pickupToken) || '');
+                            setCopiedPickupToken(true);
+                            setTimeout(() => setCopiedPickupToken(false), 2000);
+                          }}
+                          className="text-[10px] text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-50 transition"
+                          title="Copy Pickup Token"
+                        >
+                          {copiedPickupToken ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/95 p-2.5 rounded-xl border border-slate-100 shadow-2xs">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">Pickup Executive</span>
+                      <span className="font-bold text-slate-900">{isConfirmed ? (currentShipment.pickupAgentName || 'Courier Executive') : 'Carrier Field Executive'}</span>
+                      <span className="text-[10px] text-slate-500 font-mono block">
+                        {isConfirmed ? (currentShipment.pickupAgentPhone || 'Assigned on morning dispatch') : 'Assigned upon carrier dispatch'}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="bg-white/95 p-2.5 rounded-xl border border-emerald-100 shadow-2xs">
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Pickup Executive</span>
-                    <span className="font-bold text-slate-900">{currentShipment.pickupAgentName || 'Courier Executive'}</span>
-                    {currentShipment.pickupAgentPhone && (
-                      <span className="text-[10px] text-slate-500 font-mono block">{currentShipment.pickupAgentPhone}</span>
-                    )}
-                  </div>
+                  {currentShipment.pickupLocationAddress && (
+                    <div className="text-[11px] text-slate-600 bg-white/80 px-3 py-1.5 rounded-xl border border-slate-100 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span className="truncate">
+                        <strong className="text-slate-700">Origin:</strong> {currentShipment.pickupLocationAddress}
+                      </span>
+                    </div>
+                  )}
                 </div>
-
-                {currentShipment.pickupLocationAddress && (
-                  <div className="text-[11px] text-slate-600 bg-white/80 px-3 py-1.5 rounded-xl border border-emerald-100 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span className="truncate">
-                      <strong className="text-slate-700">Origin:</strong> {currentShipment.pickupLocationAddress}
-                    </span>
-                  </div>
-                )}
-
-
-              </div>
-            )}
+              );
+            })()}
 
             {/* ── SUBMIT COURIER DETAILS & DISPATCH (Supplier only, before dispatch) ── */}
             {isSupplier && !currentShipment.trackingSubmitted && !['Released', 'Cancelled', 'Returned & Refunded'].includes(currentShipment.status) && (
