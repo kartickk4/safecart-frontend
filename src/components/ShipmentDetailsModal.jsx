@@ -6,6 +6,7 @@ import { uploadImageToHost } from '../services/imageUpload';
 import QrScannerModal from './QrScannerModal';
 import CameraCaptureModal from './CameraCaptureModal';
 import { formatCarrierName, formatAwbCode, formatPickupToken } from '../utils/formatters';
+import { updateShipmentInCache } from '../utils/shipmentCache';
 
 export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefresh, user, onRepeatShipment }) {
   const [details, setDetails] = useState(null);
@@ -403,12 +404,16 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
   const handleCancelShipment = async (e) => {
     e.preventDefault();
+    if (actionLoading) return;
     setActionLoading(true);
     // OPTIMISTIC UPDATE: Instantly mark as Cancelled in UI
     const prevStatus = currentShipment.status;
     setDetails(prev => prev ? { ...prev, shipment: { ...(prev.shipment || {}), status: 'Cancelled' } } : prev);
     try {
       await shipmentAPI.cancelShipment(currentShipment.shipmentId, cancelReason);
+      try {
+        updateShipmentInCache(currentShipment.shipmentId, { status: 'Cancelled', pickupStatus: 'Cancelled' });
+      } catch (_) {}
       setShowCancelForm(false);
       if (onRefresh) onRefresh();
       onClose();
@@ -3581,9 +3586,16 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   <button
                     type="submit"
                     disabled={actionLoading}
-                    className="py-2.5 px-4 bg-rose-600 text-white font-bold text-xs rounded-xl hover:bg-rose-700 flex-1"
+                    className="py-2.5 px-4 bg-rose-600 hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-xs rounded-xl flex-1 inline-flex items-center justify-center gap-2 transition cursor-pointer"
                   >
-                    Confirm Cancellation
+                    {actionLoading ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Cancelling...</span>
+                      </>
+                    ) : (
+                      <span>Confirm Cancellation</span>
+                    )}
                   </button>
                   <button
                     type="button"

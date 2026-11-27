@@ -83,6 +83,55 @@ export function addShipmentToCache(newShipment, userScope, isSupplier = true) {
   } catch (_) {}
 }
 
+export function updateShipmentInCache(shipmentId, updates) {
+  if (!shipmentId || !updates) return;
+  const targetId = String(shipmentId).toUpperCase();
+
+  const patchListInStorage = (storage, key) => {
+    try {
+      const raw = storage.getItem(key);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return;
+      const updated = parsed.map(s =>
+        s && String(s.shipmentId).toUpperCase() === targetId ? { ...s, ...updates } : s
+      );
+      storage.setItem(key, JSON.stringify(updated));
+    } catch (_) {}
+  };
+
+  try {
+    if (typeof localStorage !== 'undefined') {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('securekaro_shipments_') || k.startsWith('securekaro_dashboard_shipments'))) {
+          patchListInStorage(localStorage, k);
+        }
+      }
+    }
+    if (typeof sessionStorage !== 'undefined') {
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (k && (k.startsWith('securekaro_shipments_') || k.startsWith('securekaro_dashboard_shipments'))) {
+          patchListInStorage(sessionStorage, k);
+        }
+      }
+    }
+  } catch (_) {}
+
+  try {
+    clearApiCache('/shipments');
+  } catch (_) {}
+
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('securekaro_shipment_status_changed', {
+        detail: { shipmentId: targetId, updates }
+      }));
+    }
+  } catch (_) {}
+}
+
 export function clearShipmentCache(userScope) {
   try {
     const keys = [];

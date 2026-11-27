@@ -104,6 +104,24 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
       }
     };
 
+    const handleStatusChanged = (e) => {
+      const { shipmentId: targetId, updates } = e.detail || {};
+      if (targetId && updates) {
+        setShipments(prev => {
+          const updated = prev.map(s =>
+            s && String(s.shipmentId).toUpperCase() === String(targetId).toUpperCase()
+              ? { ...s, ...updates }
+              : s
+          );
+          try {
+            sessionStorage.setItem(cacheKey, JSON.stringify(updated));
+            localStorage.setItem(cacheKey, JSON.stringify(updated));
+          } catch (_) {}
+          return updated;
+        });
+      }
+    };
+
     const handleRefreshEvent = () => {
       fetchShipments(false, true);
     };
@@ -113,11 +131,13 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
     };
 
     window.addEventListener('securekaro_shipments_updated', handleShipmentUpdated);
+    window.addEventListener('securekaro_shipment_status_changed', handleStatusChanged);
     window.addEventListener('securekaro_refresh_shipments', handleRefreshEvent);
     window.addEventListener('focus', handleFocus);
 
     return () => {
       window.removeEventListener('securekaro_shipments_updated', handleShipmentUpdated);
+      window.removeEventListener('securekaro_shipment_status_changed', handleStatusChanged);
       window.removeEventListener('securekaro_refresh_shipments', handleRefreshEvent);
       window.removeEventListener('focus', handleFocus);
     };
