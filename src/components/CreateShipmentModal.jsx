@@ -4,20 +4,21 @@ import {
   X, ShieldCheck, ArrowRight, ArrowLeft, AlertTriangle, RotateCcw, 
   Camera, Phone, Truck, Star, Zap, Check, Lock, RefreshCw, Clock, Award,
   CreditCard, Banknote, Search, Sparkles, TrendingDown, Plane, LayoutGrid, List, Scale,
-  CheckCircle2, AlertCircle
+  CheckCircle2, AlertCircle, Eye, Download
 } from 'lucide-react';
-import { shipmentAPI, profileAPI, agentAPI } from '../services/api';
+import { shipmentAPI, profileAPI, agentAPI, getLabelDownloadUrl } from '../services/api';
 import CarrierLogo from './CarrierLogo';
 import RechargeModal from './RechargeModal';
 import PaymentCheckoutModal from './PaymentCheckoutModal';
 import { getSafeCarrierRates } from '../utils/carrierRateFallback';
-import { formatCarrierName } from '../utils/formatters';
+import { formatCarrierName, formatAwbCode } from '../utils/formatters';
 import { validatePhone, sanitizePhone, validatePincode, sanitizePincode, validateAmount, validateWeight } from '../utils/validators';
 import { addShipmentToCache } from '../utils/shipmentCache';
 
 export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData, onUpdateUser }) {
-  // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection
+  // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection | 3 = Booking Confirmation
   const [modalStep, setModalStep] = useState(1);
+  const [createdData, setCreatedData] = useState(null);
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [checkoutModalData, setCheckoutModalData] = useState({
@@ -411,8 +412,11 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       try {
         addShipmentToCache(res.data, user?._id || user?.id, true);
       } catch (_) {}
-      onCreated(res.data);
-      onClose();
+      if (onUpdateUser && res.data?.walletBalanceRemaining !== undefined) {
+        onUpdateUser({ ...user, walletBalance: Number(res.data.walletBalanceRemaining) });
+      }
+      setCreatedData(res.data);
+      setModalStep(3);
     } catch (err) {
       console.error('Create Shipment Modal API Error:', err);
       if (err.response?.data?.code === 'PHONE_VERIFICATION_REQUIRED' || err.response?.data?.error === 'Phone verification required') {
@@ -463,21 +467,27 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         {/* Modal Header */}
         <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
           <div className="w-10 h-10 rounded-2xl bg-blue-50 text-[#1E56E3] flex items-center justify-center font-bold shrink-0">
-            {modalStep === 1 ? <ShieldCheck className="w-5 h-5" /> : <Truck className="w-5 h-5" />}
+            {modalStep === 1 ? <ShieldCheck className="w-5 h-5" /> : modalStep === 2 ? <Truck className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-black text-slate-900">
-                {modalStep === 1 ? 'Create Courier Shipment Booking' : 'Select Delivery Courier & Review Rates'}
+                {modalStep === 1 
+                  ? 'Create Courier Shipment Booking' 
+                  : modalStep === 2 
+                  ? 'Select Delivery Courier & Review Rates' 
+                  : 'Shipment Booked Successfully! 🎉'}
               </h2>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
-                Step {modalStep} of 2
+                Step {modalStep} of {modalStep === 3 ? '3' : '2'}
               </span>
             </div>
             <p className="text-xs text-slate-500">
               {modalStep === 1 
                 ? 'Fill recipient details to compare real-time delivery rates'
-                : `Live rates & ratings for delivery to receiver pincode ${receiverPincode}`}
+                : modalStep === 2
+                ? `Live rates & ratings for delivery to receiver pincode ${receiverPincode}`
+                : 'Courier pickup has been scheduled and your tracking waybill is active'}
             </p>
           </div>
         </div>
@@ -1732,6 +1742,102 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: SHIPMENT CONFIRMATION & RECEIPT */}
+        {modalStep === 3 && createdData && (
+          <div className="overflow-y-auto space-y-4 pr-1 flex-1 text-center py-2 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-sm">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+
+            <div>
+              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-3 py-1 rounded-full inline-flex items-center gap-1.5 mb-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Shipment Booked Successfully!
+              </span>
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
+                Booking Confirmed
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Courier pickup has been scheduled and your tracking waybill is active.
+              </p>
+            </div>
+
+            {/* Receipt Summary Card */}
+            <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 text-left max-w-md mx-auto space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-200/70 pb-2.5">
+                <span className="text-xs text-slate-400 font-medium">Order ID</span>
+                <span className="text-sm font-bold text-[#1E56E3] font-mono">{createdData.shipmentId}</span>
+              </div>
+
+              <div className="flex items-center justify-between border-b border-slate-200/70 pb-2.5">
+                <span className="text-xs text-slate-400 font-medium">AWB Tracking Code</span>
+                <span className="text-xs font-bold text-slate-900 font-mono bg-white px-2 py-0.5 rounded border border-slate-200">
+                  {formatAwbCode(createdData.awbCode) || 'Assigned'}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between border-b border-slate-200/70 pb-2.5">
+                <span className="text-xs text-slate-400 font-medium">Recipient</span>
+                <span className="text-xs font-semibold text-slate-800">{createdData.receiverName} ({createdData.receiverPhone})</span>
+              </div>
+
+              <div className="flex items-center justify-between border-b border-slate-200/70 pb-2.5">
+                <span className="text-xs text-slate-400 font-medium">Courier Booked</span>
+                <span className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5 text-[#1E56E3]" />
+                  {formatCarrierName(createdData.carrierSlug || createdData.pickupCarrier || 'Delhivery')}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between border-b border-slate-200/70 pb-2.5">
+                <span className="text-xs text-slate-400 font-medium">Declared Value</span>
+                <span className="text-sm font-bold text-slate-900">₹{Number(createdData.amount || 0).toLocaleString('en-IN')}</span>
+              </div>
+
+              {createdData.pickupSlot && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 font-medium">Pickup Slot</span>
+                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                    {createdData.pickupSlot}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-center gap-3 pt-3 flex-wrap">
+              <a
+                href={getLabelDownloadUrl(createdData.shipmentId, createdData.shippingLabelUrl)}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-sm inline-flex items-center gap-1.5 transition"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Label (PDF)</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (onCreated) onCreated(createdData);
+                }}
+                className="px-4 py-2.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-xs font-bold text-[#1E56E3] transition inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <Eye className="w-4 h-4" />
+                <span>View Full Details</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-600 transition cursor-pointer"
+              >
+                Done
               </button>
             </div>
           </div>

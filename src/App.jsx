@@ -1166,6 +1166,9 @@ export default function App() {
             onCreated={(newShipment) => {
               setRepeatShipmentData(null);
               setIsCreateModalOpen(false);
+              if (newShipment) {
+                setSelectedShipment(newShipment);
+              }
             }}
           />
         )}
