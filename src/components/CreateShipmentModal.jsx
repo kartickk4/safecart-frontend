@@ -13,6 +13,7 @@ import PaymentCheckoutModal from './PaymentCheckoutModal';
 import { getSafeCarrierRates } from '../utils/carrierRateFallback';
 import { formatCarrierName } from '../utils/formatters';
 import { validatePhone, sanitizePhone, validatePincode, sanitizePincode, validateAmount, validateWeight } from '../utils/validators';
+import { addShipmentToCache } from '../utils/shipmentCache';
 
 export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, initialData, onUpdateUser }) {
   // Modal Step: 1 = Details Form | 2 = Courier Rates & Ratings Selection
@@ -407,6 +408,9 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       };
 
       const res = await shipmentAPI.createShipment(payload);
+      try {
+        addShipmentToCache(res.data, user?._id || user?.id, true);
+      } catch (_) {}
       onCreated(res.data);
       onClose();
     } catch (err) {

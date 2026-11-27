@@ -899,7 +899,10 @@ export default function App() {
             setCurrentTab={setCurrentTab}
             notifCount={notifCount}
             onSwitchRole={handleSwitchRole}
-            onRefresh={() => window.location.reload()}
+            onRefresh={() => {
+              window.dispatchEvent(new Event('securekaro_refresh_shipments'));
+              window.dispatchEvent(new Event('securekaro_refresh_dashboard'));
+            }}
             openNewShipmentModal={() => setCurrentTab('create-shipment')}
             onOpenAiAgent={() => setCurrentTab('ai-agent')}
             onOpenAdmin={() => setCurrentTab('admin')}
@@ -1173,7 +1176,10 @@ export default function App() {
             shipment={selectedShipment}
             isOpen={Boolean(selectedShipment)}
             onClose={() => setSelectedShipment(null)}
-            onRefresh={() => window.location.reload()}
+            onRefresh={() => {
+              window.dispatchEvent(new Event('securekaro_refresh_shipments'));
+              window.dispatchEvent(new Event('securekaro_refresh_dashboard'));
+            }}
             user={user}
             onRepeatShipment={(sourceShipment) => {
               const ship = sourceShipment || selectedShipment;

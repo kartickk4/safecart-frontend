@@ -83,6 +83,37 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
     fetchShipments();
   }, [userScope, isMerchant]); // re-fetch whenever user or role changes
 
+  // Real-time synchronization when a shipment is created or refreshed anywhere in the app
+  useEffect(() => {
+    const handleShipmentUpdated = (e) => {
+      const newShipment = e.detail?.newShipment;
+      if (newShipment && newShipment.shipmentId) {
+        setShipments(prev => {
+          const filtered = prev.filter(s => s.shipmentId !== newShipment.shipmentId);
+          return [newShipment, ...filtered];
+        });
+      }
+    };
+
+    const handleRefreshEvent = () => {
+      fetchShipments(false);
+    };
+
+    const handleFocus = () => {
+      fetchShipments(true);
+    };
+
+    window.addEventListener('securekaro_shipments_updated', handleShipmentUpdated);
+    window.addEventListener('securekaro_refresh_shipments', handleRefreshEvent);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('securekaro_shipments_updated', handleShipmentUpdated);
+      window.removeEventListener('securekaro_refresh_shipments', handleRefreshEvent);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [cacheKey, isMerchant]);
+
   const fetchShipments = async (silent = false) => {
     const hasCache = localStorage.getItem(cacheKey) || sessionStorage.getItem(cacheKey);
     if (!hasCache && !silent) {

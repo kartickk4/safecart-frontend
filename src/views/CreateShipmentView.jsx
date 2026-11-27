@@ -15,6 +15,7 @@ import PaymentCheckoutModal from '../components/PaymentCheckoutModal';
 import { getSafeCarrierRates } from '../utils/carrierRateFallback';
 import { formatCarrierName, formatAwbCode, formatPickupToken } from '../utils/formatters';
 import { validatePhone, sanitizePhone, validatePincode, sanitizePincode, validateAmount, validateWeight } from '../utils/validators';
+import { addShipmentToCache } from '../utils/shipmentCache';
 
 
 
@@ -624,6 +625,11 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       }
 
       const res = await shipmentAPI.createShipment(payload);
+
+      // Instantly inject new shipment into client cache so All Shipments is up-to-date immediately
+      try {
+        addShipmentToCache(res.data, user?._id || user?.id, true);
+      } catch (_) {}
 
       setCreatedData(res.data);
       // Probabilistic Seller Cashback: 85% chance ₹7-8, 10% chance ₹8-9, 5% chance ₹10
