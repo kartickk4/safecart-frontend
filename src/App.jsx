@@ -76,8 +76,8 @@ export default function App() {
     const path = window.location.pathname;
     // Don't show splash for direct utility deep-links (public photo review, public qr confirmation, direct pay)
     if (
-      path.startsWith('/photo-review') || 
-      path.startsWith('/qr-confirm') || 
+      path.startsWith('/photo-review') ||
+      path.startsWith('/qr-confirm') ||
       path.startsWith('/pay/') ||
       path.startsWith('/terms') ||
       path.startsWith('/privacy') ||
@@ -130,7 +130,7 @@ export default function App() {
         await prefetchWalletInBackground(user);
       }
       window.dispatchEvent(new CustomEvent('refresh-view-data'));
-    } catch (_) {}
+    } catch (_) { }
   };
 
   // Central navigation dispatcher that updates React state, URL path in history, and page title
@@ -145,7 +145,7 @@ export default function App() {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('securekaro_last_tab', targetTab);
-      } catch (_) {}
+      } catch (_) { }
 
       const targetRoute = TAB_ROUTES[targetTab] || `/${targetTab}`;
       const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
@@ -237,14 +237,14 @@ export default function App() {
   useEffect(() => {
     // Silent backend pre-warming ping on initial mount to wake up Render container if sleeping
     if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
-      fetch('https://safecart-backend-1.onrender.com/health', { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+      fetch('https://safecart-backend-1.onrender.com/health', { mode: 'no-cors', cache: 'no-store' }).catch(() => { });
     }
     checkAuth();
   }, []);
 
   const savedActiveRole = typeof window !== 'undefined' ? localStorage.getItem('securekaro_active_role') : null;
-  const isSupplier = savedActiveRole 
-    ? savedActiveRole === 'Supplier' 
+  const isSupplier = savedActiveRole
+    ? savedActiveRole === 'Supplier'
     : (user?.activeRole === 'Receiver' ? false : true); // Defaults to Supplier (Seller Hub)
 
   const refreshCounts = async () => {
@@ -292,14 +292,14 @@ export default function App() {
           const roleKey = isSupp ? 'Supplier' : 'Receiver';
           localStorage.setItem('securekaro_dashboard_shipments_' + roleKey, JSON.stringify(shipRes.value.data));
           sessionStorage.setItem('securekaro_dashboard_shipments', JSON.stringify(shipRes.value.data));
-        } catch (_) {}
+        } catch (_) { }
       }
 
       if (quotaRes.status === 'fulfilled' && quotaRes.value?.data) {
         try {
           localStorage.setItem('securekaro_dashboard_gateway', JSON.stringify(quotaRes.value.data));
           sessionStorage.setItem('securekaro_dashboard_gateway', JSON.stringify(quotaRes.value.data));
-        } catch (_) {}
+        } catch (_) { }
       }
 
       let updatedBalances = {};
@@ -347,7 +347,7 @@ export default function App() {
           const merged = { ...prev, ...updatedBalances };
           try {
             localStorage.setItem('securekaro_user', JSON.stringify(merged));
-          } catch (_) {}
+          } catch (_) { }
           return merged;
         });
       }
@@ -356,10 +356,11 @@ export default function App() {
     }
   };
 
-  const clearAgentSessionData = () => { try { localStorage.removeItem('sk_agent_session'); sessionStorage.removeItem('sk_agent_session'); sessionStorage.removeItem('sk_agent_messages_cache'); } catch (_) {} };
+  const clearAgentSessionData = () => { try { localStorage.removeItem('sk_agent_session'); sessionStorage.removeItem('sk_agent_session'); sessionStorage.removeItem('sk_agent_messages_cache'); } catch (_) { } };
   const checkAuth = async () => {
     const token = localStorage.getItem('securekaro_token');
-    if (!token) { clearAgentSessionData();
+    if (!token) {
+      clearAgentSessionData();
       setLoading(false);
       setUser(null);
       localStorage.removeItem('securekaro_user');
@@ -385,7 +386,8 @@ export default function App() {
     } catch (err) {
       console.warn('Backend profile API check notice:', err.message);
       // Only clear credentials if explicitly rejected as 401/403 Unauthorized
-      if (err.response?.status === 401 || err.response?.status === 403) { clearAgentSessionData();
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        clearAgentSessionData();
         localStorage.removeItem('securekaro_token');
         localStorage.removeItem('securekaro_user');
         setUser(null);
@@ -415,7 +417,7 @@ export default function App() {
           sessionStorage.clear();
         }
       }
-    } catch (_) {}
+    } catch (_) { }
     const savedRole = localStorage.getItem('securekaro_active_role') || (userData.activeRole === 'Receiver' ? 'Receiver' : 'Supplier');
     userData.activeRole = savedRole;
     localStorage.setItem('securekaro_active_role', savedRole);
@@ -466,7 +468,7 @@ export default function App() {
       if (curToken) {
         sessionStorage.setItem('securekaro_role_token_' + currentRole, curToken);
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // 2. Clear API cache and update active role
     clearApiCache();
@@ -487,8 +489,8 @@ export default function App() {
     setRoleNotification({
       role: nextRole,
       title: nextRole === 'Supplier' ? 'Switched to Supplier Mode' : 'Switched to Receiver Mode',
-      desc: nextRole === 'Supplier' 
-        ? 'Merchant Portal: Create shipments, manage orders, pickups & shipping settlements.' 
+      desc: nextRole === 'Supplier'
+        ? 'Merchant Portal: Create shipments, manage orders, pickups & shipping settlements.'
         : 'Buyer Portal: Inspect incoming parcels, sign-off deliveries & manage orders.'
     });
 
@@ -507,14 +509,14 @@ export default function App() {
       if (rawUser) {
         cachedUser = JSON.parse(rawUser);
       }
-    } catch (_) {}
+    } catch (_) { }
 
     if (cachedUser) {
       const updated = { ...cachedUser, role: nextRole, activeRole: nextRole };
       setUser(updated);
       try {
         localStorage.setItem('securekaro_user', JSON.stringify(updated));
-      } catch (_) {}
+      } catch (_) { }
     } else {
       // If first time switching, clean reset balances for the target role
       setUser(prev => {
@@ -530,7 +532,7 @@ export default function App() {
         };
         try {
           localStorage.setItem('securekaro_user', JSON.stringify(updated));
-        } catch (_) {}
+        } catch (_) { }
         return updated;
       });
     }
@@ -542,7 +544,7 @@ export default function App() {
           localStorage.setItem('securekaro_token', res.data.accessToken);
           try {
             sessionStorage.setItem('securekaro_role_token_' + nextRole, res.data.accessToken);
-          } catch (_) {}
+          } catch (_) { }
         }
         if (res.data?.user) {
           const syncedUser = {
@@ -554,7 +556,7 @@ export default function App() {
           try {
             localStorage.setItem('securekaro_user', JSON.stringify(syncedUser));
             sessionStorage.setItem('securekaro_role_user_' + nextRole, JSON.stringify(syncedUser));
-          } catch (_) {}
+          } catch (_) { }
           prefetchWalletInBackground(syncedUser);
         }
       })
@@ -579,26 +581,26 @@ export default function App() {
     }, 500);
 
     setTimeout(() => {
-        try {
-          const keysToRemove = [];
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && (key.startsWith('securekaro_') || key.startsWith('sk_'))) {
-              keysToRemove.push(key);
-            }
+      try {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('securekaro_') || key.startsWith('sk_'))) {
+            keysToRemove.push(key);
           }
-          keysToRemove.forEach(k => localStorage.removeItem(k));
-          sessionStorage.clear();
-        } catch (_) {
-          localStorage.clear();
-          sessionStorage.clear();
         }
-        setUser(null);
-        clearApiCache();
-        setCurrentTab('login', { replace: true });
-        setIsSigningOut(false);
-        setSignOutStep('');
-      }, 1200);
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+        sessionStorage.clear();
+      } catch (_) {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+      setUser(null);
+      clearApiCache();
+      setCurrentTab('login', { replace: true });
+      setIsSigningOut(false);
+      setSignOutStep('');
+    }, 1200);
   };
 
 
@@ -702,7 +704,7 @@ export default function App() {
           setShowSplash(false);
           try {
             sessionStorage.setItem('securekaro_splash_seen', 'true');
-          } catch (_) {}
+          } catch (_) { }
         }}
         onSkip={() => {
           setShowSplash(false);
@@ -710,7 +712,7 @@ export default function App() {
           setUser(null);
           try {
             sessionStorage.setItem('securekaro_splash_seen', 'true');
-          } catch (_) {}
+          } catch (_) { }
         }}
       />
     );
@@ -745,10 +747,10 @@ export default function App() {
             }}
             className="flex items-center gap-2.5 text-left group cursor-pointer"
           >
-            <img 
-              src="/logo.jpg" 
-              alt="SecureKaro" 
-              className="w-9 h-9 rounded-xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white" 
+            <img
+              src="/logo.jpg"
+              alt="SecureKaro"
+              className="w-9 h-9 rounded-xl object-cover shadow-md shadow-blue-500/15 border border-slate-200/80 bg-white"
             />
             <div>
               <span className="font-black text-slate-900 text-base tracking-tight block">SecureKaro</span>
@@ -759,25 +761,22 @@ export default function App() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentTab('roi-calculator')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                currentTab === 'roi-calculator' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${currentTab === 'roi-calculator' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
+                }`}
             >
               Rate Calculator
             </button>
             <button
               onClick={() => setCurrentTab('support')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                currentTab === 'support' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${currentTab === 'support' ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
+                }`}
             >
               Support
             </button>
             <button
               onClick={() => setCurrentTab('contact')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                isLegalTab ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${isLegalTab ? 'bg-blue-50 text-[#1E56E3]' : 'text-slate-600 hover:text-slate-900'
+                }`}
             >
               Legal & Compliance
             </button>
@@ -794,31 +793,31 @@ export default function App() {
 
         <main className="flex-1 pb-16 overflow-y-auto">
           <PullToRefresh onRefresh={handlePullRefresh}>
-          <Suspense fallback={<ViewLoadingFallback />}>
-            {isLegalTab && (
-              <LegalComplianceView 
-                initialTab={currentTab === 'legal' ? 'contact' : currentTab}
-                onTabChange={(nextTab) => setCurrentTab(nextTab)}
-              />
-            )}
-            {currentTab === 'support' && <SupportView />}
-            {currentTab === 'rate-calculator' && (
-              <div className="max-w-4xl mx-auto py-6">
-                <RateCalculatorWidget
-                  onSelectCarrier={() => setCurrentTab(user ? 'dashboard' : 'login')}
-                  onGetStarted={() => setCurrentTab(user ? 'dashboard' : 'login')}
+            <Suspense fallback={<ViewLoadingFallback />}>
+              {isLegalTab && (
+                <LegalComplianceView
+                  initialTab={currentTab === 'legal' ? 'contact' : currentTab}
+                  onTabChange={(nextTab) => setCurrentTab(nextTab)}
                 />
-              </div>
-            )}
+              )}
+              {currentTab === 'support' && <SupportView />}
+              {currentTab === 'rate-calculator' && (
+                <div className="max-w-4xl mx-auto py-6">
+                  <RateCalculatorWidget
+                    onSelectCarrier={() => setCurrentTab(user ? 'dashboard' : 'login')}
+                    onGetStarted={() => setCurrentTab(user ? 'dashboard' : 'login')}
+                  />
+                </div>
+              )}
 
-            {currentTab === 'roi-calculator' && (
-              <ROISavingsCalculatorView
-                onNavigateCreateShipment={() => {
-                  setCurrentTab(user ? (isSupplier ? 'dashboard' : 'shipments-list') : 'login');
-                }}
-              />
-            )}
-          </Suspense>
+              {currentTab === 'roi-calculator' && (
+                <ROISavingsCalculatorView
+                  onNavigateCreateShipment={() => {
+                    setCurrentTab(user ? (isSupplier ? 'dashboard' : 'shipments-list') : 'login');
+                  }}
+                />
+              )}
+            </Suspense>
           </PullToRefresh>
         </main>
 
@@ -874,7 +873,7 @@ export default function App() {
   return (
     <div className={`min-h-screen bg-[#F7F9FC] flex text-slate-800 selection:bg-blue-500 selection:text-white relative ${currentTab === 'ai-agent' ? 'h-screen max-h-screen overflow-hidden' : ''}`}>
       <TopProgressBar active={isNavigating || loading} />
-      
+
       {/* Left Sidebar */}
       <Sidebar
         currentTab={currentTab}
@@ -913,242 +912,242 @@ export default function App() {
           />
         )}
 
-        
+
 
         {/* SUSPENSE FOR ALL ROUTE VIEWS */}
         <Suspense fallback={<ViewLoadingFallback />}>
-        {/* AI AGENT: Full-screen, no padding, no extra scroll. Kept mounted so tab switching never erases chat */}
-        <div className={currentTab === 'ai-agent' ? "flex-1 overflow-hidden min-h-0 h-full max-h-screen flex flex-col" : "hidden"}>
-          <AIAgentView key={user?._id || 'user'} onBack={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')} />
-        </div>
-
-        {currentTab !== 'ai-agent' && (
-        <main className="flex-1 pb-28 md:pb-12 overflow-y-auto overflow-x-hidden w-full min-w-0">
-          <PullToRefresh onRefresh={handlePullRefresh}>
-          {/* TOP AD BANNER (Shown for suppliers on portal views; scrolls cleanly with content) */}
-          {isSupplier && currentTab !== 'create-shipment' && currentTab !== 'delivery-confirm' && (
-            <div className="px-4 md:px-8 pt-3 pb-1 max-w-7xl mx-auto w-full">
-              <AdBanner onNavigateTrack={() => setCurrentTab('track')} />
-            </div>
-          )}
-          <div key={`${currentTab}_${isSupplier ? 'Supplier' : 'Receiver'}`} className="view-enter min-h-full">
-          {/* VIEW 1: DASHBOARD */}
-          {currentTab === 'dashboard' && (
-            <DashboardView
-              currentRole={isSupplier ? 'Supplier' : 'Receiver'}
-              user={user}
-              onSelectShipment={(shipment) => setSelectedShipment(shipment)}
-              openNewShipmentModal={() => setCurrentTab('create-shipment')}
-              onNavigateRefer={() => setCurrentTab('refer')}
-              onNavigateRateCalc={() => setCurrentTab('rate-calculator')}
-              onNavigateTab={(tab) => setCurrentTab(tab)}
-            />
-          )}
-
-          {/* VIEW: RATE CALCULATOR */}
-          {currentTab === 'rate-calculator' && (
-            <div className="max-w-5xl mx-auto px-4 py-4 sm:py-6">
-              <RateCalculatorWidget
-                onSelectCarrier={() => {
-                  if (isSupplier) setCurrentTab('create-shipment');
-                }}
-                onGetStarted={() => {
-                  if (isSupplier) setCurrentTab('create-shipment');
-                }}
-              />
-            </div>
-          )}
-
-          {/* VIEW: ROI & TRANSPARENCY SAVINGS CALCULATOR */}
-          {currentTab === 'roi-calculator' && (
-            <ROISavingsCalculatorView
-              onNavigateCreateShipment={() => setCurrentTab('create-shipment')}
-            />
-          )}
-
-          {/* VIEW 2: ALL SHIPMENTS TABLE / MY ORDERS & PACKAGES */}
-          {currentTab === 'shipments-list' && (
-            <ShipmentsListView
-              user={user}
-              isSupplier={isSupplier}
-              currentRole={isSupplier ? 'Supplier' : 'Receiver'}
-              onSelectShipment={(shipment) => setSelectedShipment(shipment)}
-              openNewShipmentModal={isSupplier ? () => setCurrentTab('create-shipment') : undefined}
-              onRepeatShipment={(ship) => {
-                setRepeatShipmentData({
-                  receiverName: ship?.receiverName || '',
-                  receiverPhone: ship?.receiverPhone || '',
-                  receiverAddress: ship?.receiverAddress || '',
-                  receiverPincode: ship?.receiverPincode || '',
-                  parcelWeight: ship?.parcelWeight ? String(ship?.parcelWeight) : '0.5',
-                  description: ship?.description || '',
-                  amount: ship?.amount ? String(ship?.amount) : '',
-                  cityRoute: ship?.city || '',
-                  returnAllowed: ship?.returnAllowed !== false,
-                  rtoProtectionEnabled: Boolean(ship?.rtoProtectionEnabled),
-                  repeatSourceId: ship?.shipmentId || ''
-                });
-                setIsCreateModalOpen(true);
-              }}
-            />
-          )}
-
-          {/* VIEW 3: CREATE SHIPMENT WIZARD + SHIPMENT SUCCESS CONFIRMATION (SUPPLIER ONLY) */}
-          {currentTab === 'create-shipment' && (
-            isSupplier ? (
-              <CreateShipmentView
-                user={user}
-                onOpenProfile={() => setCurrentTab('profile')}
-                onBack={() => setCurrentTab('dashboard')}
-                onCreated={(newShipment) => setSelectedShipment(newShipment)}
-                onUpdateUser={(updated) => setUser(prev => ({ ...prev, ...updated }))}
-              />
-            ) : (
-              <div className="p-8 max-w-xl mx-auto text-center space-y-4 bg-white rounded-3xl border border-slate-200 shadow-sm mt-8">
-                <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto font-bold">
-                  ⚠️
-                </div>
-                <h2 className="text-lg font-black text-slate-900">Supplier Feature Only</h2>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Only verified merchants and suppliers can create protected parcel shipments. Receivers and buyers use SecureKaro to inspect parcels, verify courier delivery, and sign off on arrivals.
-                </p>
-                <button
-                  onClick={() => setCurrentTab('shipments-list')}
-                  className="px-5 py-2.5 rounded-xl bg-[#1E56E3] text-white text-xs font-bold shadow-md hover:bg-[#1649CC] transition"
-                >
-                  Return to My Orders & Packages
-                </button>
-              </div>
-            )
-          )}
-
-          {/* VIEW 4: TRACKING & TRACKING2 LIVE JOURNEY */}
-          {currentTab === 'track' && (
-            <TrackingView
-              user={user}
-              selectedShipment={selectedShipment || (publicTrackParams?.trackingId ? { shipmentId: publicTrackParams.trackingId } : null)}
-              onSelectShipment={(shipment) => setSelectedShipment(shipment)}
-            />
-          )}
-
-          {/* VIEW 5: DELIVERY CONFIRMATION SIGN-OFF (RECEIVER ONLY) */}
-          {currentTab === 'delivery-confirm' && (
-            isSupplier ? (
-              <div className="p-8 max-w-2xl mx-auto text-center bg-white rounded-3xl border border-slate-200 shadow-sm space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto font-bold">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-extrabold text-slate-900">Receiver Only Feature</h3>
-                <p className="text-xs text-slate-500">Delivery Sign-Off is exclusively reserved for Receiver accounts to inspect parcel delivery and confirm safe arrival.</p>
-                <button
-                  onClick={() => setCurrentTab('dashboard')}
-                  className="px-4 py-2 bg-[#1E56E3] hover:bg-[#1848BF] text-white text-xs font-bold rounded-xl transition"
-                >
-                  Return to Dashboard
-                </button>
-              </div>
-            ) : (
-              <DeliveryConfirmView
-                user={user}
-                onConfirmed={() => setCurrentTab('shipments-list')}
-              />
-            )
-          )}
-
-
-
-          {/* VIEW 7: WALLET & PAYOUTS */}
-          {currentTab === 'wallet' && (
-            <WalletModal
-              key={`${user?._id || 'user'}_${isSupplier ? 'Supplier' : 'Receiver'}`}
-              user={user}
-              onUpdateUser={(updated) => setUser(updated)}
-            />
-          )}
-
-          {/* VIEW: REFER & EARN AMBASSADOR HUB */}
-          {currentTab === 'refer' && (
-            <ReferralView
-              user={user}
-              isSupplier={isSupplier}
-              onUpdateUser={(updated) => setUser(updated)}
-              onNavigateToWallet={() => setCurrentTab('wallet')}
-              onNavigateToCreateShipment={() => setCurrentTab('create-shipment')}
-            />
-          )}
-
-          {/* VIEW 8: NOTIFICATIONS CENTER */}
-          {currentTab === 'notifications' && (
-            <NotificationsView
-              onSelectShipment={(shipmentId) => setSelectedShipment({ shipmentId })}
-              onNotificationsChanged={refreshCounts}
-            />
-          )}
-
-          {/* VIEW 9: PROFILE & BANK PAYOUT DETAILS */}
-          {currentTab === 'profile' && (
-            <ProfileView
-              user={user}
-              currentRole={isSupplier ? 'Supplier' : 'Receiver'}
-              onSwitchRole={handleSwitchRole}
-              onUpdateUser={(updated) => setUser(updated)}
-              onSignOut={handleSignOut}
-            />
-          )}
-
-          {/* VIEW 10: HELP & SUPPORT CENTER */}
-          {currentTab === 'support' && (
-            <SupportView />
-          )}
-
-          {/* VIEW 11: MERCHANT LEGAL & COMPLIANCE CENTER (DPDP Act, Terms, Privacy, Refunds, Shipping) */}
-          {isLegalTab && (
-            <LegalComplianceView 
-              initialTab={currentTab === 'legal' ? 'contact' : currentTab}
-              onTabChange={(nextTab) => setCurrentTab(nextTab)}
-            />
-          )}
-
-          {/* VIEW 12: RETURN ORDERS & RETURN TRACKING (SUPPLIER & RECEIVER) */}
-          {/* VIEW 13: ADMIN TERMINAL (PERSISTENT SIDEBAR SHELL) */}
-          {currentTab === 'admin' && !isUserAdmin && (
-            <div className="min-h-[60vh] flex items-center justify-center p-4 text-center">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl text-white">
-                <div className="w-16 h-16 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto mb-4 border border-rose-500/20 text-2xl font-bold">
-                  🚫
-                </div>
-                <h2 className="text-xl font-bold mb-2">Access Denied</h2>
-                <p className="text-slate-400 text-sm mb-6">
-                  You do not have administrative credentials to access this area. This incident has been logged.
-                </p>
-                <button
-                  onClick={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold text-sm transition-all shadow-md"
-                >
-                  Return to Portal
-                </button>
-              </div>
-            </div>
-          )}
-
-          {currentTab === 'admin' && isUserAdmin && (
-            <AdminView
-              user={user}
-              onBackToApp={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')}
-            />
-          )}
-
-          {(currentTab === 'return-orders' || currentTab === 'return-tracking') && (
-            <ReturnOrdersView
-              user={user}
-              isSupplier={isSupplier}
-              onSelectShipment={(shipment) => setSelectedShipment(shipment)}
-            />
-          )}
+          {/* AI AGENT: Full-screen, no padding, no extra scroll. Kept mounted so tab switching never erases chat */}
+          <div className={currentTab === 'ai-agent' ? "flex-1 overflow-hidden min-h-0 h-full max-h-screen flex flex-col" : "hidden"}>
+            <AIAgentView key={user?._id || 'user'} onBack={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')} />
           </div>
-          </PullToRefresh>
-        </main>
-        )}
+
+          {currentTab !== 'ai-agent' && (
+            <main className="flex-1 pb-28 md:pb-12 overflow-y-auto overflow-x-hidden w-full min-w-0">
+              <PullToRefresh onRefresh={handlePullRefresh}>
+                {/* TOP AD BANNER (Shown for suppliers on portal views; scrolls cleanly with content) */}
+                {isSupplier && currentTab !== 'create-shipment' && currentTab !== 'delivery-confirm' && (
+                  <div className="px-4 md:px-8 pt-3 pb-1 max-w-7xl mx-auto w-full">
+                    <AdBanner onNavigateTrack={() => setCurrentTab('track')} />
+                  </div>
+                )}
+                <div key={`${currentTab}_${isSupplier ? 'Supplier' : 'Receiver'}`} className="view-enter min-h-full">
+                  {/* VIEW 1: DASHBOARD */}
+                  {currentTab === 'dashboard' && (
+                    <DashboardView
+                      currentRole={isSupplier ? 'Supplier' : 'Receiver'}
+                      user={user}
+                      onSelectShipment={(shipment) => setSelectedShipment(shipment)}
+                      openNewShipmentModal={() => setCurrentTab('create-shipment')}
+                      onNavigateRefer={() => setCurrentTab('refer')}
+                      onNavigateRateCalc={() => setCurrentTab('rate-calculator')}
+                      onNavigateTab={(tab) => setCurrentTab(tab)}
+                    />
+                  )}
+
+                  {/* VIEW: RATE CALCULATOR */}
+                  {currentTab === 'rate-calculator' && (
+                    <div className="max-w-5xl mx-auto px-4 py-4 sm:py-6">
+                      <RateCalculatorWidget
+                        onSelectCarrier={() => {
+                          if (isSupplier) setCurrentTab('create-shipment');
+                        }}
+                        onGetStarted={() => {
+                          if (isSupplier) setCurrentTab('create-shipment');
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* VIEW: ROI & TRANSPARENCY SAVINGS CALCULATOR */}
+                  {currentTab === 'roi-calculator' && (
+                    <ROISavingsCalculatorView
+                      onNavigateCreateShipment={() => setCurrentTab('create-shipment')}
+                    />
+                  )}
+
+                  {/* VIEW 2: ALL SHIPMENTS TABLE / MY ORDERS & PACKAGES */}
+                  {currentTab === 'shipments-list' && (
+                    <ShipmentsListView
+                      user={user}
+                      isSupplier={isSupplier}
+                      currentRole={isSupplier ? 'Supplier' : 'Receiver'}
+                      onSelectShipment={(shipment) => setSelectedShipment(shipment)}
+                      openNewShipmentModal={isSupplier ? () => setCurrentTab('create-shipment') : undefined}
+                      onRepeatShipment={(ship) => {
+                        setRepeatShipmentData({
+                          receiverName: ship?.receiverName || '',
+                          receiverPhone: ship?.receiverPhone || '',
+                          receiverAddress: ship?.receiverAddress || '',
+                          receiverPincode: ship?.receiverPincode || '',
+                          parcelWeight: ship?.parcelWeight ? String(ship?.parcelWeight) : '0.5',
+                          description: ship?.description || '',
+                          amount: ship?.amount ? String(ship?.amount) : '',
+                          cityRoute: ship?.city || '',
+                          returnAllowed: ship?.returnAllowed !== false,
+                          rtoProtectionEnabled: Boolean(ship?.rtoProtectionEnabled),
+                          repeatSourceId: ship?.shipmentId || ''
+                        });
+                        setIsCreateModalOpen(true);
+                      }}
+                    />
+                  )}
+
+                  {/* VIEW 3: CREATE SHIPMENT WIZARD + SHIPMENT SUCCESS CONFIRMATION (SUPPLIER ONLY) */}
+                  {currentTab === 'create-shipment' && (
+                    isSupplier ? (
+                      <CreateShipmentView
+                        user={user}
+                        onOpenProfile={() => setCurrentTab('profile')}
+                        onBack={() => setCurrentTab('dashboard')}
+                        onCreated={(newShipment) => setSelectedShipment(newShipment)}
+                        onUpdateUser={(updated) => setUser(prev => ({ ...prev, ...updated }))}
+                      />
+                    ) : (
+                      <div className="p-8 max-w-xl mx-auto text-center space-y-4 bg-white rounded-3xl border border-slate-200 shadow-sm mt-8">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto font-bold">
+                          ⚠️
+                        </div>
+                        <h2 className="text-lg font-black text-slate-900">Supplier Feature Only</h2>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                          Only verified merchants and suppliers can create protected parcel shipments. Receivers and buyers use SecureKaro to inspect parcels, verify courier delivery, and sign off on arrivals.
+                        </p>
+                        <button
+                          onClick={() => setCurrentTab('shipments-list')}
+                          className="px-5 py-2.5 rounded-xl bg-[#1E56E3] text-white text-xs font-bold shadow-md hover:bg-[#1649CC] transition"
+                        >
+                          Return to My Orders & Packages
+                        </button>
+                      </div>
+                    )
+                  )}
+
+                  {/* VIEW 4: TRACKING & TRACKING2 LIVE JOURNEY */}
+                  {currentTab === 'track' && (
+                    <TrackingView
+                      user={user}
+                      selectedShipment={selectedShipment || (publicTrackParams?.trackingId ? { shipmentId: publicTrackParams.trackingId } : null)}
+                      onSelectShipment={(shipment) => setSelectedShipment(shipment)}
+                    />
+                  )}
+
+                  {/* VIEW 5: DELIVERY CONFIRMATION SIGN-OFF (RECEIVER ONLY) */}
+                  {currentTab === 'delivery-confirm' && (
+                    isSupplier ? (
+                      <div className="p-8 max-w-2xl mx-auto text-center bg-white rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto font-bold">
+                          <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-base font-extrabold text-slate-900">Receiver Only Feature</h3>
+                        <p className="text-xs text-slate-500">Delivery Sign-Off is exclusively reserved for Receiver accounts to inspect parcel delivery and confirm safe arrival.</p>
+                        <button
+                          onClick={() => setCurrentTab('dashboard')}
+                          className="px-4 py-2 bg-[#1E56E3] hover:bg-[#1848BF] text-white text-xs font-bold rounded-xl transition"
+                        >
+                          Return to Dashboard
+                        </button>
+                      </div>
+                    ) : (
+                      <DeliveryConfirmView
+                        user={user}
+                        onConfirmed={() => setCurrentTab('shipments-list')}
+                      />
+                    )
+                  )}
+
+
+
+                  {/* VIEW 7: WALLET & PAYOUTS */}
+                  {currentTab === 'wallet' && (
+                    <WalletModal
+                      key={`${user?._id || 'user'}_${isSupplier ? 'Supplier' : 'Receiver'}`}
+                      user={user}
+                      onUpdateUser={(updated) => setUser(updated)}
+                    />
+                  )}
+
+                  {/* VIEW: REFER & EARN AMBASSADOR HUB */}
+                  {currentTab === 'refer' && (
+                    <ReferralView
+                      user={user}
+                      isSupplier={isSupplier}
+                      onUpdateUser={(updated) => setUser(updated)}
+                      onNavigateToWallet={() => setCurrentTab('wallet')}
+                      onNavigateToCreateShipment={() => setCurrentTab('create-shipment')}
+                    />
+                  )}
+
+                  {/* VIEW 8: NOTIFICATIONS CENTER */}
+                  {currentTab === 'notifications' && (
+                    <NotificationsView
+                      onSelectShipment={(shipmentId) => setSelectedShipment({ shipmentId })}
+                      onNotificationsChanged={refreshCounts}
+                    />
+                  )}
+
+                  {/* VIEW 9: PROFILE & BANK PAYOUT DETAILS */}
+                  {currentTab === 'profile' && (
+                    <ProfileView
+                      user={user}
+                      currentRole={isSupplier ? 'Supplier' : 'Receiver'}
+                      onSwitchRole={handleSwitchRole}
+                      onUpdateUser={(updated) => setUser(updated)}
+                      onSignOut={handleSignOut}
+                    />
+                  )}
+
+                  {/* VIEW 10: HELP & SUPPORT CENTER */}
+                  {currentTab === 'support' && (
+                    <SupportView />
+                  )}
+
+                  {/* VIEW 11: MERCHANT LEGAL & COMPLIANCE CENTER (DPDP Act, Terms, Privacy, Refunds, Shipping) */}
+                  {isLegalTab && (
+                    <LegalComplianceView
+                      initialTab={currentTab === 'legal' ? 'contact' : currentTab}
+                      onTabChange={(nextTab) => setCurrentTab(nextTab)}
+                    />
+                  )}
+
+                  {/* VIEW 12: RETURN ORDERS & RETURN TRACKING (SUPPLIER & RECEIVER) */}
+                  {/* VIEW 13: ADMIN TERMINAL (PERSISTENT SIDEBAR SHELL) */}
+                  {currentTab === 'admin' && !isUserAdmin && (
+                    <div className="min-h-[60vh] flex items-center justify-center p-4 text-center">
+                      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl text-white">
+                        <div className="w-16 h-16 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto mb-4 border border-rose-500/20 text-2xl font-bold">
+                          🚫
+                        </div>
+                        <h2 className="text-xl font-bold mb-2">Access Denied</h2>
+                        <p className="text-slate-400 text-sm mb-6">
+                          You do not have administrative credentials to access this area. This incident has been logged.
+                        </p>
+                        <button
+                          onClick={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')}
+                          className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold text-sm transition-all shadow-md"
+                        >
+                          Return to Portal
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {currentTab === 'admin' && isUserAdmin && (
+                    <AdminView
+                      user={user}
+                      onBackToApp={() => setCurrentTab(isSupplier ? 'dashboard' : 'shipments-list')}
+                    />
+                  )}
+
+                  {(currentTab === 'return-orders' || currentTab === 'return-tracking') && (
+                    <ReturnOrdersView
+                      user={user}
+                      isSupplier={isSupplier}
+                      onSelectShipment={(shipment) => setSelectedShipment(shipment)}
+                    />
+                  )}
+                </div>
+              </PullToRefresh>
+            </main>
+          )}
         </Suspense>
       </div>
 
@@ -1224,13 +1223,12 @@ export default function App() {
       {roleNotification && (
         <div className="fixed top-16 right-4 sm:right-6 z-50 max-w-[320px] w-full animate-in fade-in slide-in-from-top-2 zoom-in-95 duration-200 pointer-events-auto">
           <div className="bg-white/95 backdrop-blur-xl text-slate-800 p-3 rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200/90 flex items-center gap-2.5">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${
-              roleNotification.role === 'Supplier' 
-                ? 'bg-blue-50 text-blue-600 border-blue-200/80' 
-                : roleNotification.role === 'PRO'
-                  ? 'bg-amber-50 text-amber-600 border-amber-200/80'
-                  : 'bg-emerald-50 text-emerald-600 border-emerald-200/80'
-            }`}>
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${roleNotification.role === 'Supplier'
+              ? 'bg-blue-50 text-blue-600 border-blue-200/80'
+              : roleNotification.role === 'PRO'
+                ? 'bg-amber-50 text-amber-600 border-amber-200/80'
+                : 'bg-emerald-50 text-emerald-600 border-emerald-200/80'
+              }`}>
               {roleNotification.role === 'Supplier' ? (
                 <Truck className="w-4 h-4" />
               ) : roleNotification.role === 'PRO' ? (
@@ -1245,20 +1243,18 @@ export default function App() {
                 <h4 className="text-xs font-black text-slate-900 truncate">
                   {roleNotification.title}
                 </h4>
-                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 border shrink-0 ${
-                  roleNotification.role === 'Supplier'
-                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 border shrink-0 ${roleNotification.role === 'Supplier'
+                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                  : roleNotification.role === 'PRO'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${roleNotification.role === 'Supplier'
+                    ? 'bg-blue-600 animate-pulse'
                     : roleNotification.role === 'PRO'
-                      ? 'bg-amber-50 text-amber-700 border-amber-200'
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${
-                    roleNotification.role === 'Supplier'
-                      ? 'bg-blue-600 animate-pulse'
-                      : roleNotification.role === 'PRO'
-                        ? 'bg-amber-500 animate-pulse'
-                        : 'bg-emerald-500 animate-pulse'
-                  }`}></span>
+                      ? 'bg-amber-500 animate-pulse'
+                      : 'bg-emerald-500 animate-pulse'
+                    }`}></span>
                   Active
                 </span>
               </div>

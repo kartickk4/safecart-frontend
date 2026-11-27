@@ -1294,72 +1294,109 @@ export default function WalletModal({ user, onUpdateUser }) {
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {filteredWalletTransactions.map((tx) => (
-                  <div key={tx._id} className="py-3.5 sm:py-4 flex items-start sm:items-center justify-between gap-3 hover:bg-slate-50/80 px-2 sm:px-3 rounded-2xl transition border-b border-slate-100/70 last:border-b-0">
-                    <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
-                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 font-bold ${
-                        tx.type === 'credit'
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                          : 'bg-rose-50 text-rose-600 border border-rose-100'
-                      }`}>
-                        {tx.type === 'credit' ? (
-                          <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                        ) : (
-                          <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                {filteredWalletTransactions.map((tx) => {
+                  const desc = tx.description || '';
+                  const isCredit = tx.type === 'credit';
+                  
+                  // Extract shipment ID if present
+                  const shipmentMatch = desc.match(/(SPL-[A-Z0-9]+-[A-Z0-9]+)/i);
+                  const shipmentId = shipmentMatch ? shipmentMatch[1] : null;
+
+                  // Extract fee breakdown if present, e.g. "(Delivery: ₹44.94 + COD Handling: ₹40)"
+                  const breakdownMatch = desc.match(/\((.*?)\)/);
+                  const breakdown = breakdownMatch ? breakdownMatch[1] : null;
+
+                  let title = isCredit ? 'Wallet Credit' : 'Wallet Debit';
+                  const lowerDesc = desc.toLowerCase();
+                  const lowerSource = (tx.source || '').toLowerCase();
+
+                  if (lowerDesc.includes('cod upfront') || lowerSource.includes('cod_fee')) {
+                    title = 'COD Booking Fee';
+                  } else if (lowerDesc.includes('refund') || lowerSource.includes('refund')) {
+                    title = 'Cancellation Refund';
+                  } else if (lowerDesc.includes('prepaid courier') || lowerDesc.includes('courier freight') || lowerSource.includes('freight')) {
+                    title = 'Courier Delivery Fee';
+                  } else if (lowerDesc.includes('cashback') || lowerSource.includes('cashback')) {
+                    title = 'Booking Cashback';
+                  } else if (lowerDesc.includes('recharge') || lowerDesc.includes('top-up') || lowerSource.includes('recharge')) {
+                    title = 'Wallet Top-up';
+                  } else if (lowerDesc.includes('withdraw') || lowerSource.includes('withdraw')) {
+                    title = 'Bank Withdrawal';
+                  } else if (desc) {
+                    title = desc.replace(/\(.*?\)/g, '').replace(/for shipment\s+SPL-[A-Z0-9-]+/i, '').replace(/courier & upfront charges/i, '').trim() || (isCredit ? 'Credit' : 'Debit');
+                  }
+
+                  const txDate = new Date(tx.createdAt);
+                  const formattedDate = txDate.toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                  });
+                  const formattedTime = txDate.toLocaleTimeString('en-IN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                  });
+
+                  return (
+                    <div key={tx._id} className="py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 px-2 sm:px-3 rounded-xl transition border-b border-slate-100/80 last:border-b-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                          isCredit
+                            ? 'bg-emerald-50 text-emerald-600'
+                            : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          {isCredit ? (
+                            <ArrowDownLeft className="w-4 h-4" />
+                          ) : (
+                            <ArrowUpRight className="w-4 h-4" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-slate-800 text-xs sm:text-sm leading-tight">
+                              {title}
+                            </span>
+                            {shipmentId && (
+                              <span className="font-mono text-[11px] text-slate-500 bg-slate-100/90 px-1.5 py-0.5 rounded font-medium">
+                                {shipmentId}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-slate-400 mt-0.5 flex-wrap">
+                            <span>{formattedDate}, {formattedTime}</span>
+                            {tx.gatewayPaymentId && (
+                              <span className="text-slate-400">
+                                • Ref: <span className="font-mono text-slate-500">{tx.gatewayPaymentId.slice(-8)}</span>
+                              </span>
+                            )}
+                            <span className="text-slate-500 font-medium">
+                              • Bal: ₹{Number(tx.balanceAfter || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                            {breakdown && (
+                              <span className="text-slate-400 hidden lg:inline">
+                                • {breakdown}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0 pl-2">
+                        <span className={`font-semibold text-xs sm:text-sm md:text-base block whitespace-nowrap ${
+                          isCredit ? 'text-emerald-600' : 'text-slate-800'
+                        }`}>
+                          {isCredit ? '+' : '-'}₹{Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                        {tx.status && tx.status.toLowerCase() !== 'success' && (
+                          <span className="inline-block text-[9px] font-bold uppercase text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded mt-0.5">
+                            {tx.status}
+                          </span>
                         )}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-extrabold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2">
-                            {tx.description || (tx.type === 'credit' ? 'Wallet Top-up' : 'Courier Deduction')}
-                          </span>
-                          <span className={`px-1.5 py-0.2 rounded-md text-[9px] sm:text-[10px] font-extrabold uppercase shrink-0 ${
-                            tx.source === 'recharge'
-                              ? 'bg-blue-100 text-blue-800'
-                              : tx.source === 'freight_deduction'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-slate-100 text-slate-700'
-                          }`}>
-                            {tx.source?.replace('_', ' ') || tx.type}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-x-2 gap-y-0.5 text-[10px] sm:text-[11px] text-slate-400 mt-1 flex-wrap">
-                          <span className="whitespace-nowrap font-medium text-slate-500">
-                            {new Date(tx.createdAt).toLocaleDateString('en-IN', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric'
-                            })}, {new Date(tx.createdAt).toLocaleTimeString('en-IN', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: true
-                            })}
-                          </span>
-                          {tx.gatewayPaymentId && (
-                            <span className="whitespace-nowrap">
-                              • Ref: <span className="font-mono text-slate-600">{tx.gatewayPaymentId.slice(-8)}</span>
-                            </span>
-                          )}
-                          <span className="whitespace-nowrap text-slate-600 font-semibold font-sans">
-                            • Bal: ₹{Number(tx.balanceAfter || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
-                        </div>
-                      </div>
                     </div>
-
-                    <div className="text-right shrink-0 pl-2">
-                      <span className={`font-mono font-black text-xs sm:text-sm md:text-base block whitespace-nowrap ${
-                        tx.type === 'credit' ? 'text-emerald-600' : 'text-rose-600'
-                      }`}>
-                        {tx.type === 'credit' ? '+' : '-'}₹{Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold tracking-wider uppercase text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap">
-                        <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                        <span>{tx.status || 'Success'}</span>
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1430,60 +1467,68 @@ export default function WalletModal({ user, onUpdateUser }) {
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {filteredHistory.map((item) => (
-                  <div key={item._id} className="py-3.5 sm:py-4 flex items-start sm:items-center justify-between gap-3 hover:bg-slate-50/80 px-2 sm:px-3 rounded-2xl transition border-b border-slate-100/70 last:border-b-0">
-                    <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
-                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 font-bold ${
-                        item.type === 'CASHBACK_EARNED' 
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-                          : 'bg-blue-50 text-blue-600 border border-blue-100'
-                      }`}>
-                        {item.type === 'CASHBACK_EARNED' ? (
-                          <ArrowDownLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                        ) : (
-                          <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                {filteredHistory.map((item) => {
+                  const isCashback = item.type === 'CASHBACK_EARNED';
+                  const itemDate = new Date(item.createdAt);
+                  const formattedDate = itemDate.toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                  });
+                  const formattedTime = itemDate.toLocaleTimeString('en-IN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                  });
+
+                  return (
+                    <div key={item._id} className="py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 px-2 sm:px-3 rounded-xl transition border-b border-slate-100/80 last:border-b-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                          isCashback 
+                            ? 'bg-emerald-50 text-emerald-600' 
+                            : 'bg-blue-50 text-blue-600'
+                        }`}>
+                          {isCashback ? (
+                            <ArrowDownLeft className="w-4 h-4" />
+                          ) : (
+                            <ArrowUpRight className="w-4 h-4" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-slate-800 text-xs sm:text-sm leading-tight">
+                              {item.description || (isCashback ? 'Cashback Reward' : 'Payout Transfer')}
+                            </span>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0 ${
+                              isCashback 
+                                ? 'bg-emerald-50 text-emerald-700' 
+                                : 'bg-blue-50 text-blue-700'
+                            }`}>
+                              {isCashback ? 'Credited' : `Disbursed (${item.payoutMethod || 'UPI'})`}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 mt-0.5">
+                            <span>{formattedDate}, {formattedTime}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0 pl-2">
+                        <span className={`font-semibold text-xs sm:text-sm md:text-base block whitespace-nowrap ${
+                          isCashback ? 'text-emerald-600' : 'text-slate-800'
+                        }`}>
+                          {isCashback ? '+' : '-'}₹{Number(item.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                        {item.status && item.status.toLowerCase() !== 'success' && (
+                          <span className="inline-block text-[9px] font-bold uppercase text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded mt-0.5">
+                            {item.status}
+                          </span>
                         )}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-extrabold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2">{item.description}</span>
-                          <span className={`px-1.5 py-0.2 rounded-md text-[9px] sm:text-[10px] font-extrabold shrink-0 ${
-                            item.type === 'CASHBACK_EARNED' 
-                              ? 'bg-emerald-100 text-emerald-800' 
-                              : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {item.type === 'CASHBACK_EARNED' ? 'Credited' : `Disbursed (${item.payoutMethod || 'UPI'})`}
-                          </span>
-                        </div>
-                        <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1">
-                          <span className="whitespace-nowrap font-medium text-slate-500">
-                            {new Date(item.createdAt).toLocaleDateString('en-IN', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric'
-                            })}, {new Date(item.createdAt).toLocaleTimeString('en-IN', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: true
-                            })}
-                          </span>
-                        </div>
-                      </div>
                     </div>
-
-                    <div className="text-right shrink-0 pl-2">
-                      <span className={`font-mono font-black text-xs sm:text-sm md:text-base block whitespace-nowrap ${
-                        item.type === 'CASHBACK_EARNED' ? 'text-emerald-600' : 'text-slate-900'
-                      }`}>
-                        {item.type === 'CASHBACK_EARNED' ? '+' : '-'}₹{Number(item.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-extrabold tracking-wider uppercase text-emerald-600 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-md mt-0.5 whitespace-nowrap">
-                        <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                        <span>{item.status}</span>
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
