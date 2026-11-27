@@ -410,7 +410,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
 
       const res = await shipmentAPI.createShipment(payload);
       try {
-        addShipmentToCache(res.data, user?._id || user?.id, true);
+        const uScope = user?._id || user?.id || user?.email || (typeof localStorage !== 'undefined' ? (JSON.parse(localStorage.getItem('securekaro_user') || '{}')._id || JSON.parse(localStorage.getItem('securekaro_user') || '{}').email) : 'anon');
+        addShipmentToCache(res.data, uScope, true);
+        window.dispatchEvent(new CustomEvent('securekaro_shipments_updated', {
+          detail: { newShipment: res.data }
+        }));
+        window.dispatchEvent(new Event('securekaro_refresh_shipments'));
       } catch (_) {}
       if (onUpdateUser && res.data?.walletBalanceRemaining !== undefined) {
         onUpdateUser({ ...user, walletBalance: Number(res.data.walletBalanceRemaining) });
@@ -458,7 +463,14 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     <div className="fixed inset-0 z-[120] bg-slate-900/80 backdrop-blur-md flex items-center justify-center sm:p-4 overflow-hidden animate-in fade-in duration-200">
       <div className={`bg-white rounded-3xl ${modalStep === 2 ? 'w-full sm:w-[96vw] max-w-7xl h-[100dvh] sm:h-auto sm:max-h-[94vh] rounded-none sm:rounded-3xl' : 'w-full max-w-xl max-h-[94vh] rounded-3xl'} p-4 sm:p-6 shadow-2xl relative border border-slate-100 flex flex-col overflow-hidden transition-all duration-200 animate-in zoom-in-95`}>
         <button
-          onClick={onClose}
+          onClick={() => {
+            if (modalStep === 3) {
+              try {
+                window.dispatchEvent(new Event('securekaro_refresh_shipments'));
+              } catch (_) {}
+            }
+            onClose();
+          }}
           className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition z-10"
         >
           <X className="w-5 h-5" />
@@ -1824,6 +1836,9 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               <button
                 type="button"
                 onClick={() => {
+                  try {
+                    window.dispatchEvent(new Event('securekaro_refresh_shipments'));
+                  } catch (_) {}
                   if (onCreated) onCreated(createdData);
                 }}
                 className="px-4 py-2.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-xs font-bold text-[#1E56E3] transition inline-flex items-center gap-1.5 cursor-pointer"
@@ -1834,7 +1849,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
 
               <button
                 type="button"
-                onClick={onClose}
+                onClick={() => {
+                  try {
+                    window.dispatchEvent(new Event('securekaro_refresh_shipments'));
+                  } catch (_) {}
+                  onClose();
+                }}
                 className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-600 transition cursor-pointer"
               >
                 Done

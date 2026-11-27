@@ -89,18 +89,27 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
       const newShipment = e.detail?.newShipment;
       if (newShipment && newShipment.shipmentId) {
         setShipments(prev => {
-          const filtered = prev.filter(s => s.shipmentId !== newShipment.shipmentId);
-          return [newShipment, ...filtered];
+          const filtered = prev.filter(s => s && s.shipmentId !== newShipment.shipmentId);
+          const updated = [newShipment, ...filtered];
+          try {
+            sessionStorage.setItem(cacheKey, JSON.stringify(updated));
+            localStorage.setItem(cacheKey, JSON.stringify(updated));
+          } catch (_) {}
+          return updated;
         });
+        setCurrentPage(1);
+        setActiveTab('All');
+        // Silently sync full data from server with cache bypass
+        fetchShipments(true, true);
       }
     };
 
     const handleRefreshEvent = () => {
-      fetchShipments(false);
+      fetchShipments(false, true);
     };
 
     const handleFocus = () => {
-      fetchShipments(true);
+      fetchShipments(true, false);
     };
 
     window.addEventListener('securekaro_shipments_updated', handleShipmentUpdated);
@@ -114,7 +123,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
     };
   }, [cacheKey, isMerchant]);
 
-  const fetchShipments = async (silent = false) => {
+  const fetchShipments = async (silent = false, bypassCache = false) => {
     const hasCache = localStorage.getItem(cacheKey) || sessionStorage.getItem(cacheKey);
     if (!hasCache && !silent) {
       setLoading(true);
@@ -123,7 +132,7 @@ export default function ShipmentsListView({ onSelectShipment, openNewShipmentMod
     }
     try {
       const role = isMerchant ? 'Supplier' : 'Receiver';
-      const res = await shipmentAPI.getShipments(role);
+      const res = await shipmentAPI.getShipments(role, bypassCache ? { noCache: true } : {});
       if (Array.isArray(res.data)) {
         const cleanList = res.data.filter(s => !isDummyShipment(s));
         setShipments(cleanList);

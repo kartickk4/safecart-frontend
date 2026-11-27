@@ -628,7 +628,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
       // Instantly inject new shipment into client cache so All Shipments is up-to-date immediately
       try {
-        addShipmentToCache(res.data, user?._id || user?.id, true);
+        const uScope = user?._id || user?.id || user?.email || (typeof localStorage !== 'undefined' ? (JSON.parse(localStorage.getItem('securekaro_user') || '{}')._id || JSON.parse(localStorage.getItem('securekaro_user') || '{}').email) : 'anon');
+        addShipmentToCache(res.data, uScope, true);
+        window.dispatchEvent(new CustomEvent('securekaro_shipments_updated', {
+          detail: { newShipment: res.data }
+        }));
+        window.dispatchEvent(new Event('securekaro_refresh_shipments'));
       } catch (_) {}
 
       setCreatedData(res.data);

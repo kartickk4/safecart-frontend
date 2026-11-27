@@ -251,11 +251,11 @@ export const profileAPI = {
 };
 
 export const shipmentAPI = {
-  getShipments: (roleOrParams) => {
+  getShipments: (roleOrParams, options = {}) => {
     if (typeof roleOrParams === 'object' && roleOrParams !== null) {
-      return api.get('/shipments', { params: roleOrParams });
+      return api.get('/shipments', { params: roleOrParams, ...options });
     }
-    return api.get('/shipments', { params: roleOrParams ? { role: roleOrParams } : {} });
+    return api.get('/shipments', { params: roleOrParams ? { role: roleOrParams } : {}, ...options });
   },
   getShipmentById: (id) => api.get(`/shipments/${id}`),
   getTrackingByAwb: (awb) => api.get(`/tracking/${awb}`),

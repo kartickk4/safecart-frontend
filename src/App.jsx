@@ -1162,10 +1162,19 @@ export default function App() {
             onClose={() => {
               setIsCreateModalOpen(false);
               setRepeatShipmentData(null);
+              try {
+                window.dispatchEvent(new Event('securekaro_refresh_shipments'));
+              } catch (_) {}
             }}
             onCreated={(newShipment) => {
               setRepeatShipmentData(null);
               setIsCreateModalOpen(false);
+              try {
+                window.dispatchEvent(new Event('securekaro_refresh_shipments'));
+              } catch (_) {}
+              if (newShipment) {
+                setSelectedShipment(newShipment);
+              }
               if (newShipment) {
                 setSelectedShipment(newShipment);
               }
@@ -1177,7 +1186,12 @@ export default function App() {
           <ShipmentDetailsModal
             shipment={selectedShipment}
             isOpen={Boolean(selectedShipment)}
-            onClose={() => setSelectedShipment(null)}
+            onClose={() => {
+              setSelectedShipment(null);
+              try {
+                window.dispatchEvent(new Event('securekaro_refresh_shipments'));
+              } catch (_) {}
+            }}
             onRefresh={() => {
               window.dispatchEvent(new Event('securekaro_refresh_shipments'));
               window.dispatchEvent(new Event('securekaro_refresh_dashboard'));
