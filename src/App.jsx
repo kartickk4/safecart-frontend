@@ -1175,9 +1175,6 @@ export default function App() {
               if (newShipment) {
                 setSelectedShipment(newShipment);
               }
-              if (newShipment) {
-                setSelectedShipment(newShipment);
-              }
             }}
           />
         )}
