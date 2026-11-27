@@ -1341,10 +1341,10 @@ export default function WalletModal({ user, onUpdateUser }) {
                   return (
                     <div key={tx._id} className="py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 px-2 sm:px-3 rounded-xl transition border-b border-slate-100/80 last:border-b-0">
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 border ${
                           isCredit
-                            ? 'bg-emerald-50 text-emerald-600'
-                            : 'bg-slate-100 text-slate-500'
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100/80'
+                            : 'bg-rose-50 text-rose-600 border-rose-100/80'
                         }`}>
                           {isCredit ? (
                             <ArrowDownLeft className="w-4 h-4" />
@@ -1358,7 +1358,7 @@ export default function WalletModal({ user, onUpdateUser }) {
                               {title}
                             </span>
                             {shipmentId && (
-                              <span className="font-mono text-[11px] text-slate-500 bg-slate-100/90 px-1.5 py-0.5 rounded font-medium">
+                              <span className="font-mono text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200/90 px-2 py-0.5 rounded-md shadow-2xs">
                                 {shipmentId}
                               </span>
                             )}
@@ -1383,8 +1383,8 @@ export default function WalletModal({ user, onUpdateUser }) {
                       </div>
 
                       <div className="text-right shrink-0 pl-2">
-                        <span className={`font-semibold text-xs sm:text-sm md:text-base block whitespace-nowrap ${
-                          isCredit ? 'text-emerald-600' : 'text-slate-800'
+                        <span className={`font-bold font-mono text-xs sm:text-sm md:text-base block whitespace-nowrap ${
+                          isCredit ? 'text-emerald-600' : 'text-rose-600'
                         }`}>
                           {isCredit ? '+' : '-'}₹{Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
@@ -1484,10 +1484,10 @@ export default function WalletModal({ user, onUpdateUser }) {
                   return (
                     <div key={item._id} className="py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 px-2 sm:px-3 rounded-xl transition border-b border-slate-100/80 last:border-b-0">
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 border ${
                           isCashback 
-                            ? 'bg-emerald-50 text-emerald-600' 
-                            : 'bg-blue-50 text-blue-600'
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100/80' 
+                            : 'bg-rose-50 text-rose-600 border-rose-100/80'
                         }`}>
                           {isCashback ? (
                             <ArrowDownLeft className="w-4 h-4" />
@@ -1515,8 +1515,8 @@ export default function WalletModal({ user, onUpdateUser }) {
                       </div>
 
                       <div className="text-right shrink-0 pl-2">
-                        <span className={`font-semibold text-xs sm:text-sm md:text-base block whitespace-nowrap ${
-                          isCashback ? 'text-emerald-600' : 'text-slate-800'
+                        <span className={`font-bold font-mono text-xs sm:text-sm md:text-base block whitespace-nowrap ${
+                          isCashback ? 'text-emerald-600' : 'text-rose-600'
                         }`}>
                           {isCashback ? '+' : '-'}₹{Number(item.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
