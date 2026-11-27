@@ -1210,16 +1210,6 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                     </span>
                   </div>
 
-                  {currentShipment.pickupError && (
-                    <div className="p-3 rounded-xl bg-white/90 border border-amber-300 text-amber-950 text-xs flex items-start gap-2 shadow-2xs">
-                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-bold text-[11px] uppercase tracking-wide text-amber-800">Carrier Dispatch Requirement</p>
-                        <p className="mt-0.5 text-slate-700 leading-relaxed font-medium">{currentShipment.pickupError}</p>
-                      </div>
-                    </div>
-                  )}
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     <div className="bg-white/95 p-2.5 rounded-xl border border-slate-100 shadow-2xs">
                       <span className="text-[10px] text-slate-400 font-bold block uppercase">Carrier (Lowest Route Charge)</span>
