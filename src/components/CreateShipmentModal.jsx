@@ -1775,7 +1775,9 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 Booking Confirmed
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Courier pickup has been scheduled and your tracking waybill is active.
+                {(createdData.pickupStatus === 'Scheduled' || createdData.pickupStatus === 'Pickup Scheduled')
+                  ? 'Courier pickup has been scheduled and your tracking waybill is active.'
+                  : 'Order manifested and AWB waybill is active. Courier pickup is pending confirmation.'}
               </p>
             </div>
 
@@ -1811,11 +1813,18 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 <span className="text-sm font-bold text-slate-900">₹{Number(createdData.amount || 0).toLocaleString('en-IN')}</span>
               </div>
 
-              {createdData.pickupSlot && (
+              {(createdData.pickupStatus === 'Scheduled' || createdData.pickupStatus === 'Pickup Scheduled') && createdData.pickupSlot ? (
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-400 font-medium">Pickup Slot</span>
                   <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
                     {createdData.pickupSlot}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 font-medium">Pickup Status</span>
+                  <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Ready to Ship (Pending Courier Pickup)
                   </span>
                 </div>
               )}

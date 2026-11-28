@@ -1237,7 +1237,9 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
 
                     <div className="bg-white/95 p-2.5 rounded-xl border border-slate-100 shadow-2xs">
                       <span className="text-[10px] text-slate-400 font-bold block uppercase">Pickup Slot</span>
-                      <span className="font-extrabold text-slate-900 leading-tight block">{currentShipment.pickupSlot}</span>
+                      <span className={`font-extrabold leading-tight block ${isConfirmed && currentShipment.pickupSlot ? 'text-slate-900' : 'text-amber-700'}`}>
+                        {isConfirmed && currentShipment.pickupSlot ? currentShipment.pickupSlot : 'Pending courier pickup confirmation'}
+                      </span>
                     </div>
 
                     <div className="bg-white/95 p-2.5 rounded-xl border border-slate-100 shadow-2xs">

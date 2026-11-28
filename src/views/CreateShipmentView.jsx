@@ -3067,9 +3067,19 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
                 </div>
                 <div>
                   <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5 flex-wrap">
-                    <span>Courier Pickup Auto-Scheduled</span>
-                    <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
-                      Confirmed
+                    <span>
+                      {(createdData.pickupStatus === 'Scheduled' || createdData.pickupStatus === 'Pickup Scheduled')
+                        ? 'Courier Pickup Auto-Scheduled'
+                        : 'Manifest Generated (Ready to Ship)'}
+                    </span>
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                      (createdData.pickupStatus === 'Scheduled' || createdData.pickupStatus === 'Pickup Scheduled')
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-amber-100 text-amber-800 border-amber-300'
+                    }`}>
+                      {(createdData.pickupStatus === 'Scheduled' || createdData.pickupStatus === 'Pickup Scheduled')
+                        ? 'Confirmed'
+                        : 'Pickup Pending'}
                     </span>
                   </h3>
                   <p className="text-[11px] text-slate-500 font-medium">{assignedCarrierName} auto-booked</p>
@@ -3079,7 +3089,11 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
               <div className="p-3 bg-white rounded-2xl border border-emerald-100 shadow-2xs space-y-1.5 text-xs">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Pickup Slot:</span>
-                  <span className="font-bold text-slate-900">{createdData.pickupSlot || 'Next Scheduled Pickup Window'}</span>
+                  <span className="font-bold text-slate-900">
+                    {(createdData.pickupStatus === 'Scheduled' || createdData.pickupStatus === 'Pickup Scheduled') && createdData.pickupSlot
+                      ? createdData.pickupSlot
+                      : 'Pending courier pickup confirmation'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">AWB Code:</span>
