@@ -106,9 +106,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   const [carrierTab, setCarrierTab] = useState('all'); // 'all' | 'cheapest' | 'nimbuspost' | 'shiprocket' | 'surface' | 'air' | 'heavy'
   const [carrierSearch, setCarrierSearch] = useState('');
   const [carrierSort, setCarrierSort] = useState('price'); // 'price' | 'rating'
-  const [rateViewMode, setRateViewMode] = useState(() =>
-    typeof window !== 'undefined' && window.innerWidth >= 768 ? 'table' : 'grid'
-  ); // 'table' (row) on tablets/laptops, 'grid' (cards) on small phones
+  const [rateViewMode, setRateViewMode] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      return 'table';
+    }
+    return 'grid';
+  }); // 'table' on tablet/laptop, 'grid' on mobile phones
   const [onlyCloseToWeight, setOnlyCloseToWeight] = useState(true);
 
   // Summary counts and stats
@@ -1425,9 +1428,9 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 </button>
               </div>
             ) : rateViewMode === 'table' ? (
-              /* Enterprise Organized Table View */
+              /* Enterprise Organized Row / Table View */
               <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-2xs">
-                <div className="overflow-x-auto max-h-[64vh] scrollbar-thin">
+                <div className="overflow-x-auto scrollbar-thin">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-slate-50/90 text-[10.5px] font-bold text-slate-500 uppercase tracking-wider sticky top-0 border-b border-slate-200 z-10 backdrop-blur-xs">
                       <tr>

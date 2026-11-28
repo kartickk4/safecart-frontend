@@ -104,7 +104,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
   const [carrierTab, setCarrierTab] = useState('all'); // 'all' | 'cheapest' | 'nimbuspost' | 'shiprocket' | 'surface' | 'air' | 'heavy'
   const [carrierSearch, setCarrierSearch] = useState('');
   const [carrierSort, setCarrierSort] = useState('price'); // 'price' | 'rating'
-  const [rateViewMode, setRateViewMode] = useState('grid'); // 'grid' | 'table'
+  const [rateViewMode, setRateViewMode] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      return 'table';
+    }
+    return 'grid';
+  }); // 'table' on tablet/laptop, 'grid' on mobile phones
   const [onlyCloseToWeight, setOnlyCloseToWeight] = useState(true);
 
   // Summary counts and stats
