@@ -32,6 +32,9 @@ export default function PaymentCheckoutModal({
   walletBalance = 0,
   breakdown = null,
   courierName = 'Courier Partner',
+  paymentMode = 'prepaid',
+  isDeductFromSettlement = false,
+  parcelWeight = 0.5,
   onPaymentSuccess,
   onUpdateUser,
   user
@@ -43,8 +46,8 @@ export default function PaymentCheckoutModal({
   const hasSufficientWallet = currentWallet >= payableAmount && payableAmount > 0;
   const shortfall = Math.max(0, parseFloat((payableAmount - currentWallet).toFixed(2)));
 
-  const [selectedMethod, setSelectedMethod] = useState(hasSufficientWallet ? 'WALLET' : 'UPI');
-  const [showReview, setShowReview] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState(isDeductFromSettlement || hasSufficientWallet ? 'WALLET' : 'UPI');
+  const [showReview, setShowReview] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [processingNote, setProcessingNote] = useState('');
@@ -59,6 +62,28 @@ export default function PaymentCheckoutModal({
 
   const handlePay = async () => {
     setError('');
+
+    // Case 0: COD Deduct from Settlement (₹0 upfront)
+    if (isDeductFromSettlement) {
+      setLoading(true);
+      setProcessingNote('Booking shipment (shipping fees deducted from COD settlement)...');
+      try {
+        if (onPaymentSuccess) {
+          await onPaymentSuccess({
+            paidVia: 'DEDUCT_FROM_COD',
+            amount: 0,
+            paidUpfront: false
+          });
+        }
+        onClose();
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Failed to book shipment.');
+      } finally {
+        setLoading(false);
+        setProcessingNote('');
+      }
+      return;
+    }
 
     // Case 1: Pay using sufficient Seller Wallet balance directly
     if (selectedMethod === 'WALLET') {
@@ -165,7 +190,9 @@ export default function PaymentCheckoutModal({
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white flex-1">
-            Make Payment
+            {isDeductFromSettlement || (paymentMode === 'prepaid' && hasSufficientWallet)
+              ? 'Review Charges & Book'
+              : 'Make Payment'}
           </h1>
         </div>
 
@@ -180,24 +207,27 @@ export default function PaymentCheckoutModal({
                   <span className="text-slate-400 font-normal">➔</span>
                   <span>{formatRouteLabel(routeTo)}</span>
                 </div>
+                <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">
+                  {paymentMode === 'cod' ? 'Cash on Delivery (COD)' : 'Prepaid'} • {parcelWeight || 0.5} kg
+                </span>
               </div>
 
               <div className="text-right shrink-0">
                 <div className="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight">
-                  Pay ₹ {payableAmount.toFixed(2)}
+                  {isDeductFromSettlement ? 'Pay ₹ 0.00' : `Pay ₹ ${payableAmount.toFixed(2)}`}
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowReview(!showReview)}
                   className="text-xs font-bold text-slate-500 hover:text-slate-800 inline-flex items-center gap-1 mt-0.5 cursor-pointer"
                 >
-                  <span>Review</span>
+                  <span>{showReview ? 'Hide Details' : 'Review'}</span>
                   {showReview ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
 
-            {/* Collapsible Review Breakdown */}
+            {/* Summary of Charges Breakdown */}
             {showReview && (
               <div className="pt-3 border-t border-slate-100 text-xs space-y-1.5 animate-in fade-in duration-150 text-slate-600 font-medium">
                 <div className="flex justify-between">
@@ -216,14 +246,16 @@ export default function PaymentCheckoutModal({
                     <span className="font-mono text-slate-800">₹{Number(breakdown.codFee).toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-emerald-600 font-semibold">
-                  <span>Special Platform Rate:</span>
-                  <span>Applied ✓</span>
-                </div>
                 <div className="flex justify-between pt-1.5 border-t border-slate-100 font-black text-slate-900 text-sm">
-                  <span>Total Shipping Fee:</span>
+                  <span>{isDeductFromSettlement ? 'Total Shipping Fee (from COD):' : 'Total Shipping Fee:'}</span>
                   <span className="font-mono">₹{payableAmount.toFixed(2)}</span>
                 </div>
+                {isDeductFromSettlement && (
+                  <div className="flex justify-between text-emerald-700 font-bold text-xs bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200/80">
+                    <span>Upfront Wallet Deduction:</span>
+                    <span className="font-mono">₹0.00 (Deducted on Delivery)</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -252,7 +284,11 @@ export default function PaymentCheckoutModal({
               </div>
 
               <div className="text-right shrink-0">
-                {!hasSufficientWallet ? (
+                {isDeductFromSettlement ? (
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                    ₹0 Upfront ✓
+                  </span>
+                ) : !hasSufficientWallet ? (
                   <div>
                     <span className="text-[11px] font-black text-rose-600 block">
                       Insufficient Balance
@@ -283,9 +319,11 @@ export default function PaymentCheckoutModal({
               </div>
             </div>
 
-            <div className="border-t border-dashed border-slate-200"></div>
+            {!isDeductFromSettlement && (
+              <>
+                <div className="border-t border-dashed border-slate-200"></div>
 
-            {/* OPTION 2: UPI (PhonePe, GPay, Paytm) */}
+                {/* OPTION 2: UPI (PhonePe, GPay, Paytm) */}
             <div 
               onClick={() => setSelectedMethod('UPI')}
               className={`p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer transition ${
@@ -351,6 +389,8 @@ export default function PaymentCheckoutModal({
                 <ChevronRight className="w-4 h-4 text-slate-400" />
               </div>
             </div>
+              </>
+            )}
           </div>
 
           {/* Error Message */}
@@ -385,11 +425,17 @@ export default function PaymentCheckoutModal({
             {loading ? (
               <>
                 <RefreshCw className="w-5 h-5 animate-spin" />
-                <span>Processing Payment...</span>
+                <span>{isDeductFromSettlement || (paymentMode === 'prepaid' && hasSufficientWallet) ? 'Booking Shipment...' : 'Processing Payment...'}</span>
               </>
+            ) : isDeductFromSettlement ? (
+              <span>Book Shipment (Deduct from COD)</span>
             ) : selectedMethod === 'WALLET' ? (
               hasSufficientWallet ? (
-                <span>Pay ₹ {payableAmount.toFixed(2)} from Wallet</span>
+                paymentMode === 'prepaid' ? (
+                  <span>Book Shipment (₹ {payableAmount.toFixed(2)} from Wallet)</span>
+                ) : (
+                  <span>Pay ₹ {payableAmount.toFixed(2)} from Wallet &amp; Book</span>
+                )
               ) : (
                 <span>Pay ₹ {payableAmount.toFixed(2)} with PhonePe</span>
               )

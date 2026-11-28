@@ -368,15 +368,15 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     // If COD and merchant selected to deduct shipping charges from COD settlement:
     const isDeductFromSettlement = isCod && codSettlementOption === 'deduct_from_cod';
 
-    // Check if seller has sufficient balance before creating
-    if (!isDeductFromSettlement && !validOverrides?.paidUpfront && currentWallet < totalRequired) {
+    // Always show Review Charges & Wallet Balance summary modal before finalizing booking
+    if (!validOverrides?.confirmedCheckout) {
       setCheckoutModalData({
         amount: totalShippingCharge,
         routeFrom: senderPincode || 'Origin',
         routeTo: receiverPincode || 'Destination',
         courierName: selectedQuote?.courierPartner || selectedQuote?.name || 'Courier Partner',
         breakdown: {
-          freight: deliveryFee - codFee,
+          freight: Math.max(0, deliveryFee - codFee),
           codFee: codFee,
           requiredReserve: 0
         }
@@ -1698,7 +1698,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <span>Finalize with {selectedQuote?.name} (₹{Number(selectedQuote?.exactRate ?? selectedQuote?.price ?? 0).toFixed(2)})</span>
+                    <span>Next: Review Charges &amp; Book</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -1819,7 +1819,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
           </div>
         )}
 
-        {/* PhonePe "Make Payment" Checkout Modal */}
+        {/* Review Charges, Wallet Balance & Payment Checkout Modal */}
         <PaymentCheckoutModal
           isOpen={showCheckoutModal}
           onClose={() => setShowCheckoutModal(false)}
@@ -1829,13 +1829,17 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
           walletBalance={user?.walletBalance || 0}
           courierName={checkoutModalData.courierName || selectedQuote?.name || 'Courier Partner'}
           breakdown={checkoutModalData.breakdown}
+          paymentMode={shipmentType === 'reverse' ? 'prepaid' : paymentMode}
+          isDeductFromSettlement={shipmentType !== 'reverse' && paymentMode === 'cod' && codSettlementOption === 'deduct_from_cod'}
+          parcelWeight={parcelWeight}
           user={user}
           onUpdateUser={onUpdateUser}
           onPaymentSuccess={async (paymentResult) => {
             setShowCheckoutModal(false);
             await handleFinalizeBooking({
+              confirmedCheckout: true,
               paidVia: paymentResult?.paidVia,
-              paidUpfront: true,
+              paidUpfront: Boolean(paymentResult?.paidUpfront),
               txnId: paymentResult?.txnId
             });
           }}

@@ -544,40 +544,20 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       shortfall: Math.max(0, totalRequired - currentWallet)
     }));
 
-    // If COD and merchant selected to deduct shipping charges from COD settlement:
-    if (isCod && codSettlementOption === 'deduct_from_cod') {
-      await executeBooking({
-        carrierSlug: quote.slug,
-        deliveryCharge: quote.price,
-        deductFromSettlement: true
-      });
-      return;
-    }
-
-    // If seller wallet does NOT have sufficient balance (fee + security reserve):
-    // Show official PhonePe "Make Payment" checkout screen
-    if (currentWallet < totalRequired) {
-      setCheckoutModalData({
-        amount: totalShippingCharge,
-        routeFrom: senderPincode || defaultPickupCity || 'Origin',
-        routeTo: receiverPincode || 'Destination',
-        courierName: quote.courierPartner || quote.name || 'Courier Partner',
-        breakdown: {
-          freight: deliveryFee,
-          codFee: codFee,
-          requiredReserve
-        },
-        quote
-      });
-      setShowCheckoutModal(true);
-      return;
-    }
-
-    // Has sufficient balance: deduct directly from seller wallet
-    await executeBooking({
-      carrierSlug: quote.slug,
-      deliveryCharge: quote.price
+    // Always show Review Charges & Wallet Balance summary modal before booking
+    setCheckoutModalData({
+      amount: totalShippingCharge,
+      routeFrom: senderPincode || defaultPickupCity || 'Origin',
+      routeTo: receiverPincode || 'Destination',
+      courierName: quote.courierPartner || quote.name || 'Courier Partner',
+      breakdown: {
+        freight: Math.max(0, deliveryFee - codFee),
+        codFee: codFee,
+        requiredReserve
+      },
+      quote
     });
+    setShowCheckoutModal(true);
   };
 
   const executeBooking = async (overrideParams = null) => {
@@ -3145,7 +3125,7 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         );
       })()}
 
-      {/* PhonePe "Make Payment" Checkout Modal */}
+      {/* Review Charges, Wallet Balance & Payment Checkout Modal */}
       <PaymentCheckoutModal
         isOpen={showCheckoutModal}
         onClose={() => setShowCheckoutModal(false)}
@@ -3155,6 +3135,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
         walletBalance={user?.walletBalance || 0}
         courierName={checkoutModalData.courierName || selectedQuote?.name || 'Courier Partner'}
         breakdown={checkoutModalData.breakdown}
+        paymentMode={shipmentType === 'reverse' ? 'prepaid' : paymentMode}
+        isDeductFromSettlement={shipmentType !== 'reverse' && paymentMode === 'cod' && codSettlementOption === 'deduct_from_cod'}
+        parcelWeight={parcelWeight}
         user={user}
         onUpdateUser={onUpdateUser}
         onPaymentSuccess={async (paymentResult) => {
@@ -3162,8 +3145,9 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
           await executeBooking({
             carrierSlug: checkoutModalData?.quote?.slug || selectedQuote?.slug || carrierSlug,
             deliveryCharge: checkoutModalData?.amount || selectedQuote?.price || codQuote.deliveryCharge,
+            deductFromSettlement: paymentResult?.paidVia === 'DEDUCT_FROM_COD',
             paidVia: paymentResult?.paidVia,
-            paidUpfront: true,
+            paidUpfront: Boolean(paymentResult?.paidUpfront),
             txnId: paymentResult?.txnId
           });
         }}
