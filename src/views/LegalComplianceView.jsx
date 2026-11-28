@@ -143,14 +143,14 @@ export default function LegalComplianceView({ initialTab = 'terms', onTabChange 
         <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6 animate-in fade-in duration-200">
           <div className="border-b border-slate-100 pb-4">
             <h2 className="text-xl font-black text-slate-900">Terms & Conditions of Service</h2>
-            <p className="text-xs text-slate-500 font-medium">Logistics Aggregator, B2B Courier Booking & Delivery Protection Software Agreement</p>
+            <p className="text-xs text-slate-500 font-medium">Logistics Aggregator, B2C Courier Booking & Delivery Protection Software Agreement</p>
           </div>
 
           <div className="space-y-5 text-xs text-slate-700 leading-relaxed font-medium">
             <div>
               <h3 className="text-sm font-bold text-slate-900 mb-1">1. Nature of Platform & Services</h3>
               <p>
-                SecureKaro ("Platform"), operated by SecureKaro Logistics, is a <strong>Logistics Aggregator & Shipping Software Platform</strong> that facilitates <strong>B2B Courier Booking, Automated Shipping Label Generation, Multi-Carrier Parcel Tracking, and Delivery Protection</strong>. SecureKaro aggregates licensed courier partners (including Delhivery, Blue Dart, DTDC, and Shadowfax) to provide seamless parcel dispatch, shipment milestone tracking, and COD fraud protection for sellers and buyers.
+                SecureKaro ("Platform"), operated by SecureKaro Logistics, is a <strong>Logistics Aggregator & Shipping Software Platform</strong> that facilitates <strong>B2C Courier Booking, Automated Shipping Label Generation, Multi-Carrier Parcel Tracking, and Delivery Protection</strong>. SecureKaro aggregates licensed courier partners (including Delhivery, Blue Dart, DTDC, and Shadowfax) to provide seamless parcel dispatch, shipment milestone tracking, and COD fraud protection for sellers and buyers.
               </p>
             </div>
 
@@ -301,7 +301,7 @@ export default function LegalComplianceView({ initialTab = 'terms', onTabChange 
               <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#1E56E3] flex items-center justify-center font-bold">
                 <Truck className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-extrabold text-slate-900">B2B Courier Booking & Multi-Carrier Shipping</h3>
+              <h3 className="text-base font-extrabold text-slate-900">B2C Courier Booking & Multi-Carrier Shipping</h3>
               <p className="text-xs text-slate-500 font-medium">Access real-time courier shipping rates, automated AWB generation, and door-to-door courier dispatch across 29,000+ Indian pincodes.</p>
               <div className="pt-2 border-t border-slate-200 flex items-baseline justify-between">
                 <span className="text-xs text-slate-400 font-bold uppercase">Courier Tariff</span>

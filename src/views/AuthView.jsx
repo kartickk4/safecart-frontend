@@ -799,7 +799,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
           </div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] text-blue-100 font-semibold mt-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            B2B Courier Booking &amp; Delivery Protection Platform
+            B2C Courier Booking &amp; Delivery Protection Platform
           </div>
         </div>
 
@@ -940,7 +940,7 @@ export default function AuthView({ initialMode = 'login', onModeChange, onAuthSu
                     Logistics
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 font-medium">B2B Courier Booking & Delivery Protection</p>
+                <p className="text-[11px] text-slate-500 font-medium">B2C Courier Booking & Delivery Protection</p>
               </div>
             </div>
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[10px] font-extrabold shadow-2xs">
