@@ -174,110 +174,115 @@ export default function PaymentCheckoutModal({
   };
 
   const modalContent = (
-    <div className="fixed inset-0 z-[150] flex flex-col bg-slate-900/60 backdrop-blur-sm sm:items-center sm:justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[150] flex flex-col bg-slate-900/50 backdrop-blur-sm sm:items-center sm:justify-center p-0 sm:p-4 animate-in fade-in duration-200">
       <div 
-        className="w-full max-w-md bg-[#F4F6FB] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]"
+        className="w-full max-w-[440px] bg-white sm:rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Vibrant Blue Header */}
-        <div className="bg-[#0052FF] text-white p-4 sm:p-5 flex items-center gap-3 shrink-0 relative shadow-sm">
+        {/* Clean White Header matching Add Gems style */}
+        <div className="bg-white px-5 py-4 border-b border-slate-100 flex items-center gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition cursor-pointer active:scale-95"
+            className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-600 flex items-center justify-center transition cursor-pointer active:scale-95 shrink-0"
             aria-label="Back"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
           </button>
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white flex-1">
-            {isDeductFromSettlement || (paymentMode === 'prepaid' && hasSufficientWallet)
-              ? 'Review Charges & Book'
-              : 'Make Payment'}
-          </h1>
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 text-[#0B7A66] flex items-center justify-center shrink-0">
+            <Wallet className="w-4 h-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 truncate">
+                {isDeductFromSettlement || (paymentMode === 'prepaid' && hasSufficientWallet)
+                  ? 'Review Charges & Book'
+                  : 'Complete Payment'}
+              </h1>
+              <span className="text-[11px] font-semibold bg-[#0B7A66] text-white px-2 py-0.5 rounded-full shrink-0">
+                {paymentMode === 'cod' ? 'COD' : 'Prepaid'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5 truncate">
+              {formatRouteLabel(routeFrom)} ➔ {formatRouteLabel(routeTo)} • {parcelWeight || 0.5} kg
+            </p>
+          </div>
         </div>
 
         {/* Scrollable Content Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-          {/* Route Summary Card */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-sm sm:text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
-                  <span>{formatRouteLabel(routeFrom)}</span>
-                  <span className="text-slate-400 font-normal">➔</span>
-                  <span>{formatRouteLabel(routeTo)}</span>
-                </div>
-                <span className="text-[11px] font-semibold text-slate-500 block mt-0.5">
-                  {paymentMode === 'cod' ? 'Cash on Delivery (COD)' : 'Prepaid'} • {parcelWeight || 0.5} kg
-                </span>
-              </div>
-
-              <div className="text-right shrink-0">
-                <div className="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight">
-                  {isDeductFromSettlement ? 'Pay ₹ 0.00' : `Pay ₹ ${payableAmount.toFixed(2)}`}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowReview(!showReview)}
-                  className="text-xs font-bold text-slate-500 hover:text-slate-800 inline-flex items-center gap-1 mt-0.5 cursor-pointer"
-                >
-                  <span>{showReview ? 'Hide Details' : 'Review'}</span>
-                  {showReview ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
-              </div>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 bg-slate-50/40">
+          {/* Summary of Charges Card */}
+          <div className="bg-white rounded-xl p-4 border border-slate-200/90 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-800">
+                Summary of Charges
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowReview(!showReview)}
+                className="text-xs font-medium text-slate-500 hover:text-slate-800 inline-flex items-center gap-1 cursor-pointer"
+              >
+                <span>{showReview ? 'Hide' : 'Details'}</span>
+                {showReview ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
             </div>
 
-            {/* Summary of Charges Breakdown */}
             {showReview && (
-              <div className="pt-3 border-t border-slate-100 text-xs space-y-1.5 animate-in fade-in duration-150 text-slate-600 font-medium">
-                <div className="flex justify-between">
-                  <span>Courier Partner:</span>
-                  <span className="font-bold text-slate-800">{courierName}</span>
+              <div className="pt-2 border-t border-slate-100 text-xs space-y-2 text-slate-600">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Courier Partner</span>
+                  <span className="font-semibold text-slate-800">{courierName}</span>
                 </div>
                 {breakdown?.freight !== undefined && (
-                  <div className="flex justify-between">
-                    <span>Base Freight Charge:</span>
-                    <span className="font-mono text-slate-800">₹{Number(breakdown.freight).toFixed(2)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Base Freight Charge</span>
+                    <span className="tabular-nums font-medium text-slate-800">₹{Number(breakdown.freight).toFixed(2)}</span>
                   </div>
                 )}
                 {breakdown?.codFee !== undefined && Number(breakdown.codFee) > 0 && (
-                  <div className="flex justify-between">
-                    <span>COD Collection Fee:</span>
-                    <span className="font-mono text-slate-800">₹{Number(breakdown.codFee).toFixed(2)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">COD Collection Fee</span>
+                    <span className="tabular-nums font-medium text-slate-800">₹{Number(breakdown.codFee).toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-1.5 border-t border-slate-100 font-black text-slate-900 text-sm">
-                  <span>{isDeductFromSettlement ? 'Total Shipping Fee (from COD):' : 'Total Shipping Fee:'}</span>
-                  <span className="font-mono">₹{payableAmount.toFixed(2)}</span>
-                </div>
-                {isDeductFromSettlement && (
-                  <div className="flex justify-between text-emerald-700 font-bold text-xs bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200/80">
-                    <span>Upfront Wallet Deduction:</span>
-                    <span className="font-mono">₹0.00 (Deducted on Delivery)</span>
-                  </div>
-                )}
+              </div>
+            )}
+
+            <div className="pt-2.5 border-t border-dashed border-slate-200 flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-900">
+                {isDeductFromSettlement ? 'Amount to Pay Now' : 'Total Shipping Fee'}
+              </span>
+              <span className="text-base font-bold text-slate-900 tabular-nums">
+                {isDeductFromSettlement ? '₹0.00' : `₹${payableAmount.toFixed(2)}`}
+              </span>
+            </div>
+
+            {isDeductFromSettlement && (
+              <div className="flex justify-between items-center text-xs bg-emerald-50/80 text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-200/70">
+                <span className="font-medium">Deducted from COD on delivery</span>
+                <span className="font-semibold tabular-nums">₹{payableAmount.toFixed(2)}</span>
               </div>
             )}
           </div>
 
           {/* Payment Methods Container */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200/90 overflow-hidden">
             {/* OPTION 1: Seller Wallet */}
             <div 
               onClick={() => setSelectedMethod('WALLET')}
-              className={`p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer transition ${
-                selectedMethod === 'WALLET' ? 'bg-blue-50/40' : 'hover:bg-slate-50/60'
+              className={`p-3.5 sm:p-4 flex items-center justify-between gap-3 cursor-pointer transition ${
+                selectedMethod === 'WALLET' ? 'bg-emerald-50/30' : 'hover:bg-slate-50/70'
               }`}
             >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-blue-100/70 text-[#0052FF] flex items-center justify-center font-bold shrink-0 border border-blue-200/60">
-                  <Wallet className="w-5 h-5" />
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-lg bg-emerald-50 text-[#0B7A66] flex items-center justify-center shrink-0 border border-emerald-100">
+                  <Wallet className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs sm:text-sm font-extrabold text-slate-800">
-                    SecureKaro Wallet
+                  <div className="text-xs font-medium text-slate-500">
+                    SecureKaro Wallet Balance
                   </div>
-                  <div className="text-sm sm:text-base font-black text-slate-900 font-mono tracking-tight">
+                  <div className="text-sm sm:text-base font-bold text-slate-900 tabular-nums">
                     <AnimatedBalance value={currentWallet} decimals={2} />
                   </div>
                 </div>
@@ -285,12 +290,12 @@ export default function PaymentCheckoutModal({
 
               <div className="text-right shrink-0">
                 {isDeductFromSettlement ? (
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                  <span className="text-[11px] font-semibold text-[#0B7A66] bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
                     ₹0 Upfront ✓
                   </span>
                 ) : !hasSufficientWallet ? (
                   <div>
-                    <span className="text-[11px] font-black text-rose-600 block">
+                    <span className="text-[11px] font-semibold text-rose-600 block">
                       Insufficient Balance
                     </span>
                     <button
@@ -299,7 +304,7 @@ export default function PaymentCheckoutModal({
                         e.stopPropagation();
                         setSelectedMethod('UPI');
                       }}
-                      className="text-xs font-extrabold text-[#0052FF] hover:underline flex items-center gap-0.5 justify-end mt-0.5 cursor-pointer"
+                      className="text-xs font-semibold text-[#0B7A66] hover:underline flex items-center gap-0.5 justify-end mt-0.5 cursor-pointer"
                     >
                       <span>+ Add Money</span>
                     </button>
@@ -307,7 +312,7 @@ export default function PaymentCheckoutModal({
                 ) : (
                   <div className="flex items-center gap-1.5">
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedMethod === 'WALLET' ? 'border-[#0052FF] bg-[#0052FF] text-white' : 'border-slate-300'
+                      selectedMethod === 'WALLET' ? 'border-[#0B7A66] bg-[#0B7A66] text-white' : 'border-slate-300'
                     }`}>
                       {selectedMethod === 'WALLET' && <Check className="w-3 h-3 stroke-[3]" />}
                     </div>
@@ -321,94 +326,94 @@ export default function PaymentCheckoutModal({
                 <div className="border-t border-dashed border-slate-200"></div>
 
                 {/* OPTION 2: UPI (PhonePe, GPay, Paytm) */}
-            <div 
-              onClick={() => setSelectedMethod('UPI')}
-              className={`p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer transition ${
-                selectedMethod === 'UPI' ? 'bg-blue-50/40' : 'hover:bg-slate-50/60'
-              }`}
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-700 flex items-center justify-center font-black text-xs shrink-0 border border-purple-200">
-                  <span className="tracking-tighter">UPI</span>
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs sm:text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
-                    <span>UPI</span>
-                    <span className="text-[10px] font-bold bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-mono">
-                      PhonePe
-                    </span>
+                <div 
+                  onClick={() => setSelectedMethod('UPI')}
+                  className={`p-3.5 sm:p-4 flex items-center justify-between gap-3 cursor-pointer transition ${
+                    selectedMethod === 'UPI' ? 'bg-emerald-50/30' : 'hover:bg-slate-50/70'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-xs shrink-0 border border-purple-200/80">
+                      <span>UPI</span>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs sm:text-sm font-semibold text-slate-800 flex items-center gap-1.5">
+                        <span>UPI</span>
+                        <span className="text-[10px] font-semibold bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded">
+                          PhonePe
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        PhonePe, Google Pay, Paytm, BHIM &amp; QR
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-500 font-medium truncate">
-                    PhonePe, Google Pay, Paytm, BHIM &amp; QR
-                  </p>
-                </div>
-              </div>
 
-              <div className="shrink-0 flex items-center gap-2">
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedMethod === 'UPI' ? 'border-[#0052FF] bg-[#0052FF] text-white' : 'border-slate-300'
-                }`}>
-                  {selectedMethod === 'UPI' && <Check className="w-3 h-3 stroke-[3]" />}
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              </div>
-            </div>
-
-            <div className="border-t border-dashed border-slate-200"></div>
-
-            {/* OPTION 3: Other Payment Methods */}
-            <div 
-              onClick={() => setSelectedMethod('OTHER')}
-              className={`p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer transition ${
-                selectedMethod === 'OTHER' ? 'bg-blue-50/40' : 'hover:bg-slate-50/60'
-              }`}
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200">
-                  <CreditCard className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs sm:text-sm font-extrabold text-slate-800">
-                    Other Payment Methods
+                  <div className="shrink-0 flex items-center gap-2">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      selectedMethod === 'UPI' ? 'border-[#0B7A66] bg-[#0B7A66] text-white' : 'border-slate-300'
+                    }`}>
+                      {selectedMethod === 'UPI' && <Check className="w-3 h-3 stroke-[3]" />}
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
                   </div>
-                  <p className="text-[11px] text-slate-500 font-medium truncate">
-                    Credit / Debit Cards, Net Banking via PhonePe
-                  </p>
                 </div>
-              </div>
 
-              <div className="shrink-0 flex items-center gap-2">
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedMethod === 'OTHER' ? 'border-[#0052FF] bg-[#0052FF] text-white' : 'border-slate-300'
-                }`}>
-                  {selectedMethod === 'OTHER' && <Check className="w-3 h-3 stroke-[3]" />}
+                <div className="border-t border-dashed border-slate-200"></div>
+
+                {/* OPTION 3: Other Payment Methods */}
+                <div 
+                  onClick={() => setSelectedMethod('OTHER')}
+                  className={`p-3.5 sm:p-4 flex items-center justify-between gap-3 cursor-pointer transition ${
+                    selectedMethod === 'OTHER' ? 'bg-emerald-50/30' : 'hover:bg-slate-50/70'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200">
+                      <CreditCard className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs sm:text-sm font-semibold text-slate-800">
+                        Other Payment Methods
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        Credit / Debit Cards, Net Banking via PhonePe
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 flex items-center gap-2">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      selectedMethod === 'OTHER' ? 'border-[#0B7A66] bg-[#0B7A66] text-white' : 'border-slate-300'
+                    }`}>
+                      {selectedMethod === 'OTHER' && <Check className="w-3 h-3 stroke-[3]" />}
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              </div>
-            </div>
               </>
             )}
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2 animate-in fade-in duration-200">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2 animate-in fade-in duration-200">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Trust Banner */}
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-medium">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>100% Secure Checkout powered by PhonePe Payment Gateway</span>
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#0B7A66] shrink-0" />
+            <span>100% Secure Checkout powered by PhonePe</span>
           </div>
         </div>
 
         {/* Sticky Bottom Action Button */}
-        <div className="p-4 sm:p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] bg-white border-t border-slate-200/80 shrink-0 space-y-2">
+        <div className="p-4 sm:px-5 sm:py-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] bg-white border-t border-slate-100 shrink-0 space-y-2">
           {processingNote && (
-            <p className="text-center text-xs font-bold text-[#0052FF] animate-pulse">
+            <p className="text-center text-xs font-medium text-[#0B7A66] animate-pulse">
               {processingNote}
             </p>
           )}
@@ -417,11 +422,11 @@ export default function PaymentCheckoutModal({
             type="button"
             disabled={loading}
             onClick={handlePay}
-            className="w-full py-3.5 sm:py-4 px-6 rounded-full sm:rounded-2xl bg-[#0052FF] hover:bg-[#0047E0] active:scale-[0.99] text-white font-black text-sm sm:text-base shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full py-3 sm:py-3.5 px-5 rounded-xl bg-[#0B7A66] hover:bg-[#096453] active:scale-[0.99] text-white font-semibold text-sm shadow-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {loading ? (
               <>
-                <RefreshCw className="w-5 h-5 animate-spin" />
+                <RefreshCw className="w-4 h-4 animate-spin" />
                 <span>{isDeductFromSettlement || (paymentMode === 'prepaid' && hasSufficientWallet) ? 'Booking Shipment...' : 'Processing Payment...'}</span>
               </>
             ) : isDeductFromSettlement ? (
@@ -429,15 +434,15 @@ export default function PaymentCheckoutModal({
             ) : selectedMethod === 'WALLET' ? (
               hasSufficientWallet ? (
                 paymentMode === 'prepaid' ? (
-                  <span>Book Shipment (₹ {payableAmount.toFixed(2)} from Wallet)</span>
+                  <span>Book Shipment (₹{payableAmount.toFixed(2)} from Wallet)</span>
                 ) : (
-                  <span>Pay ₹ {payableAmount.toFixed(2)} from Wallet &amp; Book</span>
+                  <span>Pay ₹{payableAmount.toFixed(2)} from Wallet &amp; Book</span>
                 )
               ) : (
-                <span>Pay ₹ {payableAmount.toFixed(2)} with PhonePe</span>
+                <span>Pay ₹{payableAmount.toFixed(2)} with PhonePe</span>
               )
             ) : selectedMethod === 'UPI' ? (
-              <span>Pay ₹ {payableAmount.toFixed(2)} via UPI (PhonePe)</span>
+              <span>Pay ₹{payableAmount.toFixed(2)} via UPI (PhonePe)</span>
             ) : (
               <span>Pay Using Other Methods</span>
             )}
