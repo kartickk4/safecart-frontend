@@ -13,7 +13,7 @@ import RechargeModal from '../components/RechargeModal';
 import CarrierLogo from '../components/CarrierLogo';
 import PaymentCheckoutModal from '../components/PaymentCheckoutModal';
 import { getSafeCarrierRates } from '../utils/carrierRateFallback';
-import { formatCarrierName, formatAwbCode, formatPickupToken } from '../utils/formatters';
+import { formatCarrierName, formatAwbCode, formatPickupToken, dedupeQuotesByLowestBrand } from '../utils/formatters';
 import { validatePhone, sanitizePhone, validatePincode, sanitizePincode, validateAmount, validateWeight } from '../utils/validators';
 import { addShipmentToCache } from '../utils/shipmentCache';
 
@@ -189,9 +189,12 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
       );
     }
 
+    // Deduplicate by courier brand, keeping only the lowest rate per brand
+    list = dedupeQuotesByLowestBrand(list);
+
     // Sort
     if (carrierSort === 'price') {
-      list.sort((a, b) => a.price - b.price);
+      list.sort((a, b) => Number(a.exactRate ?? a.price ?? 0) - Number(b.exactRate ?? b.price ?? 0));
     } else if (carrierSort === 'rating') {
       list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }

@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  X, ShieldCheck, ArrowRight, ArrowLeft, AlertTriangle, RotateCcw, 
+import {
+  X, ShieldCheck, ArrowRight, ArrowLeft, AlertTriangle, RotateCcw,
   Camera, Phone, Truck, Star, Zap, Check, Lock, RefreshCw, Clock, Award,
   CreditCard, Banknote, Search, Sparkles, TrendingDown, Plane, LayoutGrid, List, Scale,
   CheckCircle2, AlertCircle, Eye, Download
@@ -11,7 +11,7 @@ import CarrierLogo from './CarrierLogo';
 import RechargeModal from './RechargeModal';
 import PaymentCheckoutModal from './PaymentCheckoutModal';
 import { getSafeCarrierRates } from '../utils/carrierRateFallback';
-import { formatCarrierName, formatAwbCode } from '../utils/formatters';
+import { formatCarrierName, formatAwbCode, dedupeQuotesByLowestBrand } from '../utils/formatters';
 import { validatePhone, sanitizePhone, validatePincode, sanitizePincode, validateAmount, validateWeight } from '../utils/validators';
 import { addShipmentToCache } from '../utils/shipmentCache';
 
@@ -40,14 +40,14 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     shipmentAPI.getShipments({ limit: 1 })
       .then(res => {
         if (!isMounted) return;
-        const total = res.data?.total !== undefined 
-          ? Number(res.data.total) 
+        const total = res.data?.total !== undefined
+          ? Number(res.data.total)
           : (Array.isArray(res.data?.shipments) ? res.data.shipments.length : (Array.isArray(res.data) ? res.data.length : 0));
         if (total > 0) {
           setModalShipmentsCount(total);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
     return () => { isMounted = false; };
   }, [isOpen]);
 
@@ -175,8 +175,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
     // Filter by Search Query
     if (carrierSearch.trim()) {
       const q = carrierSearch.toLowerCase();
-      list = list.filter(item => 
-        (item.name || '').toLowerCase().includes(q) || 
+      list = list.filter(item =>
+        (item.name || '').toLowerCase().includes(q) ||
         (item.courierPartner || '').toLowerCase().includes(q) ||
         (item.aggregatorName || '').toLowerCase().includes(q) ||
         (item.serviceType || '').toLowerCase().includes(q) ||
@@ -184,9 +184,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       );
     }
 
+    // Deduplicate by courier brand, keeping only the lowest rate per brand
+    list = dedupeQuotesByLowestBrand(list);
+
     // Sort
     if (carrierSort === 'price') {
-      list.sort((a, b) => a.price - b.price);
+      list.sort((a, b) => Number(a.exactRate ?? a.price ?? 0) - Number(b.exactRate ?? b.price ?? 0));
     } else if (carrierSort === 'rating') {
       list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }
@@ -421,7 +424,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
           detail: { newShipment: res.data }
         }));
         window.dispatchEvent(new Event('securekaro_refresh_shipments'));
-      } catch (_) {}
+      } catch (_) { }
       if (onUpdateUser && res.data?.walletBalanceRemaining !== undefined) {
         onUpdateUser({ ...user, walletBalance: Number(res.data.walletBalanceRemaining) });
       }
@@ -435,10 +438,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         setError('Phone verification required before your first shipment. Please verify your mobile number above.');
         return;
       }
-      if (err.response?.status === 402 || 
-          err.response?.data?.code === 'INSUFFICIENT_WALLET_BALANCE' || 
-          err.response?.data?.code === 'COD_PAYMENT_REQUIRED' || 
-          err.response?.data?.code === 'SECURITY_BUFFER_REQUIRED') {
+      if (err.response?.status === 402 ||
+        err.response?.data?.code === 'INSUFFICIENT_WALLET_BALANCE' ||
+        err.response?.data?.code === 'COD_PAYMENT_REQUIRED' ||
+        err.response?.data?.code === 'SECURITY_BUFFER_REQUIRED') {
         const data = err.response?.data || {};
         const fee = data.totalCharge || Number(selectedQuote?.price || 0);
         setCheckoutModalData({
@@ -472,7 +475,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
             if (modalStep === 3) {
               try {
                 window.dispatchEvent(new Event('securekaro_refresh_shipments'));
-              } catch (_) {}
+              } catch (_) { }
             }
             onClose();
           }}
@@ -489,22 +492,22 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-black text-slate-900">
-                {modalStep === 1 
-                  ? 'Create Courier Shipment Booking' 
-                  : modalStep === 2 
-                  ? 'Select Delivery Courier & Review Rates' 
-                  : 'Shipment Booked Successfully! 🎉'}
+                {modalStep === 1
+                  ? 'Create Courier Shipment Booking'
+                  : modalStep === 2
+                    ? 'Select Delivery Courier & Review Rates'
+                    : 'Shipment Booked Successfully! 🎉'}
               </h2>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
                 Step {modalStep} of {modalStep === 3 ? '3' : '2'}
               </span>
             </div>
             <p className="text-xs text-slate-500">
-              {modalStep === 1 
+              {modalStep === 1
                 ? 'Fill recipient details to compare real-time delivery rates'
                 : modalStep === 2
-                ? `Live rates & ratings for delivery to receiver pincode ${receiverPincode}`
-                : 'Courier pickup has been scheduled and your tracking waybill is active'}
+                  ? `Live rates & ratings for delivery to receiver pincode ${receiverPincode}`
+                  : 'Courier pickup has been scheduled and your tracking waybill is active'}
             </p>
           </div>
         </div>
@@ -644,11 +647,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   setCarrierQuotes([]);
                   setSelectedQuote(null);
                 }}
-                className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  shipmentType === 'forward'
-                    ? 'bg-white text-blue-600 shadow-xs border border-slate-200'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${shipmentType === 'forward'
+                  ? 'bg-white text-blue-600 shadow-xs border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
+                  }`}
               >
                 <span>📦 Forward Delivery</span>
               </button>
@@ -660,11 +662,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   setCarrierQuotes([]);
                   setSelectedQuote(null);
                 }}
-                className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  shipmentType === 'reverse'
-                    ? 'bg-white text-blue-600 shadow-xs border border-slate-200 ring-2 ring-blue-500/15'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${shipmentType === 'reverse'
+                  ? 'bg-white text-blue-600 shadow-xs border border-slate-200 ring-2 ring-blue-500/15'
+                  : 'text-slate-600 hover:text-slate-900'
+                  }`}
               >
                 <span>↩️ Reverse Pickup (RVP)</span>
               </button>
@@ -692,9 +693,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       {shipmentType === 'reverse' ? 'Customer Phone (Pickup OTP) *' : 'Recipient Phone *'}
                     </label>
                     {receiverPhone && (
-                      <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
-                        validatePhone(receiverPhone).isValid ? 'text-emerald-600' : 'text-slate-400'
-                      }`}>
+                      <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${validatePhone(receiverPhone).isValid ? 'text-emerald-600' : 'text-slate-400'
+                        }`}>
                         {validatePhone(receiverPhone).isValid ? (
                           <>
                             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -717,13 +717,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       setReceiverPhone(sanitized);
                       if (error) setError('');
                     }}
-                    className={`w-full px-3.5 py-2 bg-slate-50 border rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:bg-white transition ${
-                      receiverPhone && validatePhone(receiverPhone).isValid
-                        ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
-                        : receiverPhone && sanitizePhone(receiverPhone).length === 10 && !validatePhone(receiverPhone).isValid
+                    className={`w-full px-3.5 py-2 bg-slate-50 border rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:bg-white transition ${receiverPhone && validatePhone(receiverPhone).isValid
+                      ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                      : receiverPhone && sanitizePhone(receiverPhone).length === 10 && !validatePhone(receiverPhone).isValid
                         ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
                         : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
+                      }`}
                   />
                   {receiverPhone && sanitizePhone(receiverPhone).length === 10 && !validatePhone(receiverPhone).isValid && (
                     <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1 animate-in fade-in duration-150">
@@ -755,9 +754,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       {shipmentType === 'reverse' ? 'Customer Pickup Pincode *' : 'Receiver Delivery Pincode *'}
                     </label>
                     {receiverPincode && (
-                      <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${
-                        validatePincode(receiverPincode).isValid ? 'text-emerald-600' : 'text-slate-400'
-                      }`}>
+                      <span className={`text-[10px] font-mono font-bold flex items-center gap-1 ${validatePincode(receiverPincode).isValid ? 'text-emerald-600' : 'text-slate-400'
+                        }`}>
                         {validatePincode(receiverPincode).isValid ? (
                           <>
                             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -780,13 +778,12 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       setReceiverPincode(sanitized);
                       if (error) setError('');
                     }}
-                    className={`w-full px-3.5 py-2 bg-slate-50 border rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:bg-white transition ${
-                      receiverPincode && validatePincode(receiverPincode).isValid
-                        ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
-                        : receiverPincode && sanitizePincode(receiverPincode).length === 6 && !validatePincode(receiverPincode).isValid
+                    className={`w-full px-3.5 py-2 bg-slate-50 border rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:bg-white transition ${receiverPincode && validatePincode(receiverPincode).isValid
+                      ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500/15'
+                      : receiverPincode && sanitizePincode(receiverPincode).length === 6 && !validatePincode(receiverPincode).isValid
                         ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15 bg-rose-50/40'
                         : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
+                      }`}
                   />
                   {receiverPincode && sanitizePincode(receiverPincode).length === 6 && !validatePincode(receiverPincode).isValid && (
                     <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1 animate-in fade-in duration-150">
@@ -802,9 +799,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       Parcel Dead Weight (kg)
                     </label>
                     {parcelWeight && (
-                      <span className={`text-[10px] font-mono font-bold ${
-                        validateWeight(parcelWeight).isValid ? 'text-emerald-600' : 'text-rose-500'
-                      }`}>
+                      <span className={`text-[10px] font-mono font-bold ${validateWeight(parcelWeight).isValid ? 'text-emerald-600' : 'text-rose-500'
+                        }`}>
                         {validateWeight(parcelWeight).isValid ? `${parcelWeight} kg ✓` : 'Invalid wt'}
                       </span>
                     )}
@@ -870,11 +866,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     <button
                       type="button"
                       onClick={() => setPaymentMode('prepaid')}
-                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
-                        paymentMode === 'prepaid'
-                          ? 'bg-blue-50 border-[#1E56E3] text-[#1E56E3] shadow-xs ring-1 ring-[#1E56E3]'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                      }`}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer ${paymentMode === 'prepaid'
+                        ? 'bg-blue-50 border-[#1E56E3] text-[#1E56E3] shadow-xs ring-1 ring-[#1E56E3]'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }`}
                     >
                       <div className="flex items-center gap-1.5">
                         <CreditCard className="w-4 h-4 text-[#1E56E3]" />
@@ -885,11 +880,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     <button
                       type="button"
                       onClick={() => setPaymentMode('cod')}
-                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
-                        paymentMode === 'cod'
-                          ? 'bg-amber-50 border-amber-600 text-amber-800 shadow-xs ring-1 ring-amber-500'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                      }`}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer ${paymentMode === 'cod'
+                        ? 'bg-amber-50 border-amber-600 text-amber-800 shadow-xs ring-1 ring-amber-500'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }`}
                     >
                       <div className="flex items-center gap-1.5">
                         <Truck className="w-4 h-4 text-amber-600" />
@@ -910,22 +904,20 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       <div className="grid grid-cols-2 gap-2">
                         <div
                           onClick={() => setCodSettlementOption('deduct_from_cod')}
-                          className={`p-2.5 rounded-xl border text-left text-[11px] transition-all cursor-pointer select-none ${
-                            codSettlementOption === 'deduct_from_cod'
-                              ? 'bg-white border-amber-500 shadow-2xs ring-1 ring-amber-500 font-bold'
-                              : 'bg-white/70 border-slate-200 hover:bg-white text-slate-600'
-                          }`}
+                          className={`p-2.5 rounded-xl border text-left text-[11px] transition-all cursor-pointer select-none ${codSettlementOption === 'deduct_from_cod'
+                            ? 'bg-white border-amber-500 shadow-2xs ring-1 ring-amber-500 font-bold'
+                            : 'bg-white/70 border-slate-200 hover:bg-white text-slate-600'
+                            }`}
                         >
                           <div className="font-black text-amber-900">Deduct from Settlement</div>
                           <div className="text-[10px] text-slate-500 font-normal mt-0.5">₹0 upfront. Shipping, COD fee &amp; RTO return charges deducted from settlement.</div>
                         </div>
                         <div
                           onClick={() => setCodSettlementOption('pay_upfront')}
-                          className={`p-2.5 rounded-xl border text-left text-[11px] transition-all cursor-pointer select-none ${
-                            codSettlementOption === 'pay_upfront'
-                              ? 'bg-white border-amber-500 shadow-2xs ring-1 ring-amber-500 font-bold'
-                              : 'bg-white/70 border-slate-200 hover:bg-white text-slate-600'
-                          }`}
+                          className={`p-2.5 rounded-xl border text-left text-[11px] transition-all cursor-pointer select-none ${codSettlementOption === 'pay_upfront'
+                            ? 'bg-white border-amber-500 shadow-2xs ring-1 ring-amber-500 font-bold'
+                            : 'bg-white/70 border-slate-200 hover:bg-white text-slate-600'
+                            }`}
                         >
                           <div className="font-black text-slate-900">Pay Now (Wallet/UPI)</div>
                           <div className="text-[10px] text-slate-500 font-normal mt-0.5">Pay via Wallet/UPI now.</div>
@@ -948,21 +940,18 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 />
               </div>
 
-              <div className={`p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between ${
-                returnAllowed ? 'bg-amber-50/90 border-amber-300 shadow-xs' : 'bg-slate-50/80 border-slate-200'
-              }`}>
+              <div className={`p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between ${returnAllowed ? 'bg-amber-50/90 border-amber-300 shadow-xs' : 'bg-slate-50/80 border-slate-200'
+                }`}>
                 <div className="flex items-center gap-2.5">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                    returnAllowed ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-500'
-                  }`}>
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${returnAllowed ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-500'
+                    }`}>
                     <RotateCcw className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-xs font-bold text-slate-900">Enable Return Option</p>
-                      <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ${
-                        returnAllowed ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-200 text-slate-600'
-                      }`}>
+                      <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ${returnAllowed ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-200 text-slate-600'
+                        }`}>
                         {returnAllowed ? 'Enabled' : 'Off'}
                       </span>
                     </div>
@@ -981,21 +970,18 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
               </div>
 
               {/* Packed Parcel Photo on Weight Scale with Label (Default: OFF) */}
-              <div className={`p-3.5 rounded-2xl border-2 transition-all ${
-                photoReviewEnabled ? 'bg-indigo-50/90 border-indigo-300 shadow-xs' : 'bg-slate-50/80 border-slate-200'
-              } flex items-center justify-between`}>
+              <div className={`p-3.5 rounded-2xl border-2 transition-all ${photoReviewEnabled ? 'bg-indigo-50/90 border-indigo-300 shadow-xs' : 'bg-slate-50/80 border-slate-200'
+                } flex items-center justify-between`}>
                 <div className="flex items-center gap-2.5">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                    photoReviewEnabled ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-500'
-                  }`}>
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${photoReviewEnabled ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-500'
+                    }`}>
                     <Scale className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-xs font-bold text-slate-900">Packed Parcel Photo on Weight Scale with Label</p>
-                      <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ${
-                        photoReviewEnabled ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' : 'bg-slate-200 text-slate-600'
-                      }`}>
+                      <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ${photoReviewEnabled ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' : 'bg-slate-200 text-slate-600'
+                        }`}>
                         {photoReviewEnabled ? 'Enabled' : 'Optional (Off)'}
                       </span>
                     </div>
@@ -1084,11 +1070,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                         }
                       }}
                       disabled={fetchingQuotes}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                        paymentMode === 'prepaid'
-                          ? 'bg-blue-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:bg-slate-100'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${paymentMode === 'prepaid'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:bg-slate-100'
+                        }`}
                     >
                       <CreditCard className="w-3.5 h-3.5" />
                       <span>Prepaid</span>
@@ -1102,11 +1087,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                         }
                       }}
                       disabled={fetchingQuotes}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                        paymentMode === 'cod'
-                          ? 'bg-amber-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:bg-slate-100'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${paymentMode === 'cod'
+                        ? 'bg-amber-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:bg-slate-100'
+                        }`}
                     >
                       <Banknote className="w-3.5 h-3.5" />
                       <span>Cash on Delivery (COD)</span>
@@ -1123,11 +1107,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     await fetchQuotes(paymentMode, nextVal);
                   }}
                   disabled={fetchingQuotes}
-                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs ${
-                    secureShipmentEnabled
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-                  }`}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs ${secureShipmentEnabled
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
                   title="Shipment transit insurance cover"
                 >
                   <ShieldCheck className={`w-3.5 h-3.5 ${secureShipmentEnabled ? 'text-white' : 'text-slate-400'}`} />
@@ -1143,8 +1126,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
                   <span className="text-xs font-black text-amber-950">COD Settlement Mode:</span>
                   <span className="text-[11px] text-amber-800 font-medium">
-                    {codSettlementOption === 'deduct_from_cod' 
-                      ? '₹0 Upfront required — courier & COD fees deducted upon delivery' 
+                    {codSettlementOption === 'deduct_from_cod'
+                      ? '₹0 Upfront required — courier & COD fees deducted upon delivery'
                       : 'Pay courier charges upfront via Wallet or PhonePe'}
                   </span>
                 </div>
@@ -1152,22 +1135,20 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <button
                     type="button"
                     onClick={() => setCodSettlementOption('deduct_from_cod')}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${
-                      codSettlementOption === 'deduct_from_cod'
-                        ? 'bg-amber-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:bg-slate-100'
-                    }`}
+                    className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${codSettlementOption === 'deduct_from_cod'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-100'
+                      }`}
                   >
                     ₹0 Upfront (Deduct from COD)
                   </button>
                   <button
                     type="button"
                     onClick={() => setCodSettlementOption('pay_upfront')}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${
-                      codSettlementOption === 'pay_upfront'
-                        ? 'bg-amber-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:bg-slate-100'
-                    }`}
+                    className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${codSettlementOption === 'pay_upfront'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-100'
+                      }`}
                   >
                     Pay Now (Wallet/UPI)
                   </button>
@@ -1180,15 +1161,14 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
             {/* Filter Tabs & Search Bar */}
             {!fetchingQuotes && carrierQuotes.length > 0 && (
               <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-1">
-                             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
                   <button
                     type="button"
                     onClick={() => { setCarrierTab('all'); setOnlyCloseToWeight(true); }}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                      carrierTab === 'all' && onlyCloseToWeight
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${carrierTab === 'all' && onlyCloseToWeight
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
                   >
                     <Scale className="w-3.5 h-3.5 text-blue-400" />
                     <span>Close to {parcelWeight || 0.5} KG</span>
@@ -1200,11 +1180,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <button
                     type="button"
                     onClick={() => setCarrierTab('cheapest')}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                      carrierTab === 'cheapest'
-                        ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200/60 hover:bg-emerald-100'
-                    }`}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${carrierTab === 'cheapest'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200/60 hover:bg-emerald-100'
+                      }`}
                   >
                     <TrendingDown className="w-3.5 h-3.5" />
                     <span>Top Cheapest</span>
@@ -1213,11 +1192,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <button
                     type="button"
                     onClick={() => setCarrierTab('nimbuspost')}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                      carrierTab === 'nimbuspost'
-                        ? 'bg-purple-700 text-white shadow-xs'
-                        : 'bg-purple-50 text-purple-700 border border-purple-200/60 hover:bg-purple-100'
-                    }`}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${carrierTab === 'nimbuspost'
+                      ? 'bg-purple-700 text-white shadow-xs'
+                      : 'bg-purple-50 text-purple-700 border border-purple-200/60 hover:bg-purple-100'
+                      }`}
                   >
                     <span className="w-2 h-2 rounded-full bg-purple-500"></span>
                     <span>via NimbusPost</span>
@@ -1231,11 +1209,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <button
                     type="button"
                     onClick={() => setCarrierTab('shiprocket')}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                      carrierTab === 'shiprocket'
-                        ? 'bg-indigo-700 text-white shadow-xs'
-                        : 'bg-indigo-50 text-indigo-700 border border-indigo-200/60 hover:bg-indigo-100'
-                    }`}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${carrierTab === 'shiprocket'
+                      ? 'bg-indigo-700 text-white shadow-xs'
+                      : 'bg-indigo-50 text-indigo-700 border border-indigo-200/60 hover:bg-indigo-100'
+                      }`}
                   >
                     <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
                     <span>via Shiprocket</span>
@@ -1249,11 +1226,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <button
                     type="button"
                     onClick={() => setCarrierTab('surface')}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                      carrierTab === 'surface'
-                        ? 'bg-amber-700 text-white shadow-xs'
-                        : 'bg-amber-50 text-amber-800 border border-amber-200/60 hover:bg-amber-100'
-                    }`}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${carrierTab === 'surface'
+                      ? 'bg-amber-700 text-white shadow-xs'
+                      : 'bg-amber-50 text-amber-800 border border-amber-200/60 hover:bg-amber-100'
+                      }`}
                   >
                     <Truck className="w-3.5 h-3.5" />
                     <span>Surface</span>
@@ -1267,11 +1243,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   <button
                     type="button"
                     onClick={() => setCarrierTab('air')}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                      carrierTab === 'air'
-                        ? 'bg-sky-600 text-white shadow-xs'
-                        : 'bg-sky-50 text-sky-700 border border-sky-200/60 hover:bg-sky-100'
-                    }`}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${carrierTab === 'air'
+                      ? 'bg-sky-600 text-white shadow-xs'
+                      : 'bg-sky-50 text-sky-700 border border-sky-200/60 hover:bg-sky-100'
+                      }`}
                   >
                     <Plane className="w-3.5 h-3.5" />
                     <span>Air Express</span>
@@ -1286,11 +1261,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     <button
                       type="button"
                       onClick={() => { setCarrierTab('heavy'); setOnlyCloseToWeight(false); }}
-                      className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                        carrierTab === 'heavy'
-                          ? 'bg-orange-700 text-white shadow-xs'
-                          : 'bg-orange-50 text-orange-800 border border-orange-200/70 hover:bg-orange-100'
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${carrierTab === 'heavy'
+                        ? 'bg-orange-700 text-white shadow-xs'
+                        : 'bg-orange-50 text-orange-800 border border-orange-200/70 hover:bg-orange-100'
+                        }`}
                       title="Bulk heavy freight slabs (5 KG - 20 KG)"
                     >
                       <Scale className="w-3.5 h-3.5" />
@@ -1321,11 +1295,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       setOnlyCloseToWeight(!onlyCloseToWeight);
                       if (carrierTab === 'heavy') setCarrierTab('all');
                     }}
-                    className={`px-2.5 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
-                      onlyCloseToWeight
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
+                    className={`px-2.5 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1.5 transition cursor-pointer shrink-0 ${onlyCloseToWeight
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
                     title={onlyCloseToWeight ? 'Click to show all weight slabs including heavy 10-20 KG' : 'Click to filter only couriers matching your parcel weight'}
                   >
                     <Scale className="w-3 h-3 text-blue-600" />
@@ -1462,11 +1435,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                           <tr
                             key={quote.slug}
                             onClick={() => setSelectedQuote(quote)}
-                            className={`cursor-pointer transition-colors duration-100 ${
-                              isSelected
-                                ? 'bg-blue-50/70 border-l-4 border-l-blue-600 font-semibold'
-                                : 'hover:bg-slate-50/80'
-                            }`}
+                            className={`cursor-pointer transition-colors duration-100 ${isSelected
+                              ? 'bg-blue-50/70 border-l-4 border-l-blue-600 font-semibold'
+                              : 'hover:bg-slate-50/80'
+                              }`}
                           >
                             <td className="py-2.5 px-3.5">
                               <div className="flex items-center gap-2.5">
@@ -1523,18 +1495,16 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                             </td>
 
                             <td className="py-2.5 px-3 whitespace-nowrap">
-                              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                                isAir ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
-                              }`}>
+                              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md ${isAir ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                }`}>
                                 {isAir ? <Plane className="w-3 h-3" /> : <Truck className="w-3 h-3" />}
                                 <span>{isAir ? 'Air' : 'Surface'}</span>
                               </span>
                             </td>
 
                             <td className="py-2.5 px-3 whitespace-nowrap">
-                              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                                isHeavy ? 'bg-orange-100 text-orange-900 border border-orange-200 font-extrabold' : 'bg-slate-100 text-slate-700'
-                              }`}>
+                              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md ${isHeavy ? 'bg-orange-100 text-orange-900 border border-orange-200 font-extrabold' : 'bg-slate-100 text-slate-700'
+                                }`}>
                                 <Scale className="w-3 h-3 text-slate-500" />
                                 <span>{quote.weightSlab || `${parcelWeight || 0.5} K.G`}</span>
                               </span>
@@ -1575,11 +1545,10 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                                   e.stopPropagation();
                                   setSelectedQuote(quote);
                                 }}
-                                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-blue-600 text-white shadow-2xs'
-                                    : 'bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700'
-                                }`}
+                                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition cursor-pointer ${isSelected
+                                  ? 'bg-blue-600 text-white shadow-2xs'
+                                  : 'bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700'
+                                  }`}
                               >
                                 {isSelected ? 'Selected ✓' : 'Select'}
                               </button>
@@ -1609,27 +1578,26 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     <div
                       key={quote.slug}
                       onClick={() => setSelectedQuote(quote)}
-                      className={`p-3.5 rounded-2xl border transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none relative group ${
-                        isSelected
-                          ? 'border-blue-600 bg-blue-50/20 ring-2 ring-blue-500 shadow-md scale-[1.01]'
-                          : 'border-slate-200/90 bg-white hover:border-blue-300 hover:shadow-xs'
-                      }`}
+                      className={`p-3.5 rounded-2xl border transition-all duration-150 cursor-pointer flex flex-col justify-between text-left select-none relative group ${isSelected
+                        ? 'border-blue-600 bg-blue-50/20 ring-2 ring-blue-500 shadow-md scale-[1.01]'
+                        : 'border-slate-200/90 bg-white hover:border-blue-300 hover:shadow-xs'
+                        }`}
                     >
                       {/* Top Header: Logo, Name, Gateway, Mode, Weight Slab & Radio */}
                       <div>
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <CarrierLogo 
-                              slug={quote.baseSlug || quote.slug} 
-                              name={quote.name} 
-                              size="md" 
+                            <CarrierLogo
+                              slug={quote.baseSlug || quote.slug}
+                              name={quote.name}
+                              size="md"
                               className={`shrink-0 ${isSelected ? 'ring-2 ring-blue-500 shadow-2xs' : 'shadow-2xs'}`}
                             />
                             <div className="min-w-0">
                               <h4 className="text-sm font-extrabold text-slate-900 truncate leading-snug">
                                 {formatCarrierName(quote.courierPartner || quote.name)}
                               </h4>
-                              
+
                               <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                                 {quote.isDirectDelhivery || quote.aggregator === 'delhivery_direct' ? (
                                   <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.2 rounded-full">
@@ -1653,16 +1621,14 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                                   </span>
                                 )}
 
-                                <span className={`inline-flex items-center gap-0.5 text-[9.5px] font-bold px-1.5 py-0.2 rounded-md ${
-                                  isAir ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
-                                }`}>
+                                <span className={`inline-flex items-center gap-0.5 text-[9.5px] font-bold px-1.5 py-0.2 rounded-md ${isAir ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  }`}>
                                   {isAir ? <Plane className="w-2.5 h-2.5" /> : <Truck className="w-2.5 h-2.5" />}
                                   <span>{isAir ? 'Air' : 'Surface'}</span>
                                 </span>
 
-                                <span className={`inline-flex items-center gap-1 text-[9.5px] font-bold px-1.5 py-0.2 rounded-md ${
-                                  isHeavy ? 'bg-orange-100 text-orange-900 border border-orange-200 font-extrabold' : 'bg-slate-100 text-slate-700'
-                                }`}>
+                                <span className={`inline-flex items-center gap-1 text-[9.5px] font-bold px-1.5 py-0.2 rounded-md ${isHeavy ? 'bg-orange-100 text-orange-900 border border-orange-200 font-extrabold' : 'bg-slate-100 text-slate-700'
+                                  }`}>
                                   <Scale className="w-2.5 h-2.5 text-slate-500" />
                                   <span>{quote.weightSlab || `${parcelWeight || 0.5} K.G`}</span>
                                 </span>
@@ -1670,9 +1636,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                             </div>
                           </div>
 
-                          <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition mt-0.5 ${
-                            isSelected ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-300 bg-white group-hover:border-slate-400'
-                          }`}>
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition mt-0.5 ${isSelected ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-300 bg-white group-hover:border-slate-400'
+                            }`}>
                             {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                           </div>
                         </div>
@@ -1851,7 +1816,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 onClick={() => {
                   try {
                     window.dispatchEvent(new Event('securekaro_refresh_shipments'));
-                  } catch (_) {}
+                  } catch (_) { }
                   if (onCreated) onCreated(createdData);
                 }}
                 className="px-4 py-2.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-xs font-bold text-[#1E56E3] transition inline-flex items-center gap-1.5 cursor-pointer"
@@ -1865,7 +1830,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 onClick={() => {
                   try {
                     window.dispatchEvent(new Event('securekaro_refresh_shipments'));
-                  } catch (_) {}
+                  } catch (_) { }
                   onClose();
                 }}
                 className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-600 transition cursor-pointer"

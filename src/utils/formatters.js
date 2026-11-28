@@ -78,3 +78,43 @@ export function formatPickupToken(token) {
   str = str.replace(/^NP-NP_/i, 'NP-').replace(/^NP-NP-/i, 'NP-').replace(/^SR-SR-/i, 'SR-');
   return str;
 }
+
+export function getCarrierBrandKey(quote) {
+  const raw = `${quote?.courierPartner || ''} ${quote?.name || ''} ${quote?.baseSlug || ''} ${quote?.slug || ''}`.toLowerCase();
+  if (raw.includes('delhivery')) return 'delhivery';
+  if (raw.includes('shadowfax')) return 'shadowfax';
+  if (raw.includes('xpressbees')) return 'xpressbees';
+  if (raw.includes('ekart')) return 'ekart';
+  if (raw.includes('dtdc')) return 'dtdc';
+  if (raw.includes('bluedart') || raw.includes('blue dart') || raw.includes('blue_dart')) return 'bluedart';
+  if (raw.includes('ecom')) return 'ecom';
+  if (raw.includes('amazon') || raw.includes('ats')) return 'amazon';
+  if (raw.includes('kerry') || raw.includes('indev')) return 'kerry';
+  if (raw.includes('maruti')) return 'shreemaruti';
+  if (raw.includes('indiapost') || raw.includes('speed post') || raw.includes('india post')) return 'indiapost';
+  if (raw.includes('smartr')) return 'smartr';
+  if (raw.includes('trackon')) return 'trackon';
+  return (quote?.baseSlug || quote?.slug || quote?.name || 'other').toLowerCase().trim();
+}
+
+/**
+ * Deduplicate courier quotes by brand, keeping only the lowest-rate option for each courier brand.
+ */
+export function dedupeQuotesByLowestBrand(quotes = []) {
+  if (!Array.isArray(quotes) || quotes.length === 0) return [];
+  const bestByBrand = new Map();
+  for (const q of quotes) {
+    const brand = getCarrierBrandKey(q);
+    const price = Number(q?.exactRate ?? q?.price ?? Infinity);
+    const existing = bestByBrand.get(brand);
+    if (!existing) {
+      bestByBrand.set(brand, q);
+    } else {
+      const existingPrice = Number(existing?.exactRate ?? existing?.price ?? Infinity);
+      if (price < existingPrice) {
+        bestByBrand.set(brand, q);
+      }
+    }
+  }
+  return Array.from(bestByBrand.values());
+}
