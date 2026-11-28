@@ -70,7 +70,6 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   const [returnAllowed, setReturnAllowed] = useState(true);
   const [photoReviewEnabled, setPhotoReviewEnabled] = useState(false);
   const [rtoProtectionEnabled, setRtoProtectionEnabled] = useState(false);
-  const [secureShipmentEnabled, setSecureShipmentEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -293,11 +292,11 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
       return;
     }
 
-    await fetchQuotes(shipmentType === 'reverse' ? 'prepaid' : paymentMode, secureShipmentEnabled, shipmentType);
+    await fetchQuotes(shipmentType === 'reverse' ? 'prepaid' : paymentMode, shipmentType);
     setModalStep(2);
   };
 
-  const fetchQuotes = async (targetMode = paymentMode, isSecure = secureShipmentEnabled, forcedShipmentType = shipmentType) => {
+  const fetchQuotes = async (targetMode = paymentMode, forcedShipmentType = shipmentType) => {
     setFetchingQuotes(true);
     setError('');
     const isReverse = forcedShipmentType === 'reverse';
@@ -315,7 +314,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
         cod: isCod ? 1 : 0,
         amount: decVal,
         declaredValue: decVal,
-        isSecureShipment: isSecure,
+        isSecureShipment: false,
         isReverse: isReverse
       });
 
@@ -1050,7 +1049,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                 </div>
               </div>
 
-              {/* Mode Selector & Secure Cover Toggle */}
+              {/* Mode Selector */}
               <div className="flex items-center gap-2 flex-wrap justify-between md:justify-end">
                 {shipmentType === 'reverse' ? (
                   <div className="inline-flex items-center p-1 bg-white rounded-xl border border-slate-200 shadow-2xs">
@@ -1066,7 +1065,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       onClick={async () => {
                         if (paymentMode !== 'prepaid') {
                           setPaymentMode('prepaid');
-                          await fetchQuotes('prepaid', secureShipmentEnabled);
+                          await fetchQuotes('prepaid');
                         }
                       }}
                       disabled={fetchingQuotes}
@@ -1083,7 +1082,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                       onClick={async () => {
                         if (paymentMode !== 'cod') {
                           setPaymentMode('cod');
-                          await fetchQuotes('cod', secureShipmentEnabled);
+                          await fetchQuotes('cod');
                         }
                       }}
                       disabled={fetchingQuotes}
@@ -1097,25 +1096,6 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                     </button>
                   </div>
                 )}
-
-                {/* Secure Cover (Default OFF) */}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const nextVal = !secureShipmentEnabled;
-                    setSecureShipmentEnabled(nextVal);
-                    await fetchQuotes(paymentMode, nextVal);
-                  }}
-                  disabled={fetchingQuotes}
-                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs ${secureShipmentEnabled
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-                    }`}
-                  title="Shipment transit insurance cover"
-                >
-                  <ShieldCheck className={`w-3.5 h-3.5 ${secureShipmentEnabled ? 'text-white' : 'text-slate-400'}`} />
-                  <span>Secure Cover {secureShipmentEnabled ? 'ON (+₹54)' : 'OFF'}</span>
-                </button>
               </div>
             </div>
 
@@ -1424,7 +1404,6 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                         const isSelected = selectedQuote?.slug === quote.slug;
                         const displayRate = Number(quote.exactRate ?? quote.price ?? 0);
                         const codFee = Number(quote.codCharge || 0);
-                        const secureFee = Number(quote.secureShipmentCharge || (secureShipmentEnabled ? 54 : 0));
                         const waFee = Number(quote.whatsappCharge || 5.00);
                         const freightFee = Number(quote.freightCharge !== undefined && (Number(quote.freightCharge) + codFee === displayRate) ? quote.freightCharge : Math.max(0, displayRate - codFee));
                         const isNimbus = quote.aggregator === 'nimbuspost' || (quote.slug && quote.slug.startsWith('nimbus'));
@@ -1567,7 +1546,6 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
                   const isSelected = selectedQuote?.slug === quote.slug;
                   const displayRate = Number(quote.exactRate ?? quote.price ?? 0);
                   const codFee = Number(quote.codCharge || 0);
-                  const secureFee = Number(quote.secureShipmentCharge || (secureShipmentEnabled ? 54 : 0));
                   const waFee = Number(quote.whatsappCharge || 5.00);
                   const freightFee = Number(quote.freightCharge !== undefined && (Number(quote.freightCharge) + codFee === displayRate) ? quote.freightCharge : Math.max(0, displayRate - codFee));
                   const isNimbus = quote.aggregator === 'nimbuspost' || (quote.slug && quote.slug.startsWith('nimbus'));
