@@ -306,9 +306,6 @@ export default function PaymentCheckoutModal({
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                      Sufficient ✓
-                    </span>
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                       selectedMethod === 'WALLET' ? 'border-[#0052FF] bg-[#0052FF] text-white' : 'border-slate-300'
                     }`}>
