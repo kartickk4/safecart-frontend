@@ -410,9 +410,21 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
     const prevStatus = currentShipment.status;
     setDetails(prev => prev ? { ...prev, shipment: { ...(prev.shipment || {}), status: 'Cancelled' } } : prev);
     try {
-      await shipmentAPI.cancelShipment(currentShipment.shipmentId, cancelReason);
+      const cancelRes = await shipmentAPI.cancelShipment(currentShipment.shipmentId, cancelReason);
       try {
         updateShipmentInCache(currentShipment.shipmentId, { status: 'Cancelled', pickupStatus: 'Cancelled' });
+        if (cancelRes?.data?.walletBalanceRemaining !== undefined) {
+          const newBal = Number(cancelRes.data.walletBalanceRemaining);
+          const stored = localStorage.getItem('securekaro_user');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            parsed.walletBalance = newBal;
+            localStorage.setItem('securekaro_user', JSON.stringify(parsed));
+          }
+          window.dispatchEvent(new CustomEvent('securekaro_wallet_updated', {
+            detail: { walletBalance: newBal, refundedAmount: cancelRes.data.refundedAmount || 0 }
+          }));
+        }
       } catch (_) {}
       setShowCancelForm(false);
       if (onRefresh) onRefresh();

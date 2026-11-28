@@ -201,12 +201,20 @@ export default function App() {
       }
     };
 
+    const handleWalletUpdated = (e) => {
+      if (e.detail?.walletBalance !== undefined) {
+        setUser(prev => prev ? { ...prev, walletBalance: Number(e.detail.walletBalance) } : prev);
+      }
+    };
+
     window.addEventListener('popstate', handlePopState);
     window.addEventListener('navigate-tab', handleNavigateTab);
+    window.addEventListener('securekaro_wallet_updated', handleWalletUpdated);
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('navigate-tab', handleNavigateTab);
+      window.removeEventListener('securekaro_wallet_updated', handleWalletUpdated);
     };
   }, []);
 
