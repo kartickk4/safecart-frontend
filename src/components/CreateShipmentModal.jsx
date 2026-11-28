@@ -460,8 +460,8 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] bg-slate-900/80 backdrop-blur-md flex items-center justify-center sm:p-4 overflow-hidden animate-in fade-in duration-200">
-      <div className={`bg-white rounded-3xl ${modalStep === 2 ? 'w-full sm:w-[96vw] max-w-7xl h-[100dvh] sm:h-auto sm:max-h-[94vh] rounded-none sm:rounded-3xl' : 'w-full max-w-xl max-h-[94vh] rounded-3xl'} p-4 sm:p-6 shadow-2xl relative border border-slate-100 flex flex-col overflow-hidden transition-all duration-200 animate-in zoom-in-95`}>
+    <div className={`fixed inset-0 z-[120] bg-slate-900/80 backdrop-blur-md flex items-center justify-center ${modalStep === 2 ? 'p-0' : 'sm:p-4'} overflow-hidden animate-in fade-in duration-200`}>
+      <div className={`bg-white ${modalStep === 2 ? 'w-screen h-[100dvh] max-w-none max-h-none rounded-none p-4 sm:px-8 sm:py-6' : 'w-full max-w-xl max-h-[94vh] rounded-3xl p-4 sm:p-6 border border-slate-100'} shadow-2xl relative flex flex-col overflow-hidden transition-all duration-200 animate-in zoom-in-95`}>
         <button
           onClick={() => {
             if (modalStep === 3) {
@@ -1031,7 +1031,7 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
 
         {/* STEP 2: COURIER RATES & RATINGS SELECTION */}
         {modalStep === 2 && (
-          <div className="overflow-y-auto space-y-4 pr-1 flex-1">
+          <div className="min-h-0 overflow-y-auto space-y-4 pr-1 flex-1">
             {/* Unified Route & Controls Toolbar */}
             <div className="bg-gradient-to-r from-slate-50 via-blue-50/30 to-indigo-50/30 rounded-2xl border border-slate-200/90 p-3 sm:p-3.5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
               {/* Route & Package Specs */}
