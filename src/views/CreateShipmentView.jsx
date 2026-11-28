@@ -8,7 +8,7 @@ import {
   Star, ChevronRight, ChevronDown, ChevronUp, Zap, Award, Clock, Search, SlidersHorizontal, TrendingDown, Plane, Layers,
   LayoutGrid, List, Scale
 } from 'lucide-react';
-import { shipmentAPI, profileAPI, agentAPI, getLabelDownloadUrl } from '../services/api';
+import { shipmentAPI, profileAPI, agentAPI, downloadShippingLabel } from '../services/api';
 import RechargeModal from '../components/RechargeModal';
 import CarrierLogo from '../components/CarrierLogo';
 import PaymentCheckoutModal from '../components/PaymentCheckoutModal';
@@ -3093,15 +3093,14 @@ export default function CreateShipmentView({ onBack, onCreated, user, onOpenProf
 
             {/* Actions */}
             <div className="flex items-center justify-center gap-4 pt-2">
-              <a
-                href={getLabelDownloadUrl(createdData.shipmentId, createdData.shippingLabelUrl)}
-                target="_blank"
-                rel="noreferrer"
-                className="px-5 py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-md inline-flex items-center gap-1.5"
+              <button
+                type="button"
+                onClick={() => downloadShippingLabel(createdData.shipmentId, createdData.shippingLabelUrl)}
+                className="px-5 py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-md inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>Download Label PDF</span>
-              </a>
+              </button>
 
               <button
                 onClick={onBack}

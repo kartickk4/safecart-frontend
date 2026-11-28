@@ -6,7 +6,7 @@ import {
   CreditCard, Banknote, Search, Sparkles, TrendingDown, Plane, LayoutGrid, List, Scale,
   CheckCircle2, AlertCircle, Eye, Download
 } from 'lucide-react';
-import { shipmentAPI, profileAPI, agentAPI, getLabelDownloadUrl } from '../services/api';
+import { shipmentAPI, profileAPI, agentAPI, downloadShippingLabel } from '../services/api';
 import CarrierLogo from './CarrierLogo';
 import RechargeModal from './RechargeModal';
 import PaymentCheckoutModal from './PaymentCheckoutModal';
@@ -1823,15 +1823,14 @@ export default function CreateShipmentModal({ isOpen, onClose, onCreated, user, 
 
             {/* Action Buttons */}
             <div className="flex items-center justify-center gap-3 pt-3 flex-wrap">
-              <a
-                href={getLabelDownloadUrl(createdData.shipmentId, createdData.shippingLabelUrl)}
-                target="_blank"
-                rel="noreferrer"
-                className="px-4 py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-sm inline-flex items-center gap-1.5 transition"
+              <button
+                type="button"
+                onClick={() => downloadShippingLabel(createdData.shipmentId, createdData.shippingLabelUrl)}
+                className="px-4 py-2.5 rounded-xl bg-[#1E56E3] hover:bg-[#1649CC] text-white text-xs font-bold shadow-sm inline-flex items-center gap-1.5 transition cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>Download Label (PDF)</span>
-              </a>
+              </button>
 
               <button
                 type="button"

@@ -61,14 +61,12 @@ export const API_BASE_URL = getBaseUrl();
 
 export const getLabelDownloadUrl = (shipmentId, directUrl) => {
   const base = API_BASE_URL || LIVE_BACKEND_URL;
-  const token = localStorage.getItem('securekaro_token') || localStorage.getItem('token') || localStorage.getItem('safecart_token') || '';
-  const tokenQuery = token ? `&token=${encodeURIComponent(token)}` : '';
 
   // Non-expiring external label URL (exclude temporary 15-minute S3 signed links like NimbusPost)
   if (
     directUrl &&
     typeof directUrl === 'string' &&
-    directUrl.startsWith('http') &&
+    directUrl.startsWith('https://') &&
     !directUrl.includes('dummy.pdf') &&
     !directUrl.includes('/api/v1/shipments') &&
     !directUrl.includes('X-Amz-Expires') &&
@@ -77,8 +75,38 @@ export const getLabelDownloadUrl = (shipmentId, directUrl) => {
     return directUrl;
   }
 
-  // Always route through backend for permanent, reliable PDF generation & streaming
-  return `${base.replace(/\/+$/, '')}/shipments/${shipmentId}/label?format=pdf${tokenQuery}`;
+  // Never embed JWT bearer tokens in URL query strings
+  return `${base.replace(/\/+$/, '')}/shipments/${shipmentId}/label?format=pdf`;
+};
+
+export const downloadShippingLabel = async (shipmentId, directUrl) => {
+  if (
+    directUrl &&
+    typeof directUrl === 'string' &&
+    directUrl.startsWith('https://') &&
+    !directUrl.includes('dummy.pdf') &&
+    !directUrl.includes('/api/v1/shipments') &&
+    !directUrl.includes('X-Amz-Expires') &&
+    !directUrl.includes('files.nimbuspost.com')
+  ) {
+    window.open(directUrl, '_blank', 'noopener,noreferrer');
+    return;
+  }
+
+  const res = await api.get(`/shipments/${shipmentId}/label?format=pdf`, {
+    responseType: 'blob'
+  });
+  const blob = new Blob([res.data], { type: res.headers?.['content-type'] || 'application/pdf' });
+  const blobUrl = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = blobUrl;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.download = `shipping-label-${shipmentId}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
 };
 
 const api = axios.create({

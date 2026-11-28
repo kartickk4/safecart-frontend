@@ -103,6 +103,7 @@ export default function App() {
     }
   });
   const [slowServerWarning, setSlowServerWarning] = useState(false);
+  const [serverVerifiedAdmin, setServerVerifiedAdmin] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutStep, setSignOutStep] = useState('');
   const [currentTab, _setCurrentTab] = useState(() => getTabFromLocation());
@@ -389,10 +390,17 @@ export default function App() {
         loadedUser.role = savedRole;
       }
       setUser(loadedUser);
+      setServerVerifiedAdmin(Boolean(
+        loadedUser?.role === 'Admin' ||
+        loadedUser?.role === 'super_admin' ||
+        loadedUser?.isAdmin === true ||
+        loadedUser?.adminRole
+      ));
       localStorage.setItem('securekaro_user', JSON.stringify(loadedUser));
       prefetchWalletInBackground(loadedUser);
     } catch (err) {
       console.warn('Backend profile API check notice:', err.message);
+      setServerVerifiedAdmin(false);
       // Only clear credentials if explicitly rejected as 401/403 Unauthorized
       if (err.response?.status === 401 || err.response?.status === 403) {
         clearAgentSessionData();
@@ -868,12 +876,14 @@ export default function App() {
     );
   }
 
-  // Master Admin Executive Console (Strict Role Check)
+  // Master Admin Executive Console (Strictly server-verified; never trust localStorage-hydrated role flags)
   const isUserAdmin = Boolean(
-    user?.role === 'Admin' ||
-    user?.role === 'super_admin' ||
-    user?.isAdmin === true ||
-    user?.adminRole
+    serverVerifiedAdmin && (
+      user?.role === 'Admin' ||
+      user?.role === 'super_admin' ||
+      user?.isAdmin === true ||
+      user?.adminRole
+    )
   );
 
   // Admin view is now rendered inside the persistent layout shell below

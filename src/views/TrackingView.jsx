@@ -2184,7 +2184,7 @@ export default function TrackingView({ onSelectShipment, user, selectedShipment 
               </div>
               <div className="flex items-center gap-2">
                 <a
-                  href={previewPhotoModal.url}
+                  href={/^https?:\/\//i.test(String(previewPhotoModal.url || '')) || /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(String(previewPhotoModal.url || '')) ? previewPhotoModal.url : '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5"

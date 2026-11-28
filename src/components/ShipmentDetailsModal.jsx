@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ArrowLeft, ShieldCheck, ShieldAlert, Gavel, Box, CheckCircle2, AlertTriangle, ExternalLink, RefreshCw, Truck, Link2, Copy, Share2, CreditCard, XCircle, RotateCcw, Clock, Sparkles, Lock, MessageSquare, Send, Camera, Tag, MapPin, Check, QrCode, Printer, Zap, Building, Image as ImageIcon, Eye, ZoomIn, PackageCheck, Package } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { shipmentAPI, profileAPI, claimAPI, getLabelDownloadUrl } from '../services/api';
+import { shipmentAPI, profileAPI, claimAPI, downloadShippingLabel } from '../services/api';
 import { uploadImageToHost } from '../services/imageUpload';
 import QrScannerModal from './QrScannerModal';
 import CameraCaptureModal from './CameraCaptureModal';
@@ -1073,15 +1073,14 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
                   </p>
                 </div>
               </div>
-              <a
-                href={getLabelDownloadUrl(currentShipment.shipmentId, currentShipment.shippingLabelUrl)}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-bold text-[#1E56E3] hover:underline flex items-center gap-1"
+              <button
+                type="button"
+                onClick={() => downloadShippingLabel(currentShipment.shipmentId, currentShipment.shippingLabelUrl)}
+                className="text-xs font-bold text-[#1E56E3] hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <span>Label PDF</span>
                 <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              </button>
             </div>
 
             {/* ── COURIER CHARGES & SETTLEMENT STATEMENT (For Sellers) ── */}
@@ -3915,7 +3914,7 @@ export default function ShipmentDetailsModal({ shipment, isOpen, onClose, onRefr
               </div>
               <div className="flex items-center gap-2">
                 <a
-                  href={previewPhotoModal.url}
+                  href={/^https?:\/\//i.test(String(previewPhotoModal.url || '')) || /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(String(previewPhotoModal.url || '')) ? previewPhotoModal.url : '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5"
